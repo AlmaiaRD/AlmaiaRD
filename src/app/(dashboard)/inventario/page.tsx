@@ -631,8 +631,6 @@ export default function InventarioPage() {
           )}
         </>
       )}
-        </>
-      )}
 
       {activeTab === "history" && (
         <div className="space-y-3">
