@@ -58,7 +58,7 @@ export async function checkCanDeleteProduct(productId: string) {
   
   if (moveError) throw moveError;
   
-  if (movementCount > 0) {
+  if ((movementCount ?? 0) > 0) {
     throw new Error("No se puede eliminar el producto porque tiene movimientos históricos");
   }
   
@@ -69,7 +69,7 @@ export async function checkCanDeleteProduct(productId: string) {
   
   if (invItemError) throw invItemError;
   
-  if (invoiceCount > 0) {
+  if ((invoiceCount ?? 0) > 0) {
     throw new Error("No se puede eliminar el producto porque está asociado a facturas");
   }
   
@@ -80,7 +80,7 @@ export async function checkCanDeleteProduct(productId: string) {
   
   if (purItemError) throw purItemError;
   
-  if (purchaseCount > 0) {
+  if ((purchaseCount ?? 0) > 0) {
     throw new Error("No se puede eliminar el producto porque está asociado a compras");
   }
   

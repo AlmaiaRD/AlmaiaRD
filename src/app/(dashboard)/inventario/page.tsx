@@ -583,9 +583,9 @@ export default function InventarioPage() {
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Vendidas</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Stock</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Mov.</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acc.</th>
-                </tr>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Mov.</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acc.</th>
+                  </tr>
               </thead>
               <tbody>
                 {filtered.map((item) => {
@@ -627,6 +627,7 @@ export default function InventarioPage() {
                   );
                 })}
               </tbody>
+            </table>
             </div>
           )}
         </>
