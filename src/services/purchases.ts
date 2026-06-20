@@ -1,0 +1,167 @@
+import { supabase } from "@/lib/supabase";
+import { getSettings } from "./settings";
+
+const ITBIS_RATE = 0.18;
+
+export async function createPurchase(data: {
+  supplier_name?: string;
+  purchase_date: string;
+  notes?: string;
+  discount_amount?: number;
+  payment_method?: string;
+  bank_account_id?: string;
+  items: Array<{ product_id: string; quantity: number; unit_cost: number }>;
+}) {
+  const { data: sessData } = await supabase.auth.getSession();
+  const userId = (sessData as any)?.session?.user?.id;
+
+  const { data: lastPur } = await supabase
+    .from("purchases")
+    .select("purchase_number")
+    .order("created_at", { ascending: false })
+    .limit(1);
+  
+  const settings = await getSettings().catch(() => null);
+  const prefix = settings?.purchase_prefix || "COM-";
+  const lastNum = lastPur?.[0]?.purchase_number || `${prefix}000000`;
+  const nextNum = parseInt(lastNum.replace(prefix, ""), 10) + 1;
+  const purchaseNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
+
+  const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
+  const itbis = Math.round(subtotal * ITBIS_RATE * 100) / 100;
+  const total = subtotal + itbis - (data.discount_amount || 0);
+
+  const { data: purchase, error: purError } = await supabase
+    .from("purchases")
+    .insert({
+      purchase_number: purchaseNumber,
+      supplier_name: data.supplier_name || null,
+      purchase_date: data.purchase_date,
+      subtotal,
+      itbis,
+      discount_amount: data.discount_amount || 0,
+      total,
+      notes: data.notes || null,
+      payment_method: data.payment_method || "Efectivo",
+      bank_account_id: data.bank_account_id || null,
+      status: "COMPLETED",
+      created_by: userId,
+    })
+    .select()
+    .single();
+  if (purError) throw purError;
+
+  const purchaseItems = data.items.map((item) => ({
+    purchase_id: purchase.id,
+    product_id: item.product_id,
+    quantity: item.quantity,
+    unit_cost: item.unit_cost,
+    line_total: item.quantity * item.unit_cost,
+    line_itbis: Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100,
+  }));
+
+  const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
+  if (itemsError) throw itemsError;
+
+  return purchase;
+}
+
+export async function getPurchases() {
+  const { data, error } = await supabase
+    .from("purchases")
+    .select("*, purchase_items(*, products(name, code, cost))")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function getPurchase(id: string) {
+  const { data, error } = await supabase
+    .from("purchases")
+    .select("*, purchase_items(*, products(name, code, cost))")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updatePurchase(
+  id: string,
+  data: {
+    supplier_name?: string;
+    purchase_date: string;
+    notes?: string;
+    discount_amount?: number;
+    payment_method?: string;
+    bank_account_id?: string;
+    items: Array<{ product_id: string; quantity: number; unit_cost: number }>;
+  }
+) {
+  const { data: sessData } = await supabase.auth.getSession();
+  const userId = (sessData as any)?.session?.user?.id;
+
+  const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
+  const itbis = Math.round(subtotal * ITBIS_RATE * 100) / 100;
+  const total = subtotal + itbis - (data.discount_amount || 0);
+
+  const { error: purError } = await supabase
+    .from("purchases")
+    .update({
+      supplier_name: data.supplier_name || null,
+      purchase_date: data.purchase_date,
+      subtotal,
+      itbis,
+      discount_amount: data.discount_amount || 0,
+      total,
+      notes: data.notes || null,
+      payment_method: data.payment_method || "Efectivo",
+      bank_account_id: data.bank_account_id || null,
+      updated_by: userId,
+    })
+    .eq("id", id);
+  if (purError) throw purError;
+
+  const { error: delError } = await supabase
+    .from("purchase_items")
+    .delete()
+    .eq("purchase_id", id);
+  if (delError) throw delError;
+
+  const purchaseItems = data.items.map((item) => ({
+    purchase_id: id,
+    product_id: item.product_id,
+    quantity: item.quantity,
+    unit_cost: item.unit_cost,
+    line_total: item.quantity * item.unit_cost,
+    line_itbis: Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100,
+  }));
+
+  const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
+  if (itemsError) throw itemsError;
+}
+
+export async function deletePurchase(id: string) {
+  const { error: itemsError } = await supabase
+    .from("purchase_items")
+    .delete()
+    .eq("purchase_id", id);
+  if (itemsError) throw itemsError;
+
+  const { error: purError } = await supabase
+    .from("purchases")
+    .delete()
+    .eq("id", id);
+  if (purError) throw purError;
+}
+
+export async function getSoldQuantities() {
+  const { data, error } = await supabase
+    .from("invoice_items")
+    .select("product_id, quantity");
+  if (error) throw error;
+  const map: Record<string, number> = {};
+  (data || []).forEach((item: any) => {
+    map[item.product_id] = (map[item.product_id] || 0) + item.quantity;
+  });
+  return map;
+}
