@@ -19,6 +19,7 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^1.20.0",
     "next": "16.2.9",
+    "next-pwa": "^5.6.0",
     "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -41,5 +42,10 @@
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "glob": "^11.0.0",
+    "rimraf": "^5.0.0",
+    "sourcemap-codec": "npm:@jridgewell/sourcemap-codec@^1.4.15"
   }
 }
