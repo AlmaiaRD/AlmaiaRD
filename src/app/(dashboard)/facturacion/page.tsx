@@ -41,7 +41,7 @@ export default function FacturacionPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState("");
   const [margin, setMargin] = useState(30);
-  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; pv: number }>>([]);
+  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; pv: number; itbis: boolean }>>([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [notes, setNotes] = useState("");
@@ -142,6 +142,7 @@ export default function FacturacionPage() {
       quantity: 1,
       unit_price: margin === 30 ? product.price_30 : product.price_35,
       pv: product.pv,
+      itbis: true,
     }]);
   }
 
@@ -150,8 +151,9 @@ export default function FacturacionPage() {
   }
 
   const subtotal = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * i.unit_price * 0.18 : 0), 0);
   const discountValue = discountAmount > 0 ? discountAmount : (subtotal * discountPercent / 100);
-  const total = subtotal - discountValue;
+  const total = subtotal + itbisTotal - discountValue;
 
   async function handlePrintPdf(inv: any) {
     try {
@@ -173,6 +175,7 @@ export default function FacturacionPage() {
           margin: marginVal,
         })) || [],
         subtotal: Number(full.subtotal),
+        itbis_total: Number(full.itbis_total || 0),
         discount_amount: Number(full.discount_amount),
         total: Number(full.total),
         paid_amount: Number(full.amount_paid || 0),
@@ -247,6 +250,7 @@ export default function FacturacionPage() {
         quantity: item.quantity,
         unit_price: Number(item.unit_price),
         pv: Number(item.pv || 0),
+        itbis: item.itbis ?? true,
       })) || []);
       setDiscountPercent(0);
       setDiscountAmount(Number(full.discount_amount));
@@ -279,6 +283,7 @@ export default function FacturacionPage() {
         line_total: i.quantity * i.unit_price,
         pv: i.pv * i.quantity,
         unit_cost: 0,
+        itbis: i.itbis,
       }));
 
       if (editingId) {
@@ -525,6 +530,12 @@ export default function FacturacionPage() {
                   <span>Subtotal</span>
                   <span>{formatCurrency(Number(selectedInvoice.subtotal))}</span>
                 </div>
+                {Number(selectedInvoice.itbis_total) > 0 && (
+                  <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+                    <span>ITBIS (18%)</span>
+                    <span>{formatCurrency(Number(selectedInvoice.itbis_total))}</span>
+                  </div>
+                )}
                 {Number(selectedInvoice.discount_amount) > 0 && (
                   <div className="flex justify-between text-sm text-[#D4A0A0] mb-1">
                     <span>Descuento</span>
@@ -692,7 +703,18 @@ export default function FacturacionPage() {
                       }}
                       className="w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
                     />
-                    <span className="text-sm font-medium text-[#5C3E35] w-20 text-right">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newItems = [...items];
+                        newItems[i].itbis = !newItems[i].itbis;
+                        setItems(newItems);
+                      }}
+                      className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                    >
+                      <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-6" : "translate-x-0.5"}`} />
+                    </button>
+                    <span className={`text-sm font-medium w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
                       {formatCurrency(item.quantity * item.unit_price)}
                     </span>
                     <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
@@ -750,6 +772,9 @@ export default function FacturacionPage() {
 
           <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-[#9C8A82]">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+            {itbisTotal > 0 && (
+              <div className="flex justify-between"><span className="text-[#9C8A82]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
+            )}
             <div className="flex justify-between"><span className="text-[#9C8A82]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
             <div className="flex justify-between text-base font-bold pt-1 border-t border-[#E8E0D8]"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
@@ -873,6 +898,12 @@ export default function FacturacionPage() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(Number(jpgData.subtotal))}</span>
               </div>
+              {Number(jpgData.itbis_total) > 0 && (
+                <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+                  <span>ITBIS (18%)</span>
+                  <span>{formatCurrency(Number(jpgData.itbis_total))}</span>
+                </div>
+              )}
               {Number(jpgData.discount_amount) > 0 && (
                 <div className="flex justify-between text-sm text-[#D4A0A0] mb-1">
                   <span>Descuento</span>

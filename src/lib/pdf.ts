@@ -8,6 +8,7 @@ interface InvoiceItemData {
   unit_price: number;
   line_total: number;
   margin: number;
+  itbis?: boolean;
 }
 
 interface BankAccountData {
@@ -26,6 +27,7 @@ interface InvoiceData {
   client_email?: string;
   items: InvoiceItemData[];
   subtotal: number;
+  itbis_total?: number;
   discount_amount: number;
   total: number;
   paid_amount: number;
@@ -405,6 +407,14 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
   setTextColor(doc, DARK);
   doc.text(formatCurrency(invoice.subtotal), summaryX + summaryW, y, { align: "right" });
   y += 6;
+
+  if (invoice.itbis_total) {
+    setTextColor(doc, GRAY);
+    doc.text("ITBIS (18%):", summaryX, y);
+    setTextColor(doc, DARK);
+    doc.text(formatCurrency(invoice.itbis_total), summaryX + summaryW, y, { align: "right" });
+    y += 6;
+  }
 
   if (invoice.discount_amount > 0) {
     setTextColor(doc, GRAY);

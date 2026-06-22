@@ -134,6 +134,7 @@ export interface Invoice {
   status: InvoiceStatus;
   subtotal: number;
   discount_amount: number;
+  itbis_total: number;
   total: number;
   amount_paid: number;
   balance_due: number;
@@ -156,6 +157,8 @@ export interface InvoiceItem {
   unit_cost: number;
   pv: number;
   line_total: number;
+  itbis: boolean;
+  itbis_amount: number;
 }
 
 export type PaymentMethod = "CASH" | "TRANSFER" | "CARD";

@@ -24,7 +24,8 @@ export async function getInvoice(id: string) {
 export async function createInvoice(invoice: Partial<Invoice>, items: Partial<InvoiceItem>[]) {
   const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * Number(i.unit_price || 0), 0);
   const discount = Number(invoice.discount_amount || 0);
-  const total = subtotal - discount;
+  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
+  const total = subtotal + itbisTotal - discount;
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
@@ -50,6 +51,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
       status: invoice.status || "PENDING",
       subtotal,
       discount_amount: discount,
+      itbis_total: itbisTotal,
       total,
       amount_paid: 0,
       balance_due: total,
@@ -62,15 +64,21 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     .single();
   if (invError) throw invError;
 
-  const itemsWithInvoiceId = items.map((item) => ({
-    product_id: item.product_id,
-    invoice_id: invData.id,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    unit_cost: 0,
-    line_total: (item.quantity || 0) * Number(item.unit_price || 0),
-    pv: (item.pv || 0) * (item.quantity || 0),
-  }));
+  const itemsWithInvoiceId = items.map((item) => {
+    const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
+    const itbis = item.itbis || false;
+    return {
+      product_id: item.product_id,
+      invoice_id: invData.id,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      unit_cost: 0,
+      line_total: lineTotal,
+      pv: (item.pv || 0) * (item.quantity || 0),
+      itbis,
+      itbis_amount: itbis ? lineTotal * 0.18 : 0,
+    };
+  });
 
   const { error: itemsError } = await supabase.from("invoice_items").insert(itemsWithInvoiceId);
   if (itemsError) throw itemsError;
@@ -81,7 +89,8 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
 export async function updateInvoice(id: string, invoice: Partial<Invoice>, items: Partial<InvoiceItem>[]) {
   const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * Number(i.unit_price || 0), 0);
   const discount = Number(invoice.discount_amount || 0);
-  const total = subtotal - discount;
+  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
+  const total = subtotal + itbisTotal - discount;
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
@@ -93,6 +102,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
       invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
       subtotal,
       discount_amount: discount,
+      itbis_total: itbisTotal,
       total,
       amount_paid: invoice.amount_paid || 0,
       balance_due: total - (invoice.amount_paid || 0),
@@ -108,15 +118,21 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
   if (delError) throw delError;
 
   if (items.length > 0) {
-    const itemsWithInvoiceId = items.map((item) => ({
-      product_id: item.product_id,
-      invoice_id: id,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      unit_cost: 0,
-      line_total: (item.quantity || 0) * Number(item.unit_price || 0),
-      pv: (item.pv || 0) * (item.quantity || 0),
-    }));
+    const itemsWithInvoiceId = items.map((item) => {
+      const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
+      const itbis = item.itbis || false;
+      return {
+        product_id: item.product_id,
+        invoice_id: id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        unit_cost: 0,
+        line_total: lineTotal,
+        pv: (item.pv || 0) * (item.quantity || 0),
+        itbis,
+        itbis_amount: itbis ? lineTotal * 0.18 : 0,
+      };
+    });
     const { error: itemsError } = await supabase.from("invoice_items").insert(itemsWithInvoiceId);
     if (itemsError) throw itemsError;
   }

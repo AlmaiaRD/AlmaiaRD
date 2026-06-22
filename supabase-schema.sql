@@ -707,6 +707,18 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Columnas faltantes en invoices e invoice_items
+DO $$ BEGIN
+  ALTER TABLE invoices ADD COLUMN IF NOT EXISTS itbis_total NUMERIC(12,2) DEFAULT 0;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS itbis BOOLEAN DEFAULT false;
+  ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS itbis_amount NUMERIC(12,2) DEFAULT 0;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$

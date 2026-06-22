@@ -30,7 +30,7 @@ export default function LoginPage() {
       setLoggingIn(false);
       toast.error(signInError);
     } else {
-      router.push("/facturacion");
+      router.push("/dashboard");
     }
   }
 
