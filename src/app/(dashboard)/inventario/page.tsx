@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
@@ -15,6 +15,7 @@ import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye
 import { formatCurrency, formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function getStockStatus(stock: number, minimum: number): { label: string; variant: "success" | "warning" | "danger" } {
   if (stock <= 0) return { label: "Agotado", variant: "danger" };
@@ -23,6 +24,14 @@ function getStockStatus(stock: number, minimum: number): { label: string; varian
 }
 
 export default function InventarioPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>}>
+      <InventarioContent />
+    </Suspense>
+  );
+}
+
+function InventarioContent() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -288,14 +297,16 @@ export default function InventarioPage() {
 
   useEffect(() => { load(); }, []);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("nueva-compra") === "true") {
+    if (searchParams.get("nueva-compra") === "true") {
       resetPurchaseForm();
       setShowPurchase(true);
-      window.history.replaceState({}, "", "/inventario");
+      router.replace("/inventario");
     }
-  }, []);
+  }, [searchParams]);
 
   async function load() {
     try {
