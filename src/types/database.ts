@@ -122,6 +122,7 @@ export interface PurchaseItem {
   quantity: number;
   unit_cost: number;
   line_total: number;
+  itbis: boolean;
 }
 
 export type InvoiceStatus = "PENDING" | "PARTIAL" | "PAID" | "CANCELLED";

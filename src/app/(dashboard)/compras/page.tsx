@@ -20,6 +20,7 @@ interface FormItem {
   name: string;
   quantity: number;
   unit_cost: number;
+  itbis: boolean;
 }
 
 interface PurchaseForm {
@@ -243,6 +244,7 @@ export default function ComprasPage() {
         name: i.products?.name || "—",
         quantity: i.quantity,
         unit_cost: i.unit_cost,
+        itbis: i.itbis ?? true,
       })),
     });
     setShowForm(true);
@@ -260,6 +262,7 @@ export default function ComprasPage() {
         name: product.name,
         quantity: 1,
         unit_cost: product.cost || 0,
+        itbis: true,
       }],
     });
     setShowProducts(false);
@@ -277,7 +280,7 @@ export default function ComprasPage() {
   }
 
   const subtotal = form.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
-  const itbisTotal = Math.round(subtotal * ITBIS_RATE * 100) / 100;
+  const itbisTotal = Math.round(form.items.reduce((s, i) => s + (i.itbis ? i.quantity * i.unit_cost * ITBIS_RATE : 0), 0) * 100) / 100;
   const grandTotal = subtotal + itbisTotal;
 
   async function handleSave() {
@@ -290,7 +293,7 @@ export default function ComprasPage() {
           supplier_name: form.supplier_name,
           purchase_date: form.purchase_date,
           notes: form.notes,
-          items: form.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost })),
+          items: form.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost, itbis: i.itbis })),
         });
         toast.success("Compra actualizada exitosamente");
       } else {
@@ -298,7 +301,7 @@ export default function ComprasPage() {
           supplier_name: form.supplier_name,
           purchase_date: form.purchase_date,
           notes: form.notes,
-          items: form.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost })),
+          items: form.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost, itbis: i.itbis })),
         });
         toast.success("Compra registrada exitosamente");
       }
@@ -533,7 +536,7 @@ export default function ComprasPage() {
               <div className="space-y-2">
                 {form.items.map((item, i) => {
                   const lineSubtotal = item.quantity * item.unit_cost;
-                  const lineItbis = Math.round(lineSubtotal * ITBIS_RATE * 100) / 100;
+                  const lineItbis = item.itbis ? Math.round(lineSubtotal * ITBIS_RATE * 100) / 100 : 0;
                   const lineTotal = lineSubtotal + lineItbis;
                   return (
                     <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">
@@ -548,8 +551,15 @@ export default function ComprasPage() {
                         onChange={(e) => updateItem(i, "unit_cost", Number(e.target.value))}
                         className="w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
                       />
-                      <span className="text-xs text-[#9C8A82] w-20 text-center">{formatCurrency(lineItbis)}</span>
-                      <span className="text-sm font-medium text-[#5C3E35] w-24 text-right">{formatCurrency(lineTotal)}</span>
+                      <button
+                        type="button"
+                        onClick={() => updateItem(i, "itbis", !item.itbis)}
+                        className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                      >
+                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-6" : "translate-x-0.5"}`} />
+                      </button>
+                      <span className={`text-xs w-20 text-center ${item.itbis ? "text-[#9C8A82]" : "text-[#D4A0A0]"}`}>{formatCurrency(lineItbis)}</span>
+                      <span className={`text-sm font-medium w-24 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>{formatCurrency(lineTotal)}</span>
                       <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
                         <X size={16} />
                       </button>

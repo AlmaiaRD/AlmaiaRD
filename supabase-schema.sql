@@ -690,6 +690,7 @@ END $$;
 -- Columna faltante en purchase_items
 DO $$ BEGIN
   ALTER TABLE purchase_items ADD COLUMN IF NOT EXISTS line_itbis NUMERIC(12,2) DEFAULT 0;
+  ALTER TABLE purchase_items ADD COLUMN IF NOT EXISTS itbis BOOLEAN DEFAULT true;
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 

@@ -10,7 +10,7 @@ export async function createPurchase(data: {
   discount_amount?: number;
   payment_method?: string;
   bank_account_id?: string;
-  items: Array<{ product_id: string; quantity: number; unit_cost: number }>;
+  items: Array<{ product_id: string; quantity: number; unit_cost: number; itbis?: boolean }>;
 }) {
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
@@ -28,7 +28,7 @@ export async function createPurchase(data: {
   const purchaseNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
 
   const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
-  const itbis = Math.round(subtotal * ITBIS_RATE * 100) / 100;
+  const itbis = Math.round(data.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0) * 100) / 100;
   const total = subtotal + itbis - (data.discount_amount || 0);
 
   const { data: purchase, error: purError } = await supabase
@@ -51,14 +51,18 @@ export async function createPurchase(data: {
     .single();
   if (purError) throw purError;
 
-  const purchaseItems = data.items.map((item) => ({
-    purchase_id: purchase.id,
-    product_id: item.product_id,
-    quantity: item.quantity,
-    unit_cost: item.unit_cost,
-    line_total: item.quantity * item.unit_cost,
-    line_itbis: Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100,
-  }));
+  const purchaseItems = data.items.map((item) => {
+    const hasItbis = item.itbis !== false;
+    return {
+      purchase_id: purchase.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      unit_cost: item.unit_cost,
+      line_total: item.quantity * item.unit_cost,
+      line_itbis: hasItbis ? Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100 : 0,
+      itbis: hasItbis,
+    };
+  });
 
   const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
   if (itemsError) throw itemsError;
@@ -94,14 +98,14 @@ export async function updatePurchase(
     discount_amount?: number;
     payment_method?: string;
     bank_account_id?: string;
-    items: Array<{ product_id: string; quantity: number; unit_cost: number }>;
+    items: Array<{ product_id: string; quantity: number; unit_cost: number; itbis?: boolean }>;
   }
 ) {
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
 
   const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
-  const itbis = Math.round(subtotal * ITBIS_RATE * 100) / 100;
+  const itbis = Math.round(data.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0) * 100) / 100;
   const total = subtotal + itbis - (data.discount_amount || 0);
 
   const { error: purError } = await supabase
@@ -127,14 +131,18 @@ export async function updatePurchase(
     .eq("purchase_id", id);
   if (delError) throw delError;
 
-  const purchaseItems = data.items.map((item) => ({
-    purchase_id: id,
-    product_id: item.product_id,
-    quantity: item.quantity,
-    unit_cost: item.unit_cost,
-    line_total: item.quantity * item.unit_cost,
-    line_itbis: Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100,
-  }));
+  const purchaseItems = data.items.map((item) => {
+    const hasItbis = item.itbis !== false;
+    return {
+      purchase_id: id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      unit_cost: item.unit_cost,
+      line_total: item.quantity * item.unit_cost,
+      line_itbis: hasItbis ? Math.round(item.quantity * item.unit_cost * ITBIS_RATE * 100) / 100 : 0,
+      itbis: hasItbis,
+    };
+  });
 
   const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
   if (itemsError) throw itemsError;
