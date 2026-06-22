@@ -255,6 +255,8 @@ export default function ComprasPage() {
       toast.error("El producto ya está en la lista");
       return;
     }
+    const isNutrilite = product.subbrands?.name === "Nutrilite";
+    const defaultItbis = isNutrilite ? Boolean(settings?.nutrilite_itbis_enabled) : true;
     setForm({
       ...form,
       items: [...form.items, {
@@ -262,7 +264,7 @@ export default function ComprasPage() {
         name: product.name,
         quantity: 1,
         unit_cost: product.cost || 0,
-        itbis: true,
+        itbis: defaultItbis,
       }],
     });
     setShowProducts(false);

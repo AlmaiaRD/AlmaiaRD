@@ -136,13 +136,15 @@ export default function FacturacionPage() {
   }
 
   function addProduct(product: any) {
+    const isNutrilite = product.subbrands?.name === "Nutrilite";
+    const defaultItbis = isNutrilite ? Boolean(settings?.nutrilite_itbis_enabled) : true;
     setItems([...items, {
       product_id: product.id,
       name: product.name,
       quantity: 1,
       unit_price: margin === 30 ? product.price_30 : product.price_35,
       pv: product.pv,
-      itbis: true,
+      itbis: defaultItbis,
     }]);
   }
 

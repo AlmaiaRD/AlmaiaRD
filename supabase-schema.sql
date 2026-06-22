@@ -720,6 +720,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Columna faltante en settings
+DO $$ BEGIN
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS nutrilite_itbis_enabled BOOLEAN DEFAULT false;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$

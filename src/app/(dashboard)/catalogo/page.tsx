@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
+import { supabase } from "@/lib/supabase";
 import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand } from "@/services/products";
-import type { Product, Category, Subbrand } from "@/types/database";
+import { getSettings } from "@/services/settings";
+import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
 import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain } from "lucide-react";
 import toast from "react-hot-toast";
@@ -26,6 +28,7 @@ export default function CatalogoPage() {
   const [filterCategory, setFilterCategory] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
@@ -39,9 +42,10 @@ export default function CatalogoPage() {
   const [newForFilter, setNewForFilter] = useState<"subbrand" | "category" | null>(null);
 
   const fetchMeta = useCallback(async () => {
-    const [cats, brands] = await Promise.all([getCategories(), getSubbrands()]);
+    const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
     setCategories(cats);
     setSubbrands(brands);
+    if (st) setSettings(st);
   }, []);
 
   const load = useCallback(async (query: string, sb: string, cat: string) => {
@@ -191,6 +195,24 @@ export default function CatalogoPage() {
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar producto por nombre o código..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
         </div>
+        {settings && (
+          <div className="flex items-center gap-2 px-4 h-12 rounded-xl border border-[#E8E0D8] bg-white text-sm">
+            <span className="text-[#9C8A82] whitespace-nowrap">Nutrilite ITBIS</span>
+            <button
+              type="button"
+              onClick={async () => {
+                const newVal = !settings.nutrilite_itbis_enabled;
+                setSettings({ ...settings, nutrilite_itbis_enabled: newVal });
+                const { error } = await supabase.from("settings").update({ nutrilite_itbis_enabled: newVal }).eq("id", settings.id);
+                if (error) { toast.error("Error al guardar"); setSettings(settings); }
+                else toast.success(newVal ? "ITBIS activado para Nutrilite" : "ITBIS desactivado para Nutrilite");
+              }}
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${settings.nutrilite_itbis_enabled ? "bg-[#B8837E]" : "bg-gray-300"}`}
+            >
+              <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.nutrilite_itbis_enabled ? "translate-x-6" : "translate-x-0.5"}`} />
+            </button>
+          </div>
+        )}
         <button onClick={() => setShowFilters(!showFilters)} className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showFilters || filterSubbrand || filterCategory ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]" : "border-[#E8E0D8] text-[#9C8A82] hover:bg-[#FAF6F0]"}`}>
           <Filter size={18} /> Filtros
         </button>

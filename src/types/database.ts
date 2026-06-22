@@ -255,6 +255,7 @@ export interface Settings {
   purchase_prefix: string;
   email: string;
   phone: string;
+  nutrilite_itbis_enabled?: boolean;
   created_at: string;
 }
 
