@@ -38,18 +38,18 @@ export default function Header() {
             Nueva Factura
           </Link>
           <Link
-            href="/compras"
-            className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
-          >
-            <Plus size={18} />
-            Registrar Compra
-          </Link>
-          <Link
             href="/recibos?nuevo=true"
             className="flex items-center gap-2 bg-[#86C7A3] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all duration-200 shadow-sm"
           >
             <Plus size={18} />
             Registrar Pago
+          </Link>
+          <Link
+            href="/compras"
+            className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
+          >
+            <Plus size={18} />
+            Registrar Compra
           </Link>
           <button
             onClick={handleLogout}
