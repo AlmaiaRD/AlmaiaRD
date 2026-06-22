@@ -288,6 +288,15 @@ export default function InventarioPage() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("nueva-compra") === "true") {
+      resetPurchaseForm();
+      setShowPurchase(true);
+      window.history.replaceState({}, "", "/inventario");
+    }
+  }, []);
+
   async function load() {
     try {
       const [inv, pro, sold, sup, ba, st] = await Promise.all([

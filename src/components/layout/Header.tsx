@@ -45,7 +45,7 @@ export default function Header() {
             Registrar Pago
           </Link>
           <Link
-            href="/compras"
+            href="/inventario?nueva-compra=true"
             className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
           >
             <Plus size={18} />
