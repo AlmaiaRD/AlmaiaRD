@@ -252,7 +252,9 @@ export default function CatalogoPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product: any) => {
-            const itbis = product.cost * ITBIS_RATE;
+            const isNutrilite = product.subbrands?.name === "Nutrilite";
+            const applyItbis = !isNutrilite || Boolean(settings?.nutrilite_itbis_enabled);
+            const itbis = applyItbis ? product.cost * ITBIS_RATE : 0;
             const total = product.cost + itbis;
             const p30 = roundToNearest50(total * 1.3);
             const p35 = roundToNearest50(total * 1.35);

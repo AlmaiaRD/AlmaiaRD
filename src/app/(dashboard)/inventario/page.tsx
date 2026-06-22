@@ -134,7 +134,8 @@ export default function InventarioPage() {
 
     (purchase.purchase_items || []).forEach((item: any) => {
       if (y > 250) { doc.addPage(); y = 30; }
-      const lineItbis = item.quantity * item.unit_cost * 0.18;
+      const hasItbis = item.itbis !== false;
+      const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * 0.18) : 0;
       const lineTotal = item.line_total + lineItbis;
       doc.text(item.products?.name || "—", colX[0], y);
       doc.text(String(item.quantity), colX[1], y, { align: "center" });
@@ -196,7 +197,8 @@ export default function InventarioPage() {
           <table style="width:100%;font-size:9px;border-collapse:collapse;">
             <thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>
             <tbody>${(purchase.purchase_items || []).map((item: any) => {
-              const lineItbis = item.quantity * item.unit_cost * 0.18;
+              const hasItbis = item.itbis !== false;
+              const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * 0.18) : 0;
               const lineTotal = item.line_total + lineItbis;
               return `<tr><td style="padding:4px;">${item.products?.name || "—"}</td><td style="text-align:center;padding:4px;">${item.quantity}</td><td style="text-align:center;padding:4px;">${formatCurrency(item.unit_cost)}</td><td style="text-align:center;padding:4px;">${formatCurrency(lineItbis)}</td><td style="text-align:right;padding:4px;font-weight:bold;">${formatCurrency(lineTotal)}</td></tr>`;
             }).join("")}</tbody>
@@ -240,7 +242,7 @@ export default function InventarioPage() {
     discount_amount: 0,
     payment_method: "Efectivo",
     bank_account_id: "",
-    items: [] as { product_id: string; name: string; quantity: number; unit_cost: number }[],
+    items: [] as { product_id: string; name: string; quantity: number; unit_cost: number; itbis?: boolean }[],
   });
 
   const productFiltered = useMemo(() =>
@@ -249,7 +251,8 @@ export default function InventarioPage() {
   );
 
   const purchaseSubtotal = purchaseForm.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
-  const purchaseItbis = Math.round(purchaseSubtotal * 0.18 * 100) / 100;
+  const purchaseLineItbis = purchaseForm.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * 0.18), 0);
+  const purchaseItbis = Math.round(purchaseLineItbis * 100) / 100;
   const purchaseTotal = purchaseSubtotal + purchaseItbis - purchaseForm.discount_amount;
 
   function addProductToPurchase(product: any) {
@@ -257,6 +260,8 @@ export default function InventarioPage() {
       toast.error("El producto ya está en la lista");
       return;
     }
+    const isNutrilite = product.subbrands?.name === "Nutrilite";
+    const defaultItbis = isNutrilite ? Boolean(settings?.nutrilite_itbis_enabled) : true;
     setPurchaseForm({
       ...purchaseForm,
       items: [...purchaseForm.items, {
@@ -264,6 +269,7 @@ export default function InventarioPage() {
         name: product.name,
         quantity: 1,
         unit_cost: product.cost || 0,
+        itbis: defaultItbis,
       }],
     });
     setShowProductSearch(false);
@@ -407,6 +413,7 @@ export default function InventarioPage() {
         name: i.products?.name || "—",
         quantity: i.quantity,
         unit_cost: i.unit_cost,
+        itbis: i.itbis !== false,
       })),
     });
     setShowPurchase(true);
@@ -424,7 +431,7 @@ export default function InventarioPage() {
         discount_amount: purchaseForm.discount_amount,
         payment_method: purchaseForm.payment_method,
         bank_account_id: purchaseForm.bank_account_id || undefined,
-        items: purchaseForm.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost })),
+        items: purchaseForm.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost, itbis: i.itbis })),
       };
       if (editingId) {
         await updatePurchase(editingId, payload);
@@ -947,11 +954,19 @@ export default function InventarioPage() {
               <div className="space-y-2">
                 {purchaseForm.items.map((item, i) => {
                   const lineSubtotal = item.quantity * item.unit_cost;
-                  const lineItbis = Math.round(lineSubtotal * 0.18 * 100) / 100;
+                  const hasItbis = item.itbis !== false;
+                  const lineItbis = Math.round((hasItbis ? 1 : 0) * lineSubtotal * 0.18 * 100) / 100;
                   const lineTotal = lineSubtotal + lineItbis;
                   return (
                     <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">
                       <div className="flex-1 text-sm text-[#5C3E35] truncate">{item.name}</div>
+                      <button
+                        type="button"
+                        onClick={() => updatePurchaseItem(i, "itbis", !hasItbis)}
+                        className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${hasItbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                      >
+                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${hasItbis ? "translate-x-5" : "translate-x-0.5"}`} />
+                      </button>
                       <input
                         type="number" min={1} value={item.quantity}
                         onChange={(e) => updatePurchaseItem(i, "quantity", Math.max(1, Number(e.target.value)))}
@@ -1035,13 +1050,14 @@ export default function InventarioPage() {
               <p className="text-xs font-semibold text-[#9C8A82] uppercase mb-2">Productos</p>
               <div className="space-y-2">
                 {(detailPurchase.purchase_items || []).map((pi: any) => {
-                  const lineItbis = pi.quantity * pi.unit_cost * 0.18;
+                  const hasItbis = pi.itbis !== false;
+                  const lineItbis = hasItbis ? pi.line_itbis || (pi.quantity * pi.unit_cost * 0.18) : 0;
                   const lineTotal = pi.line_total + lineItbis;
                   return (
                     <div key={pi.id} className="bg-white rounded-xl p-3 border border-[#E8E0D8] flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{pi.products?.name || "—"}</p>
-                        <p className="text-xs text-[#9C8A82]">{pi.quantity} x {formatCurrency(pi.unit_cost)} + ITBIS {formatCurrency(lineItbis)}</p>
+                        <p className="text-xs text-[#9C8A82]">{pi.quantity} x {formatCurrency(pi.unit_cost)}{hasItbis ? ` + ITBIS ${formatCurrency(lineItbis)}` : " (sin ITBIS)"}</p>
                       </div>
                       <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(lineTotal)}</p>
                     </div>
