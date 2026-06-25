@@ -738,6 +738,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Columna para productos vendidos sin stock disponible (pendiente de devolución)
+DO $$ BEGIN
+  ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pending_return INTEGER DEFAULT 0;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$

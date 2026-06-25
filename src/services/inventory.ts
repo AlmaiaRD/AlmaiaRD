@@ -41,25 +41,34 @@ export async function getLowStockProducts() {
 export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
   const { data: existing } = await supabase
     .from("inventory")
-    .select("stock, average_cost, inventory_value")
+    .select("stock, average_cost, inventory_value, pending_return")
     .eq("product_id", productId)
     .single();
 
   if (existing) {
-    const newStock = existing.stock + quantity;
+    const pending = existing.pending_return || 0;
+    const fulfillReturn = Math.min(pending, quantity);
+    const newPending = pending - fulfillReturn;
+    const newStock = existing.stock + (quantity - fulfillReturn);
     const newAvgCost = existing.stock > 0
-      ? ((existing.average_cost * existing.stock) + (quantity * unitCost)) / newStock
+      ? ((existing.average_cost * existing.stock) + (quantity * unitCost)) / (existing.stock + quantity)
       : unitCost;
     const newValue = (existing.inventory_value || 0) + lineTotal;
     const { error } = await supabase
       .from("inventory")
-      .update({ stock: newStock, average_cost: Math.round(newAvgCost * 100) / 100, inventory_value: Math.round(newValue * 100) / 100, updated_at: new Date().toISOString() })
+      .update({
+        stock: newStock,
+        pending_return: newPending,
+        average_cost: Math.round(newAvgCost * 100) / 100,
+        inventory_value: Math.round(newValue * 100) / 100,
+        updated_at: new Date().toISOString(),
+      })
       .eq("product_id", productId);
     if (error) throw error;
   } else {
     const { error } = await supabase
       .from("inventory")
-      .insert({ product_id: productId, stock: quantity, average_cost: unitCost, inventory_value: lineTotal });
+      .insert({ product_id: productId, stock: quantity, pending_return: 0, average_cost: unitCost, inventory_value: lineTotal });
     if (error) throw error;
   }
 }
@@ -67,17 +76,30 @@ export async function addInventoryStock(productId: string, quantity: number, uni
 export async function subtractInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
   const { data: existing } = await supabase
     .from("inventory")
-    .select("stock, inventory_value")
+    .select("stock, inventory_value, pending_return")
     .eq("product_id", productId)
     .single();
 
   if (existing) {
+    const pendingReturn = existing.pending_return || 0;
+    const oversold = Math.max(0, quantity - existing.stock);
     const newStock = Math.max(0, existing.stock - quantity);
-    const newValue = Math.max(0, (existing.inventory_value || 0) - lineTotal);
+    const newPending = pendingReturn + oversold;
+    const newValue = Math.max(0, (existing.inventory_value || 0) - lineTotal * (existing.stock > 0 ? Math.min(1, quantity / existing.stock) : 0));
     const { error } = await supabase
       .from("inventory")
-      .update({ stock: newStock, inventory_value: Math.round(newValue * 100) / 100, updated_at: new Date().toISOString() })
+      .update({
+        stock: newStock,
+        pending_return: newPending,
+        inventory_value: Math.round(newValue * 100) / 100,
+        updated_at: new Date().toISOString(),
+      })
       .eq("product_id", productId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from("inventory")
+      .insert({ product_id: productId, stock: 0, pending_return: quantity, inventory_value: 0, minimum_stock: 3 });
     if (error) throw error;
   }
 }

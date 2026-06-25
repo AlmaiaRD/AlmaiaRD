@@ -372,6 +372,7 @@ function InventarioContent() {
 
   const totalValue = inventory.reduce((s, i) => s + Number(i.inventory_value || 0), 0);
   const totalStock = inventory.reduce((s, i) => s + Number(i.stock || 0), 0);
+  const totalPending = inventory.reduce((s, i) => s + Number(i.pending_return || 0), 0);
 
   async function openDetail(item: any) {
     setDetailItem(item);
@@ -515,7 +516,7 @@ function InventarioContent() {
       </div>
 
       {/* KPI mini-cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Total Productos</p>
           <p className="text-xl font-bold text-[#5C3E35]">{inventory.length}</p>
@@ -527,6 +528,10 @@ function InventarioContent() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Stock Total</p>
           <p className="text-xl font-bold text-[#5C3E35]">{totalStock}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+          <p className="text-xs text-[#9C8A82] mb-1">Pend. Devolución</p>
+          <p className="text-xl font-bold text-[#D4A0A0]">{totalPending}</p>
         </div>
       </div>
 
@@ -609,6 +614,7 @@ function InventarioContent() {
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Compradas</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Vendidas</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Stock</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Pend. Dev.</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Mov.</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acc.</th>
@@ -632,6 +638,7 @@ function InventarioContent() {
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{item.stock + sold}</td>
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{sold}</td>
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{item.stock}</td>
+                      <td className="px-4 py-3.5 text-sm text-[#D4A0A0] text-right font-medium">{item.pending_return || 0}</td>
                       <td className="px-4 py-3.5 text-center">
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </td>
@@ -768,10 +775,14 @@ function InventarioContent() {
       <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title={detailItem?.products?.name || "Detalle"} wide>
         {detailItem && (
           <div className="space-y-5">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Stock actual</p>
                 <p className="text-xl font-bold text-[#5C3E35]">{detailItem.stock}</p>
+              </div>
+              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#9C8A82]">Pend. Dev.</p>
+                <p className="text-xl font-bold text-[#D4A0A0]">{detailItem.pending_return || 0}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Vendidas</p>

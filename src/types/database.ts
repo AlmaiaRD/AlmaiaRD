@@ -70,6 +70,7 @@ export interface Inventory {
   minimum_stock: number;
   average_cost: number;
   inventory_value: number;
+  pending_return: number;
   updated_at: string;
 }
 
