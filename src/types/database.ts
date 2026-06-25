@@ -175,6 +175,7 @@ export interface Receipt {
   amount: number;
   amount_in_words: string;
   concept: string;
+  receipt_date?: string;
   created_at: string;
   created_by?: string;
   updated_by?: string;

@@ -732,6 +732,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Columna para fecha editable en recibos
+DO $$ BEGIN
+  ALTER TABLE receipts ADD COLUMN IF NOT EXISTS receipt_date DATE;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$

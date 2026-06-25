@@ -45,12 +45,13 @@ export default function RecibosPage() {
   const jpgRef = useRef<HTMLDivElement>(null);
 
   const [selectedInvoice, setSelectedInvoice] = useState("");
+  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split("T")[0]);
   const [amount, setAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "TRANSFER" | "CARD">("CASH");
   const [bankAccountId, setBankAccountId] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [editForm, setEditForm] = useState({ amount: 0, payment_method: "CASH" as "CASH" | "TRANSFER" | "CARD", bank_account_id: "", concept: "" });
+  const [editForm, setEditForm] = useState({ amount: 0, payment_method: "CASH" as "CASH" | "TRANSFER" | "CARD", bank_account_id: "", concept: "", receipt_date: "" });
 
   const load = useCallback(async () => {
     try {
@@ -76,6 +77,7 @@ export default function RecibosPage() {
 
   function resetForm() {
     setSelectedInvoice("");
+    setReceiptDate(new Date().toISOString().split("T")[0]);
     setAmount(0);
     setPaymentMethod("CASH");
     setBankAccountId("");
@@ -106,7 +108,7 @@ export default function RecibosPage() {
   async function handlePrintPdf(rec: any) {
     await generateReceiptPdf({
       receipt_number: rec.receipt_number,
-      receipt_date: formatDate(rec.created_at),
+      receipt_date: formatDate(rec.receipt_date || rec.created_at),
       client_name: rec.clients?.full_name || rec.invoices?.clients?.full_name || "Cliente",
       invoice_number: rec.invoices?.invoice_number || "—",
       amount: Number(rec.amount),
@@ -164,6 +166,7 @@ export default function RecibosPage() {
       await createReceipt({
         invoice_id: selectedInvoice,
         client_id: clientId,
+        receipt_date: receiptDate,
         amount,
         payment_method: paymentMethod,
         bank_account_id: paymentMethod === "TRANSFER" ? bankAccountId : undefined,
@@ -186,6 +189,7 @@ export default function RecibosPage() {
     try {
       await updateReceiptWithInvoice(selectedReceipt.id, {
         amount: editForm.amount,
+        receipt_date: editForm.receipt_date,
         payment_method: editForm.payment_method,
         bank_account_id: editForm.payment_method === "TRANSFER" ? editForm.bank_account_id : undefined,
         concept: editForm.concept || undefined,
@@ -219,6 +223,7 @@ export default function RecibosPage() {
       payment_method: rec.payment_method,
       bank_account_id: rec.bank_account_id || "",
       concept: rec.concept || "",
+      receipt_date: rec.receipt_date || new Date().toISOString().split("T")[0],
     });
     setShowEditModal(true);
   }
@@ -295,7 +300,7 @@ export default function RecibosPage() {
                 return (
                   <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
                     <td className="px-4 py-3.5 text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{formatDate(rec.created_at)}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{formatDate(rec.receipt_date || rec.created_at)}</td>
                     <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{rec.invoices?.invoice_number || "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{formatCurrency(rec.amount)}</td>
@@ -328,7 +333,7 @@ export default function RecibosPage() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-[#9C8A82]">Fecha</p>
-                <p className="text-sm text-[#5C3E35]">{formatDate(selectedReceipt.created_at)}</p>
+                <p className="text-sm text-[#5C3E35]">{formatDate(selectedReceipt.receipt_date || selectedReceipt.created_at)}</p>
               </div>
             </div>
 
@@ -466,6 +471,15 @@ export default function RecibosPage() {
             </div>
           )}
 
+          <div>
+            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha del recibo</label>
+            <input
+              type="date" value={receiptDate}
+              onChange={(e) => setReceiptDate(e.target.value)}
+              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Monto</label>
@@ -539,7 +553,7 @@ export default function RecibosPage() {
               <div className="text-right">
                 <span className="inline-block bg-[#F0FAF4] text-[#6DB08A] text-xs font-bold px-4 py-2 rounded-full">RECIBO DE PAGO</span>
                 <p className="text-lg font-bold text-[#5C3E35] mt-3">{jpgData.receipt_number}</p>
-                <p className="text-xs text-[#9C8A82] mt-0.5">Fecha: {formatDate(jpgData.created_at)}</p>
+                <p className="text-xs text-[#9C8A82] mt-0.5">Fecha: {formatDate(jpgData.receipt_date || jpgData.created_at)}</p>
               </div>
             </div>
             <div className="border-t border-[#E8E0D8] mb-5" />

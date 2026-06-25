@@ -48,7 +48,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     .insert({
       invoice_number: invoiceNumber,
       client_id: invoice.client_id,
-      invoice_date: new Date().toISOString().split("T")[0],
+      invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
       status: invoice.status || "PENDING",
       subtotal,
       discount_amount: discount,

@@ -40,6 +40,7 @@ export default function FacturacionPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
   const [margin, setMargin] = useState(30);
   const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; pv: number; itbis: boolean }>>([]);
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -132,6 +133,7 @@ export default function FacturacionPage() {
     setDiscountPercent(0);
     setDiscountAmount(0);
     setMargin(30);
+    setInvoiceDate(new Date().toISOString().split("T")[0]);
     setNotes("");
     setBankAccountId("");
     setEditingId(null);
@@ -275,6 +277,7 @@ export default function FacturacionPage() {
       setNotes(full.notes || "");
       setBankAccountId(full.bank_account_id || "");
       setMargin(full.margin || 30);
+      setInvoiceDate(full.invoice_date || new Date().toISOString().split("T")[0]);
       setShowModal(true);
     } catch {
       toast.error("Error al cargar factura");
@@ -288,6 +291,7 @@ export default function FacturacionPage() {
     try {
       const payload = {
         client_id: selectedClient,
+        invoice_date: invoiceDate,
         discount_amount: discountValue,
         status: "PENDING" as const,
         margin,
@@ -650,6 +654,15 @@ export default function FacturacionPage() {
                 <option value={35}>35%</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de factura</label>
+            <input
+              type="date" value={invoiceDate}
+              onChange={(e) => setInvoiceDate(e.target.value)}
+              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+            />
           </div>
 
           <div>
