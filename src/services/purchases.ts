@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getSettings } from "./settings";
+import { addInventoryStock, subtractInventoryStock } from "./inventory";
 
 const ITBIS_RATE = 0.18;
 
@@ -67,6 +68,11 @@ export async function createPurchase(data: {
   const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
   if (itemsError) throw itemsError;
 
+  // Update inventory for each item
+  for (const item of data.items) {
+    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost);
+  }
+
   return purchase;
 }
 
@@ -125,6 +131,17 @@ export async function updatePurchase(
     .eq("id", id);
   if (purError) throw purError;
 
+  // Get old items to subtract from inventory
+  const { data: oldItems } = await supabase
+    .from("purchase_items")
+    .select("*")
+    .eq("purchase_id", id);
+  if (oldItems) {
+    for (const old of oldItems) {
+      await subtractInventoryStock(old.product_id, old.quantity, old.unit_cost, old.line_total);
+    }
+  }
+
   const { error: delError } = await supabase
     .from("purchase_items")
     .delete()
@@ -146,9 +163,25 @@ export async function updatePurchase(
 
   const { error: itemsError } = await supabase.from("purchase_items").insert(purchaseItems);
   if (itemsError) throw itemsError;
+
+  // Add new stock to inventory
+  for (const item of data.items) {
+    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost);
+  }
 }
 
 export async function deletePurchase(id: string) {
+  // Subtract inventory before deleting
+  const { data: oldItems } = await supabase
+    .from("purchase_items")
+    .select("*")
+    .eq("purchase_id", id);
+  if (oldItems) {
+    for (const old of oldItems) {
+      await subtractInventoryStock(old.product_id, old.quantity, old.unit_cost, old.line_total);
+    }
+  }
+
   const { error: itemsError } = await supabase
     .from("purchase_items")
     .delete()

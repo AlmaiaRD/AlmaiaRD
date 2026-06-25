@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem } from "@/types/database";
 import { getSettings } from "./settings";
+import { subtractInventoryStock, addInventoryStock } from "./inventory";
 
 export async function getInvoices() {
   const { data, error } = await supabase
@@ -84,6 +85,14 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   const { error: itemsError } = await supabase.from("invoice_items").insert(itemsWithInvoiceId);
   if (itemsError) throw itemsError;
 
+  // Subtract inventory for each item sold
+  for (const item of items) {
+    if (item.product_id) {
+      const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
+      await subtractInventoryStock(item.product_id, item.quantity || 0, 0, lineTotal);
+    }
+  }
+
   return invData;
 }
 
@@ -115,6 +124,19 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     .eq("id", id);
   if (invError) throw invError;
 
+  // Restore inventory from old items
+  const { data: oldItems } = await supabase
+    .from("invoice_items")
+    .select("*")
+    .eq("invoice_id", id);
+  if (oldItems) {
+    for (const old of oldItems) {
+      if (old.product_id) {
+        await addInventoryStock(old.product_id, old.quantity, 0, old.line_total);
+      }
+    }
+  }
+
   const { error: delError } = await supabase.from("invoice_items").delete().eq("invoice_id", id);
   if (delError) throw delError;
 
@@ -137,6 +159,14 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     });
     const { error: itemsError } = await supabase.from("invoice_items").insert(itemsWithInvoiceId);
     if (itemsError) throw itemsError;
+
+    // Subtract inventory for new items
+    for (const item of items) {
+      if (item.product_id) {
+        const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
+        await subtractInventoryStock(item.product_id, item.quantity || 0, 0, lineTotal);
+      }
+    }
   }
 }
 

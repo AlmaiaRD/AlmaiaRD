@@ -971,7 +971,7 @@ function InventarioContent() {
             {purchaseForm.items.length === 0 ? (
               <p className="text-sm text-[#9C8A82] py-3">No hay productos agregados</p>
             ) : (
-              <div className="space-y-2">
+              <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {purchaseForm.items.map((item, i) => {
                   const lineSubtotal = item.quantity * item.unit_cost;
                   const hasItbis = item.itbis !== false;

@@ -770,7 +770,7 @@ export default function FacturacionPage() {
             {items.length === 0 ? (
               <p className="text-sm text-[#9C8A82] py-3">No hay productos agregados</p>
             ) : (
-              <div className="space-y-2">
+              <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {items.map((item, i) => (
                   <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">
                     <div className="flex-1 text-sm text-[#5C3E35]">{item.name}</div>

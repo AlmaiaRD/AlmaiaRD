@@ -38,6 +38,50 @@ export async function getLowStockProducts() {
   return data;
 }
 
+export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
+  const { data: existing } = await supabase
+    .from("inventory")
+    .select("stock, average_cost, inventory_value")
+    .eq("product_id", productId)
+    .single();
+
+  if (existing) {
+    const newStock = existing.stock + quantity;
+    const newAvgCost = existing.stock > 0
+      ? ((existing.average_cost * existing.stock) + (quantity * unitCost)) / newStock
+      : unitCost;
+    const newValue = (existing.inventory_value || 0) + lineTotal;
+    const { error } = await supabase
+      .from("inventory")
+      .update({ stock: newStock, average_cost: Math.round(newAvgCost * 100) / 100, inventory_value: Math.round(newValue * 100) / 100, updated_at: new Date().toISOString() })
+      .eq("product_id", productId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from("inventory")
+      .insert({ product_id: productId, stock: quantity, average_cost: unitCost, inventory_value: lineTotal });
+    if (error) throw error;
+  }
+}
+
+export async function subtractInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
+  const { data: existing } = await supabase
+    .from("inventory")
+    .select("stock, inventory_value")
+    .eq("product_id", productId)
+    .single();
+
+  if (existing) {
+    const newStock = Math.max(0, existing.stock - quantity);
+    const newValue = Math.max(0, (existing.inventory_value || 0) - lineTotal);
+    const { error } = await supabase
+      .from("inventory")
+      .update({ stock: newStock, inventory_value: Math.round(newValue * 100) / 100, updated_at: new Date().toISOString() })
+      .eq("product_id", productId);
+    if (error) throw error;
+  }
+}
+
 export async function checkCanDeleteProduct(productId: string) {
   const { data: inventory, error: invError } = await supabase
     .from("inventory")
