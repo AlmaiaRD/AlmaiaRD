@@ -104,6 +104,29 @@ export async function subtractInventoryStock(productId: string, quantity: number
   }
 }
 
+export async function restoreInventoryStock(productId: string, quantity: number) {
+  const { data: existing } = await supabase
+    .from("inventory")
+    .select("stock, pending_return")
+    .eq("product_id", productId)
+    .single();
+
+  if (existing) {
+    const pending = existing.pending_return || 0;
+    const fulfillReturn = Math.min(pending, quantity);
+    const newPending = pending - fulfillReturn;
+    const newStock = existing.stock + (quantity - fulfillReturn);
+    await supabase
+      .from("inventory")
+      .update({ stock: newStock, pending_return: newPending, updated_at: new Date().toISOString() })
+      .eq("product_id", productId);
+  } else {
+    await supabase
+      .from("inventory")
+      .insert({ product_id: productId, stock: quantity, pending_return: 0, minimum_stock: 3, inventory_value: 0 });
+  }
+}
+
 export async function checkCanDeleteProduct(productId: string) {
   const { data: inventory, error: invError } = await supabase
     .from("inventory")

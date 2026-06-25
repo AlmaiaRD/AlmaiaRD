@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem } from "@/types/database";
 import { getSettings } from "./settings";
-import { subtractInventoryStock, addInventoryStock } from "./inventory";
+import { subtractInventoryStock, addInventoryStock, restoreInventoryStock } from "./inventory";
 
 export async function getInvoices() {
   const { data, error } = await supabase
@@ -171,6 +171,26 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
 }
 
 export async function updateInvoiceStatus(id: string, status: string) {
+  if (status === "CANCELLED") {
+    const { data: oldInvoice } = await supabase
+      .from("invoices")
+      .select("status")
+      .eq("id", id)
+      .single();
+    if (oldInvoice && oldInvoice.status !== "CANCELLED") {
+      const { data: items } = await supabase
+        .from("invoice_items")
+        .select("product_id, quantity, line_total")
+        .eq("invoice_id", id);
+      if (items) {
+        for (const item of items) {
+          if (item.product_id) {
+            await restoreInventoryStock(item.product_id, item.quantity);
+          }
+        }
+      }
+    }
+  }
   const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
   if (error) throw error;
 }

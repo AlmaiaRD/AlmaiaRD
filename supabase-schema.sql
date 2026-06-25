@@ -744,6 +744,17 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Eliminar triggers que manejan inventario automáticamente
+-- Ahora el inventario se gestiona desde TypeScript para mayor control
+DROP TRIGGER IF EXISTS trg_sale_inventory ON invoice_items;
+DROP FUNCTION IF EXISTS fn_update_inventory_on_sale();
+
+DROP TRIGGER IF EXISTS trg_purchase_inventory ON purchase_items;
+DROP FUNCTION IF EXISTS fn_update_inventory_on_purchase();
+
+DROP TRIGGER IF EXISTS trg_cancellation_restore ON invoices;
+DROP FUNCTION IF EXISTS fn_restore_inventory_on_cancellation();
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$
