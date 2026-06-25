@@ -185,14 +185,13 @@ export default function FacturacionPage() {
         client_phone: full.clients?.phone,
         client_email: full.clients?.email,
         client_id_number: full.clients?.id_number,
-        items: full.invoice_items?.map((item: any) => ({
-          subbrand: item.products?.subbrands?.name || "—",
-          name: item.products?.name || item.custom_name || "Producto",
-          quantity: item.quantity,
-          unit_price: Number(item.unit_price),
-          line_total: Number(item.line_total),
-          margin: marginVal,
-        })) || [],
+          items: full.invoice_items?.map((item: any) => ({
+            subbrand: item.products?.subbrands?.name || "—",
+            name: item.products?.name || item.custom_name || "Producto",
+            quantity: item.quantity,
+            unit_price: Number(item.unit_price),
+            line_total: Number(item.line_total),
+          })) || [],
         subtotal: Number(full.subtotal),
         itbis_total: Number(full.itbis_total || 0),
         discount_amount: Number(full.discount_amount),
@@ -509,20 +508,17 @@ export default function FacturacionPage() {
                     <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Submarca</th>
                     <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripción / Producto</th>
                     <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Margen</th>
                     <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
                     <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(selectedInvoice.invoice_items || []).map((item: any, i: number) => {
-                    const marginVal = selectedInvoice.margin || 30;
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
                         <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
                         <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{marginVal}%</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
                         <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
                       </tr>
@@ -953,22 +949,20 @@ export default function FacturacionPage() {
                   <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Submarca</th>
                   <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripción / Producto</th>
                   <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Margen</th>
                   <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
                   <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {(jpgData.invoice_items || []).map((item: any, i: number) => (
-                  <tr key={i} className="border-b border-[#F0EBE3]">
-                    <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                    <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
-                    <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
-                    <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{jpgData.margin || 30}%</td>
-                    <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
-                    <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
-                  </tr>
-                ))}
+                  {(jpgData.invoice_items || []).map((item: any, i: number) => (
+                    <tr key={i} className="border-b border-[#F0EBE3]">
+                      <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
+                      <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
+                      <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
+                      <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
+                      <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
             {jpgData.bank_accounts && (

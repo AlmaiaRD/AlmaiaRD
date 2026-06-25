@@ -7,7 +7,6 @@ interface InvoiceItemData {
   quantity: number;
   unit_price: number;
   line_total: number;
-  margin: number;
   itbis?: boolean;
 }
 
@@ -281,11 +280,10 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 
   const colDefs = [
     { label: "Submarca", x: M, w: 28, align: "left" as const },
-    { label: "Descripción / Producto", x: M + 28, w: 55, align: "left" as const },
-    { label: "Cant.", x: M + 83, w: 12, align: "right" as const },
-    { label: "Margen", x: M + 95, w: 16, align: "right" as const },
-    { label: "Precio Unit.", x: M + 111, w: 24, align: "right" as const },
-    { label: "Total", x: M + 135, w: 28, align: "right" as const },
+    { label: "Descripción / Producto", x: M + 28, w: 65, align: "left" as const },
+    { label: "Cant.", x: M + 93, w: 12, align: "right" as const },
+    { label: "Precio Unit.", x: M + 105, w: 24, align: "right" as const },
+    { label: "Total", x: M + 129, w: 28, align: "right" as const },
   ];
 
   // Table header background
@@ -331,7 +329,6 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
       item.subbrand || "—",
       item.name,
       String(item.quantity),
-      `${item.margin}%`,
       formatCurrency(item.unit_price),
       formatCurrency(item.line_total),
     ];
