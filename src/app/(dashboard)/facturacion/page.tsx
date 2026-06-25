@@ -54,7 +54,7 @@ export default function FacturacionPage() {
   const [showNewClient, setShowNewClient] = useState(false);
   const [newClientForm, setNewClientForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
   const [showManualProduct, setShowManualProduct] = useState(false);
-  const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, itbis: true });
+  const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, itbis: false });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
@@ -140,15 +140,13 @@ export default function FacturacionPage() {
   }
 
   function addProduct(product: any) {
-    const isNutrilite = product.subbrands?.name === "Nutrilite";
-    const defaultItbis = isNutrilite ? Boolean(settings?.nutrilite_itbis_enabled) : true;
     setItems([...items, {
       product_id: product.id,
       name: product.name,
       quantity: 1,
       unit_price: margin === 30 ? product.price_30 : product.price_35,
       pv: product.pv,
-      itbis: defaultItbis,
+      itbis: false,
     }]);
   }
 
@@ -163,7 +161,7 @@ export default function FacturacionPage() {
       pv: 0,
       itbis: manualProduct.itbis,
     }]);
-    setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: true });
+    setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: false });
     setShowManualProduct(false);
   }
 
@@ -270,7 +268,7 @@ export default function FacturacionPage() {
         quantity: item.quantity,
         unit_price: Number(item.unit_price),
         pv: Number(item.pv || 0),
-        itbis: item.itbis ?? true,
+        itbis: item.itbis ?? false,
       })) || []);
       setDiscountPercent(0);
       setDiscountAmount(Number(full.discount_amount));
@@ -761,7 +759,7 @@ export default function FacturacionPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: true }); }}
+                    onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: false }); }}
                     className="flex-1 h-9 border border-[#E8E0D8] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-white transition-all"
                   >
                     Cancelar
