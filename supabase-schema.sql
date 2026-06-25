@@ -755,6 +755,30 @@ DROP FUNCTION IF EXISTS fn_update_inventory_on_purchase();
 DROP TRIGGER IF EXISTS trg_cancellation_restore ON invoices;
 DROP FUNCTION IF EXISTS fn_restore_inventory_on_cancellation();
 
+-- Recalcular inventario desde cero basado en compras y ventas reales
+UPDATE inventory SET stock = 0, pending_return = 0, inventory_value = 0;
+
+WITH purchased AS (
+  SELECT pi.product_id, SUM(pi.quantity)::int AS qty, SUM(pi.line_total) AS val
+  FROM purchase_items pi
+  JOIN purchases p ON p.id = pi.purchase_id AND p.status != 'CANCELLED'
+  GROUP BY pi.product_id
+),
+sold AS (
+  SELECT ii.product_id, SUM(ii.quantity)::int AS qty
+  FROM invoice_items ii
+  JOIN invoices inv ON inv.id = ii.invoice_id AND inv.status != 'CANCELLED'
+  WHERE ii.product_id IS NOT NULL
+  GROUP BY ii.product_id
+)
+UPDATE inventory i SET
+  stock = CASE WHEN COALESCE(p.qty, 0) > 0 THEN GREATEST(0, COALESCE(p.qty, 0) - COALESCE(s.qty, 0)) ELSE 0 END,
+  pending_return = CASE WHEN COALESCE(p.qty, 0) = 0 THEN COALESCE(s.qty, 0) ELSE 0 END,
+  inventory_value = COALESCE(p.val, 0)
+FROM purchased p
+FULL JOIN sold s ON p.product_id = s.product_id
+WHERE i.product_id = COALESCE(p.product_id, s.product_id);
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$
