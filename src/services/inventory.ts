@@ -73,7 +73,7 @@ export async function addInventoryStock(productId: string, quantity: number, uni
   }
 }
 
-export async function subtractInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
+export async function subtractInventoryStock(productId: string, quantity: number) {
   const { data: existing } = await supabase
     .from("inventory")
     .select("stock, inventory_value, pending_return")
@@ -81,17 +81,11 @@ export async function subtractInventoryStock(productId: string, quantity: number
     .single();
 
   if (existing) {
-    const pendingReturn = existing.pending_return || 0;
-    const oversold = Math.max(0, quantity - existing.stock);
     const newStock = Math.max(0, existing.stock - quantity);
-    const newPending = pendingReturn + oversold;
-    const newValue = Math.max(0, (existing.inventory_value || 0) - lineTotal * (existing.stock > 0 ? Math.min(1, quantity / existing.stock) : 0));
     const { error } = await supabase
       .from("inventory")
       .update({
         stock: newStock,
-        pending_return: newPending,
-        inventory_value: Math.round(newValue * 100) / 100,
         updated_at: new Date().toISOString(),
       })
       .eq("product_id", productId);

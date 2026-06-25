@@ -138,7 +138,7 @@ export async function updatePurchase(
     .eq("purchase_id", id);
   if (oldItems) {
     for (const old of oldItems) {
-      await subtractInventoryStock(old.product_id, old.quantity, old.unit_cost, old.line_total);
+      await subtractInventoryStock(old.product_id, old.quantity);
     }
   }
 
@@ -178,7 +178,7 @@ export async function deletePurchase(id: string) {
     .eq("purchase_id", id);
   if (oldItems) {
     for (const old of oldItems) {
-      await subtractInventoryStock(old.product_id, old.quantity, old.unit_cost, old.line_total);
+      await subtractInventoryStock(old.product_id, old.quantity);
     }
   }
 

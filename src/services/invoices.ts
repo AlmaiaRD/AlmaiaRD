@@ -88,8 +88,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   // Subtract inventory for each item sold
   for (const item of items) {
     if (item.product_id) {
-      const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
-      await subtractInventoryStock(item.product_id, item.quantity || 0, 0, lineTotal);
+      await subtractInventoryStock(item.product_id, item.quantity || 0);
     }
   }
 
@@ -163,8 +162,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     // Subtract inventory for new items
     for (const item of items) {
       if (item.product_id) {
-        const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
-        await subtractInventoryStock(item.product_id, item.quantity || 0, 0, lineTotal);
+        await subtractInventoryStock(item.product_id, item.quantity || 0);
       }
     }
   }
