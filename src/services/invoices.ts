@@ -68,7 +68,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
     const itbis = item.itbis || false;
     return {
-      product_id: item.product_id,
+      product_id: item.product_id || null,
       invoice_id: invData.id,
       quantity: item.quantity,
       unit_price: item.unit_price,
@@ -77,6 +77,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
       pv: (item.pv || 0) * (item.quantity || 0),
       itbis,
       itbis_amount: itbis ? lineTotal * 0.18 : 0,
+      custom_name: item.custom_name || null,
     };
   });
 
@@ -122,7 +123,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
       const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
       const itbis = item.itbis || false;
       return {
-        product_id: item.product_id,
+        product_id: item.product_id || null,
         invoice_id: id,
         quantity: item.quantity,
         unit_price: item.unit_price,
@@ -131,6 +132,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
         pv: (item.pv || 0) * (item.quantity || 0),
         itbis,
         itbis_amount: itbis ? lineTotal * 0.18 : 0,
+        custom_name: item.custom_name || null,
       };
     });
     const { error: itemsError } = await supabase.from("invoice_items").insert(itemsWithInvoiceId);

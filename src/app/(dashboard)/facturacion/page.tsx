@@ -52,6 +52,8 @@ export default function FacturacionPage() {
   const [jpgData, setJpgData] = useState<any>(null);
   const [showNewClient, setShowNewClient] = useState(false);
   const [newClientForm, setNewClientForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
+  const [showManualProduct, setShowManualProduct] = useState(false);
+  const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, itbis: true });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
@@ -148,6 +150,21 @@ export default function FacturacionPage() {
     }]);
   }
 
+  function addManualProduct() {
+    if (!manualProduct.name.trim()) { toast.error("El nombre del producto es requerido"); return; }
+    if (manualProduct.unit_price <= 0) { toast.error("El precio debe ser mayor a 0"); return; }
+    setItems([...items, {
+      product_id: "",
+      name: manualProduct.name,
+      quantity: manualProduct.quantity,
+      unit_price: manualProduct.unit_price,
+      pv: 0,
+      itbis: manualProduct.itbis,
+    }]);
+    setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: true });
+    setShowManualProduct(false);
+  }
+
   function removeItem(index: number) {
     setItems(items.filter((_, i) => i !== index));
   }
@@ -170,7 +187,7 @@ export default function FacturacionPage() {
         client_id_number: full.clients?.id_number,
         items: full.invoice_items?.map((item: any) => ({
           subbrand: item.products?.subbrands?.name || "—",
-          name: item.products?.name || "Producto",
+          name: item.products?.name || item.custom_name || "Producto",
           quantity: item.quantity,
           unit_price: Number(item.unit_price),
           line_total: Number(item.line_total),
@@ -279,13 +296,14 @@ export default function FacturacionPage() {
         bank_account_id: bankAccountId || undefined,
       };
       const invoiceItems = items.map((i) => ({
-        product_id: i.product_id,
+        product_id: i.product_id || undefined,
         quantity: i.quantity,
         unit_price: i.unit_price,
         line_total: i.quantity * i.unit_price,
         pv: i.pv * i.quantity,
         unit_cost: 0,
         itbis: i.itbis,
+        custom_name: i.product_id ? undefined : i.name,
       }));
 
       if (editingId) {
@@ -502,7 +520,7 @@ export default function FacturacionPage() {
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
                         <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                        <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || "Producto"}</td>
+                        <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{marginVal}%</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
@@ -641,12 +659,20 @@ export default function FacturacionPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm font-medium text-[#5C3E35]">Productos</label>
-              <button
-                onClick={() => setShowProducts(!showProducts)}
-                className="text-xs text-[#B8837E] hover:underline"
-              >
-                {showProducts ? "Ocultar catálogo" : "Agregar producto"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }}
+                  className="text-xs text-[#B8837E] hover:underline"
+                >
+                  {showProducts ? "Ocultar catálogo" : "Catálogo"}
+                </button>
+                <button
+                  onClick={() => { setShowManualProduct(!showManualProduct); setShowProducts(false); }}
+                  className="text-xs text-[#B8837E] hover:underline"
+                >
+                  {showManualProduct ? "Cancelar" : "Manual"}
+                </button>
+              </div>
             </div>
 
             {showProducts && (
@@ -676,6 +702,67 @@ export default function FacturacionPage() {
                       <span className="text-[#9C8A82]">{formatCurrency(margin === 30 ? p.price_30 : p.price_35)}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {showManualProduct && (
+              <div className="mb-4 bg-[#FAF6F0] rounded-xl p-4 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#5C3E35] mb-1">Nombre del producto / costo</label>
+                  <input
+                    type="text"
+                    value={manualProduct.name}
+                    onChange={(e) => setManualProduct({ ...manualProduct, name: e.target.value })}
+                    placeholder="Ej: Envío, flete, cargo adicional..."
+                    className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Cantidad</label>
+                    <input
+                      type="number" min={1} value={manualProduct.quantity}
+                      onChange={(e) => setManualProduct({ ...manualProduct, quantity: Number(e.target.value) })}
+                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Precio Unit.</label>
+                    <input
+                      type="number" step="0.01" min={0} value={manualProduct.unit_price}
+                      onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
+                      placeholder="0.00"
+                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                    />
+                  </div>
+                  <div className="flex items-end pb-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <span className="text-xs font-medium text-[#5C3E35]">ITBIS</span>
+                      <button
+                        type="button"
+                        onClick={() => setManualProduct({ ...manualProduct, itbis: !manualProduct.itbis })}
+                        className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                      >
+                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${manualProduct.itbis ? "translate-x-5" : "translate-x-0.5"}`} />
+                      </button>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: true }); }}
+                    className="flex-1 h-9 border border-[#E8E0D8] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-white transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={addManualProduct}
+                    className="flex-1 h-9 bg-[#B8837E] text-white rounded-lg text-xs font-medium hover:bg-[#9A6B66] transition-all"
+                  >
+                    Agregar a factura
+                  </button>
                 </div>
               </div>
             )}
@@ -875,7 +962,7 @@ export default function FacturacionPage() {
                 {(jpgData.invoice_items || []).map((item: any, i: number) => (
                   <tr key={i} className="border-b border-[#F0EBE3]">
                     <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                    <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || "Producto"}</td>
+                    <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
                     <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
                     <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{jpgData.margin || 30}%</td>
                     <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>

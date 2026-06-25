@@ -726,6 +726,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
+-- Columna para productos manuales en invoice_items (sin product_id)
+DO $$ BEGIN
+  ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS custom_name TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- RPC: use_credit_balance
 CREATE OR REPLACE FUNCTION use_credit_balance(p_credit_id UUID, p_amount NUMERIC)
 RETURNS VOID AS $$

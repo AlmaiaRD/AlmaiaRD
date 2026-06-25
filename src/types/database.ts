@@ -152,7 +152,8 @@ export interface Invoice {
 export interface InvoiceItem {
   id: string;
   invoice_id: string;
-  product_id: string;
+  product_id?: string;
+  custom_name?: string;
   quantity: number;
   unit_price: number;
   unit_cost: number;
