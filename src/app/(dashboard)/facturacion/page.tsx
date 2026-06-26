@@ -868,6 +868,18 @@ export default function FacturacionPage() {
                 <option key={b.id} value={b.id}>{b.bank_name} — {b.account_type} — No. {b.account_number}</option>
               ))}
             </select>
+            {(() => {
+              const selected = bankAccounts.find(b => b.id === bankAccountId);
+              if (!selected) return null;
+              return (
+                <div className="mt-2 bg-[#FAF6F0] rounded-lg p-3 text-sm space-y-1">
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selected.holder_name}</p>
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selected.bank_name}</p>
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo:</span> {selected.account_type}</p>
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. Cuenta:</span> {selected.account_number}</p>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-1 text-sm">
