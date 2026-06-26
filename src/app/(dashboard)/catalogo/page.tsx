@@ -339,12 +339,11 @@ export default function CatalogoPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-[#E8E0D8] mt-1.5">
-                    <span className="text-[10px] text-[#9C8A82]">ITBIS</span>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#E8E0D8] mt-2">
+                    <span className="text-xs font-medium text-[#5C3E35]">ITBIS</span>
                     <button onClick={() => handleToggleItbis(product)} disabled={savingItbis === product.id}
-                      className={`relative w-9 h-4.5 rounded-full transition-colors ${product.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}
-                      style={{ height: "18px" }}>
-                      <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform ${product.apply_itbis !== false ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                      className={`relative w-12 h-6 rounded-full transition-colors ${product.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}>
+                      <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${product.apply_itbis !== false ? "translate-x-6" : "translate-x-0"}`} />
                     </button>
                   </div>
                 </div>
