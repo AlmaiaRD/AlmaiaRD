@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getReceipts, createReceipt, deleteReceipt, updateReceiptWithInvoice } from "@/services/receipts";
+import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice } from "@/services/receipts";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
-import { generateReceiptPdf } from "@/lib/pdf";
 import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2 } from "lucide-react";
 import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
@@ -42,8 +41,7 @@ export default function RecibosPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [jpgData, setJpgData] = useState<any>(null);
-  const jpgRef = useRef<HTMLDivElement>(null);
+  const [openPrintId, setOpenPrintId] = useState<string | null>(null);
 
   const [selectedInvoice, setSelectedInvoice] = useState("");
   const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split("T")[0]);
@@ -106,45 +104,114 @@ export default function RecibosPage() {
     );
   });
 
+  async function buildReceiptPreviewEl(data: any, settings: any) {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
+    const ba = data.bank_accounts;
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+          </div>
+          <div>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${settings?.business_name || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:12px;color:#9C8A82;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="display:inline-block;background:#F0FAF4;color:#6DB08A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${data.receipt_number}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${formatDate(data.receipt_date || data.created_at)}</p>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">INFORMACI\u00d3N DEL PAGO</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${data.clients?.full_name || data.invoices?.clients?.full_name || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${data.invoices?.invoice_number || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${methodLabel[data.payment_method] || data.payment_method}</p>
+        </div>
+      </div>
+      ${ba ? `
+        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${ba.holder_name}</p>
+            ${ba.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${ba.id_number}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${ba.bank_name}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${ba.account_type}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${ba.account_number}</p>
+            ${ba.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${ba.email}</p>` : ""}
+          </div>
+        </div>
+      ` : ""}
+      <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
+          <span style="font-size:14px;color:#9C8A82;">Monto pagado</span>
+          <span style="font-size:24px;font-weight:700;color:#86C7A3;">${formatCurrency(Number(data.amount))}</span>
+        </div>
+        ${data.amount_in_words ? `<p style="font-size:11px;color:#9C8A82;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${data.amount_in_words}</p>` : ""}
+      </div>
+      ${data.concept ? `
+        <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:16px;">
+          <p style="font-size:11px;color:#9C8A82;margin:0 0 4px;">Notas:</p>
+          <p style="font-size:13px;color:#5C3E35;margin:0;">${data.concept}</p>
+        </div>
+      ` : ""}
+      <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu pago!</p>
+        <div style="text-align:right;">
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${settings?.business_name || "ALMAIA"}</p>`}
+          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+        </div>
+      </div>
+    `;
+    return el;
+  }
+
+  async function captureReceipt(rec: any) {
+    const full = await getReceipt(rec.id);
+    const el = await buildReceiptPreviewEl(full, settings);
+    document.body.appendChild(el);
+    await new Promise(r => setTimeout(r, 500));
+    const domtoimage = await import("dom-to-image-more");
+    const canvas = await domtoimage.toCanvas(el, { scale: 2, width: 600 });
+    document.body.removeChild(el);
+    return { canvas, data: full, receipt_number: rec.receipt_number };
+  }
+
   async function handlePrintPdf(rec: any) {
-    await generateReceiptPdf({
-      receipt_number: rec.receipt_number,
-      receipt_date: formatDate(rec.receipt_date || rec.created_at),
-      client_name: rec.clients?.full_name || rec.invoices?.clients?.full_name || "Cliente",
-      invoice_number: rec.invoices?.invoice_number || "—",
-      amount: Number(rec.amount),
-      amount_in_words: rec.amount_in_words || numberToWords(Number(rec.amount)),
-      payment_method: methodLabel[rec.payment_method] || rec.payment_method,
-      logo_url: settings?.logo_url,
-      signature_url: settings?.signature_url,
-      business_name: settings?.business_name,
-      email: settings?.email,
-      phone: settings?.phone,
-    });
+    try {
+      const { canvas, receipt_number } = await captureReceipt(rec);
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const jspdfModule = await import("jspdf");
+      const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`recibo-${receipt_number}.pdf`);
+      toast.success("PDF descargado");
+    } catch (e) {
+      console.error("[handlePrintPdf]", e);
+      toast.error("Error al generar PDF");
+    }
+    setOpenPrintId(null);
   }
 
   async function handlePrintJpg(rec: any) {
     try {
-      setJpgData(rec);
-      await new Promise(r => setTimeout(r, 200));
-      let el = jpgRef.current;
-      for (let i = 0; i < 20 && (!el || el.offsetWidth === 0); i++) {
-        await new Promise(r => setTimeout(r, 200));
-        el = jpgRef.current;
-      }
-      if (!el || el.offsetWidth === 0) { toast.error("Vista previa no disponible"); setJpgData(null); return; }
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const { canvas, receipt_number } = await captureReceipt(rec);
       const link = document.createElement("a");
-      link.download = `recibo-${rec.receipt_number}.jpg`;
+      link.download = `recibo-${receipt_number}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
-      setJpgData(null);
       toast.success("JPG descargado");
-    } catch {
-      setJpgData(null);
+    } catch (e) {
+      console.error("[handlePrintJpg]", e);
       toast.error("Error al generar JPG");
     }
+    setOpenPrintId(null);
   }
 
   async function handleSave() {
@@ -343,17 +410,25 @@ export default function RecibosPage() {
                 <span className="text-[#6DB08A]">Método de pago</span>
                 <span className="text-[#5C3E35]">{methodLabel[selectedReceipt.payment_method] || selectedReceipt.payment_method}</span>
               </div>
-              {selectedReceipt.bank_accounts && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#6DB08A]">Cuenta bancaria</span>
-                  <span className="text-[#5C3E35]">{selectedReceipt.bank_accounts.bank_name} — {selectedReceipt.bank_accounts.account_number}</span>
-                </div>
-              )}
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-[#86C7A3]/30">
                 <span>Monto pagado</span>
                 <span className="text-[#86C7A3]">{formatCurrency(selectedReceipt.amount)}</span>
               </div>
             </div>
+
+            {selectedReceipt.bank_accounts && (
+              <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
+                <p className="text-xs font-bold text-[#6DB08A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedReceipt.bank_accounts.holder_name}</p>
+                  {selectedReceipt.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedReceipt.bank_accounts.id_number}</p>}
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedReceipt.bank_accounts.bank_name}</p>
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedReceipt.bank_accounts.account_type}</p>
+                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedReceipt.bank_accounts.account_number}</p>
+                  {selectedReceipt.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedReceipt.bank_accounts.email}</p>}
+                </div>
+              </div>
+            )}
 
             {selectedReceipt.amount_in_words && (
               <p className="text-sm text-[#9C8A82] italic">Son: {selectedReceipt.amount_in_words}</p>
@@ -534,65 +609,7 @@ export default function RecibosPage() {
         </div>
       </Modal>
 
-      {/* Hidden preview for JPG capture */}
-      <div ref={jpgRef} style={{ display: jpgData ? "block" : "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "600px" }}>
-        {jpgData && (
-          <div id="receipt-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-2">
-                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
-                  <Flower2 size={28} className="text-[#B8837E]" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
-                  <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
-                  <p className="text-xs text-[#9C8A82] mt-1">Distribuidor Independiente Amway · República Dominicana</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="inline-block bg-[#F0FAF4] text-[#6DB08A] text-xs font-bold px-4 py-2 rounded-full">RECIBO DE PAGO</span>
-                <p className="text-lg font-bold text-[#5C3E35] mt-3">{jpgData.receipt_number}</p>
-                <p className="text-xs text-[#9C8A82] mt-0.5">Fecha: {formatDate(jpgData.receipt_date || jpgData.created_at)}</p>
-              </div>
-            </div>
-            <div className="border-t border-[#E8E0D8] mb-5" />
-            <div className="space-y-3 text-sm mb-5">
-              <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cliente:</span> {jpgData.clients?.full_name || jpgData.invoices?.clients?.full_name || "—"}</p>
-              <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Factura:</span> {jpgData.invoices?.invoice_number || "—"}</p>
-              <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Método de pago:</span> {methodLabel[jpgData.payment_method] || jpgData.payment_method}</p>
-              {jpgData.bank_accounts && (
-                <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cuenta:</span> {jpgData.bank_accounts.bank_name} — {jpgData.bank_accounts.account_number}</p>
-              )}
-            </div>
-            <div className="border-t border-[#E8E0D8] pt-4 flex justify-between items-end">
-              <div className="text-right w-full">
-                <p className="text-sm text-[#9C8A82] mb-1">Monto pagado</p>
-                <p className="text-2xl font-bold text-[#86C7A3]">{formatCurrency(Number(jpgData.amount))}</p>
-                {jpgData.amount_in_words && (
-                  <p className="text-xs text-[#9C8A82] italic mt-1">Son: {jpgData.amount_in_words}</p>
-                )}
-              </div>
-            </div>
-            {jpgData.concept && (
-              <div className="mt-4 pt-4 border-t border-[#E8E0D8]">
-                <p className="text-xs text-[#9C8A82] mb-1">Notas:</p>
-                <p className="text-sm text-[#5C3E35]">{jpgData.concept}</p>
-              </div>
-            )}
-            <div className="mt-6 pt-4 border-t border-[#E8E0D8] flex justify-between items-end">
-              <p className="text-xs italic text-[#B8837E]">¡Gracias por tu pago!</p>
-              <div className="text-right">
-                {settings?.signature_url ? (
-                  <img src={settings.signature_url} alt="Firma" className="h-24 ml-auto" />
-                ) : (
-                  <p className="text-base italic text-[#5C3E35] font-light" style={{ fontFamily: "Georgia, serif" }}>{settings?.business_name || "ALMAIA"}</p>
-                )}
-                <p className="text-[9px] text-[#9C8A82] mt-0.5">FIRMA AUTORIZADA</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+
     </PageContainer>
   );
 }
