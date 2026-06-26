@@ -48,7 +48,8 @@ export default function ClientesPage() {
     try {
       const data = searchQuery ? await searchClients(searchQuery) : await getClients();
       setClients(data);
-    } catch {
+    } catch (e: any) {
+      console.error("Error al cargar clientes:", e);
       toast.error("Error al cargar clientes");
     } finally {
       setLoading(false);
@@ -116,8 +117,9 @@ export default function ClientesPage() {
       setShowModal(false);
       resetForm();
       load();
-    } catch {
-      toast.error("Error al guardar cliente");
+    } catch (e: any) {
+      console.error("Error al guardar cliente:", e);
+      toast.error(`Error al guardar cliente: ${e?.message || e?.error?.message || "Error desconocido"}`);
     } finally {
       setSaving(false);
     }
