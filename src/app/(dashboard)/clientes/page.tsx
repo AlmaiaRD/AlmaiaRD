@@ -108,6 +108,7 @@ export default function ClientesPage() {
     setSaving(true);
     try {
       if (editingClient) {
+        console.log("[handleSave] editingClient.id:", editingClient.id);
         await updateClient(editingClient.id, form);
         toast.success("Cliente actualizado exitosamente");
       } else {

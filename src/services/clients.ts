@@ -21,9 +21,10 @@ export async function createClient(client: Partial<Client>) {
 }
 
 export async function updateClient(id: string, client: Partial<Client>) {
-  const { data, error } = await supabase.from("clients").update(client).eq("id", id).select().single();
+  const { data, error } = await supabase.from("clients").update(client).eq("id", id).select();
   if (error) throw error;
-  return data as Client;
+  if (!data || data.length === 0) throw new Error("No se encontró el cliente");
+  return data[0] as Client;
 }
 
 export async function deleteClient(id: string) {
