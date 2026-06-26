@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { normalize } from "@/lib/search";
 import type { Client, ClientTag, ClientTagRelation } from "@/types/database";
 
 export async function getClients() {
@@ -31,13 +32,15 @@ export async function deleteClient(id: string) {
 }
 
 export async function searchClients(query: string) {
-  const { data, error } = await supabase
-    .from("clients")
-    .select("*")
-    .or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%,ibo_number.ilike.%${query}%`)
-    .order("full_name");
-  if (error) throw error;
-  return data as Client[];
+  const all = await getClients();
+  const q = normalize(query);
+  return all.filter(
+    (c: Client) =>
+      normalize(c.full_name).includes(q) ||
+      (c.phone && normalize(c.phone).includes(q)) ||
+      (c.email && normalize(c.email).includes(q)) ||
+      (c.ibo_number && normalize(c.ibo_number).includes(q))
+  );
 }
 
 export async function getClientTags() {

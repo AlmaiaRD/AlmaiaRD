@@ -13,6 +13,7 @@ import { generateReceiptPdf } from "@/lib/pdf";
 import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2 } from "lucide-react";
 import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
+import { normalize } from "@/lib/search";
 
 const methodMap: Record<string, { label: string; variant: "success" | "warning" | "info" | "neutral" }> = {
   CASH: { label: "Efectivo", variant: "success" },
@@ -96,12 +97,12 @@ export default function RecibosPage() {
       }
       return true;
     }
-    const q = searchQuery.toLowerCase();
+    const q = normalize(searchQuery);
     return (
-      r.receipt_number?.toLowerCase().includes(q) ||
-      r.invoices?.invoice_number?.toLowerCase().includes(q) ||
-      r.clients?.full_name?.toLowerCase().includes(q) ||
-      r.invoices?.clients?.full_name?.toLowerCase().includes(q)
+      normalize(r.receipt_number ?? "").includes(q) ||
+      normalize(r.invoices?.invoice_number ?? "").includes(q) ||
+      normalize(r.clients?.full_name ?? "").includes(q) ||
+      normalize(r.invoices?.clients?.full_name ?? "").includes(q)
     );
   });
 
@@ -125,20 +126,15 @@ export default function RecibosPage() {
   async function handlePrintJpg(rec: any) {
     try {
       setJpgData(rec);
-      await new Promise(r => setTimeout(r, 100));
-      const html2canvas = (await import("html2canvas")).default;
+      await new Promise(r => setTimeout(r, 200));
       let el = jpgRef.current;
-      let retries = 0;
-      while (!el && retries < 10) {
+      for (let i = 0; i < 20 && (!el || el.offsetWidth === 0); i++) {
         await new Promise(r => setTimeout(r, 200));
         el = jpgRef.current;
-        retries++;
       }
-      if (!el) { toast.error("Vista previa no disponible"); setJpgData(null); return; }
-      el.style.display = "block";
-      await new Promise(r => setTimeout(r, 100));
+      if (!el || el.offsetWidth === 0) { toast.error("Vista previa no disponible"); setJpgData(null); return; }
+      const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-      el.style.display = "none";
       const link = document.createElement("a");
       link.download = `recibo-${rec.receipt_number}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
@@ -146,6 +142,7 @@ export default function RecibosPage() {
       setJpgData(null);
       toast.success("JPG descargado");
     } catch {
+      setJpgData(null);
       toast.error("Error al generar JPG");
     }
   }
@@ -538,12 +535,14 @@ export default function RecibosPage() {
       </Modal>
 
       {/* Hidden preview for JPG capture */}
-      <div ref={jpgRef} style={{ display: "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "600px" }}>
+      <div ref={jpgRef} style={{ display: jpgData ? "block" : "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "600px" }}>
         {jpgData && (
           <div id="receipt-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <Flower2 size={24} className="text-[#B8837E] mt-1" />
+                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
+                  <Flower2 size={28} className="text-[#B8837E]" />
+                </div>
                 <div>
                   <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { normalize } from "@/lib/search";
 import type { Product, Category, Subbrand } from "@/types/database";
 
 export async function getProducts(includeInactive = false) {
@@ -39,14 +40,13 @@ export async function deactivateProduct(id: string) {
 }
 
 export async function searchProducts(query: string) {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*, categories(*), subbrands(*)")
-    .or(`name.ilike.%${query}%,code.ilike.%${query}%`)
-    .eq("active", true)
-    .order("name");
-  if (error) throw error;
-  return data;
+  const all = await getProducts();
+  const q = normalize(query);
+  return all.filter(
+    (p: any) =>
+      normalize(p.name).includes(q) ||
+      (p.code && normalize(p.code).includes(q))
+  );
 }
 
 export async function getCategories() {

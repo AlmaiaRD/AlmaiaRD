@@ -5,6 +5,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from "@/services/suppliers";
 import type { Supplier } from "@/types/database";
+import { normalize } from "@/lib/search";
 import { Plus, Search, Phone, Mail, MapPin, User, Edit2, Trash2, Save } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -19,8 +20,8 @@ export default function ProveedoresPage() {
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
 
   const filtered = suppliers.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.contact_person && p.contact_person.toLowerCase().includes(searchQuery.toLowerCase()))
+    normalize(p.name).includes(normalize(searchQuery)) ||
+    (p.contact_person && normalize(p.contact_person).includes(normalize(searchQuery)))
   );
 
   const load = useCallback(async () => {

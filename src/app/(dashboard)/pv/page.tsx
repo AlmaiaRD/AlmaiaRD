@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
+import { normalize } from "@/lib/search";
 import { getPvSummary, getPvByClient, getPvByMonth, getPvBySubbrand } from "@/services/pv";
 import { BarChart2, TrendingUp, Target, Award, Search, ArrowLeft } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -43,7 +44,7 @@ export default function PvPage() {
   }, []);
 
   const filtered = byClient.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    normalize(c.name).includes(normalize(searchQuery))
   );
 
   const META_PV = 2000;

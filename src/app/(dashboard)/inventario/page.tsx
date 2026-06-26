@@ -7,6 +7,7 @@ import Badge from "@/components/ui/Badge";
 import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct } from "@/services/inventory";
 import { getProducts } from "@/services/products";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities } from "@/services/purchases";
+import { normalize } from "@/lib/search";
 import { getSuppliers } from "@/services/suppliers";
 import { getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
@@ -271,7 +272,7 @@ function InventarioContent() {
   });
 
   const productFiltered = useMemo(() =>
-    products.filter(p => p.active && (!productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase()) || (p.code && p.code.toLowerCase().includes(productSearch.toLowerCase())))),
+    products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch)) || (p.code && normalize(p.code).includes(normalize(productSearch))))),
     [products, productSearch]
   );
 
@@ -380,11 +381,11 @@ function InventarioContent() {
 
   const filtered = inventory.filter((item) => {
     if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
+    const q = normalize(searchQuery);
     return (
-      item.products?.name?.toLowerCase().includes(q) ||
-      item.products?.code?.toLowerCase().includes(q) ||
-      item.products?.subbrands?.name?.toLowerCase().includes(q)
+      normalize(item.products?.name || "").includes(q) ||
+      normalize(item.products?.code || "").includes(q) ||
+      normalize(item.products?.subbrands?.name || "").includes(q)
     );
   });
 
@@ -886,7 +887,7 @@ function InventarioContent() {
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowSupplierDropdown(false)} />
                   <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white rounded-xl border border-[#E8E0D8] shadow-lg max-h-48 overflow-y-auto">
-                    {suppliers.filter(s => !supplierSearch || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).map((s) => (
+                    {suppliers.filter(s => !supplierSearch || normalize(s.name).includes(normalize(supplierSearch))).map((s) => (
                       <button
                         key={s.id}
                         type="button"
@@ -897,7 +898,7 @@ function InventarioContent() {
                         {s.city && <span className="text-[#9C8A82] text-xs">{s.city}</span>}
                       </button>
                     ))}
-                    {suppliers.filter(s => !supplierSearch || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                    {suppliers.filter(s => !supplierSearch || normalize(s.name).includes(normalize(supplierSearch))).length === 0 && (
                       <p className="px-4 py-3 text-sm text-[#9C8A82]">Sin resultados. Escribe para agregar uno nuevo.</p>
                     )}
                   </div>

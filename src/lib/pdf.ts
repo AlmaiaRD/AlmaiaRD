@@ -102,9 +102,13 @@ function drawBadge(doc: jsPDF, x: number, y: number, w: number, h: number, label
 
 function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   const petalCount = 6;
-  const petalR = size * 0.22;
-  const petalDist = size * 0.38;
-  const centerR = size * 0.22;
+  const petalR = size * 0.2;
+  const petalDist = size * 0.34;
+  const centerR = size * 0.2;
+
+  // Background circle (pink circle like in the header)
+  setDrawFillColor(doc, "#F2EBE8");
+  doc.circle(cx, cy, size * 0.5, "F");
 
   // Petals
   setDrawFillColor(doc, "#B8837E");
@@ -180,25 +184,25 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
     try {
       doc.addImage(logoBase64, "PNG", M, y, 25, 25);
     } catch {
-      drawFlowerIcon(doc, M + 8, y + 8, 16);
+      drawFlowerIcon(doc, M + 10, y + 10, 20);
       setTextColor(doc, DARK);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text(bizName, M + 20, y + 6);
+      doc.text(bizName, M + 22, y + 6);
     }
   } else {
-    drawFlowerIcon(doc, M + 8, y + 8, 16);
+    drawFlowerIcon(doc, M + 10, y + 10, 20);
     setTextColor(doc, DARK);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 20, y + 6);
+    doc.text(bizName, M + 22, y + 6);
   }
 
   // Subtitle (spaced out)
   setTextColor(doc, PRIMARY);
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", M + 20, y + (logoBase64 ? 28 : 11));
+  doc.text("BIENESTAR & SALUD", M + 22, y + (logoBase64 ? 28 : 11));
 
   // Distributor line
   setTextColor(doc, DARK);
@@ -571,24 +575,24 @@ export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
     try {
       doc.addImage(logoBase64, "PNG", margin, y, 20, 20);
     } catch {
-      drawFlowerIcon(doc, margin + 7, y + 7, 14);
+      drawFlowerIcon(doc, margin + 9, y + 9, 18);
       setColor(dark);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text(bizName, margin + 18, y);
+      doc.text(bizName, margin + 20, y);
     }
   } else {
-    drawFlowerIcon(doc, margin + 7, y + 7, 14);
+    drawFlowerIcon(doc, margin + 9, y + 9, 18);
     setColor(dark);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text(bizName, margin + 18, y);
+    doc.text(bizName, margin + 20, y);
   }
 
   setColor(gray);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Comprobante de Pago", margin + (logoBase64 ? 0 : 18), y + (logoBase64 ? 22 : 5));
+  doc.text("Comprobante de Pago", margin + (logoBase64 ? 0 : 20), y + (logoBase64 ? 22 : 5));
 
   setColor(primary);
   doc.setFontSize(16);
@@ -712,18 +716,18 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
     try {
       doc.addImage(logoBase64, "PNG", margin, y, 20, 20);
     } catch {
-      drawFlowerIcon(doc, margin + 7, y + 7, 14);
+      drawFlowerIcon(doc, margin + 9, y + 9, 18);
       setColor(dark);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text(bizName, margin + 18, y);
+      doc.text(bizName, margin + 20, y);
     }
   } else {
-    drawFlowerIcon(doc, margin + 7, y + 7, 14);
+    drawFlowerIcon(doc, margin + 9, y + 9, 18);
     setColor(dark);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text(bizName, margin + 18, y);
+    doc.text(bizName, margin + 20, y);
   }
 
   setColor(gray);

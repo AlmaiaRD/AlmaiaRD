@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
+import { normalize } from "@/lib/search";
 import { generateExpensePdf } from "@/lib/pdf";
 import { getExpenses, createExpense, updateExpense, deleteExpense } from "@/services/expenses";
 import { getSettings } from "@/services/settings";
@@ -160,11 +161,11 @@ export default function GastosPage() {
   const totalDeductible = expenses.reduce((s, g) => s + (g.is_deductible ? Number(g.amount) : 0), 0);
 
   const filtered = expenses.filter((g) => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = g.concept.toLowerCase().includes(q)
-      || g.category.toLowerCase().includes(q)
-      || (g.beneficiary || "").toLowerCase().includes(q)
-      || (g.receipt_number || "").toLowerCase().includes(q);
+    const q = normalize(searchQuery);
+    const matchesSearch = normalize(g.concept).includes(q)
+      || normalize(g.category).includes(q)
+      || normalize(g.beneficiary || "").includes(q)
+      || normalize(g.receipt_number || "").includes(q);
     if (!matchesSearch) return false;
     if (filterMonth || filterYear) {
       const d = new Date(g.expense_date);

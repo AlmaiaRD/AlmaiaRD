@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
 import { getCreditsSummary, useCreditBalance } from "@/services/credits";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -44,9 +45,9 @@ export default function CreditosPage() {
   useEffect(() => { loadData(); }, []);
 
   const filtered = credits.filter((c) => {
-    const q = searchQuery.toLowerCase();
-    return (c.clients?.full_name || "").toLowerCase().includes(q)
-      || (c.receipts?.receipt_number || "").toLowerCase().includes(q);
+    const q = normalize(searchQuery);
+    return normalize(c.clients?.full_name || "").includes(q)
+      || normalize(c.receipts?.receipt_number || "").includes(q);
   });
 
   async function handleApply(credit: CreditRecord) {

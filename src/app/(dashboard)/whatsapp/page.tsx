@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
+import { normalize } from "@/lib/search";
 import {
   getWhatsAppConfigs,
   createWhatsAppConfig,
@@ -487,7 +488,7 @@ export default function WhatsAppPage() {
   }
 
   const filteredClients = clients.filter(
-    (c) => c.name?.toLowerCase().includes(searchClient.toLowerCase()) || c.phone?.includes(searchClient)
+    (c) => normalize(c.name || "").includes(normalize(searchClient)) || normalize(c.phone || "").includes(normalize(searchClient))
   );
 
   const templateCategories = useMemo(() => {

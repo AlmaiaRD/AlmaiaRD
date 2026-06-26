@@ -7,6 +7,7 @@ import { getDocuments } from "@/services/documents";
 import { FileText, Search, Eye, Download, File, Receipt, ShoppingCart, ArrowLeft, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { normalize } from "@/lib/search";
 
 interface Document {
   id: string;
@@ -94,8 +95,8 @@ export default function DocumentosPage() {
   }, [activeTab]);
 
   const filtered = docs.filter((d) => {
-    const matchesSearch = d.number.toLowerCase().includes(searchQuery.toLowerCase())
-      || (d.client || d.supplier || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = normalize(d.number).includes(normalize(searchQuery))
+      || normalize(d.client || d.supplier || "").includes(normalize(searchQuery));
     const matchesFilter = currentFilter === "Todos" || d.type === currentFilter.slice(0, -1) as any;
     return matchesSearch && matchesFilter;
   });

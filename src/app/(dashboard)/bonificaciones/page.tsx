@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { normalize } from "@/lib/search";
 import { getBonuses, createBonus, updateBonus, deleteBonus } from "@/services/bonuses";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Search, Award, Edit3, Trash2, Save, ArrowLeft } from "lucide-react";
@@ -58,9 +59,9 @@ export default function BonificacionesPage() {
 
   const total = bonuses.reduce((s, b) => s + Number(b.amount), 0);
   const filtered = bonuses.filter((b) => {
-    const q = searchQuery.toLowerCase();
-    return (b.description || "").toLowerCase().includes(q)
-      || b.bonus_type.toLowerCase().includes(q);
+    const q = normalize(searchQuery);
+    return normalize(b.description || "").includes(q)
+      || normalize(b.bonus_type).includes(q);
   });
 
   function resetForm() {

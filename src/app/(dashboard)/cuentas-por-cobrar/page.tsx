@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Badge from "@/components/ui/Badge";
+import { normalize } from "@/lib/search";
 import { getInvoices } from "@/services/invoices";
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Search, Phone, Wallet, ArrowUpRight } from "lucide-react";
@@ -22,8 +23,8 @@ export default function CuentasPorCobrarPage() {
 
   const pending = invoices.filter(i => i.status !== "PAID" && i.status !== "CANCELLED");
   const filtered = pending.filter(i =>
-    i.clients?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    i.invoice_number?.includes(searchQuery)
+    normalize(i.clients?.full_name || "").includes(normalize(searchQuery)) ||
+    normalize(i.invoice_number || "").includes(normalize(searchQuery))
   );
   const totalPending = filtered.reduce((s, i) => s + Number(i.total) - Number(i.paid_amount || 0), 0);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { getAllFollowups, createFollowup, updateFollowup, updateFollowupStatus, deleteFollowup } from "@/services/followups";
@@ -134,10 +135,10 @@ export default function CrmPage() {
     return followups
       .filter((f) => {
         if (filterStatus !== "ALL" && f.status !== filterStatus) return false;
-        const q = searchQuery.toLowerCase();
+        const q = normalize(searchQuery);
         if (!q) return true;
-        const name = f.clients?.full_name?.toLowerCase() || "";
-        const comments = f.comments?.toLowerCase() || "";
+        const name = normalize(f.clients?.full_name || "");
+        const comments = normalize(f.comments || "");
         return name.includes(q) || comments.includes(q);
       })
       .sort((a, b) => new Date(b.contact_date).getTime() - new Date(a.contact_date).getTime());

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
+import { normalize } from "@/lib/search";
 import {
   getProductRecommendations,
   getClientRecommendations,
@@ -136,14 +137,14 @@ export default function RecommendationsPage() {
 
   const filteredProducts = productRecs.filter((r) => {
     if (!searchFilter) return true;
-    const q = searchFilter.toLowerCase();
-    return r.product_name?.toLowerCase().includes(q) || r.subbrand?.toLowerCase().includes(q) || r.reason?.toLowerCase().includes(q);
+    const q = normalize(searchFilter);
+    return normalize(r.product_name || "").includes(q) || normalize(r.subbrand || "").includes(q) || normalize(r.reason || "").includes(q);
   });
 
   const filteredSeasonal = seasonalRecs.filter((r) => {
     if (!searchFilter) return true;
-    const q = searchFilter.toLowerCase();
-    return r.product_name?.toLowerCase().includes(q) || r.subbrand?.toLowerCase().includes(q);
+    const q = normalize(searchFilter);
+    return normalize(r.product_name || "").includes(q) || normalize(r.subbrand || "").includes(q);
   });
 
   function getPriorityColor(priority: string) {

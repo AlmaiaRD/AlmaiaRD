@@ -6,12 +6,12 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts } from "@/services/invoices";
+import { normalize } from "@/lib/search";
 import { getClients, createClient } from "@/services/clients";
 import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { generateInvoicePdf } from "@/lib/pdf";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -59,7 +59,7 @@ export default function FacturacionPage() {
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
 
-  const productFiltered = products.filter(p => p.active && (!productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase())));
+  const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch))));
 
   const load = useCallback(async (query: string) => {
     try {
@@ -174,75 +174,157 @@ export default function FacturacionPage() {
   const discountValue = discountAmount > 0 ? discountAmount : (subtotal * discountPercent / 100);
   const total = subtotal + itbisTotal - discountValue;
 
+  async function buildPreviewEl(data: any, settings: any) {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+          </div>
+          <div>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${settings?.business_name || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
+            <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
+            <p style="font-size:12px;color:#9C8A82;margin:0;">Rep\u00fablica Dominicana</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${data.invoice_number}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${formatDate(data.invoice_date)}</p>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${data.clients?.full_name || ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${data.clients?.phone || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${data.clients?.email || "N/D"}</p>
+        </div>
+      </div>
+      <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#F0EBE3;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Submarca</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(data.invoice_items || []).map((item: any) => `
+            <tr style="border-bottom:1px solid #F0EBE3;">
+              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${item.products?.subbrands?.name || "\u2014"}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${item.products?.name || item.custom_name || "Producto"}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${formatCurrency(Number(item.unit_price))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${formatCurrency(Number(item.line_total))}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      ${data.bank_accounts ? `
+        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${data.bank_accounts.holder_name}</p>
+            ${data.bank_accounts.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${data.bank_accounts.id_number}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${data.bank_accounts.bank_name}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${data.bank_accounts.account_type}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${data.bank_accounts.account_number}</p>
+            ${data.bank_accounts.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${data.bank_accounts.email}</p>` : ""}
+          </div>
+        </div>
+      ` : ""}
+      <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+          <span>Subtotal</span>
+          <span>${formatCurrency(Number(data.subtotal))}</span>
+        </div>
+        ${Number(data.itbis_total) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+            <span>ITBIS (18%)</span>
+            <span>${formatCurrency(Number(data.itbis_total))}</span>
+          </div>
+        ` : ""}
+        ${Number(data.discount_amount) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#D4A0A0;margin-bottom:4px;">
+            <span>Descuento</span>
+            <span>-${formatCurrency(Number(data.discount_amount))}</span>
+          </div>
+        ` : ""}
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
+          <span>Total General</span>
+          <span>${formatCurrency(Number(data.total))}</span>
+        </div>
+        ${Number(data.amount_paid) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#86C7A3;margin-bottom:4px;">
+            <span>Monto Cobrado</span>
+            <span>${formatCurrency(Number(data.amount_paid))}</span>
+          </div>
+        ` : ""}
+        ${(Number(data.total) - Number(data.amount_paid || 0)) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#B8837E;">
+            <span>Saldo Pendiente</span>
+            <span>${formatCurrency(Number(data.total) - Number(data.amount_paid || 0))}</span>
+          </div>
+        ` : ""}
+      </div>
+      <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
+        </div>
+        <div style="text-align:right;">
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${settings?.business_name || "ALMAIA"}</p>`}
+          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+        </div>
+      </div>
+    `;
+    return el;
+  }
+
+  async function captureInvoice(inv: any) {
+    const full = await getInvoice(inv.id);
+    const el = await buildPreviewEl(full, settings);
+    document.body.appendChild(el);
+    await new Promise(r => setTimeout(r, 500));
+    const domtoimage = await import("dom-to-image-more");
+    const canvas = await domtoimage.toCanvas(el, { scale: 2, width: 800 });
+    document.body.removeChild(el);
+    return { canvas, data: full, invoice_number: inv.invoice_number };
+  }
+
   async function handlePrintPdf(inv: any) {
     try {
-      const full = await getInvoice(inv.id);
-      const marginVal = full.margin || 30;
-      await generateInvoicePdf({
-        invoice_number: full.invoice_number,
-        invoice_date: formatDate(full.invoice_date),
-        client_name: full.clients?.full_name || "Cliente",
-        client_phone: full.clients?.phone,
-        client_email: full.clients?.email,
-        client_id_number: full.clients?.id_number,
-          items: full.invoice_items?.map((item: any) => ({
-            subbrand: item.products?.subbrands?.name || "—",
-            name: item.products?.name || item.custom_name || "Producto",
-            quantity: item.quantity,
-            unit_price: Number(item.unit_price),
-            line_total: Number(item.line_total),
-          })) || [],
-        subtotal: Number(full.subtotal),
-        itbis_total: Number(full.itbis_total || 0),
-        discount_amount: Number(full.discount_amount),
-        total: Number(full.total),
-        paid_amount: Number(full.amount_paid || 0),
-        balance_due: Number(full.balance_due || 0),
-        bank_account: full.bank_accounts ? {
-          holder_name: full.bank_accounts.holder_name,
-          id_number: full.bank_accounts.id_number,
-          bank_name: full.bank_accounts.bank_name,
-          account_type: full.bank_accounts.account_type,
-          account_number: full.bank_accounts.account_number,
-          email: full.bank_accounts.email,
-        } : undefined,
-        logo_url: settings?.logo_url,
-        signature_url: settings?.signature_url,
-        business_name: settings?.business_name,
-        email: settings?.email,
-        phone: settings?.phone,
-      });
-    } catch {
+      const { canvas, invoice_number } = await captureInvoice(inv);
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const jspdfModule = await import("jspdf");
+      const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`factura-${invoice_number}.pdf`);
+      toast.success("PDF descargado");
+    } catch (e) {
+      console.error("[handlePrintPdf]", e);
       toast.error("Error al generar PDF");
     }
-    setOpenPrintId(null);
   }
 
   async function handlePrintJpg(inv: any) {
     try {
-      const full = await getInvoice(inv.id);
-      setJpgData(full);
-      await new Promise(r => setTimeout(r, 100));
-      const html2canvas = (await import("html2canvas")).default;
-      let el = jpgRef.current;
-      let retries = 0;
-      while (!el && retries < 10) {
-        await new Promise(r => setTimeout(r, 200));
-        el = jpgRef.current;
-        retries++;
-      }
-      if (!el) { toast.error("Vista previa no disponible"); setJpgData(null); return; }
-      el.style.display = "block";
-      await new Promise(r => setTimeout(r, 100));
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-      el.style.display = "none";
+      const { canvas, invoice_number } = await captureInvoice(inv);
       const link = document.createElement("a");
-      link.download = `factura-${inv.invoice_number}.jpg`;
+      link.download = `factura-${invoice_number}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
-      setJpgData(null);
       toast.success("JPG descargado");
-    } catch {
+    } catch (e) {
+      console.error("[handlePrintJpg]", e);
       toast.error("Error al generar JPG");
     }
     setOpenPrintId(null);
@@ -468,9 +550,11 @@ export default function FacturacionPage() {
             <div id="invoice-preview" className="bg-white p-8 rounded-xl" style={{ fontFamily: "system-ui, sans-serif" }}>
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
-                <div className="flex items-start gap-2">
-                  <Flower2 size={24} className="text-[#B8837E] mt-1" />
-                  <div>
+              <div className="flex items-start gap-2">
+                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
+                  <Flower2 size={28} className="text-[#B8837E]" />
+                </div>
+                <div>
                     <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
                     <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
                     <p className="text-sm font-bold text-[#5C3E35] mt-2">Distribuidor Independiente Amway</p>
@@ -947,12 +1031,14 @@ export default function FacturacionPage() {
       </Modal>
 
       {/* Hidden preview for JPG capture */}
-      <div ref={jpgRef} style={{ display: "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "800px" }}>
+       <div ref={jpgRef} style={{ display: jpgData ? "block" : "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "800px" }}>
         {jpgData && (
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <Flower2 size={24} className="text-[#B8837E] mt-1" />
+                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
+                  <Flower2 size={28} className="text-[#B8837E]" />
+                </div>
                 <div>
                   <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
