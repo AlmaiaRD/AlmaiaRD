@@ -9,15 +9,17 @@ export async function getClients() {
 }
 
 export async function getClient(id: string) {
-  const { data, error } = await supabase.from("clients").select("*").eq("id", id).single();
+  const { data, error } = await supabase.from("clients").select("*").eq("id", id);
   if (error) throw error;
-  return data as Client;
+  if (!data || data.length === 0) throw new Error("No se encontró el cliente");
+  return data[0] as Client;
 }
 
 export async function createClient(client: Partial<Client>) {
-  const { data, error } = await supabase.from("clients").insert(client).select().single();
+  const { data, error } = await supabase.from("clients").insert(client).select();
   if (error) throw error;
-  return data as Client;
+  if (!data || data.length === 0) throw new Error("No se pudo crear el cliente");
+  return data[0] as Client;
 }
 
 export async function updateClient(id: string, client: Partial<Client>) {
