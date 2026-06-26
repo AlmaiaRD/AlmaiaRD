@@ -119,7 +119,9 @@ export default function ClientesPage() {
       load();
     } catch (e: any) {
       console.error("Error al guardar cliente:", e);
-      toast.error(`Error al guardar cliente: ${e?.message || e?.error?.message || "Error desconocido"}`);
+      const msg = e?.message || e?.error?.message || e?.error_description || (typeof e === 'object' ? JSON.stringify(e) : String(e));
+      toast.error(`Error: ${msg}`);
+      console.error("[handleSave]", e);
     } finally {
       setSaving(false);
     }
