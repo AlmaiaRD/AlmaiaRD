@@ -107,7 +107,6 @@ export default function RecibosPage() {
   async function buildReceiptPreviewEl(data: any, settings: any) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
-    const ba = data.bank_accounts;
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -135,19 +134,7 @@ export default function RecibosPage() {
           <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${methodLabel[data.payment_method] || data.payment_method}</p>
         </div>
       </div>
-      ${ba ? `
-        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
-          <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${ba.holder_name}</p>
-            ${ba.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${ba.id_number}</p>` : ""}
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${ba.bank_name}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${ba.account_type}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${ba.account_number}</p>
-            ${ba.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${ba.email}</p>` : ""}
-          </div>
-        </div>
-      ` : ""}
+
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:20px;">
         <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
           <span style="font-size:14px;color:#9C8A82;">Monto pagado</span>
@@ -416,19 +403,7 @@ export default function RecibosPage() {
               </div>
             </div>
 
-            {selectedReceipt.bank_accounts && (
-              <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
-                <p className="text-xs font-bold text-[#6DB08A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedReceipt.bank_accounts.holder_name}</p>
-                  {selectedReceipt.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedReceipt.bank_accounts.id_number}</p>}
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedReceipt.bank_accounts.bank_name}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedReceipt.bank_accounts.account_type}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedReceipt.bank_accounts.account_number}</p>
-                  {selectedReceipt.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedReceipt.bank_accounts.email}</p>}
-                </div>
-              </div>
-            )}
+
 
             {selectedReceipt.amount_in_words && (
               <p className="text-sm text-[#9C8A82] italic">Son: {selectedReceipt.amount_in_words}</p>
