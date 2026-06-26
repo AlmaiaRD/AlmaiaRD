@@ -167,6 +167,18 @@ function InventarioContent() {
     doc.text(formatCurrency(purchase.subtotal), pageW - margin, y, { align: "right" });
     y += 7;
     doc.setFont("helvetica", "bold");
+    setTextColor("#5C3E35");
+    doc.text("Impuesto Recogida:", pageW - margin - 60, y, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.text(formatCurrency(purchase.impuesto_recogida || 0), pageW - margin, y, { align: "right" });
+    y += 7;
+    doc.setFont("helvetica", "bold");
+    setTextColor("#5C3E35");
+    doc.text("Cargo Admin.:", pageW - margin - 60, y, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.text(formatCurrency(purchase.cargo_administracion || 0), pageW - margin, y, { align: "right" });
+    y += 7;
+    doc.setFont("helvetica", "bold");
     doc.text("ITBIS (18%):", pageW - margin - 60, y, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.text(formatCurrency(purchase.itbis || 0), pageW - margin, y, { align: "right" });
@@ -215,6 +227,8 @@ function InventarioContent() {
           <hr style="border-color:#E8E0D8;margin:8px 0;"/>
           <div style="text-align:right;font-size:10px;">
             <p>Subtotal: ${formatCurrency(purchase.subtotal)}</p>
+            <p>Impuesto Recogida: ${formatCurrency(purchase.impuesto_recogida || 0)}</p>
+            <p>Cargo Admin.: ${formatCurrency(purchase.cargo_administracion || 0)}</p>
             <p>ITBIS (18%): ${formatCurrency(purchase.itbis || 0)}</p>
             <p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ${formatCurrency(purchase.total)}</p>
           </div>
@@ -249,6 +263,8 @@ function InventarioContent() {
     purchase_date: new Date().toISOString().split("T")[0],
     notes: "",
     discount_amount: 0,
+    impuesto_recogida: 36,
+    cargo_administracion: 200,
     payment_method: "Efectivo",
     bank_account_id: "",
     items: [] as { product_id: string; name: string; quantity: number; unit_cost: number; itbis?: boolean }[],
@@ -262,7 +278,9 @@ function InventarioContent() {
   const purchaseSubtotal = purchaseForm.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
   const purchaseLineItbis = purchaseForm.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * 0.18), 0);
   const purchaseItbis = Math.round(purchaseLineItbis * 100) / 100;
-  const purchaseTotal = purchaseSubtotal + purchaseItbis - purchaseForm.discount_amount;
+  const purchaseRecogida = Number(purchaseForm.impuesto_recogida) || 0;
+  const purchaseAdmin = Number(purchaseForm.cargo_administracion) || 0;
+  const purchaseTotal = purchaseSubtotal + purchaseRecogida + purchaseAdmin + purchaseItbis - purchaseForm.discount_amount;
 
   function addProductToPurchase(product: any) {
     if (purchaseForm.items.some(i => i.product_id === product.id)) {
@@ -416,7 +434,7 @@ function InventarioContent() {
   }
 
   function resetPurchaseForm() {
-    setPurchaseForm({ supplier_name: "", purchase_date: new Date().toISOString().split("T")[0], notes: "", discount_amount: 0, payment_method: "Efectivo", bank_account_id: "", items: [] });
+    setPurchaseForm({ supplier_name: "", purchase_date: new Date().toISOString().split("T")[0], notes: "", discount_amount: 0, impuesto_recogida: 36, cargo_administracion: 200, payment_method: "Efectivo", bank_account_id: "", items: [] });
     setEditingId(null);
   }
 
@@ -427,6 +445,8 @@ function InventarioContent() {
       purchase_date: pur.purchase_date,
       notes: pur.notes || "",
       discount_amount: pur.discount_amount || 0,
+      impuesto_recogida: pur.impuesto_recogida ?? 36,
+      cargo_administracion: pur.cargo_administracion ?? 200,
       payment_method: pur.payment_method || "Efectivo",
       bank_account_id: pur.bank_account_id || "",
       items: (pur.purchase_items || []).map((i: any) => ({
@@ -450,6 +470,8 @@ function InventarioContent() {
         purchase_date: purchaseForm.purchase_date,
         notes: purchaseForm.notes,
         discount_amount: purchaseForm.discount_amount,
+        impuesto_recogida: Number(purchaseForm.impuesto_recogida) || 36,
+        cargo_administracion: Number(purchaseForm.cargo_administracion) || 200,
         payment_method: purchaseForm.payment_method,
         bank_account_id: purchaseForm.bank_account_id || undefined,
         items: purchaseForm.items.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_cost: i.unit_cost, itbis: i.itbis })),
@@ -1025,6 +1047,18 @@ function InventarioContent() {
               <span className="text-[#9C8A82]">Subtotal</span>
               <span className="text-[#5C3E35]">{formatCurrency(purchaseSubtotal)}</span>
             </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#9C8A82]">Impuesto de Recogida</span>
+              <input type="number" step="0.01" value={purchaseForm.impuesto_recogida}
+                onChange={(e) => setPurchaseForm({ ...purchaseForm, impuesto_recogida: Number(e.target.value) })}
+                className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#9C8A82]">Cargo de Administración (Detalle)</span>
+              <input type="number" step="0.01" value={purchaseForm.cargo_administracion}
+                onChange={(e) => setPurchaseForm({ ...purchaseForm, cargo_administracion: Number(e.target.value) })}
+                className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#9C8A82]">ITBIS (18%)</span>
               <span className="text-[#5C3E35]">{formatCurrency(purchaseItbis)}</span>
@@ -1054,10 +1088,18 @@ function InventarioContent() {
       <Modal isOpen={showDetailPurchase} onClose={() => { setShowDetailPurchase(false); setDetailPurchase(null); }} title={detailPurchase?.purchase_number || "Detalle"} wide>
         {detailPurchase && (
           <div className="space-y-5">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-5 gap-3">
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Subtotal</p>
                 <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.subtotal)}</p>
+              </div>
+              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#9C8A82]">Recogida</p>
+                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.impuesto_recogida || 0)}</p>
+              </div>
+              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#9C8A82]">Cargo Admin.</p>
+                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.cargo_administracion || 0)}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">ITBIS (18%)</p>
@@ -1074,6 +1116,8 @@ function InventarioContent() {
               <div className="flex justify-between"><span className="text-[#9C8A82]">Proveedor:</span><span className="text-[#5C3E35]">{detailPurchase.supplier_name || "—"}</span></div>
               <div className="flex justify-between"><span className="text-[#9C8A82]">Estado:</span><span className="text-[#5C3E35]">{detailPurchase.status}</span></div>
               {detailPurchase.discount_amount > 0 && <div className="flex justify-between"><span className="text-[#D4A0A0]">Descuento:</span><span className="text-[#D4A0A0]">-{formatCurrency(detailPurchase.discount_amount)}</span></div>}
+              {(detailPurchase.impuesto_recogida || 0) > 0 && <div className="flex justify-between"><span className="text-[#9C8A82]">Impuesto Recogida:</span><span className="text-[#5C3E35]">{formatCurrency(detailPurchase.impuesto_recogida)}</span></div>}
+              {(detailPurchase.cargo_administracion || 0) > 0 && <div className="flex justify-between"><span className="text-[#9C8A82]">Cargo Admin.:</span><span className="text-[#5C3E35]">{formatCurrency(detailPurchase.cargo_administracion)}</span></div>}
               {detailPurchase.notes && <div className="flex justify-between"><span className="text-[#9C8A82]">Notas:</span><span className="text-[#5C3E35]">{detailPurchase.notes}</span></div>}
             </div>
 

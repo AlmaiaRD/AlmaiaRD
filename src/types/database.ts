@@ -109,8 +109,13 @@ export interface Purchase {
   purchase_date: string;
   subtotal: number;
   itbis: number;
+  discount_amount: number;
+  impuesto_recogida: number;
+  cargo_administracion: number;
   total: number;
   notes?: string;
+  payment_method?: string;
+  bank_account_id?: string;
   status: PurchaseStatus;
   created_at: string;
   created_by?: string;

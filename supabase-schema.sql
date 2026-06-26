@@ -128,6 +128,10 @@ CREATE TABLE purchases (
   supplier_id UUID REFERENCES suppliers(id),
   purchase_date DATE NOT NULL,
   subtotal NUMERIC(12,2) DEFAULT 0,
+  itbis NUMERIC(12,2) DEFAULT 0,
+  discount_amount NUMERIC(12,2) DEFAULT 0,
+  impuesto_recogida NUMERIC(12,2) DEFAULT 36,
+  cargo_administracion NUMERIC(12,2) DEFAULT 200,
   total NUMERIC(12,2) DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'COMPLETED', 'CANCELLED')),
   created_by UUID REFERENCES users(id),
@@ -141,7 +145,9 @@ CREATE TABLE purchase_items (
   product_id UUID REFERENCES products(id),
   quantity INTEGER NOT NULL,
   unit_cost NUMERIC(12,2) NOT NULL,
-  line_total NUMERIC(12,2) NOT NULL
+  line_total NUMERIC(12,2) NOT NULL,
+  line_itbis NUMERIC(12,2) DEFAULT 0,
+  itbis BOOLEAN DEFAULT true
 );
 
 -- 8. CUENTAS BANCARIAS
@@ -807,3 +813,14 @@ END $$;
 -- Aplicar valor por defecto: Nutrilite sin ITBIS (excepto Proteína Vegetal)
 UPDATE products SET apply_itbis = true WHERE apply_itbis IS NULL;
 UPDATE products SET apply_itbis = false WHERE subbrand_id IN (SELECT id FROM subbrands WHERE name = 'Nutrilite') AND name NOT ILIKE '%proteína vegetal%' AND apply_itbis IS DISTINCT FROM false;
+
+-- Nuevos campos en purchases
+DO $$ BEGIN
+  ALTER TABLE purchases ADD COLUMN IF NOT EXISTS impuesto_recogida NUMERIC(12,2) DEFAULT 36;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE purchases ADD COLUMN IF NOT EXISTS cargo_administracion NUMERIC(12,2) DEFAULT 200;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

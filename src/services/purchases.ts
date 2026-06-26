@@ -9,6 +9,8 @@ export async function createPurchase(data: {
   purchase_date: string;
   notes?: string;
   discount_amount?: number;
+  impuesto_recogida?: number;
+  cargo_administracion?: number;
   payment_method?: string;
   bank_account_id?: string;
   items: Array<{ product_id: string; quantity: number; unit_cost: number; itbis?: boolean }>;
@@ -30,7 +32,9 @@ export async function createPurchase(data: {
 
   const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
   const itbis = Math.round(data.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0) * 100) / 100;
-  const total = subtotal + itbis - (data.discount_amount || 0);
+  const impuestoRecogida = data.impuesto_recogida ?? 36;
+  const cargoAdministracion = data.cargo_administracion ?? 200;
+  const total = subtotal + impuestoRecogida + cargoAdministracion + itbis - (data.discount_amount || 0);
 
   const { data: purchase, error: purError } = await supabase
     .from("purchases")
@@ -41,6 +45,8 @@ export async function createPurchase(data: {
       subtotal,
       itbis,
       discount_amount: data.discount_amount || 0,
+      impuesto_recogida: impuestoRecogida,
+      cargo_administracion: cargoAdministracion,
       total,
       notes: data.notes || null,
       payment_method: data.payment_method || "Efectivo",
@@ -102,6 +108,8 @@ export async function updatePurchase(
     purchase_date: string;
     notes?: string;
     discount_amount?: number;
+    impuesto_recogida?: number;
+    cargo_administracion?: number;
     payment_method?: string;
     bank_account_id?: string;
     items: Array<{ product_id: string; quantity: number; unit_cost: number; itbis?: boolean }>;
@@ -112,7 +120,9 @@ export async function updatePurchase(
 
   const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
   const itbis = Math.round(data.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0) * 100) / 100;
-  const total = subtotal + itbis - (data.discount_amount || 0);
+  const impuestoRecogida = data.impuesto_recogida ?? 36;
+  const cargoAdministracion = data.cargo_administracion ?? 200;
+  const total = subtotal + impuestoRecogida + cargoAdministracion + itbis - (data.discount_amount || 0);
 
   const { error: purError } = await supabase
     .from("purchases")
@@ -122,6 +132,8 @@ export async function updatePurchase(
       subtotal,
       itbis,
       discount_amount: data.discount_amount || 0,
+      impuesto_recogida: impuestoRecogida,
+      cargo_administracion: cargoAdministracion,
       total,
       notes: data.notes || null,
       payment_method: data.payment_method || "Efectivo",
