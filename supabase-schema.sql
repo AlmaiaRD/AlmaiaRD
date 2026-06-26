@@ -78,6 +78,7 @@ CREATE TABLE products (
   price_30 NUMERIC(12,2) DEFAULT 0,
   price_35 NUMERIC(12,2) DEFAULT 0,
   active BOOLEAN DEFAULT true,
+  apply_itbis BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -796,3 +797,13 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Columna para controlar ITBIS por producto
+DO $$ BEGIN
+  ALTER TABLE products ADD COLUMN IF NOT EXISTS apply_itbis BOOLEAN DEFAULT true;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+-- Aplicar valor por defecto: Nutrilite sin ITBIS (excepto Proteína Vegetal)
+UPDATE products SET apply_itbis = true WHERE apply_itbis IS NULL;
+UPDATE products SET apply_itbis = false WHERE subbrand_id IN (SELECT id FROM subbrands WHERE name = 'Nutrilite') AND name NOT ILIKE '%proteína vegetal%' AND apply_itbis IS DISTINCT FROM false;

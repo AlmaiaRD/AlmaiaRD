@@ -32,7 +32,7 @@ export default function CatalogoPage() {
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
-    cost: 0, pv: 0, price_30: 0, price_35: 0, category_id: "", subbrand_id: "",
+    cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "",
   });
 
   const [showNewSubbrand, setShowNewSubbrand] = useState(false);
@@ -41,6 +41,7 @@ export default function CatalogoPage() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newForFilter, setNewForFilter] = useState<"subbrand" | "category" | null>(null);
   const [editingPrice, setEditingPrice] = useState<{ id: string; field: "price_30" | "price_35"; value: number } | null>(null);
+  const [savingItbis, setSavingItbis] = useState<string | null>(null);
 
   const fetchMeta = useCallback(async () => {
     const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
@@ -77,7 +78,7 @@ export default function CatalogoPage() {
   }, [load, searchQuery, filterSubbrand, filterCategory]);
 
   function resetForm() {
-    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, category_id: "", subbrand_id: "" });
+    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "" });
     setEditingProduct(null);
   }
 
@@ -89,6 +90,7 @@ export default function CatalogoPage() {
       code: product.code, name: product.name, description: product.description || "",
       benefits: product.benefits || "", cost: product.cost, pv: product.pv,
       price_30: product.price_30 || 0, price_35: product.price_35 || 0,
+      apply_itbis: product.apply_itbis !== false,
       category_id: product.category_id || "", subbrand_id: product.subbrand_id || "",
     });
     setShowModal(true);
@@ -102,9 +104,9 @@ export default function CatalogoPage() {
     setSaving(true);
     try {
       const cost = Number(form.cost);
-      const totalConItbis = cost * (1 + ITBIS_RATE);
-      const auto30 = roundToNearest50(totalConItbis * 1.3);
-      const auto35 = roundToNearest50(totalConItbis * 1.35);
+      const totalBase = cost * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1);
+      const auto30 = roundToNearest50(totalBase * 1.3);
+      const auto35 = roundToNearest50(totalBase * 1.35);
       const productData: Record<string, any> = {
         code: form.code,
         name: form.name,
@@ -112,6 +114,7 @@ export default function CatalogoPage() {
         benefits: form.benefits || null,
         cost,
         pv: form.pv,
+        apply_itbis: form.apply_itbis !== false,
         category_id: form.category_id || null,
         subbrand_id: form.subbrand_id || null,
         price_30: Number(form.price_30) || auto30,
@@ -143,6 +146,16 @@ export default function CatalogoPage() {
       setProducts((prev: any[]) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
       setEditingPrice(null);
     } catch { toast.error("Error al actualizar precio"); }
+  }
+
+  async function handleToggleItbis(product: any) {
+    const newVal = !(product.apply_itbis !== false);
+    setSavingItbis(product.id);
+    try {
+      await updateProduct(product.id, { apply_itbis: newVal } as any);
+      setProducts((prev: any[]) => prev.map((p) => (p.id === product.id ? { ...p, apply_itbis: newVal } : p)));
+    } catch { toast.error("Error al actualizar ITBIS"); }
+    finally { setSavingItbis(null); }
   }
 
   async function handleCreateSubbrand(name: string) {
@@ -283,10 +296,12 @@ export default function CatalogoPage() {
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(product.cost)}</span></div>
-                  <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-bold text-[#5C3E35]">{formatCurrency(product.cost * (1 + ITBIS_RATE))}</span></div>
+                  {product.apply_itbis !== false && (
+                    <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-bold text-[#5C3E35]">{formatCurrency(product.cost * (1 + ITBIS_RATE))}</span></div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">30% exacto</span>
-                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (1 + ITBIS_RATE) * 1.3)}</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.3)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">30% redondeado</span>
@@ -306,7 +321,7 @@ export default function CatalogoPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">35% exacto</span>
-                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (1 + ITBIS_RATE) * 1.35)}</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.35)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">35% redondeado</span>
@@ -324,6 +339,14 @@ export default function CatalogoPage() {
                       </span>
                     )}
                   </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-[#E8E0D8] mt-1.5">
+                    <span className="text-[10px] text-[#9C8A82]">ITBIS</span>
+                    <button onClick={() => handleToggleItbis(product)} disabled={savingItbis === product.id}
+                      className={`relative w-9 h-4.5 rounded-full transition-colors ${product.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                      style={{ height: "18px" }}>
+                      <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform ${product.apply_itbis !== false ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -340,7 +363,12 @@ export default function CatalogoPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre *</label>
-              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <input type="text" value={form.name} onChange={(e) => {
+                const newName = e.target.value;
+                const isNutri = subbrands.find((s: any) => s.id === form.subbrand_id)?.name === "Nutrilite";
+                const isProteina = newName.toLowerCase().includes("proteína vegetal");
+                setForm({ ...form, name: newName, apply_itbis: isNutri ? isProteina : true });
+              }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -348,7 +376,11 @@ export default function CatalogoPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Submarca</label>
               <select value={form.subbrand_id} onChange={(e) => {
                 if (e.target.value === "__new__") { setNewForFilter(null); setShowNewSubbrand(true); return; }
-                setForm({ ...form, subbrand_id: e.target.value });
+                const sub = subbrands.find((s: any) => s.id === e.target.value);
+                const name = form.name.toLowerCase();
+                const isNutri = sub?.name === "Nutrilite";
+                const isProteina = name.includes("proteína vegetal");
+                setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isProteina) });
               }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
                 <option value="">Seleccionar...</option>
                 {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -372,7 +404,7 @@ export default function CatalogoPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Costo Amway (RD$)</label>
               <input type="number" step="0.01" value={form.cost} onChange={(e) => {
                 const c = Number(e.target.value);
-                const total = c * (1 + ITBIS_RATE);
+                const total = c * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1);
                 setForm({ ...form, cost: c, price_30: roundToNearest50(total * 1.3), price_35: roundToNearest50(total * 1.35) });
               }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
@@ -383,13 +415,24 @@ export default function CatalogoPage() {
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 30%</label>
               <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (1 + ITBIS_RATE) * 1.3)}</p>
+              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.3)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 35%</label>
               <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (1 + ITBIS_RATE) * 1.35)}</p>
+              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.35)}</p>
             </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-[#5C3E35]">Aplicar ITBIS en cálculos</label>
+            <button type="button" onClick={() => {
+              const newVal = !(form.apply_itbis !== false);
+              setForm({ ...form, apply_itbis: newVal });
+            }}
+              className={`relative w-10 h-5 rounded-full transition-colors ${form.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}
+              style={{ height: "20px" }}>
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${form.apply_itbis !== false ? "translate-x-[21px]" : "translate-x-0.5"}`} />
+            </button>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descripción</label>

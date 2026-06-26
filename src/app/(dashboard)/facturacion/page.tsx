@@ -146,7 +146,7 @@ export default function FacturacionPage() {
       quantity: 1,
       unit_price: margin === 30 ? product.price_30 : product.price_35,
       pv: product.pv,
-      itbis: false,
+      itbis: product.apply_itbis !== false,
     }]);
   }
 

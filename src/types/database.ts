@@ -59,6 +59,7 @@ export interface Product {
   price_30: number;
   price_35: number;
   active: boolean;
+  apply_itbis: boolean;
   created_at: string;
   updated_at: string;
 }
