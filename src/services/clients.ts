@@ -37,17 +37,9 @@ export async function createClient(client: Partial<Client>) {
 }
 
 export async function updateClient(id: string, client: Partial<Client>) {
-  // First check if the client exists
-  const { data: existing, error: existErr } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", id);
-  if (existErr) throw existErr;
-  if (!existing || existing.length === 0) throw new Error("El cliente no existe en la base de datos");
-
   const { data, error } = await supabase.from("clients").update(client).eq("id", id).select();
   if (error) throw error;
-  if (!data || data.length === 0) throw new Error("La actualización no devolvió datos (posible restricción RLS)");
+  if (!data || data.length === 0) throw new Error("El cliente no existe o no tienes permiso para actualizarlo");
   return data[0] as Client;
 }
 
