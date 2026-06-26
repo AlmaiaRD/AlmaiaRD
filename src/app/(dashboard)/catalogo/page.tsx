@@ -32,7 +32,7 @@ export default function CatalogoPage() {
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
-    cost: 0, pv: 0, category_id: "", subbrand_id: "",
+    cost: 0, pv: 0, price_30: 0, price_35: 0, category_id: "", subbrand_id: "",
   });
 
   const [showNewSubbrand, setShowNewSubbrand] = useState(false);
@@ -76,7 +76,7 @@ export default function CatalogoPage() {
   }, [load, searchQuery, filterSubbrand, filterCategory]);
 
   function resetForm() {
-    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, category_id: "", subbrand_id: "" });
+    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, category_id: "", subbrand_id: "" });
     setEditingProduct(null);
   }
 
@@ -87,6 +87,7 @@ export default function CatalogoPage() {
     setForm({
       code: product.code, name: product.name, description: product.description || "",
       benefits: product.benefits || "", cost: product.cost, pv: product.pv,
+      price_30: product.price_30 || 0, price_35: product.price_35 || 0,
       category_id: product.category_id || "", subbrand_id: product.subbrand_id || "",
     });
     setShowModal(true);
@@ -101,6 +102,8 @@ export default function CatalogoPage() {
     try {
       const cost = Number(form.cost);
       const totalConItbis = cost * (1 + ITBIS_RATE);
+      const auto30 = roundToNearest50(totalConItbis * 1.3);
+      const auto35 = roundToNearest50(totalConItbis * 1.35);
       const productData: Record<string, any> = {
         code: form.code,
         name: form.name,
@@ -110,8 +113,8 @@ export default function CatalogoPage() {
         pv: form.pv,
         category_id: form.category_id || null,
         subbrand_id: form.subbrand_id || null,
-        price_30: roundToNearest50(totalConItbis * 1.3),
-        price_35: roundToNearest50(totalConItbis * 1.35),
+        price_30: Number(form.price_30) || auto30,
+        price_35: Number(form.price_35) || auto35,
       };
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData as any);
@@ -327,10 +330,14 @@ export default function CatalogoPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Costo Amway (RD$)</label>
-              <input type="number" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <input type="number" step="0.01" value={form.cost} onChange={(e) => {
+                const c = Number(e.target.value);
+                const total = c * (1 + ITBIS_RATE);
+                setForm({ ...form, cost: c, price_30: roundToNearest50(total * 1.3), price_35: roundToNearest50(total * 1.35) });
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">PV</label>
@@ -338,7 +345,11 @@ export default function CatalogoPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 30%</label>
-              <input type="number" step="0.01" value={roundToNearest50(Number(form.cost) * (1 + ITBIS_RATE) * 1.3) || 0} readOnly className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FAF6F0] text-[#9C8A82] text-sm" />
+              <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 35%</label>
+              <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
           </div>
           <div>
