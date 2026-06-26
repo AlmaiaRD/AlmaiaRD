@@ -131,7 +131,7 @@ export default function RecibosPage() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
           <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${data.clients?.full_name || data.invoices?.clients?.full_name || "\u2014"}</p>
           <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${data.invoices?.invoice_number || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${methodLabel[data.payment_method] || data.payment_method}${data.bank_accounts ? ` &mdash; ${data.bank_accounts.bank_name}` : ""}</p>
+          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${methodLabel[data.payment_method] || data.payment_method}${data.bank_accounts ? ` &mdash; ${data.bank_accounts.bank_name}` : ""}</p>
         </div>
       </div>
 
@@ -417,7 +417,7 @@ export default function RecibosPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#6DB08A]">Método de pago</span>
-                <span className="text-[#5C3E35]">{methodLabel[selectedReceipt.payment_method] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
+                <span className="text-[#5C3E35]" style={{whiteSpace:"nowrap"}}>{methodLabel[selectedReceipt.payment_method] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
               </div>
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-[#86C7A3]/30">
                 <span>Monto pagado</span>
