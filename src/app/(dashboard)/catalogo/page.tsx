@@ -358,7 +358,7 @@ export default function CatalogoPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Código *</label>
-              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" readOnly={!!editingProduct} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all disabled:opacity-60" />
+              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre *</label>
