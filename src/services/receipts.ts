@@ -45,7 +45,7 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
 export async function getReceipt(id: string) {
   const { data, error } = await supabase
     .from("receipts")
-    .select("*, clients(*), invoices(*, clients(*), bank_accounts(*)), bank_accounts(*)")
+    .select("*, clients(*), invoices(*, clients(*), bank_accounts(*), invoice_items(*, products(*, subbrands(name)))), bank_accounts(*)")
     .eq("id", id)
     .single();
   if (error) throw error;

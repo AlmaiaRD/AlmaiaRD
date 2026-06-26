@@ -135,6 +135,28 @@ export default function RecibosPage() {
         </div>
       </div>
 
+      ${(data.invoices?.invoice_items || []).length > 0 ? `
+        <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#F0EBE3;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.invoices.invoice_items.map((item: any) => `
+              <tr style="border-bottom:1px solid #F0EBE3;">
+                <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${item.products?.name || item.custom_name || "Producto"}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${formatCurrency(Number(item.unit_price))}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${formatCurrency(Number(item.line_total))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : ""}
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:20px;">
         <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
           <span style="font-size:14px;color:#9C8A82;">Monto pagado</span>
@@ -403,7 +425,30 @@ export default function RecibosPage() {
               </div>
             </div>
 
-
+            {(selectedReceipt.invoices?.invoice_items || []).length > 0 && (
+              <div>
+                <table className="w-full text-sm mb-5">
+                  <thead>
+                    <tr className="bg-[#F0EBE3]">
+                      <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripci\u00f3n / Producto</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selectedReceipt.invoices?.invoice_items || []).map((item: any, i: number) => (
+                      <tr key={i} className="border-b border-[#F0EBE3]">
+                        <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
+                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {selectedReceipt.amount_in_words && (
               <p className="text-sm text-[#9C8A82] italic">Son: {selectedReceipt.amount_in_words}</p>
