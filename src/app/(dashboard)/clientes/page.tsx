@@ -108,7 +108,6 @@ export default function ClientesPage() {
     setSaving(true);
     try {
       if (editingClient) {
-        console.log("[handleSave] editingClient.id:", editingClient.id);
         await updateClient(editingClient.id, form);
         toast.success("Cliente actualizado exitosamente");
       } else {
@@ -119,9 +118,9 @@ export default function ClientesPage() {
       resetForm();
       load();
     } catch (e: any) {
-      console.error("Error al guardar cliente:", e);
+      const clientId = editingClient?.id || "N/A";
       const msg = e?.message || e?.error?.message || e?.error_description || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-      toast.error(`Error: ${msg}`);
+      toast.error(`Error (${clientId}): ${msg}`);
       console.error("[handleSave]", e);
     } finally {
       setSaving(false);
