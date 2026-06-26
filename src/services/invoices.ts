@@ -31,39 +31,48 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
 
-  const { data: lastInv } = await supabase
-    .from("invoices")
-    .select("invoice_number")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  
   const settings = await getSettings().catch(() => null);
   const prefix = settings?.invoice_prefix || "FAC-";
-  const lastNum = lastInv?.[0]?.invoice_number || `${prefix}000000`;
-  const nextNum = parseInt(lastNum.replace(prefix, ""), 10) + 1;
-  const invoiceNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
 
-  const { data: invData, error: invError } = await supabase
+  const { data: invs } = await supabase
     .from("invoices")
-    .insert({
-      invoice_number: invoiceNumber,
-      client_id: invoice.client_id,
-      invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
-      status: invoice.status || "PENDING",
-      subtotal,
-      discount_amount: discount,
-      itbis_total: itbisTotal,
-      total,
-      amount_paid: 0,
-      balance_due: total,
-      notes: invoice.notes || null,
-      bank_account_id: invoice.bank_account_id || null,
-      margin: invoice.margin || 30,
-      created_by: userId,
-    })
-    .select()
-    .single();
-  if (invError) throw invError;
+    .select("invoice_number")
+    .ilike("invoice_number", `${prefix}%`)
+    .order("invoice_number", { ascending: false })
+    .limit(1);
+  let nextNum = 1;
+  if (invs?.[0]?.invoice_number) {
+    const numPart = parseInt(invs[0].invoice_number.replace(prefix, ""), 10);
+    if (!isNaN(numPart)) nextNum = numPart + 1;
+  }
+
+  let invData: any;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const num = attempt > 0 ? ++nextNum : nextNum;
+    const { data, error: invError } = await supabase
+      .from("invoices")
+      .insert({
+        invoice_number: `${prefix}${String(num).padStart(6, "0")}`,
+        client_id: invoice.client_id,
+        invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
+        status: invoice.status || "PENDING",
+        subtotal,
+        discount_amount: discount,
+        itbis_total: itbisTotal,
+        total,
+        amount_paid: 0,
+        balance_due: total,
+        notes: invoice.notes || null,
+        bank_account_id: invoice.bank_account_id || null,
+        margin: invoice.margin || 30,
+        created_by: userId,
+      })
+      .select()
+      .single();
+    if (data) { invData = data; break; }
+    if (invError?.code !== "23505") throw invError;
+  }
+  if (!invData) throw new Error("No se pudo generar un número de factura único");
 
   const itemsWithInvoiceId = items.map((item) => {
     const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
