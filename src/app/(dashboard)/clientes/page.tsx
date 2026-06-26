@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getClients, createClient, updateClient, deleteClient, searchClients } from "@/services/clients";
+import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients } from "@/services/clients";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
@@ -46,7 +46,7 @@ export default function ClientesPage() {
 
   const load = useCallback(async () => {
     try {
-      const data = searchQuery ? await searchClients(searchQuery) : await getClients();
+      const data = searchQuery ? await searchClients(searchQuery) : await getClientsWithBalances();
       setClients(data);
     } catch (e: any) {
       console.error("Error al cargar clientes:", e);
@@ -168,7 +168,8 @@ export default function ClientesPage() {
     }
   }
 
-  const totalPortfolio = clients.reduce((sum, c) => sum + Number(c.credit_balance), 0);
+  const totalPortfolio = clients.reduce((sum: number, c: any) => sum + Number(c.pending_balance || 0), 0);
+  const totalCreditBalance = clients.reduce((sum: number, c: any) => sum + Number(c.credit_balance || 0), 0);
   const totalInvoiced = detailInvoices.reduce((s, i) => s + Number(i.total), 0);
   const totalPaid = detailReceipts.reduce((s, r) => s + Number(r.amount), 0);
 
@@ -200,8 +201,9 @@ export default function ClientesPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {clients.map((client) => {
-                const balance = Number(client.credit_balance);
+              {clients.map((client: any) => {
+                const pending = Number(client.pending_balance || 0);
+                const credit = Number(client.credit_balance);
                 return (
                   <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
                     <div className="flex items-start justify-between">
@@ -212,13 +214,21 @@ export default function ClientesPage() {
                           {client.email && <span className="flex items-center gap-1"><Mail size={12} />{client.email}</span>}
                         </div>
                         <div className="flex items-center gap-4 mt-2">
-                          <span className="text-sm text-[#5C3E35]">Saldo: <strong>{formatCurrency(balance)}</strong></span>
-                          {balance === 0 ? (
-                            <Badge variant="neutral">SALDADO</Badge>
-                          ) : balance > 0 ? (
-                            <Badge variant="danger">DEBE {formatCurrency(balance)}</Badge>
+                          {pending > 0 ? (
+                            <>
+                              <span className="text-sm text-[#5C3E35]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
+                              <Badge variant="danger">DEBE {formatCurrency(pending)}</Badge>
+                            </>
+                          ) : credit > 0 ? (
+                            <>
+                              <span className="text-sm text-[#5C3E35]">A favor: <strong>{formatCurrency(credit)}</strong></span>
+                              <Badge variant="success">A FAVOR {formatCurrency(credit)}</Badge>
+                            </>
                           ) : (
-                            <Badge variant="success">A FAVOR {formatCurrency(Math.abs(balance))}</Badge>
+                            <>
+                              <span className="text-sm text-[#5C3E35]">Saldo: <strong>{formatCurrency(0)}</strong></span>
+                              <Badge variant="neutral">SALDADO</Badge>
+                            </>
                           )}
                         </div>
                       </button>
@@ -238,8 +248,12 @@ export default function ClientesPage() {
           <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Estado de Cuenta Almaia RD</h3>
           <div className="space-y-3 mb-6">
             <div className="flex justify-between text-sm py-2 border-b border-[#E8E0D8]/50">
-              <span className="text-[#9C8A82]">Cartera total</span>
+              <span className="text-[#9C8A82]">Cartera total (pendiente)</span>
               <span className="font-medium">{formatCurrency(totalPortfolio)}</span>
+            </div>
+            <div className="flex justify-between text-sm py-2 border-b border-[#E8E0D8]/50">
+              <span className="text-[#9C8A82]">Saldos a favor</span>
+              <span className="font-medium text-[#86C7A3]">{formatCurrency(totalCreditBalance)}</span>
             </div>
           </div>
 

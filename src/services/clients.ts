@@ -8,6 +8,20 @@ export async function getClients() {
   return data as Client[];
 }
 
+export async function getClientsWithBalances() {
+  const clients = await getClients();
+  const { data: invoices, error } = await supabase
+    .from("invoices")
+    .select("client_id, balance_due")
+    .neq("status", "PAID");
+  if (error) throw error;
+  const balanceMap: Record<string, number> = {};
+  for (const inv of invoices || []) {
+    balanceMap[inv.client_id] = (balanceMap[inv.client_id] || 0) + Number(inv.balance_due);
+  }
+  return clients.map(c => ({ ...c, pending_balance: balanceMap[c.id] || 0 }));
+}
+
 export async function getClient(id: string) {
   const { data, error } = await supabase.from("clients").select("*").eq("id", id);
   if (error) throw error;
@@ -23,9 +37,17 @@ export async function createClient(client: Partial<Client>) {
 }
 
 export async function updateClient(id: string, client: Partial<Client>) {
+  // First check if the client exists
+  const { data: existing, error: existErr } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("id", id);
+  if (existErr) throw existErr;
+  if (!existing || existing.length === 0) throw new Error("El cliente no existe en la base de datos");
+
   const { data, error } = await supabase.from("clients").update(client).eq("id", id).select();
   if (error) throw error;
-  if (!data || data.length === 0) throw new Error("No se encontró el cliente");
+  if (!data || data.length === 0) throw new Error("La actualización no devolvió datos (posible restricción RLS)");
   return data[0] as Client;
 }
 
