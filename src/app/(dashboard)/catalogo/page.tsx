@@ -255,12 +255,6 @@ export default function CatalogoPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product: any) => {
-            const isNutrilite = product.subbrands?.name === "Nutrilite";
-            const applyItbis = !isNutrilite || Boolean(settings?.nutrilite_itbis_enabled);
-            const itbis = applyItbis ? product.cost * ITBIS_RATE : 0;
-            const total = product.cost + itbis;
-            const p30 = roundToNearest50(total * 1.3);
-            const p35 = roundToNearest50(total * 1.35);
             return (
               <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-start justify-between mb-3">
@@ -277,16 +271,9 @@ export default function CatalogoPage() {
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(product.cost)}</span></div>
-                  <div className="flex justify-between"><span className="text-[#9C8A82]">ITBIS (18%)</span><span className="font-medium">{formatCurrency(itbis)}</span></div>
-                  <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Total</span><span className="font-bold text-[#5C3E35]">{formatCurrency(total)}</span></div>
-                  <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 30%</span><span className="font-medium text-[#B8837E]">{formatCurrency(p30)}</span></div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#9C8A82]">Precio 35%</span>
-                    <div className="text-right">
-                      <span className="font-medium text-[#B8837E]">{formatCurrency(p35)}</span>
-                      <span className="text-[10px] text-[#BFB0A8] ml-1">({formatCurrency(product.cost * ITBIS_RATE + product.cost)} x 1.35 = {formatCurrency((product.cost * ITBIS_RATE + product.cost) * 1.35)})</span>
-                    </div>
-                  </div>
+                  <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-bold text-[#5C3E35]">{formatCurrency(product.cost * 1.18)}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 30%</span><span className="font-medium text-[#B8837E]">{formatCurrency(product.price_30 || 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 35%</span><span className="font-medium text-[#B8837E]">{formatCurrency(product.price_35 || 0)}</span></div>
                 </div>
               </div>
             );
