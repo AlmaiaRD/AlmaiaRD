@@ -1,11 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import type { Product, Category, Subbrand } from "@/types/database";
 
-export async function getProducts() {
-  const { data, error } = await supabase
+export async function getProducts(includeInactive = false) {
+  let query = supabase
     .from("products")
-    .select("*, categories(*), subbrands(*)")
-    .order("name");
+    .select("*, categories(*), subbrands(*)");
+  if (!includeInactive) query = query.eq("active", true);
+  const { data, error } = await query.order("name");
   if (error) throw error;
   return data;
 }

@@ -9,7 +9,7 @@ import { getProducts, createProduct, updateProduct, searchProducts, getCategorie
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
-import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain } from "lucide-react";
+import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -158,6 +158,15 @@ export default function CatalogoPage() {
     finally { setSavingItbis(null); }
   }
 
+  async function handleDeleteProduct(product: any) {
+    if (!confirm(`¿Eliminar "${product.name}" del catálogo?`)) return;
+    try {
+      await updateProduct(product.id, { active: false } as any);
+      setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
+      toast.success("Producto eliminado");
+    } catch { toast.error("Error al eliminar producto"); }
+  }
+
   async function handleCreateSubbrand(name: string) {
     if (!name.trim()) { toast.error("Nombre requerido"); return; }
     try {
@@ -287,7 +296,10 @@ export default function CatalogoPage() {
                     <h3 className="font-medium text-[#5C3E35]">{product.name}</h3>
                     <p className="text-xs text-[#9C8A82] mt-0.5">{product.code}</p>
                   </div>
-                  <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors"><Edit2 size={14} /></button>
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors"><Edit2 size={14} /></button>
+                    <button onClick={() => handleDeleteProduct(product)} className="p-2 text-[#C57E7E] hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {product.subbrands && <Badge variant="info">{product.subbrands.name}</Badge>}
