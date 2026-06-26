@@ -706,7 +706,11 @@ export default function FacturacionPage() {
                       className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between"
                     >
                       <span>{p.name}</span>
-                      <span className="text-[#9C8A82]">{formatCurrency(margin === 30 ? p.price_30 : p.price_35)}</span>
+                      <span className="text-[#9C8A82] text-xs">
+                        <span className={margin === 30 ? "font-semibold text-[#5C3E35]" : ""}>30%: {formatCurrency(p.price_30)}</span>
+                        {" | "}
+                        <span className={margin === 35 ? "font-semibold text-[#5C3E35]" : ""}>35%: {formatCurrency(p.price_35)}</span>
+                      </span>
                     </button>
                   ))}
                 </div>
