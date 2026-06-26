@@ -249,6 +249,8 @@ export interface BankAccount {
   account_type: string;
   account_number: string;
   holder_name: string;
+  id_number: string;
+  email: string;
   is_default: boolean;
   created_at: string;
 }

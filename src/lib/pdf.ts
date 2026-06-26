@@ -12,9 +12,11 @@ interface InvoiceItemData {
 
 interface BankAccountData {
   holder_name: string;
+  id_number?: string;
   bank_name: string;
   account_type: string;
   account_number: string;
+  email?: string;
 }
 
 interface InvoiceData {
@@ -353,7 +355,7 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 
   if (invoice.bank_account) {
     const bank = invoice.bank_account;
-    const paySectionH = 52;
+    const paySectionH = 68;
     drawCreamRoundedRect(doc, M, y, CW, paySectionH, 5);
 
     setTextColor(doc, PRIMARY);
@@ -367,9 +369,11 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 
     const payFields = [
       { label: "Beneficiario:", value: bank.holder_name },
+      ...(bank.id_number ? [{ label: "Cédula/RNC:", value: bank.id_number }] : []),
       { label: "Banco:", value: bank.bank_name },
       { label: "Tipo de Cuenta:", value: bank.account_type },
       { label: "No. de Cuenta:", value: bank.account_number },
+      ...(bank.email ? [{ label: "Correo:", value: bank.email }] : []),
     ];
 
     let payY = y + 14;

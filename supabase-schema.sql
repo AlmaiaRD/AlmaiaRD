@@ -159,6 +159,8 @@ CREATE TABLE bank_accounts (
   account_type TEXT NOT NULL,
   account_number TEXT NOT NULL,
   holder_name TEXT NOT NULL,
+  id_number TEXT DEFAULT '',
+  email TEXT DEFAULT '',
   is_default BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );

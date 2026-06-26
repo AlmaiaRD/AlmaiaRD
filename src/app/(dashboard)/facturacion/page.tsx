@@ -200,9 +200,11 @@ export default function FacturacionPage() {
         balance_due: Number(full.balance_due || 0),
         bank_account: full.bank_accounts ? {
           holder_name: full.bank_accounts.holder_name,
+          id_number: full.bank_accounts.id_number,
           bank_name: full.bank_accounts.bank_name,
           account_type: full.bank_accounts.account_type,
           account_number: full.bank_accounts.account_number,
+          email: full.bank_accounts.email,
         } : undefined,
         logo_url: settings?.logo_url,
         signature_url: settings?.signature_url,
@@ -535,9 +537,11 @@ export default function FacturacionPage() {
                   <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                     <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedInvoice.bank_accounts.holder_name}</p>
+                    {selectedInvoice.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedInvoice.bank_accounts.id_number}</p>}
                     <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedInvoice.bank_accounts.bank_name}</p>
                     <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedInvoice.bank_accounts.account_type}</p>
                     <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedInvoice.bank_accounts.account_number}</p>
+                    {selectedInvoice.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedInvoice.bank_accounts.email}</p>}
                   </div>
                 </div>
               )}
@@ -874,9 +878,11 @@ export default function FacturacionPage() {
               return (
                 <div className="mt-2 bg-[#FAF6F0] rounded-lg p-3 text-sm space-y-1">
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selected.holder_name}</p>
+                  {selected.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selected.id_number}</p>}
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selected.bank_name}</p>
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo:</span> {selected.account_type}</p>
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. Cuenta:</span> {selected.account_number}</p>
+                  {selected.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selected.email}</p>}
                 </div>
               );
             })()}
@@ -997,9 +1003,11 @@ export default function FacturacionPage() {
                 <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {jpgData.bank_accounts.holder_name}</p>
+                  {jpgData.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {jpgData.bank_accounts.id_number}</p>}
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {jpgData.bank_accounts.bank_name}</p>
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {jpgData.bank_accounts.account_type}</p>
                   <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {jpgData.bank_accounts.account_number}</p>
+                  {jpgData.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {jpgData.bank_accounts.email}</p>}
                 </div>
               </div>
             )}
