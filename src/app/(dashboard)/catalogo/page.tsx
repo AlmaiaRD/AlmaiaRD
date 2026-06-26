@@ -283,9 +283,13 @@ export default function CatalogoPage() {
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(product.cost)}</span></div>
-                  <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-bold text-[#5C3E35]">{formatCurrency(product.cost * 1.18)}</span></div>
+                  <div className="flex justify-between border-b border-[#E8E0D8] pb-1.5 mb-1.5"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-bold text-[#5C3E35]">{formatCurrency(product.cost * (1 + ITBIS_RATE))}</span></div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#9C8A82]">Precio 30%</span>
+                    <span className="text-[#9C8A82]">30% exacto</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (1 + ITBIS_RATE) * 1.3)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#9C8A82]">30% redondeado</span>
                     {editingPrice?.id === product.id && editingPrice?.field === "price_30" ? (
                       <input type="number" step="0.01" value={editingPrice.value} autoFocus
                         onChange={(e) => setEditingPrice({ ...editingPrice, value: Number(e.target.value) })}
@@ -301,7 +305,11 @@ export default function CatalogoPage() {
                     )}
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#9C8A82]">Precio 35%</span>
+                    <span className="text-[#9C8A82]">35% exacto</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (1 + ITBIS_RATE) * 1.35)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#9C8A82]">35% redondeado</span>
                     {editingPrice?.id === product.id && editingPrice?.field === "price_35" ? (
                       <input type="number" step="0.01" value={editingPrice.value} autoFocus
                         onChange={(e) => setEditingPrice({ ...editingPrice, value: Number(e.target.value) })}
