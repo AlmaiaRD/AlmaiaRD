@@ -744,8 +744,11 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
--- Eliminar triggers que manejan inventario automáticamente
--- Ahora el inventario se gestiona desde TypeScript para mayor control
+-- Eliminar triggers que calculan/ajustan valores automáticamente
+-- Ahora se gestionan desde TypeScript para mayor control
+DROP TRIGGER IF EXISTS trg_calculate_prices ON products;
+DROP FUNCTION IF EXISTS fn_calculate_product_prices();
+
 DROP TRIGGER IF EXISTS trg_sale_inventory ON invoice_items;
 DROP FUNCTION IF EXISTS fn_update_inventory_on_sale();
 
