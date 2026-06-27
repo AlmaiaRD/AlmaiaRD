@@ -39,7 +39,7 @@ export async function createClient(client: Partial<Client>) {
 export async function updateClient(id: string, client: Partial<Client>) {
   const { data, error } = await supabase.from("clients").update(client).eq("id", id).select();
   if (error) throw error;
-  if (!data || data.length === 0) throw new Error("El cliente no existe o no tienes permiso para actualizarlo");
+  if (!data || data.length === 0) throw new Error("No tienes permiso para editar clientes. Ejecuta el SQL de migración de RLS en Supabase.");
   return data[0] as Client;
 }
 

@@ -607,14 +607,49 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Política base: solo usuarios autenticados
 CREATE POLICY "Users can read own data" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can read all clients" ON clients FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Users can read all products" ON products FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON inventory FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON inventory_movements FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON invoices FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON invoice_items FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON receipts FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "authenticated_access" ON credit_balances FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+-- Clientes: políticas explícitas para cada operación
+DROP POLICY IF EXISTS "Users can read all clients" ON clients;
+CREATE POLICY "clients_select" ON clients FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "clients_insert" ON clients FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "clients_update" ON clients FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "clients_delete" ON clients FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Productos: políticas explícitas
+DROP POLICY IF EXISTS "Users can read all products" ON products;
+CREATE POLICY "products_select" ON products FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "products_insert" ON products FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "products_update" ON products FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "products_delete" ON products FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Demás tablas: políticas explícitas
+DROP POLICY IF EXISTS "authenticated_access" ON inventory;
+CREATE POLICY "inventory_select" ON inventory FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "inventory_insert" ON inventory FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "inventory_update" ON inventory FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "authenticated_access" ON inventory_movements;
+CREATE POLICY "inventory_movements_select" ON inventory_movements FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "inventory_movements_insert" ON inventory_movements FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "authenticated_access" ON invoices;
+CREATE POLICY "invoices_select" ON invoices FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "invoices_insert" ON invoices FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "invoices_update" ON invoices FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "authenticated_access" ON invoice_items;
+CREATE POLICY "invoice_items_select" ON invoice_items FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "invoice_items_insert" ON invoice_items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "authenticated_access" ON receipts;
+CREATE POLICY "receipts_select" ON receipts FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "receipts_insert" ON receipts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "receipts_update" ON receipts FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "authenticated_access" ON credit_balances;
+CREATE POLICY "credit_balances_select" ON credit_balances FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "credit_balances_insert" ON credit_balances FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "credit_balances_update" ON credit_balances FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_access" ON followups FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_access" ON expenses FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_access" ON bonuses FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
