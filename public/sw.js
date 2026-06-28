@@ -1,4 +1,4 @@
-const CACHE_NAME = "almaia-v3";
+const CACHE_NAME = "almaia-v4";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icons/icon-192x192.png",

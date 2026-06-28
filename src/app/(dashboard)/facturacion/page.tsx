@@ -34,6 +34,8 @@ export default function FacturacionPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterYear, setFilterYear] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterClient, setFilterClient] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -457,7 +459,7 @@ export default function FacturacionPage() {
         />
       </div>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
         <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
           className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
           <option value="">Todos los meses</option>
@@ -472,8 +474,22 @@ export default function FacturacionPage() {
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
-        {(filterMonth || filterYear) && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          <option value="">Todos los estados</option>
+          <option value="PENDING">Pendiente</option>
+          <option value="PAID">Pagada</option>
+          <option value="CANCELLED">Cancelada</option>
+        </select>
+        <select value={filterClient} onChange={(e) => setFilterClient(e.target.value)}
+          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          <option value="">Todos los clientes</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>{c.full_name}</option>
+          ))}
+        </select>
+        {(filterMonth || filterYear || filterStatus || filterClient) && (
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus(""); setFilterClient(""); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
         )}
       </div>
 
@@ -507,6 +523,8 @@ export default function FacturacionPage() {
                     if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
                     if (filterYear && String(d.getFullYear()) !== filterYear) return false;
                   }
+                  if (filterStatus && inv.status !== filterStatus) return false;
+                  if (filterClient && inv.client_id !== filterClient) return false;
                   return true;
                 })
                 .map((inv: any) => {
