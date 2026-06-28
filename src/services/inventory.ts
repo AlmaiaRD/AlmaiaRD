@@ -82,10 +82,13 @@ export async function subtractInventoryStock(productId: string, quantity: number
 
   if (existing) {
     const newStock = Math.max(0, existing.stock - quantity);
+    const shortfall = quantity - (existing.stock - newStock);
+    const newPending = (existing.pending_return || 0) + shortfall;
     const { error } = await supabase
       .from("inventory")
       .update({
         stock: newStock,
+        pending_return: newPending,
         updated_at: new Date().toISOString(),
       })
       .eq("product_id", productId);

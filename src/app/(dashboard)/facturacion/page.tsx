@@ -42,7 +42,7 @@ export default function FacturacionPage() {
   const [selectedClient, setSelectedClient] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
   const [margin, setMargin] = useState(30);
-  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; pv: number; itbis: boolean }>>([]);
+  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; price_30?: number; price_35?: number; pv: number; itbis: boolean }>>([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [notes, setNotes] = useState("");
@@ -103,6 +103,13 @@ export default function FacturacionPage() {
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current); };
   }, [searchQuery, load]);
 
+  function effectivePrice(item: { unit_price: number; price_30?: number; price_35?: number }) {
+    if (item.price_30 != null && item.price_35 != null) {
+      return margin === 30 ? item.price_30 : item.price_35;
+    }
+    return item.unit_price;
+  }
+
   function handleSearch(val: string) {
     searchRef.current = val;
     setSearchQuery(val);
@@ -140,11 +147,15 @@ export default function FacturacionPage() {
   }
 
   function addProduct(product: any) {
+    const price_30_ = product.price_30 ?? 0;
+    const price_35_ = product.price_35 ?? 0;
     setItems([...items, {
       product_id: product.id,
       name: product.name,
       quantity: 1,
-      unit_price: margin === 30 ? product.price_30 : product.price_35,
+      unit_price: margin === 30 ? price_30_ : price_35_,
+      price_30: price_30_,
+      price_35: price_35_,
       pv: product.pv,
       itbis: product.apply_itbis !== false,
     }]);
@@ -169,8 +180,8 @@ export default function FacturacionPage() {
     setItems(items.filter((_, i) => i !== index));
   }
 
-  const subtotal = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
-  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * i.unit_price * 0.18 : 0), 0);
+  const subtotal = items.reduce((s, i) => s + i.quantity * effectivePrice(i), 0);
+  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * effectivePrice(i) * 0.18 : 0), 0);
   const discountValue = discountAmount > 0 ? discountAmount : (subtotal * discountPercent / 100);
   const total = subtotal + itbisTotal - discountValue;
 
@@ -383,8 +394,8 @@ export default function FacturacionPage() {
       const invoiceItems = items.map((i) => ({
         product_id: i.product_id || undefined,
         quantity: i.quantity,
-        unit_price: i.unit_price,
-        line_total: i.quantity * i.unit_price,
+        unit_price: effectivePrice(i),
+        line_total: i.quantity * effectivePrice(i),
         pv: i.pv * i.quantity,
         unit_cost: 0,
         itbis: i.itbis,
@@ -883,10 +894,12 @@ export default function FacturacionPage() {
                       className="w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
                     />
                     <input
-                      type="number" step="0.01" value={item.unit_price}
+                      type="number" step="0.01" value={effectivePrice(item)}
                       onChange={(e) => {
                         const newItems = [...items];
                         newItems[i].unit_price = Number(e.target.value);
+                        delete newItems[i].price_30;
+                        delete newItems[i].price_35;
                         setItems(newItems);
                       }}
                       className="w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
@@ -903,7 +916,7 @@ export default function FacturacionPage() {
                       <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-6" : "translate-x-0.5"}`} />
                     </button>
                     <span className={`text-sm font-medium w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
-                      {formatCurrency(item.quantity * item.unit_price)}
+                      {formatCurrency(item.quantity * effectivePrice(item))}
                     </span>
                     <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
                       <X size={16} />

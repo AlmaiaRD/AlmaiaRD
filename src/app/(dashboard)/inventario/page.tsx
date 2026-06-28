@@ -6,7 +6,7 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct } from "@/services/inventory";
 import { getProducts } from "@/services/products";
-import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities } from "@/services/purchases";
+import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
 import { normalize } from "@/lib/search";
 import { getSuppliers } from "@/services/suppliers";
 import { getBankAccounts } from "@/services/invoices";
@@ -37,6 +37,7 @@ function InventarioContent() {
   const [products, setProducts] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [soldMap, setSoldMap] = useState<Record<string, number>>({});
+  const [purchasedMap, setPurchasedMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
@@ -329,10 +330,11 @@ function InventarioContent() {
 
   async function load() {
     try {
-      const [inv, pro, sold, sup, ba, st] = await Promise.all([
+      const [inv, pro, sold, purchased, sup, ba, st] = await Promise.all([
         getInventory(),
         getProducts(),
         getSoldQuantities(),
+        getPurchasedQuantities(),
         getSuppliers(),
         getBankAccounts(),
         getSettings().catch(() => null),
@@ -340,6 +342,7 @@ function InventarioContent() {
       setInventory(inv);
       setProducts(pro);
       setSoldMap(sold);
+      setPurchasedMap(purchased);
       setSuppliers(sup);
       setBankAccounts(ba);
       setSettings(st);
@@ -380,6 +383,7 @@ function InventarioContent() {
   }, [showConfirmDeleteProduct]);
 
   const filtered = inventory.filter((item) => {
+    if (item.stock <= 0 && (item.pending_return || 0) <= 0) return false;
     if (!searchQuery) return true;
     const q = normalize(searchQuery);
     return (
@@ -645,8 +649,10 @@ function InventarioContent() {
               </thead>
               <tbody>
                 {filtered.map((item) => {
-                  const status = getStockStatus(item.stock, item.minimum_stock);
                   const sold = soldMap[item.product_id] || 0;
+                  const purchased = purchasedMap[item.product_id] || 0;
+                  const computedStock = Math.max(0, purchased - sold);
+                  const status = getStockStatus(computedStock, item.minimum_stock);
                   return (
                     <tr
                       key={item.id}
@@ -658,9 +664,9 @@ function InventarioContent() {
                         {item.products?.name || "—"}
                         <span className="ml-2 text-xs text-[#9C8A82]">{item.products?.code}</span>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{item.stock + sold}</td>
+                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{purchased || "—"}</td>
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{sold}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{item.stock}</td>
+                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{computedStock}</td>
                       <td className="px-4 py-3.5 text-sm text-[#D4A0A0] text-right font-medium">{item.pending_return || 0}</td>
                       <td className="px-4 py-3.5 text-center">
                         <Badge variant={status.variant}>{status.label}</Badge>
@@ -796,12 +802,20 @@ function InventarioContent() {
 
       {/* Product detail modal */}
       <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title={detailItem?.products?.name || "Detalle"} wide>
-        {detailItem && (
+        {detailItem && (() => {
+          const detSold = soldMap[detailItem.product_id] || 0;
+          const detPurchased = purchasedMap[detailItem.product_id] || 0;
+          const detStock = Math.max(0, detPurchased - detSold);
+          return (
           <div className="space-y-5">
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-5 gap-3">
+              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#9C8A82]">Compradas</p>
+                <p className="text-xl font-bold text-[#5C3E35]">{detPurchased || "—"}</p>
+              </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Stock actual</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{detailItem.stock}</p>
+                <p className="text-xl font-bold text-[#5C3E35]">{detStock}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Pend. Dev.</p>
@@ -809,10 +823,10 @@ function InventarioContent() {
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Vendidas</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{soldMap[detailItem.product_id] || 0}</p>
+                <p className="text-xl font-bold text-[#5C3E35]">{detSold}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Valor</p>
+                <p className="text-xs text-[#9C8A82]">Valor inventario</p>
                 <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(detailItem.inventory_value)}</p>
               </div>
             </div>
@@ -856,7 +870,8 @@ function InventarioContent() {
               )}
             </div>
           </div>
-        )}
+          );
+        })()}
       </Modal>
 
       {/* Purchase modal */}

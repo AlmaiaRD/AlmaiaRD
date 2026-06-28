@@ -210,6 +210,19 @@ export async function deletePurchase(id: string) {
 export async function getSoldQuantities() {
   const { data, error } = await supabase
     .from("invoice_items")
+    .select("product_id, quantity, invoices!inner(status)")
+    .neq("invoices.status", "CANCELLED");
+  if (error) throw error;
+  const map: Record<string, number> = {};
+  (data || []).forEach((item: any) => {
+    map[item.product_id] = (map[item.product_id] || 0) + item.quantity;
+  });
+  return map;
+}
+
+export async function getPurchasedQuantities() {
+  const { data, error } = await supabase
+    .from("purchase_items")
     .select("product_id, quantity");
   if (error) throw error;
   const map: Record<string, number> = {};
