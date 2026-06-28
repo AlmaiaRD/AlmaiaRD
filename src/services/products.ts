@@ -73,6 +73,16 @@ export async function createSubbrand(name: string) {
   return data as Subbrand;
 }
 
+export async function deactivateSubbrand(id: string) {
+  const { error } = await supabase.from("subbrands").update({ active: false }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deactivateCategory(id: string) {
+  const { error } = await supabase.from("categories").update({ active: false }).eq("id", id);
+  if (error) throw error;
+}
+
 export async function importProductsFromPdf(file: File) {
   const formData = new FormData();
   formData.append("file", file);

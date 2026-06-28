@@ -5,11 +5,11 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
-import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand } from "@/services/products";
+import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
-import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -42,6 +42,10 @@ export default function CatalogoPage() {
   const [newForFilter, setNewForFilter] = useState<"subbrand" | "category" | null>(null);
   const [editingPrice, setEditingPrice] = useState<{ id: string; field: "price_30" | "price_35"; value: number } | null>(null);
   const [savingItbis, setSavingItbis] = useState<string | null>(null);
+  const [showManageSubbrands, setShowManageSubbrands] = useState(false);
+  const [showManageCategories, setShowManageCategories] = useState(false);
+  const [deletingSubbrand, setDeletingSubbrand] = useState<string | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
 
   const fetchMeta = useCallback(async () => {
     const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
@@ -258,7 +262,12 @@ export default function CatalogoPage() {
       {showFilters && (
         <div className="flex gap-4 mb-6 p-4 bg-white rounded-2xl border border-[#E8E0D8]">
           <div className="flex-1">
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Submarca</label>
+            <label className="block text-xs font-medium text-[#9C8A82] mb-1 flex items-center gap-1">
+              Submarca
+              <button onClick={() => setShowManageSubbrands(true)} className="text-[#B8837E] hover:text-[#9A6B66]" title="Gestionar submarcas">
+                <SettingsIcon size={14} />
+              </button>
+            </label>
             <select value={filterSubbrand} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("subbrand"); setShowNewSubbrand(true); return; }
               setFilterSubbrand(e.target.value);
@@ -269,7 +278,12 @@ export default function CatalogoPage() {
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Categoría</label>
+            <label className="block text-xs font-medium text-[#9C8A82] mb-1 flex items-center gap-1">
+              Categoría
+              <button onClick={() => setShowManageCategories(true)} className="text-[#B8837E] hover:text-[#9A6B66]" title="Gestionar categorías">
+                <SettingsIcon size={14} />
+              </button>
+            </label>
             <select value={filterCategory} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("category"); setShowNewCategory(true); return; }
               setFilterCategory(e.target.value);
@@ -481,6 +495,66 @@ export default function CatalogoPage() {
             <button onClick={() => { setShowNewCategory(false); setNewCategoryName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
             <button onClick={() => handleCreateCategory(newCategoryName)} disabled={!newCategoryName.trim()} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">Crear</button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showManageSubbrands} onClose={() => { setShowManageSubbrands(false); setDeletingSubbrand(null); }} title="Gestionar Submarcas">
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {subbrands.length === 0 ? (
+            <p className="text-sm text-[#9C8A82] py-4 text-center">No hay submarcas</p>
+          ) : subbrands.map((s) => (
+            <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
+              <span className="text-sm text-[#5C3E35]">{s.name}</span>
+              <button
+                onClick={async () => {
+                  if (deletingSubbrand === s.id || !confirm(`¿Eliminar "${s.name}"?`)) return;
+                  setDeletingSubbrand(s.id);
+                  try {
+                    await deactivateSubbrand(s.id);
+                    setSubbrands((prev) => prev.filter((x) => x.id !== s.id));
+                    if (filterSubbrand === s.id) setFilterSubbrand("");
+                    toast.success(`"${s.name}" eliminada`);
+                  } catch { toast.error("Error al eliminar"); }
+                  finally { setDeletingSubbrand(null); }
+                }}
+                disabled={deletingSubbrand === s.id}
+                className="p-1.5 text-[#9C8A82] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                title="Eliminar submarca"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal isOpen={showManageCategories} onClose={() => { setShowManageCategories(false); setDeletingCategory(null); }} title="Gestionar Categorías">
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {categories.length === 0 ? (
+            <p className="text-sm text-[#9C8A82] py-4 text-center">No hay categorías</p>
+          ) : categories.map((c) => (
+            <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
+              <span className="text-sm text-[#5C3E35]">{c.name}</span>
+              <button
+                onClick={async () => {
+                  if (deletingCategory === c.id || !confirm(`¿Eliminar "${c.name}"?`)) return;
+                  setDeletingCategory(c.id);
+                  try {
+                    await deactivateCategory(c.id);
+                    setCategories((prev) => prev.filter((x) => x.id !== c.id));
+                    if (filterCategory === c.id) setFilterCategory("");
+                    toast.success(`"${c.name}" eliminada`);
+                  } catch { toast.error("Error al eliminar"); }
+                  finally { setDeletingCategory(null); }
+                }}
+                disabled={deletingCategory === c.id}
+                className="p-1.5 text-[#9C8A82] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                title="Eliminar categoría"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ))}
         </div>
       </Modal>
     </PageContainer>
