@@ -74,15 +74,27 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   }
   if (!invData) throw new Error("No se pudo generar un número de factura único");
 
+  // Fetch product costs to calculate real unit_cost
+  const productIds = items.map(i => i.product_id).filter(Boolean) as string[];
+  const { data: costData } = await supabase
+    .from("products")
+    .select("id, cost, apply_itbis")
+    .in("id", productIds);
+  const costMap: Record<string, { cost: number; apply_itbis: boolean }> = {};
+  (costData || []).forEach((p: any) => { costMap[p.id] = { cost: Number(p.cost || 0), apply_itbis: p.apply_itbis !== false }; });
+
   const itemsWithInvoiceId = items.map((item) => {
     const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
     const itbis = item.itbis || false;
+    const prod = item.product_id ? costMap[item.product_id] : null;
+    const rawCost = prod?.cost || 0;
+    const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? 1.18 : 1.0) * 100) / 100 : 0;
     return {
       product_id: item.product_id || null,
       invoice_id: invData.id,
       quantity: item.quantity,
       unit_price: item.unit_price,
-      unit_cost: 0,
+      unit_cost: unitCost,
       line_total: lineTotal,
       pv: (item.pv || 0) * (item.quantity || 0),
       itbis,
@@ -149,15 +161,27 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
   if (delError) throw delError;
 
   if (items.length > 0) {
+    // Fetch product costs to calculate real unit_cost
+    const productIds = items.map(i => i.product_id).filter(Boolean) as string[];
+    const { data: costData } = await supabase
+      .from("products")
+      .select("id, cost, apply_itbis")
+      .in("id", productIds);
+    const costMap: Record<string, { cost: number; apply_itbis: boolean }> = {};
+    (costData || []).forEach((p: any) => { costMap[p.id] = { cost: Number(p.cost || 0), apply_itbis: p.apply_itbis !== false }; });
+
     const itemsWithInvoiceId = items.map((item) => {
       const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
       const itbis = item.itbis || false;
+      const prod = item.product_id ? costMap[item.product_id] : null;
+      const rawCost = prod?.cost || 0;
+      const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? 1.18 : 1.0) * 100) / 100 : 0;
       return {
         product_id: item.product_id || null,
         invoice_id: id,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        unit_cost: 0,
+        unit_cost: unitCost,
         line_total: lineTotal,
         pv: (item.pv || 0) * (item.quantity || 0),
         itbis,
