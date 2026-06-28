@@ -27,6 +27,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   const discount = Number(invoice.discount_amount || 0);
   const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
   const total = subtotal + itbisTotal - discount;
+  const pvTotal = items.reduce((s, i) => s + ((i.pv || 0) * (i.quantity || 0)), 0);
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;
@@ -60,6 +61,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
         discount_amount: discount,
         itbis_total: itbisTotal,
         total,
+        pv_total: pvTotal,
         amount_paid: 0,
         balance_due: total,
         notes: invoice.notes || null,
@@ -121,6 +123,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
   const discount = Number(invoice.discount_amount || 0);
   const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
   const total = subtotal + itbisTotal - discount;
+  const pvTotal = items.reduce((s, i) => s + ((i.pv || 0) * (i.quantity || 0)), 0);
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = (sessData as any)?.session?.user?.id;

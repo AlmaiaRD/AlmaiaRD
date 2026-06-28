@@ -12,10 +12,36 @@ export async function getDashboardStats() {
     .select("*");
   if (arError) throw arError;
 
-  const { data: inventory, error: invError } = await supabase
+  // Cobros Recibidos: sum of receipts for current month
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const { data: receipts } = await supabase
+    .from("receipts")
+    .select("amount")
+    .gte("created_at", monthStart.toISOString());
+  const totalPaidReceipts = (receipts || []).reduce((s: number, r: any) => s + Number(r.amount), 0);
+
+  // Valor de inventario: stock × cost × (apply_itbis ? 1.35 : 1.0)
+  const { data: invFull } = await supabase
+    .from("inventory")
+    .select("stock, products(cost, apply_itbis)");
+  const inventoryValue = (invFull || []).reduce((sum: number, i: any) => {
+    const stock = Number(i.stock || 0);
+    const cost = Number(i.products?.cost || 0);
+    const applyItbis = i.products?.apply_itbis !== false;
+    const markup = applyItbis ? 1.35 : 1.0;
+    return sum + stock * cost * markup;
+  }, 0);
+
+  const totalStock = (invFull || []).reduce((sum: number, i: any) => sum + Number(i.stock || 0), 0);
+
+  // Low stock / out of stock
+  const { data: lowStockData } = await supabase
     .from("vw_inventory_value")
     .select("*");
-  if (invError) throw invError;
+  const lowStock = (lowStockData || []).filter((i: any) => i.stock_status === "BAJO").length;
+  const outOfStock = (lowStockData || []).filter((i: any) => i.stock_status === "AGOTADO").length;
 
   const { data: profitability, error: profError } = await supabase
     .from("vw_profitability")
@@ -23,18 +49,15 @@ export async function getDashboardStats() {
     .single();
   if (profError) throw profError;
 
-  const { data: pv, error: pvError } = await supabase
-    .from("vw_pv_summary")
-    .select("*")
-    .single();
-  if (pvError) throw pvError;
+  // PV del Mes: sum pv from invoice_items for current month (non-cancelled invoices)
+  const { data: pvData } = await supabase
+    .from("invoice_items")
+    .select("pv, invoices!inner(status, invoice_date)")
+    .gte("invoices.invoice_date", monthStart.toISOString().split("T")[0])
+    .neq("invoices.status", "CANCELLED");
+  const pvMonth = (pvData || []).reduce((s: number, ii: any) => s + Number(ii.pv || 0), 0);
 
   const totalPending = ar.reduce((sum: number, r: any) => sum + Number(r.total_pending), 0);
-  const totalPaid = ar.reduce((sum: number, r: any) => sum + Number(r.total_paid), 0);
-  const inventoryValue = inventory.reduce((sum: number, i: any) => sum + Number(i.total_value), 0);
-  const totalStock = inventory.reduce((sum: number, i: any) => sum + Number(i.stock), 0);
-  const lowStock = inventory.filter((i: any) => i.stock_status === "BAJO").length;
-  const outOfStock = inventory.filter((i: any) => i.stock_status === "AGOTADO").length;
 
   return {
     salesToday: sales?.sales_today ?? 0,
@@ -42,15 +65,15 @@ export async function getDashboardStats() {
     salesYear: sales?.sales_year ?? 0,
     totalSales: sales?.total_sales ?? 0,
     totalPending,
-    totalPaid,
+    totalPaid: totalPaidReceipts,
     inventoryValue,
     totalStock,
     lowStock,
     outOfStock,
     grossProfit: profitability?.gross_profit ?? 0,
     realProfit: profitability?.real_profit ?? 0,
-    pvMonth: pv?.pv_month ?? 0,
-    pvYear: pv?.pv_year ?? 0,
+    pvMonth,
+    pvYear: 0,
   };
 }
 
