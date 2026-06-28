@@ -17,7 +17,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -32,15 +32,15 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "relative bg-white rounded-3xl shadow-xl w-full overflow-hidden",
+              "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto max-h-[90vh] sm:max-h-none overflow-hidden",
               wide ? "max-w-3xl" : "max-w-lg"
             )}
           >
-            <div className="bg-[#5C3E35] px-6 py-4 flex items-center justify-between">
+            <div className="bg-[#5C3E35] px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-white text-lg font-semibold">{title}</h2>
+                <h2 className="text-white text-base sm:text-lg font-semibold">{title}</h2>
                 {subtitle && (
-                  <p className="text-[#D4C8C0] text-sm mt-0.5">{subtitle}</p>
+                  <p className="text-[#D4C8C0] text-xs sm:text-sm mt-0.5">{subtitle}</p>
                 )}
               </div>
               <button
@@ -50,7 +50,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto max-h-[75vh]">{children}</div>
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[75vh]">{children}</div>
           </motion.div>
         </div>
       )}

@@ -738,7 +738,7 @@ export default function FacturacionPage() {
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingId ? "Editar Factura" : "Nueva Factura"} wide>
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cliente</label>
               <div className="flex gap-2">
@@ -847,7 +847,7 @@ export default function FacturacionPage() {
                     autoFocus
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#5C3E35] mb-1">Cantidad</label>
                     <input
@@ -900,52 +900,56 @@ export default function FacturacionPage() {
             ) : (
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {items.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">
-                    <div className="flex-1 text-sm text-[#5C3E35]">{item.name}</div>
-                    <input
-                      type="number" min={1} value={item.quantity}
-                      onChange={(e) => {
-                        const newItems = [...items];
-                        newItems[i].quantity = Number(e.target.value);
-                        setItems(newItems);
-                      }}
-                      className="w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                    />
-                    <input
-                      type="number" step="0.01" value={effectivePrice(item)}
-                      onChange={(e) => {
-                        const newItems = [...items];
-                        newItems[i].unit_price = Number(e.target.value);
-                        delete newItems[i].price_30;
-                        delete newItems[i].price_35;
-                        setItems(newItems);
-                      }}
-                      className="w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newItems = [...items];
-                        newItems[i].itbis = !newItems[i].itbis;
-                        setItems(newItems);
-                      }}
-                      className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
-                    >
-                      <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-6" : "translate-x-0.5"}`} />
-                    </button>
-                    <span className={`text-sm font-medium w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
-                      {formatCurrency(item.quantity * effectivePrice(item))}
-                    </span>
-                    <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
-                      <X size={16} />
-                    </button>
+                  <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3 flex-wrap sm:flex-nowrap">
+                    <div className="flex-1 text-sm text-[#5C3E35] min-w-[120px] sm:min-w-0">{item.name}</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number" min={1} value={item.quantity}
+                        onChange={(e) => {
+                          const newItems = [...items];
+                          newItems[i].quantity = Number(e.target.value);
+                          setItems(newItems);
+                        }}
+                        className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                      />
+                      <input
+                        type="number" step="0.01" value={effectivePrice(item)}
+                        onChange={(e) => {
+                          const newItems = [...items];
+                          newItems[i].unit_price = Number(e.target.value);
+                          delete newItems[i].price_30;
+                          delete newItems[i].price_35;
+                          setItems(newItems);
+                        }}
+                        className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newItems = [...items];
+                          newItems[i].itbis = !newItems[i].itbis;
+                          setItems(newItems);
+                        }}
+                        className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                      >
+                        <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
+                      </button>
+                      <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
+                        {formatCurrency(item.quantity * effectivePrice(item))}
+                      </span>
+                      <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
+                        <X size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descuento %</label>
               <input

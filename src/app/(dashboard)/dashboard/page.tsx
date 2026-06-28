@@ -255,7 +255,7 @@ export default function DashboardPage() {
               <span className="text-xs text-[#9C8A82]">{goalMonth}</span>
             </div>
 
-            <div className="bg-[#FCFAF7] border border-dashed border-[#E8E0D8] rounded-xl p-3 mb-4 flex justify-between items-center">
+            <div className="bg-[#FCFAF7] border border-dashed border-[#E8E0D8] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <label className="text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Meta</label>
               <div className="flex items-center gap-2">
                 <input
@@ -307,7 +307,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <div className="flex-1 bg-[#FCFAF7] rounded-xl p-3 text-center border border-[#E8E0D8]">
                 <div className="text-[10px] font-semibold text-[#9C8A82] uppercase tracking-wider">Cobrado</div>
                 <div className="text-base font-extrabold text-[#86C7A3] mt-1">{formatCurrency(cobrado)}</div>
