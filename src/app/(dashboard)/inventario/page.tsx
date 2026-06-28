@@ -383,7 +383,11 @@ function InventarioContent() {
   }, [showConfirmDeleteProduct]);
 
   const filtered = inventory.filter((item) => {
-    if (item.stock <= 0 && (item.pending_return || 0) <= 0) return false;
+    const fSold = soldMap[item.product_id] || 0;
+    const fPurchased = purchasedMap[item.product_id] || 0;
+    const fStock = Math.max(0, fPurchased - fSold);
+    const fPending = Math.max(0, fSold - fPurchased);
+    if (fStock <= 0 && fPending <= 0) return false;
     if (!searchQuery) return true;
     const q = normalize(searchQuery);
     return (
@@ -394,8 +398,8 @@ function InventarioContent() {
   });
 
   const totalValue = inventory.reduce((s, i) => s + Number(i.inventory_value || 0), 0);
-  const totalStock = inventory.reduce((s, i) => s + Number(i.stock || 0), 0);
-  const totalPending = inventory.reduce((s, i) => s + Number(i.pending_return || 0), 0);
+  const totalStock = inventory.reduce((s, i) => { const p = purchasedMap[i.product_id]||0; const sd = soldMap[i.product_id]||0; return s + Math.max(0, p - sd); }, 0);
+  const totalPending = inventory.reduce((s, i) => { const p = purchasedMap[i.product_id]||0; const sd = soldMap[i.product_id]||0; return s + Math.max(0, sd - p); }, 0);
 
   async function openDetail(item: any) {
     setDetailItem(item);
@@ -652,6 +656,7 @@ function InventarioContent() {
                   const sold = soldMap[item.product_id] || 0;
                   const purchased = purchasedMap[item.product_id] || 0;
                   const computedStock = Math.max(0, purchased - sold);
+                  const computedPending = Math.max(0, sold - purchased);
                   const status = getStockStatus(computedStock, item.minimum_stock);
                   return (
                     <tr
@@ -667,7 +672,7 @@ function InventarioContent() {
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{purchased || "—"}</td>
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{sold}</td>
                       <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{computedStock}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#D4A0A0] text-right font-medium">{item.pending_return || 0}</td>
+                      <td className="px-4 py-3.5 text-sm text-[#D4A0A0] text-right font-medium">{computedPending}</td>
                       <td className="px-4 py-3.5 text-center">
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </td>
@@ -806,6 +811,7 @@ function InventarioContent() {
           const detSold = soldMap[detailItem.product_id] || 0;
           const detPurchased = purchasedMap[detailItem.product_id] || 0;
           const detStock = Math.max(0, detPurchased - detSold);
+          const detPending = Math.max(0, detSold - detPurchased);
           return (
           <div className="space-y-5">
             <div className="grid grid-cols-5 gap-3">
@@ -819,7 +825,7 @@ function InventarioContent() {
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Pend. Dev.</p>
-                <p className="text-xl font-bold text-[#D4A0A0]">{detailItem.pending_return || 0}</p>
+                <p className="text-xl font-bold text-[#D4A0A0]">{detPending}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Vendidas</p>
