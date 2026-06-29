@@ -14,10 +14,29 @@ export interface Client {
   ibo_number: string;
   notes: string;
   credit_balance: number;
+  stage: string;
+  first_contact_date: string | null;
+  lead_source: string | null;
+  interest: string | null;
+  next_followup_date: string | null;
+  last_contact_date: string | null;
   created_at: string;
   updated_at: string;
   created_by?: string;
   updated_by?: string;
+}
+
+export interface ClientCardData extends Client {
+  pending_balance: number;
+  total_spent: number;
+  num_purchases: number;
+  last_purchase_date: string | null;
+  days_since_last_purchase: number | null;
+  avg_ticket: number;
+  pv_total: number;
+  top_products: { name: string; count: number }[];
+  tags: { id: string; name: string }[];
+  next_action: { date: string; description: string } | null;
 }
 
 export interface ClientTag {

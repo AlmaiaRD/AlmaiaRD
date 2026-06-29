@@ -15,11 +15,13 @@ import {
   Settings,
   Menu,
   X,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Estadísticas", icon: BarChart3 },
+  { href: "/pipeline", label: "Pipeline", icon: GitBranch },
   { href: "/crm", label: "CRM y Seguimiento", icon: Calendar },
   { href: "/facturacion", label: "Facturas", icon: FileText },
   { href: "/recibos", label: "Recibos", icon: Receipt },

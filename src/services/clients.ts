@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { normalize } from "@/lib/search";
-import type { Client, ClientTag, ClientTagRelation } from "@/types/database";
+import type { Client, ClientCardData, ClientTag, ClientTagRelation } from "@/types/database";
 
 export async function getClients() {
   const { data, error } = await supabase.from("clients").select("*").order("full_name");
@@ -20,6 +20,115 @@ export async function getClientsWithBalances() {
     balanceMap[inv.client_id] = (balanceMap[inv.client_id] || 0) + Number(inv.balance_due);
   }
   return clients.map(c => ({ ...c, pending_balance: balanceMap[c.id] || 0 }));
+}
+
+export async function getClientCardData(): Promise<ClientCardData[]> {
+  const clients = await getClients();
+
+  const { data: invoices, error: invErr } = await supabase
+    .from("invoices")
+    .select("id, client_id, invoice_date, total, status, pv_total")
+    .neq("status", "CANCELLED");
+  if (invErr) throw invErr;
+
+  const { data: items, error: itemsErr } = await supabase
+    .from("invoice_items")
+    .select("invoice_id, product_id, quantity, pv, products!inner(name)")
+    .in("invoice_id", (invoices || []).map(i => i.id));
+  if (itemsErr) throw itemsErr;
+
+  const { data: balanceInvoices, error: balErr } = await supabase
+    .from("invoices")
+    .select("client_id, balance_due")
+    .neq("status", "PAID");
+  if (balErr) throw balErr;
+
+  const { data: followups, error: fupErr } = await supabase
+    .from("followups")
+    .select("client_id, contact_date, comments, status")
+    .in("status", ["PENDING", "OVERDUE"])
+    .order("contact_date", { ascending: true });
+  if (fupErr) throw fupErr;
+
+  const { data: tagRelations, error: tagErr } = await supabase
+    .from("client_tag_relations")
+    .select("*, client_tags(name)");
+  if (tagErr) throw tagErr;
+
+  const balanceMap: Record<string, number> = {};
+  for (const inv of balanceInvoices || []) {
+    balanceMap[inv.client_id] = (balanceMap[inv.client_id] || 0) + Number(inv.balance_due);
+  }
+
+  const invoiceItemsMap: Record<string, Array<{ name: string }>> = {};
+  for (const item of items || []) {
+    if (!invoiceItemsMap[item.invoice_id]) invoiceItemsMap[item.invoice_id] = [];
+    invoiceItemsMap[item.invoice_id].push({ name: (item as any).products?.name || "—" });
+  }
+
+  const clientInvoiceMap: Record<string, Array<{ invoice_date: string; total: number; pv_total: number; id: string }>> = {};
+  for (const inv of invoices || []) {
+    if (!clientInvoiceMap[inv.client_id]) clientInvoiceMap[inv.client_id] = [];
+    clientInvoiceMap[inv.client_id].push(inv);
+  }
+
+  const tagsByClient: Record<string, { id: string; name: string }[]> = {};
+  for (const rel of tagRelations || []) {
+    if (!tagsByClient[rel.client_id]) tagsByClient[rel.client_id] = [];
+    tagsByClient[rel.client_id].push({ id: rel.tag_id, name: (rel as any).client_tags?.name || "" });
+  }
+
+  const nextActionByClient: Record<string, { date: string; description: string }> = {};
+  for (const fup of followups || []) {
+    if (!nextActionByClient[fup.client_id]) {
+      nextActionByClient[fup.client_id] = {
+        date: fup.contact_date,
+        description: fup.comments?.replace(/^\[.*?\]\s*/, "").substring(0, 60) || "Seguimiento",
+      };
+    }
+  }
+
+  const productCountByClient: Record<string, Record<string, number>> = {};
+  for (const inv of invoices || []) {
+    const invItems = invoiceItemsMap[inv.id] || [];
+    for (const item of invItems) {
+      if (!productCountByClient[inv.client_id]) productCountByClient[inv.client_id] = {};
+      productCountByClient[inv.client_id][item.name] = (productCountByClient[inv.client_id][item.name] || 0) + 1;
+    }
+  }
+
+  const now = new Date();
+  return clients.map(c => {
+    const clientInvoices = clientInvoiceMap[c.id] || [];
+    const totalSpent = clientInvoices.reduce((sum, inv) => sum + Number(inv.total), 0);
+    const numPurchases = clientInvoices.length;
+    const dates = clientInvoices.map(i => i.invoice_date).filter(Boolean).sort();
+    const lastPurchaseDate = dates.length > 0 ? dates[dates.length - 1] : null;
+    const daysSince = lastPurchaseDate
+      ? Math.floor((now.getTime() - new Date(lastPurchaseDate).getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    const pvTotal = clientInvoices.reduce((sum, inv) => sum + Number(inv.pv_total || 0), 0);
+    const avgTicket = numPurchases > 0 ? totalSpent / numPurchases : 0;
+
+    const topProducts = Object.entries(productCountByClient[c.id] || {})
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([name, count]) => ({ name, count }));
+
+    return {
+      ...c,
+      pending_balance: balanceMap[c.id] || 0,
+      total_spent: totalSpent,
+      num_purchases: numPurchases,
+      last_purchase_date: lastPurchaseDate,
+      days_since_last_purchase: daysSince,
+      avg_ticket: avgTicket,
+      pv_total: pvTotal,
+      top_products: topProducts,
+      tags: tagsByClient[c.id] || [],
+      next_action: nextActionByClient[c.id] || null,
+    } as ClientCardData;
+  });
 }
 
 export async function getClient(id: string) {
