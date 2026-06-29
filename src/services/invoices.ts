@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem } from "@/types/database";
 import { getSettings } from "./settings";
 import { subtractInventoryStock, addInventoryStock, restoreInventoryStock } from "./inventory";
+import { updateStageOnFirstPurchase } from "./pipeline";
 
 export async function getInvoices() {
   const { data, error } = await supabase
@@ -115,6 +116,11 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     }
   }
 
+  // Pipeline automation: move to first_purchase if first invoice
+  if (invoice.client_id) {
+    await updateStageOnFirstPurchase(invoice.client_id);
+  }
+
   return invData;
 }
 
@@ -202,6 +208,11 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
       }
     }
   }
+
+  // Pipeline automation: move to first_purchase if first invoice
+  if (invoice.client_id) {
+    await updateStageOnFirstPurchase(invoice.client_id);
+  }
 }
 
 export async function updateInvoiceStatus(id: string, status: string) {
@@ -227,6 +238,15 @@ export async function updateInvoiceStatus(id: string, status: string) {
   }
   const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
   if (error) throw error;
+
+  // Pipeline automation on payment
+  if (status === "PAID") {
+    const { data: inv } = await supabase.from("invoices").select("client_id").eq("id", id).single();
+    if (inv?.client_id) {
+      const { updateStageOnPayment } = await import("./pipeline");
+      await updateStageOnPayment(inv.client_id);
+    }
+  }
 }
 
 export async function deleteInvoice(id: string) {

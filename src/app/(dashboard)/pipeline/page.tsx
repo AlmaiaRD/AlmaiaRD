@@ -187,13 +187,23 @@ export default function PipelinePage() {
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1.5">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                               <h3 className="font-semibold text-[#5C3E35] truncate">{client.full_name}</h3>
                               {client.tags.slice(0, 3).map(t => (
                                 <span key={t.id} className="text-[10px] px-2 py-0.5 rounded-full bg-[#B8837E]/10 text-[#B8837E] font-medium whitespace-nowrap">
                                   {t.name}
                                 </span>
                               ))}
+                              {client.stage !== "vip" && client.total_spent >= 50000 && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium whitespace-nowrap border border-amber-200">
+                                  Sugerencia VIP
+                                </span>
+                              )}
+                              {(client.stage === "active" || client.stage === "vip") && client.days_since_last_purchase !== null && client.days_since_last_purchase >= 90 && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium whitespace-nowrap border border-gray-200">
+                                  Inactivo
+                                </span>
+                              )}
                             </div>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#9C8A82]">
                               {client.phone && (

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import type { Receipt } from "@/types/database";
 import { getSettings } from "./settings";
+import { updateStageOnPayment } from "./pipeline";
 
 export async function getReceipts() {
   const { data, error } = await supabase
@@ -74,6 +75,12 @@ export async function createReceipt(receipt: Partial<Receipt>) {
     created_by: userId,
   }).select().single();
   if (error) throw error;
+
+  // Pipeline automation: move to post_sale / active / vip
+  if (receipt.client_id) {
+    await updateStageOnPayment(receipt.client_id);
+  }
+
   return data as Receipt;
 }
 
