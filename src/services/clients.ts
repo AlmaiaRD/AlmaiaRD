@@ -89,11 +89,23 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
   }
 
   const productCountByClient: Record<string, Record<string, number>> = {};
+  const lastPurchaseByProduct: Record<string, Record<string, string>> = {};
+  const PRODUCT_CYCLES: Record<string, number> = {
+    "Double X": 30, "Proteína Vegetal": 25, "Proteína": 25,
+    "Pasta dental": 45, "Glister": 45,
+  };
+
   for (const inv of invoices || []) {
     const invItems = invoiceItemsMap[inv.id] || [];
     for (const item of invItems) {
       if (!productCountByClient[inv.client_id]) productCountByClient[inv.client_id] = {};
       productCountByClient[inv.client_id][item.name] = (productCountByClient[inv.client_id][item.name] || 0) + 1;
+
+      if (!lastPurchaseByProduct[inv.client_id]) lastPurchaseByProduct[inv.client_id] = {};
+      const existing = lastPurchaseByProduct[inv.client_id][item.name];
+      if (!existing || inv.invoice_date > existing) {
+        lastPurchaseByProduct[inv.client_id][item.name] = inv.invoice_date;
+      }
     }
   }
 
@@ -115,6 +127,19 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
       .slice(0, 3)
       .map(([name, count]) => ({ name, count }));
 
+    let repurchaseDate: string | null = null;
+    const clientProducts = lastPurchaseByProduct[c.id] || {};
+    for (const [productName, lastDate] of Object.entries(clientProducts)) {
+      for (const [key, days] of Object.entries(PRODUCT_CYCLES)) {
+        if (productName.toLowerCase().includes(key.toLowerCase())) {
+          const d = new Date(lastDate);
+          d.setDate(d.getDate() + days);
+          const est = d.toISOString().split("T")[0];
+          if (!repurchaseDate || est < repurchaseDate) repurchaseDate = est;
+        }
+      }
+    }
+
     return {
       ...c,
       pending_balance: balanceMap[c.id] || 0,
@@ -127,6 +152,7 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
       top_products: topProducts,
       tags: tagsByClient[c.id] || [],
       next_action: nextActionByClient[c.id] || null,
+      repurchase_date: repurchaseDate,
     } as ClientCardData;
   });
 }

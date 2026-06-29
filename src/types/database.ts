@@ -37,6 +37,7 @@ export interface ClientCardData extends Client {
   top_products: { name: string; count: number }[];
   tags: { id: string; name: string }[];
   next_action: { date: string; description: string } | null;
+  repurchase_date: string | null;
 }
 
 export interface ClientTag {

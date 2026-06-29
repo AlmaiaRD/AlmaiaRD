@@ -299,6 +299,12 @@ export default function PipelinePage() {
                               {client.top_products.map(p => p.name).join(", ")}
                             </span>
                           )}
+                          {client.repurchase_date && (
+                            <span className="flex items-center gap-1 text-cyan-600 font-medium">
+                              <Zap size={12} />
+                              Recompra estimada: {formatDate(client.repurchase_date)}
+                            </span>
+                          )}
                           {client.next_action && (
                             <span className="flex items-center gap-1 text-[#B8837E] font-medium">
                               <Calendar size={12} />
@@ -357,6 +363,9 @@ export default function PipelinePage() {
                 <p className="text-sm text-[#5C3E35] flex items-center gap-2"><ShoppingCart size={14} className="text-[#9C8A82]" /> Compras: <strong>{selectedClient.num_purchases}</strong></p>
                 <p className="text-sm text-[#5C3E35] flex items-center gap-2"><BarChart3 size={14} className="text-[#9C8A82]" /> PV total: <strong>{selectedClient.pv_total.toFixed(2)}</strong></p>
                 <p className="text-sm text-[#5C3E35] flex items-center gap-2"><TrendingUp size={14} className="text-[#9C8A82]" /> Ticket promedio: <strong>{formatCurrency(selectedClient.avg_ticket)}</strong></p>
+                {selectedClient.repurchase_date && (
+                  <p className="text-sm text-[#5C3E35] flex items-center gap-2"><Zap size={14} className="text-cyan-500" /> Recompra estimada: <strong>{formatDate(selectedClient.repurchase_date)}</strong></p>
+                )}
               </div>
             </div>
 
