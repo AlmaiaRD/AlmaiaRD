@@ -22,7 +22,7 @@ const STAGES = [
   { key: "first_purchase", label: "1ra Compra", icon: ShoppingCart, color: "text-teal-500", bg: "bg-teal-50", border: "border-teal-200" },
   { key: "post_sale", label: "Postventa", icon: Clock, color: "text-indigo-500", bg: "bg-indigo-50", border: "border-indigo-200" },
   { key: "active", label: "Cliente Activo", icon: TrendingUp, color: "text-green-500", bg: "bg-green-50", border: "border-green-200" },
-  { key: "repurchase", label: "Recompra", icon: Zap, color: "text-cyan-500", bg: "bg-cyan-50", border: "border-cyan-200" },
+  { key: "repurchase", label: "Recompra", icon: Zap, color: "text-[#86C7A3]", bg: "bg-[#86C7A3]/10", border: "border-[#86C7A3]/30" },
   { key: "vip", label: "VIP", icon: Star, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200" },
   { key: "inactive", label: "Inactivo", icon: AlertCircle, color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200" },
 ];
@@ -300,7 +300,7 @@ export default function PipelinePage() {
                             </span>
                           )}
                           {client.repurchase_date && (
-                            <span className="flex items-center gap-1 text-cyan-600 font-medium">
+                            <span className="flex items-center gap-1 text-[#86C7A3] font-medium">
                               <Zap size={12} />
                               Recompra estimada: {formatDate(client.repurchase_date)}
                             </span>
@@ -364,7 +364,7 @@ export default function PipelinePage() {
                 <p className="text-sm text-[#5C3E35] flex items-center gap-2"><BarChart3 size={14} className="text-[#9C8A82]" /> PV total: <strong>{selectedClient.pv_total.toFixed(2)}</strong></p>
                 <p className="text-sm text-[#5C3E35] flex items-center gap-2"><TrendingUp size={14} className="text-[#9C8A82]" /> Ticket promedio: <strong>{formatCurrency(selectedClient.avg_ticket)}</strong></p>
                 {selectedClient.repurchase_date && (
-                  <p className="text-sm text-[#5C3E35] flex items-center gap-2"><Zap size={14} className="text-cyan-500" /> Recompra estimada: <strong>{formatDate(selectedClient.repurchase_date)}</strong></p>
+                  <p className="text-sm text-[#5C3E35] flex items-center gap-2"><Zap size={14} className="text-[#86C7A3]" /> Recompra estimada: <strong>{formatDate(selectedClient.repurchase_date)}</strong></p>
                 )}
               </div>
             </div>

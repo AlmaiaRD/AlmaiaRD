@@ -413,7 +413,7 @@ export default function CrmPage() {
                     {(activityIcons.length > 0 || repurchaseDates.has(d.date)) && (
                       <div className="absolute -bottom-0.5 flex gap-0.5">
                         {repurchaseDates.has(d.date) && (
-                          <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-white/80" : "bg-cyan-400"}`} title="Recompra estimada" />
+                          <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-white/80" : "bg-[#86C7A3]"}`} title="Recompra estimada" />
                         )}
                         {activityIcons.map((a, i) => (
                           <div key={i} className={`w-2 h-2 rounded-full ${isSelected ? "bg-white/80" : a.color}`} title={getActivityType(dayFollowups[i]?.comments || "")} />
@@ -439,9 +439,9 @@ export default function CrmPage() {
                 if (dayRepurchases.length > 0) {
                   const names = dayRepurchases.map(([id]) => clients.find(c => c.id === id)?.full_name || "Cliente");
                   return (
-                    <div className="mb-3 p-3 bg-cyan-50 border border-cyan-200 rounded-xl">
-                      <p className="text-xs font-semibold text-cyan-700">⚡ Recompra estimada</p>
-                      <p className="text-xs text-cyan-600 mt-0.5">{names.join(", ")}</p>
+                    <div className="mb-3 p-3 bg-[#86C7A3]/10 border border-[#86C7A3]/30 rounded-xl">
+                      <p className="text-xs font-semibold text-[#86C7A3]">⚡ Recompra estimada</p>
+                      <p className="text-xs text-[#86C7A3]/80 mt-0.5">{names.join(", ")}</p>
                     </div>
                   );
                 }
@@ -463,7 +463,7 @@ export default function CrmPage() {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-[#5C3E35] truncate">{f.clients?.full_name}</p>
                             {f.client_id && repurchaseMap[f.client_id] && (
-                              <p className="text-[10px] text-cyan-600 font-medium">⚡ Recompra: {formatDate(repurchaseMap[f.client_id])}</p>
+                              <p className="text-[10px] text-[#86C7A3] font-medium">⚡ Recompra: {formatDate(repurchaseMap[f.client_id])}</p>
                             )}
                             <p className="text-xs text-[#9C8A82] truncate">{f.comments}</p>
                           </div>
@@ -539,7 +539,7 @@ export default function CrmPage() {
                           <p className="text-xs font-semibold text-[#5C3E35] truncate">{f.clients?.full_name || "—"}</p>
                           <StatusBadge status={f.status} />
                           {f.client_id && repurchaseMap[f.client_id] && (
-                            <span className="text-[10px] text-cyan-600 font-medium">⚡ {formatDate(repurchaseMap[f.client_id])}</span>
+                            <span className="text-[10px] text-[#86C7A3] font-medium">⚡ {formatDate(repurchaseMap[f.client_id])}</span>
                           )}
                         </div>
                         <p className="text-xs text-[#5C3E35] mt-1 leading-relaxed line-clamp-2">{f.comments}</p>
