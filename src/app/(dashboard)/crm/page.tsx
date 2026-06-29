@@ -5,7 +5,7 @@ import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { getAllFollowups, createFollowup, updateFollowup, updateFollowupStatus, deleteFollowup } from "@/services/followups";
-import { getClients } from "@/services/clients";
+import { getClients, getClientCardData } from "@/services/clients";
 import {
   Search, Plus, MessageSquare, Users,
   MoreVertical, Trash2, Edit3, ChevronLeft, ChevronRight,
@@ -67,6 +67,7 @@ export default function CrmPage() {
   const router = useRouter();
   const [followups, setFollowups] = useState<FollowupWithClient[]>([]);
   const [clients, setClients] = useState<{ id: string; full_name: string }[]>([]);
+  const [repurchaseMap, setRepurchaseMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -115,9 +116,14 @@ export default function CrmPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const [fol, cli] = await Promise.all([getAllFollowups(), getClients()]);
+      const [fol, cli, cardData] = await Promise.all([getAllFollowups(), getClients(), getClientCardData()]);
       setFollowups(fol);
       setClients(cli.map((c) => ({ id: c.id, full_name: c.full_name })));
+      const map: Record<string, string> = {};
+      for (const c of cardData) {
+        if (c.repurchase_date) map[c.id] = c.repurchase_date;
+      }
+      setRepurchaseMap(map);
     } catch {
       toast.error("Error al cargar datos");
     } finally {
@@ -436,6 +442,9 @@ export default function CrmPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-[#5C3E35] truncate">{f.clients?.full_name}</p>
+                            {f.client_id && repurchaseMap[f.client_id] && (
+                              <p className="text-[10px] text-cyan-600 font-medium">⚡ Recompra: {formatDate(repurchaseMap[f.client_id])}</p>
+                            )}
                             <p className="text-xs text-[#9C8A82] truncate">{f.comments}</p>
                           </div>
                         </div>
@@ -509,6 +518,9 @@ export default function CrmPage() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="text-xs font-semibold text-[#5C3E35] truncate">{f.clients?.full_name || "—"}</p>
                           <StatusBadge status={f.status} />
+                          {f.client_id && repurchaseMap[f.client_id] && (
+                            <span className="text-[10px] text-cyan-600 font-medium">⚡ {formatDate(repurchaseMap[f.client_id])}</span>
+                          )}
                         </div>
                         <p className="text-xs text-[#5C3E35] mt-1 leading-relaxed line-clamp-2">{f.comments}</p>
                         <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#9C8A82]">
