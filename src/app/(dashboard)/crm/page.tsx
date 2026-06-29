@@ -436,16 +436,24 @@ export default function CrmPage() {
               </div>
               {(() => {
                 const dayRepurchases = Object.entries(repurchaseMap).filter(([, date]) => date === selectedDate);
-                if (dayRepurchases.length > 0) {
-                  const names = dayRepurchases.map(([id]) => clients.find(c => c.id === id)?.full_name || "Cliente");
-                  return (
-                    <div className="mb-3 p-3 bg-[#86C7A3]/10 border border-[#86C7A3]/30 rounded-xl">
-                      <p className="text-xs font-semibold text-[#86C7A3]">⚡ Recompra estimada</p>
-                      <p className="text-xs text-[#86C7A3]/80 mt-0.5">{names.join(", ")}</p>
-                    </div>
-                  );
-                }
-                return null;
+                if (dayRepurchases.length === 0) return null;
+                return (
+                  <div className="mb-3 p-3 bg-[#86C7A3]/10 border border-[#86C7A3]/30 rounded-xl space-y-1.5">
+                    <p className="text-xs font-semibold text-[#86C7A3]">⚡ Recompra estimada</p>
+                    {dayRepurchases.map(([clientId]) => {
+                      const name = clients.find(c => c.id === clientId)?.full_name || "Cliente";
+                      return (
+                        <button
+                          key={clientId}
+                          onClick={() => router.push(`/pipeline`)}
+                          className="w-full text-left text-xs text-[#86C7A3]/80 hover:text-[#86C7A3] hover:underline flex items-center gap-1"
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
               })()}
               {dayActivities.length === 0 ? (
                 <p className="text-center py-6 text-sm text-[#9C8A82]">No hay actividades en esta fecha</p>
