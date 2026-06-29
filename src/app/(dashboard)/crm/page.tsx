@@ -154,6 +154,10 @@ export default function CrmPage() {
     return selectedDate ? followups.filter((f) => f.contact_date === selectedDate) : [];
   }, [followups, selectedDate]);
 
+  const repurchaseDates = useMemo(() => {
+    return new Set(Object.values(repurchaseMap));
+  }, [repurchaseMap]);
+
   function todayStr() {
     return new Date().toISOString().split("T")[0];
   }
@@ -406,8 +410,11 @@ export default function CrmPage() {
                     }`}
                   >
                     <span>{d.day}</span>
-                    {activityIcons.length > 0 && (
+                    {(activityIcons.length > 0 || repurchaseDates.has(d.date)) && (
                       <div className="absolute -bottom-0.5 flex gap-0.5">
+                        {repurchaseDates.has(d.date) && (
+                          <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-white/80" : "bg-cyan-400"}`} title="Recompra estimada" />
+                        )}
                         {activityIcons.map((a, i) => (
                           <div key={i} className={`w-2 h-2 rounded-full ${isSelected ? "bg-white/80" : a.color}`} title={getActivityType(dayFollowups[i]?.comments || "")} />
                         ))}
@@ -427,6 +434,19 @@ export default function CrmPage() {
                 </h3>
                 <span className="text-xs text-[#9C8A82]">{dayActivities.length} actividad(es)</span>
               </div>
+              {(() => {
+                const dayRepurchases = Object.entries(repurchaseMap).filter(([, date]) => date === selectedDate);
+                if (dayRepurchases.length > 0) {
+                  const names = dayRepurchases.map(([id]) => clients.find(c => c.id === id)?.full_name || "Cliente");
+                  return (
+                    <div className="mb-3 p-3 bg-cyan-50 border border-cyan-200 rounded-xl">
+                      <p className="text-xs font-semibold text-cyan-700">⚡ Recompra estimada</p>
+                      <p className="text-xs text-cyan-600 mt-0.5">{names.join(", ")}</p>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               {dayActivities.length === 0 ? (
                 <p className="text-center py-6 text-sm text-[#9C8A82]">No hay actividades en esta fecha</p>
               ) : (
