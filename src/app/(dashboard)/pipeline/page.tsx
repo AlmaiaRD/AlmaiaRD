@@ -292,7 +292,7 @@ export default function PipelinePage() {
                           {client.next_action && (
                             <span className="flex items-center gap-1 text-[#B8837E] font-medium">
                               <Calendar size={12} />
-                              Próx: {client.next_action.description} ({client.next_action.date})
+                              Próx: {client.next_action.description} ({formatDate(client.next_action.date)})
                             </span>
                           )}
                         </div>
@@ -375,7 +375,7 @@ export default function PipelinePage() {
               <div className="bg-[#FFFBEB] border border-[#E8C87A]/30 rounded-xl p-4">
                 <p className="text-xs font-semibold text-[#E8C87A] uppercase tracking-wider mb-1">Próxima acción</p>
                 <p className="text-sm text-[#5C3E35]">{selectedClient.next_action.description}</p>
-                <p className="text-xs text-[#9C8A82] mt-1">Fecha: {selectedClient.next_action.date}</p>
+                <p className="text-xs text-[#9C8A82] mt-1">Fecha: {formatDate(selectedClient.next_action.date)}</p>
               </div>
             )}
 

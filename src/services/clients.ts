@@ -45,9 +45,9 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
 
   const { data: followups, error: fupErr } = await supabase
     .from("followups")
-    .select("client_id, contact_date, comments, status")
+    .select("client_id, next_followup, comments, status")
     .in("status", ["PENDING", "OVERDUE"])
-    .order("contact_date", { ascending: true });
+    .order("next_followup", { ascending: true });
   if (fupErr) throw fupErr;
 
   const { data: tagRelations, error: tagErr } = await supabase
@@ -82,7 +82,7 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
   for (const fup of followups || []) {
     if (!nextActionByClient[fup.client_id]) {
       nextActionByClient[fup.client_id] = {
-        date: fup.contact_date,
+        date: fup.next_followup,
         description: fup.comments?.replace(/^\[.*?\]\s*/, "").substring(0, 60) || "Seguimiento",
       };
     }
