@@ -1,0 +1,9 @@
+-- Columnas para el Centro de Comunicaciones (Fase 3)
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS sender_name TEXT DEFAULT '';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_template TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS whatsapp_template TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_host TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_port INTEGER DEFAULT 587;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_user TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_pass TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_secure BOOLEAN DEFAULT false;

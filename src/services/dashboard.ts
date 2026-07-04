@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getLocalDateString } from "@/lib/utils";
 
 export async function getDashboardStats() {
   const { data: sales, error: salesError } = await supabase
@@ -21,6 +22,15 @@ export async function getDashboardStats() {
     .select("amount")
     .gte("created_at", monthStart.toISOString());
   const totalPaidReceipts = (receipts || []).reduce((s: number, r: any) => s + Number(r.amount), 0);
+
+  // Ventas del Mes: sum invoice totals for current month using local date
+  const localMonthStart = getLocalDateString(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const { data: monthInvoices } = await supabase
+    .from("invoices")
+    .select("total")
+    .gte("invoice_date", localMonthStart)
+    .neq("status", "CANCELLED");
+  const salesMonthLocal = (monthInvoices || []).reduce((s: number, inv: any) => s + Number(inv.total), 0);
 
   // Valor de inventario: stock × cost × (apply_itbis ? 1.35 : 1.0)
   const { data: invFull } = await supabase
@@ -53,7 +63,7 @@ export async function getDashboardStats() {
   const { data: pvData } = await supabase
     .from("invoice_items")
     .select("pv, invoices!inner(status, invoice_date)")
-    .gte("invoices.invoice_date", monthStart.toISOString().split("T")[0])
+    .gte("invoices.invoice_date", localMonthStart)
     .neq("invoices.status", "CANCELLED");
   const pvMonth = (pvData || []).reduce((s: number, ii: any) => s + Number(ii.pv || 0), 0);
 
@@ -61,7 +71,7 @@ export async function getDashboardStats() {
 
   return {
     salesToday: sales?.sales_today ?? 0,
-    salesMonth: sales?.sales_month ?? 0,
+    salesMonth: salesMonthLocal,
     salesYear: sales?.sales_year ?? 0,
     totalSales: sales?.total_sales ?? 0,
     totalPending,

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
-import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
+import { formatCurrency, formatDate, numberToWords, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { generateExpensePdf } from "@/lib/pdf";
 import { getExpenses, createExpense, updateExpense, deleteExpense } from "@/services/expenses";
@@ -120,7 +120,7 @@ export default function GastosPage() {
   const [newSubcategoryInput, setNewSubcategoryInput] = useState("");
 
   const [form, setForm] = useState({
-    expense_date: new Date().toISOString().split("T")[0],
+    expense_date: getLocalDateString(),
     category: DEFAULT_CATEGORIES[0],
     concept: "",
     amount: 0,
@@ -177,7 +177,7 @@ export default function GastosPage() {
 
   function resetForm() {
     setForm({
-      expense_date: new Date().toISOString().split("T")[0],
+    expense_date: getLocalDateString(),
       category: DEFAULT_CATEGORIES[0],
       concept: "",
       amount: 0,

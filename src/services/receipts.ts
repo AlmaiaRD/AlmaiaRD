@@ -6,7 +6,7 @@ import { updateStageOnPayment } from "./pipeline";
 export async function getReceipts() {
   const { data, error } = await supabase
     .from("receipts")
-    .select("*, clients(full_name), invoices(id, invoice_number, total, amount_paid, balance_due, status, client_id, clients(full_name)), bank_accounts(bank_name, account_number)")
+    .select("*, clients(full_name, phone, email), invoices(id, invoice_number, total, amount_paid, balance_due, status, client_id, clients(full_name)), bank_accounts(bank_name, account_number)")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
@@ -76,7 +76,7 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   }).select().single();
   if (error) throw error;
 
-  // Pipeline automation: move to post_sale / active / vip
+  // Pipeline automation: move to cierre (ganado)
   if (receipt.client_id) {
     await updateStageOnPayment(receipt.client_id);
   }

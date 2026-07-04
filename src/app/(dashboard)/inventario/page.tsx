@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct } from "@/services/inventory";
+import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct } from "@/services/inventory";
 import { getProducts } from "@/services/products";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
 import { normalize } from "@/lib/search";
@@ -12,8 +12,8 @@ import { getSuppliers } from "@/services/suppliers";
 import { getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import type { Supplier, BankAccount, Settings } from "@/types/database";
-import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye, Trash2, Printer, Download } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye, EyeOff, Trash2, Printer, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -42,7 +42,7 @@ function InventarioContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterYear, setFilterYear] = useState("");
-  const [activeTab, setActiveTab] = useState<"stock" | "history">("stock");
+  const [activeTab, setActiveTab] = useState<"stock" | "history" | "rotation">("stock");
 
   const [showDetail, setShowDetail] = useState(false);
   const [detailItem, setDetailItem] = useState<any>(null);
@@ -65,6 +65,29 @@ function InventarioContent() {
   const [detailPurchase, setDetailPurchase] = useState<any>(null);
   const [showConfirmDeleteProduct, setShowConfirmDeleteProduct] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState(false);
+  const [productUsage, setProductUsage] = useState<{ movements: number; invoices: number; purchases: number } | null>(null);
+
+  // Rotation state
+  const [rotationData, setRotationData] = useState<any[]>([]);
+  const [rotationLoading, setRotationLoading] = useState(false);
+  const [rotationFilterSubbrand, setRotationFilterSubbrand] = useState("");
+  const [rotationFilterDays, setRotationFilterDays] = useState("");
+  const [rotationFilterStatus, setRotationFilterStatus] = useState("");
+  const [rotationExportOpen, setRotationExportOpen] = useState(false);
+  const [rotationDetailProductId, setRotationDetailProductId] = useState<string | null>(null);
+  const [rotationDetailMovements, setRotationDetailMovements] = useState<any[]>([]);
+  const [rotationDetailLoading, setRotationDetailLoading] = useState(false);
+  const [rotationDetailItem, setRotationDetailItem] = useState<any>(null);
+  const [rotationAiAnalysis, setRotationAiAnalysis] = useState<string | null>(null);
+  const [rotationAiLoading, setRotationAiLoading] = useState(false);
+  const [showHiddenStock, setShowHiddenStock] = useState(false);
+  const [showHiddenRotation, setShowHiddenRotation] = useState(false);
+  const [hiddenStockIds, setHiddenStockIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("hiddenStockIds") || "[]"); } catch { return []; }
+  });
+  const [hiddenRotationIds, setHiddenRotationIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("hiddenRotationIds") || "[]"); } catch { return []; }
+  });
 
   function generatePurchasePdfLocal(purchase: any) {
     const doc = new jsPDF({ unit: "mm", format: "letter" });
@@ -262,7 +285,7 @@ function InventarioContent() {
 
   const [purchaseForm, setPurchaseForm] = useState({
     supplier_name: "",
-    purchase_date: new Date().toISOString().split("T")[0],
+    purchase_date: getLocalDateString(),
     notes: "",
     discount_amount: 0,
     impuesto_recogida: 36,
@@ -353,6 +376,89 @@ function InventarioContent() {
     }
   }
 
+  async function loadRotation() {
+    setRotationLoading(true);
+    try {
+      const [inv, sold, purchased, lastSales, lastPurchases, firstPurchases] = await Promise.all([
+        getInventory(),
+        getSoldQuantities(),
+        getPurchasedQuantities(),
+        getLastSalePerProduct(),
+        getLastPurchasePerProduct(),
+        getFirstPurchasePerProduct(),
+      ]);
+
+      const now = new Date();
+
+      const data = inv.map((item: any) => {
+        const product = item.products;
+        const itemSold = sold[item.product_id] || 0;
+        const itemPurchased = purchased[item.product_id] || 0;
+        const stock = Math.max(0, itemPurchased - itemSold);
+        const cost = product?.cost || 0;
+        const lastSale = lastSales[item.product_id];
+        const lastPurchase = lastPurchases[item.product_id];
+        const firstPurchase = firstPurchases[item.product_id];
+        
+        let diasEnInventario = 0;
+        let ultimaReferencia = "";
+        
+        if (lastSale) {
+          const diff = now.getTime() - new Date(lastSale).getTime();
+          diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
+          ultimaReferencia = `Venta: ${formatDate(lastSale)}`;
+        } else if (lastPurchase) {
+          const diff = now.getTime() - new Date(lastPurchase).getTime();
+          diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
+          ultimaReferencia = `Compra: ${formatDate(lastPurchase)}`;
+        } else {
+          diasEnInventario = 999;
+          ultimaReferencia = "Sin movimientos";
+        }
+
+        // Velocidad real: días desde la primera compra / total vendido
+        let diasDesdeAdquisicion = 0;
+        let velocidadDias = 0;
+        if (firstPurchase) {
+          diasDesdeAdquisicion = Math.floor((now.getTime() - new Date(firstPurchase).getTime()) / (1000 * 60 * 60 * 24));
+          if (itemSold > 0 && diasDesdeAdquisicion > 0) {
+            velocidadDias = Math.round(diasDesdeAdquisicion / itemSold);
+          }
+        }
+
+        return {
+          id: item.id,
+          product_id: item.product_id,
+          products: item.products,
+          code: product?.code || "",
+          name: product?.name || "—",
+          subbrand: product?.subbrands?.name || "—",
+          sold: itemSold,
+          purchased: itemPurchased,
+          stock,
+          costoPromedio: cost,
+          cost,
+          firstPurchase,
+          last_purchase: lastPurchase,
+          last_sale: lastSale,
+          diasEnInventario,
+          ultimaReferencia,
+          velocidadDias,
+          inventory_value: item.inventory_value || 0,
+          minimum_stock: item.minimum_stock || 3,
+        };
+      });
+
+      setRotationData(data);
+    } catch (err) {
+      console.error("[loadRotation] Error:", err);
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
+      toast.error(`Error al cargar rotación: ${msg}`);
+    } finally {
+      setRotationLoading(false);
+    }
+  }
+
   async function loadPurchases() {
     try {
       const data = await getPurchases();
@@ -364,6 +470,7 @@ function InventarioContent() {
 
   useEffect(() => {
     if (activeTab === "history") loadPurchases();
+    if (activeTab === "rotation") loadRotation();
   }, [activeTab]);
 
   useEffect(() => {
@@ -383,6 +490,7 @@ function InventarioContent() {
   }, [showConfirmDeleteProduct]);
 
   const filtered = inventory.filter((item) => {
+    if (!showHiddenStock && hiddenStockIds.includes(item.product_id)) return false;
     const fSold = soldMap[item.product_id] || 0;
     const fPurchased = purchasedMap[item.product_id] || 0;
     const fStock = Math.max(0, fPurchased - fSold);
@@ -430,20 +538,63 @@ function InventarioContent() {
   async function handleDeleteProduct(productId: string) {
     setDeletingProduct(true);
     try {
-      await checkCanDeleteProduct(productId);
+      const usage = await getProductUsage(productId);
+      if (usage.movements > 0 || usage.invoices > 0 || usage.purchases > 0) {
+        setProductUsage(usage);
+        setDeletingProduct(false);
+        return;
+      }
       await deleteProduct(productId);
       toast.success("Producto eliminado exitosamente");
       setShowConfirmDeleteProduct(null);
       await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error al eliminar el producto");
+      setDeletingProduct(false);
+    }
+  }
+
+  const toggleHideStockProduct = (productId: string) => {
+    const wasHidden = hiddenStockIds.includes(productId);
+    setHiddenStockIds((prev) => {
+      const updated = wasHidden
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId];
+      localStorage.setItem("hiddenStockIds", JSON.stringify(updated));
+      return updated;
+    });
+    toast.success(wasHidden ? "Producto visible en Stock" : "Ocultado de Stock");
+  };
+
+  const toggleHideRotationProduct = (productId: string) => {
+    const wasHidden = hiddenRotationIds.includes(productId);
+    setHiddenRotationIds((prev) => {
+      const updated = wasHidden
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId];
+      localStorage.setItem("hiddenRotationIds", JSON.stringify(updated));
+      return updated;
+    });
+    toast.success(wasHidden ? "Producto visible en Rotación" : "Ocultado de Rotación");
+  };
+
+  async function handleForceDeleteProduct(productId: string) {
+    setDeletingProduct(true);
+    try {
+      await forceDeleteProduct(productId);
+      toast.success("Producto eliminado forzosamente (incluyendo registros relacionados)");
+      setShowConfirmDeleteProduct(null);
+      setProductUsage(null);
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al eliminar");
     } finally {
       setDeletingProduct(false);
     }
   }
 
   function resetPurchaseForm() {
-    setPurchaseForm({ supplier_name: "", purchase_date: new Date().toISOString().split("T")[0], notes: "", discount_amount: 0, impuesto_recogida: 36, cargo_administracion: 200, payment_method: "Efectivo", bank_account_id: "", items: [] });
+    setPurchaseForm({ supplier_name: "", purchase_date: getLocalDateString(), notes: "", discount_amount: 0, impuesto_recogida: 36, cargo_administracion: 200, payment_method: "Efectivo", bank_account_id: "", items: [] });
     setEditingId(null);
   }
 
@@ -580,6 +731,16 @@ function InventarioContent() {
             Existencias de Stock
           </button>
           <button
+            onClick={() => setActiveTab("rotation")}
+            className={`pb-3 text-sm font-medium transition-colors ${
+              activeTab === "rotation"
+                ? "text-[#B8837E] border-b-2 border-[#B8837E]"
+                : "text-[#9C8A82] hover:text-[#5C3E35]"
+            }`}
+          >
+            Rotación de Inventario
+          </button>
+          <button
             onClick={() => setActiveTab("history")}
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "history"
@@ -592,16 +753,44 @@ function InventarioContent() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar por nombre, código o submarca..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-        />
+      {/* Search & controls */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre, código o submarca..."
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+          />
+        </div>
+        {activeTab === "stock" && (
+          <button
+            onClick={() => setShowHiddenStock(!showHiddenStock)}
+            className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
+              showHiddenStock
+                ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
+                : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+            }`}
+          >
+            <EyeOff size={16} />
+            {showHiddenStock ? "Ocultar ocultos" : `Ver ocultos (${hiddenStockIds.length})`}
+          </button>
+        )}
+        {activeTab === "rotation" && (
+          <button
+            onClick={() => setShowHiddenRotation(!showHiddenRotation)}
+            className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
+              showHiddenRotation
+                ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
+                : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+            }`}
+          >
+            <EyeOff size={16} />
+            {showHiddenRotation ? "Ocultar ocultos" : `Ver ocultos (${hiddenRotationIds.length})`}
+          </button>
+        )}
       </div>
 
       {activeTab === "history" && (
@@ -648,7 +837,7 @@ function InventarioContent() {
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Pend. Dev.</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Mov.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acc.</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Ocultar</th>
                   </tr>
               </thead>
               <tbody>
@@ -680,16 +869,32 @@ function InventarioContent() {
                         <History size={14} className="text-[#9C8A82] mx-auto" />
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowConfirmDeleteProduct(item.product_id);
-                          }}
-                          className="p-1.5 text-[#D4A0A0] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          title="Eliminar producto"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleHideStockProduct(item.product_id);
+                            }}
+                            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
+                              hiddenStockIds.includes(item.product_id)
+                                ? "bg-[#B8837E]/10 text-[#B8837E]"
+                                : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                            }`}
+                          >
+                            <EyeOff size={12} className="inline mr-1" />
+                            {hiddenStockIds.includes(item.product_id) ? "Mostrar" : "Ocultar"}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowConfirmDeleteProduct(item.product_id);
+                            }}
+                            className="p-1.5 text-[#D4A0A0] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                            title="Eliminar producto"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -700,6 +905,571 @@ function InventarioContent() {
           )}
         </>
       )}
+
+      {activeTab === "rotation" && (
+        <div className="space-y-6">
+          {rotationLoading ? (
+            <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+          ) : rotationData.length === 0 ? (
+            <div className="text-center py-16 text-[#9C8A82]">
+              <Package size={40} className="mx-auto mb-3 opacity-40" />
+              <p className="text-sm">No hay datos de rotación</p>
+            </div>
+          ) : (
+            <>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">Total Productos</p>
+                  <p className="text-xl font-bold text-[#5C3E35]">{rotationData.length}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">Rotación Alta (&lt; 15d)</p>
+                  <p className="text-xl font-bold text-[#86C7A3]">
+                    {rotationData.filter((d: any) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length}
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">Rotación Media (15-60d)</p>
+                  <p className="text-xl font-bold text-[#E8C87A]">
+                    {rotationData.filter((d: any) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length}
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">{'Rotación Baja (> 60d)'}</p>
+                  <p className="text-xl font-bold text-[#D4A0A0]">
+                    {rotationData.filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length}
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">Próximos a agotarse</p>
+                  <p className="text-xl font-bold text-red-500">
+                    {rotationData.filter((d: any) => {
+                      if (d.sold <= 0 || d.stock <= 0) return false;
+                      return d.velocidadDias > 0 && Math.round(d.velocidadDias * d.stock) < 30;
+                    }).length}
+                  </p>
+                </div>
+              </div>
+
+              {/* Capital Inmovilizado Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 30 días'}</p>
+                  <p className="text-lg font-bold text-[#E8C87A]">
+                    {rotationData
+                      .filter((d: any) => d.diasEnInventario > 30 && d.diasEnInventario < 999)
+                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                      .toLocaleString()} RD$
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 60 días'}</p>
+                  <p className="text-lg font-bold text-[#D4A0A0]">
+                    {rotationData
+                      .filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999)
+                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                      .toLocaleString()} RD$
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 90 días'}</p>
+                  <p className="text-lg font-bold text-red-600">
+                    {rotationData
+                      .filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
+                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                      .toLocaleString()} RD$
+                  </p>
+                </div>
+              </div>
+
+              {/* Recommendations Card */}
+              {(() => {
+                const staleProducts = rotationData.filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999);
+                const nearStockout = rotationData.filter((d: any) => {
+                  if (d.sold <= 0 || d.stock <= 0 || !d.velocidadDias) return false;
+                  return Math.round(d.velocidadDias * d.stock) < 30;
+                });
+                if (staleProducts.length === 0 && nearStockout.length === 0) return null;
+                return (
+                  <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+                    <div className="flex items-center gap-2 mb-4">
+                      <AlertTriangle size={18} className="text-[#E8C87A]" />
+                      <h3 className="text-sm font-bold text-[#5C3E35]">Recomendaciones Automáticas</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {staleProducts.map((d: any) => (
+                        <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
+                          <div className="flex items-center gap-3">
+                            <TrendingDown size={16} className="text-[#D4A0A0]" />
+                            <span className="text-sm text-[#5C3E35]">{d.name}</span>
+                            <span className="text-xs text-[#9C8A82]">{d.code}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant="danger">{d.diasEnInventario} días sin vender</Badge>
+                            <span className="text-xs text-[#E8C87A] font-medium">Sugerir oferta / liquidar</span>
+                          </div>
+                        </div>
+                      ))}
+                      {nearStockout.map((d: any) => (
+                        <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
+                          <div className="flex items-center gap-3">
+                            <TrendingUp size={16} className="text-[#86C7A3]" />
+                            <span className="text-sm text-[#5C3E35]">{d.name}</span>
+                            <span className="text-xs text-[#9C8A82]">{d.code}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant="danger">Stock bajo</Badge>
+                            <span className="text-xs text-[#86C7A3] font-medium">Reponer inventario pronto</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* AI Analysis Button & Result */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 size={18} className="text-[#B8837E]" />
+                    <h3 className="text-sm font-bold text-[#5C3E35]">Análisis de Rotación con IA</h3>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setRotationAiLoading(true);
+                      setRotationAiAnalysis(null);
+                      try {
+                        const res = await fetch("/api/inventory-analysis", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ rotationData }),
+                        });
+                        const data = await res.json();
+                        setRotationAiAnalysis(data.analysis || "Sin respuesta");
+                      } catch {
+                        toast.error("Error al analizar con IA");
+                      } finally {
+                        setRotationAiLoading(false);
+                      }
+                    }}
+                    disabled={rotationAiLoading}
+                    className="flex items-center gap-2 h-9 px-4 bg-[#B8837E] text-white rounded-xl text-xs font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
+                  >
+                    {rotationAiLoading ? <Loader size={14} className="animate-spin" /> : <BarChart3 size={14} />}
+                    {rotationAiLoading ? "Analizando..." : "Analizar con IA"}
+                  </button>
+                </div>
+                {rotationAiAnalysis && (
+                  <div className="bg-[#FAF6F0] rounded-xl p-4 text-sm text-[#5C3E35] whitespace-pre-line leading-relaxed">
+                    {rotationAiAnalysis}
+                  </div>
+                )}
+                {!rotationAiAnalysis && !rotationAiLoading && (
+                  <p className="text-xs text-[#9C8A82]">Haz clic en "Analizar con IA" para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
+                )}
+              </div>
+
+              {/* Filters & Export */}
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={rotationFilterSubbrand}
+                  onChange={(e) => setRotationFilterSubbrand(e.target.value)}
+                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                >
+                  <option value="">Todas las submarcas</option>
+                  {[...new Set(rotationData.map((d: any) => d.subbrand).filter(Boolean))].map((s) => (
+                    <option key={s as string} value={s as string}>{s as string}</option>
+                  ))}
+                </select>
+                <select
+                  value={rotationFilterDays}
+                  onChange={(e) => setRotationFilterDays(e.target.value)}
+                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                >
+                  <option value="">Todos los días</option>
+                  <option value="0-15">Rotación alta (0-15 días)</option>
+                  <option value="15-60">Rotación media (15-60 días)</option>
+                  <option value="60-999">Rotación baja (60+ días)</option>
+                  <option value="90-999">Crítico (90+ días)</option>
+                </select>
+                <select
+                  value={rotationFilterStatus}
+                  onChange={(e) => setRotationFilterStatus(e.target.value)}
+                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                >
+                  <option value="">Estado</option>
+                  <option value="success">Rotación alta</option>
+                  <option value="warning">Rotación media</option>
+                  <option value="danger">Rotación baja / Sin mov.</option>
+                </select>
+                {(rotationFilterSubbrand || rotationFilterDays || rotationFilterStatus) && (
+                  <button
+                    onClick={() => { setRotationFilterSubbrand(""); setRotationFilterDays(""); setRotationFilterStatus(""); }}
+                    className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+                <div className="ml-auto relative">
+                  <button
+                    onClick={() => setRotationExportOpen(!rotationExportOpen)}
+                    className="flex items-center gap-2 h-10 px-4 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+                  >
+                    <Download size={16} /> Exportar
+                  </button>
+                  {rotationExportOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setRotationExportOpen(false)} />
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-lg border border-[#E8E0D8] py-1 z-20">
+                        <button
+                          onClick={() => {
+                            setRotationExportOpen(false);
+                            const doc = new jsPDF({ unit: "mm", format: "letter" });
+                            const pageW = 216;
+                            let y = 20;
+                            const margin = 15;
+                            doc.setFontSize(16);
+                            doc.setFont("helvetica", "bold");
+                            doc.text("Reporte de Rotación de Inventario", margin, y);
+                            y += 8;
+                            doc.setFontSize(8);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Generado: ${new Date().toLocaleDateString()}`, margin, y);
+                            y += 8;
+                            const cols = ["Producto", "Código", "Submarca", "Stock", "Días", "Velocidad", "Proy.Agot.", "Estado", "Capital"];
+                            const widths = [40, 18, 22, 12, 12, 18, 18, 22, 22];
+                            const startX = margin;
+                            doc.setFontSize(7);
+                            doc.setFont("helvetica", "bold");
+                            let cx = startX;
+                            cols.forEach((c, i) => {
+                              doc.text(c, cx + (i > 0 ? widths[i] / 2 : 0), y, i > 0 ? { align: "center" } : undefined);
+                              cx += widths[i];
+                            });
+                            y += 5;
+                            doc.setFont("helvetica", "normal");
+                            rotationData.forEach((item: any) => {
+                              if (y > 270) { doc.addPage(); y = 20; }
+                              const proy = item.velocidadDias > 0 && item.stock > 0 ? Math.round(item.velocidadDias * item.stock) : null;
+                              const el = item.diasEnInventario >= 999 ? "Sin mov." :
+                                item.diasEnInventario <= 15 ? "Alta" :
+                                item.diasEnInventario <= 60 ? "Media" : "Baja";
+                              const cap = ((item.costoPromedio || 0) * (item.stock || 0)).toLocaleString();
+                              const vals = [
+                                item.name?.substring(0, 20) || "—",
+                                item.code || "",
+                                item.subbrand?.substring(0, 15) || "—",
+                                String(item.stock || 0),
+                                item.diasEnInventario >= 999 ? "—" : String(item.diasEnInventario),
+                                item.velocidadDias > 0 ? `${item.velocidadDias}d/v` : "Sin vtas",
+                                proy ? `${proy}d` : "—",
+                                el,
+                                `${cap} RD$`,
+                              ];
+                              cx = startX;
+                              vals.forEach((v, i) => {
+                                doc.text(v, cx + (i > 0 ? widths[i] / 2 : 0), y, i > 0 ? { align: "center" } : undefined);
+                                cx += widths[i];
+                              });
+                              y += 4;
+                            });
+                            doc.save("Reporte-Rotacion-Inventario.pdf");
+                            toast.success("PDF descargado");
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                        >
+                          <FileText size={14} /> Exportar PDF
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRotationExportOpen(false);
+                            const headers = ["Producto", "Código", "Submarca", "Stock", "Días en Inv.", "Velocidad", "Proy. Agot.", "Estado", "Capital"];
+                            const rows = rotationData.map((item: any) => {
+                              const proy = item.velocidadDias > 0 && item.stock > 0 ? `${Math.round(item.velocidadDias * item.stock)} días` : "—";
+                              const el = item.diasEnInventario >= 999 ? "Sin movimientos" :
+                                item.diasEnInventario <= 15 ? "Rotación alta" :
+                                item.diasEnInventario <= 60 ? "Rotación media" : "Rotación baja";
+                              const cap = ((item.costoPromedio || 0) * (item.stock || 0)).toLocaleString();
+                              return [
+                                item.name || "—",
+                                item.code || "",
+                                item.subbrand || "—",
+                                String(item.stock || 0),
+                                item.diasEnInventario >= 999 ? "—" : String(item.diasEnInventario),
+                                item.velocidadDias > 0 ? `${item.velocidadDias} días/venta` : "Sin ventas",
+                                proy,
+                                el,
+                                `${cap} RD$`,
+                              ];
+                            });
+                            const csv = [headers.join(","), ...rows.map((r: string[]) => r.map(v => `"${v}"`).join(","))].join("\n");
+                            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "Reporte-Rotacion-Inventario.csv";
+                            link.click();
+                            toast.success("CSV descargado");
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                        >
+                          <FileText size={14} /> Exportar CSV
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Rotation Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-separate border-spacing-y-2">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Submarca</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Producto</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Stock</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Días en Inv.</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Velocidad</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Proy. Agot.</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Última Ref.</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Recom.</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Capital</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Ocultar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      let filtered = rotationData.filter((d: any) => showHiddenRotation || !hiddenRotationIds.includes(d.product_id));
+                      if (rotationFilterSubbrand) filtered = filtered.filter((d: any) => d.subbrand === rotationFilterSubbrand);
+                      if (rotationFilterDays) {
+                        const [min, max] = rotationFilterDays.split("-").map(Number);
+                        filtered = filtered.filter((d: any) => d.diasEnInventario >= min && d.diasEnInventario <= max);
+                      }
+                      if (rotationFilterStatus) {
+                        filtered = filtered.filter((d: any) => {
+                          if (rotationFilterStatus === "success") return d.diasEnInventario <= 15;
+                          if (rotationFilterStatus === "warning") return d.diasEnInventario > 15 && d.diasEnInventario <= 60;
+                          if (rotationFilterStatus === "danger") return d.diasEnInventario > 60 || d.diasEnInventario >= 999;
+                          return true;
+                        });
+                      }
+                      return filtered
+                        .sort((a: any, b: any) => b.diasEnInventario - a.diasEnInventario)
+                        .map((item: any) => {
+                          const velocidad = item.velocidadDias > 0
+                            ? `${item.velocidadDias} días/venta`
+                            : "Sin ventas";
+                          const proyAgot = item.velocidadDias > 0 && item.stock > 0
+                            ? Math.round(item.velocidadDias * item.stock)
+                            : null;
+                          const proyColor = proyAgot === null ? "text-[#9C8A82]" :
+                            proyAgot < 30 ? "text-red-500" :
+                            proyAgot < 60 ? "text-[#E8C87A]" : "text-[#86C7A3]";
+                          const capital = ((item.costoPromedio || 0) * (item.stock || 0));
+                          const estadoLabel = item.diasEnInventario >= 999 ? "Sin movimientos" :
+                            item.diasEnInventario <= 15 ? "Rotación alta" :
+                            item.diasEnInventario <= 60 ? "Rotación media" : "Rotación baja";
+                          const estadoVariant = item.diasEnInventario >= 999 ? "danger" :
+                            item.diasEnInventario <= 15 ? "success" :
+                            item.diasEnInventario <= 60 ? "warning" : "danger";
+
+                          // Auto-recommendations per row
+                          const recoms: { label: string; variant: "success" | "warning" | "danger" }[] = [];
+                          if (item.diasEnInventario > 90 && item.diasEnInventario < 999) recoms.push({ label: "Liquidar", variant: "danger" });
+                          if (proyAgot !== null && proyAgot < 30) recoms.push({ label: "Reponer", variant: "warning" });
+                          if (item.diasEnInventario >= 999) recoms.push({ label: "Sin mov.", variant: "danger" });
+
+                          return (
+                            <tr
+                              key={item.id}
+                              className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow cursor-pointer"
+                              onClick={async () => {
+                                setRotationDetailProductId(item.product_id);
+                                setRotationDetailItem(item);
+                                setRotationDetailLoading(true);
+                                try {
+                                  const movs = await getInventoryMovements(item.product_id);
+                                  setRotationDetailMovements(movs);
+                                } catch {
+                                  setRotationDetailMovements([]);
+                                } finally {
+                                  setRotationDetailLoading(false);
+                                }
+                              }}
+                            >
+                              <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
+                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] font-medium">
+                                {item.products?.name || "—"}
+                                <span className="ml-2 text-xs text-[#9C8A82]">{item.products?.code}</span>
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-center">{item.stock || 0}</td>
+                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-center font-medium">
+                                {item.diasEnInventario >= 999 ? "—" : item.diasEnInventario}
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#9C8A82] text-center">{velocidad}</td>
+                              <td className={`px-4 py-3.5 text-sm text-center font-medium ${proyColor}`}>
+                                {proyAgot === null ? "—" : `${proyAgot} días`}
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#9C8A82] text-center">{item.ultimaReferencia}</td>
+                              <td className="px-4 py-3.5 text-center">
+                                <div className="flex flex-wrap gap-1 justify-center">
+                                  {recoms.length === 0 ? (
+                                    <span className="text-xs text-[#9C8A82]">—</span>
+                                  ) : recoms.map((r, i) => (
+                                    <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                                      r.variant === "danger" ? "bg-red-50 text-red-600" :
+                                      r.variant === "warning" ? "bg-yellow-50 text-yellow-700" :
+                                      "bg-green-50 text-green-600"
+                                    }`}>{r.label}</span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3.5 text-center">
+                                <Badge variant={estadoVariant}>{estadoLabel}</Badge>
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{capital.toLocaleString()} RD$</td>
+                              <td className="px-4 py-3.5 text-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleHideRotationProduct(item.product_id);
+                                  }}
+                                  className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
+                                    hiddenRotationIds.includes(item.product_id)
+                                      ? "bg-[#B8837E]/10 text-[#B8837E]"
+                                      : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                                  }`}
+                                >
+                                  <EyeOff size={12} className="inline mr-1" />
+                                  {hiddenRotationIds.includes(item.product_id) ? "Mostrar" : "Ocultar"}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Rotation detail modal */}
+      <Modal isOpen={!!rotationDetailProductId} onClose={() => { setRotationDetailProductId(null); setRotationDetailItem(null); }} title={rotationDetailItem?.name || "Detalle del Producto"} wide>
+        {rotationDetailLoading ? (
+          <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+        ) : (
+          <div className="space-y-5">
+            {rotationDetailItem && (
+              <>
+                {/* Summary cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                    <p className="text-xs text-[#9C8A82]">Stock actual</p>
+                    <p className="text-xl font-bold text-[#5C3E35]">{rotationDetailItem.stock || 0}</p>
+                  </div>
+                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                    <p className="text-xs text-[#9C8A82]">Días en inventario</p>
+                    <p className="text-xl font-bold text-[#5C3E35]">
+                      {rotationDetailItem.diasEnInventario >= 999 ? "—" : rotationDetailItem.diasEnInventario}
+                    </p>
+                  </div>
+                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                    <p className="text-xs text-[#9C8A82]">Velocidad de venta</p>
+                    <p className="text-xl font-bold text-[#5C3E35]">
+                      {rotationDetailItem.velocidadDias > 0 ? `${rotationDetailItem.velocidadDias} días` : "—"}
+                    </p>
+                  </div>
+                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
+                    <p className="text-xs text-[#9C8A82]">Proy. agotamiento</p>
+                    <p className={`text-xl font-bold ${
+                      rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
+                        ? Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock) < 30
+                          ? "text-red-500" : "text-[#86C7A3]"
+                        : "text-[#9C8A82]"
+                    }`}>
+                      {rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
+                        ? `${Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock)} días`
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Timeline info */}
+                <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#9C8A82]">Última referencia</span>
+                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.ultimaReferencia}</span>
+                  </div>
+                  {rotationDetailItem.firstPurchase && (
+                    <div className="flex justify-between">
+                      <span className="text-[#9C8A82]">Primera compra</span>
+                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.firstPurchase)}</span>
+                    </div>
+                  )}
+                  {rotationDetailItem.last_purchase && (
+                    <div className="flex justify-between">
+                      <span className="text-[#9C8A82]">Última compra</span>
+                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.last_purchase)}</span>
+                    </div>
+                  )}
+                  {rotationDetailItem.last_sale && (
+                    <div className="flex justify-between">
+                      <span className="text-[#9C8A82]">Última venta</span>
+                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.last_sale)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-[#9C8A82]">Total vendido</span>
+                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.sold || 0} unidades</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#9C8A82]">Total comprado</span>
+                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.purchased || 0} unidades</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#9C8A82]">Capital inmovilizado</span>
+                    <span className="text-[#5C3E35] font-medium">{((rotationDetailItem.costoPromedio || 0) * (rotationDetailItem.stock || 0)).toLocaleString()} RD$</span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Movements */}
+            <div>
+              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Movimientos de inventario</h4>
+              {rotationDetailMovements.length === 0 ? (
+                <p className="text-sm text-[#9C8A82] py-4 text-center">Sin movimientos registrados</p>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {rotationDetailMovements.map((m: any) => (
+                    <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                      <div>
+                        <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
+                          {movementLabel[m.movement_type] || m.movement_type}
+                        </p>
+                        {m.notes && <p className="text-xs text-[#9C8A82]">{m.notes}</p>}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-[#5C3E35]">
+                          {m.movement_type === "PURCHASE" ? "+" : m.movement_type === "SALE" ? "-" : ""}
+                          {m.quantity}
+                        </p>
+                        <p className="text-xs text-[#9C8A82]">{formatDate(m.created_at)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {activeTab === "history" && (
         <div className="space-y-3">
@@ -812,9 +1582,20 @@ function InventarioContent() {
           const detPurchased = purchasedMap[detailItem.product_id] || 0;
           const detStock = Math.max(0, detPurchased - detSold);
           const detPending = Math.max(0, detSold - detPurchased);
+          const detStatus = getStockStatus(detStock, detailMinStock);
+          const detCapital = (detailItem.products?.cost || 0) * detStock;
+          const isHidden = hiddenStockIds.includes(detailItem.product_id);
           return (
           <div className="space-y-5">
-            <div className="grid grid-cols-5 gap-3">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-[#9C8A82]">{detailItem.products?.subbrands?.name} · {detailItem.products?.code}</p>
+              </div>
+              <Badge variant={detStatus.variant}>{detStatus.label}</Badge>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
                 <p className="text-xs text-[#9C8A82]">Compradas</p>
                 <p className="text-xl font-bold text-[#5C3E35]">{detPurchased || "—"}</p>
@@ -832,8 +1613,8 @@ function InventarioContent() {
                 <p className="text-xl font-bold text-[#5C3E35]">{detSold}</p>
               </div>
               <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Valor inventario</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(detailItem.inventory_value)}</p>
+                <p className="text-xs text-[#9C8A82]">Capital</p>
+                <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(detCapital)}</p>
               </div>
             </div>
 
@@ -846,6 +1627,21 @@ function InventarioContent() {
               />
               <button onClick={handleSaveMinStock} className="h-9 px-3 bg-[#B8837E] text-white rounded-lg text-xs font-medium hover:bg-[#9A6B66] transition-all">
                 <Save size={14} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleHideStockProduct(detailItem.product_id);
+                  setShowDetail(false);
+                }}
+                className={`ml-auto flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-all ${
+                  isHidden
+                    ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
+                    : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+                }`}
+              >
+                <EyeOff size={14} />
+                {isHidden ? "Mostrar en stock" : "Ocultar de stock"}
               </button>
             </div>
 
@@ -1203,24 +1999,55 @@ function InventarioContent() {
        </Modal>
 
       {/* Delete product confirmation modal */}
-      <Modal isOpen={!!showConfirmDeleteProduct} onClose={() => setShowConfirmDeleteProduct(null)} title="Confirmar Eliminación">
+      <Modal isOpen={!!showConfirmDeleteProduct} onClose={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); }} title="Confirmar Eliminación">
         <div className="space-y-5">
-          <p className="text-sm text-[#5C3E35]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowConfirmDeleteProduct(null)}
-              className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={() => showConfirmDeleteProduct && handleDeleteProduct(showConfirmDeleteProduct)}
-              disabled={deletingProduct}
-              className="flex-1 h-12 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Eliminar"}
-            </button>
-          </div>
+          {productUsage ? (
+            <>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-sm font-medium text-red-700 mb-2">Este producto tiene registros asociados</p>
+                <ul className="text-sm text-red-600 space-y-1">
+                  {productUsage.movements > 0 && <li>• {productUsage.movements} movimiento(s) de inventario</li>}
+                  {productUsage.invoices > 0 && <li>• {productUsage.invoices} línea(s) en facturas</li>}
+                  {productUsage.purchases > 0 && <li>• {productUsage.purchases} línea(s) en compras</li>}
+                </ul>
+                <p className="text-xs text-red-500 mt-2">La eliminación normal no está disponible. Usa "Forzar eliminación" para borrar el producto y todos sus registros asociados. Esta acción no se puede deshacer.</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); }}
+                  className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => showConfirmDeleteProduct && handleForceDeleteProduct(showConfirmDeleteProduct)}
+                  disabled={deletingProduct}
+                  className="flex-1 h-12 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Forzar eliminación"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-[#5C3E35]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirmDeleteProduct(null)}
+                  className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => showConfirmDeleteProduct && handleDeleteProduct(showConfirmDeleteProduct)}
+                  disabled={deletingProduct}
+                  className="flex-1 h-12 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Eliminar"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </PageContainer>

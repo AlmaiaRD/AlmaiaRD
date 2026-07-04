@@ -14,7 +14,7 @@ import {
   Wallet, MessageCircle, ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getLocalDateString } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 type FollowupWithClient = Awaited<ReturnType<typeof getAllFollowups>>[number];
@@ -98,7 +98,7 @@ export default function CrmPage() {
 
   const [createForm, setCreateForm] = useState({
     client_id: "",
-    contact_date: new Date().toISOString().split("T")[0],
+    contact_date: getLocalDateString(),
     next_followup: "",
     activity_type: "",
     comments: "",
@@ -159,7 +159,7 @@ export default function CrmPage() {
   }, [repurchaseMap]);
 
   function todayStr() {
-    return new Date().toISOString().split("T")[0];
+    return getLocalDateString();
   }
 
   const calendarDays = useMemo(() => {
@@ -357,8 +357,9 @@ export default function CrmPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
+          {/* Calendar */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -425,9 +426,11 @@ export default function CrmPage() {
               })}
             </div>
           </div>
+        </div>
 
+        <div className="lg:col-span-2">
           {selectedDate && (
-            <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] p-5 mt-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] p-5 mb-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-[#5C3E35]">
                   Actividades del {formatDate(selectedDate)}
@@ -496,9 +499,6 @@ export default function CrmPage() {
               )}
             </div>
           )}
-        </div>
-
-        <div>
           <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#5C3E35]">Todas las actividades</h3>

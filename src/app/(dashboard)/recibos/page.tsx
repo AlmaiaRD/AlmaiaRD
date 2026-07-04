@@ -8,11 +8,13 @@ import Badge from "@/components/ui/Badge";
 import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice } from "@/services/receipts";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
+import { getLocalDateString } from "@/lib/utils";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
-import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2 } from "lucide-react";
+import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2, Mail, MessageCircle } from "lucide-react";
 import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
 import { normalize } from "@/lib/search";
+import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 
 const methodMap: Record<string, { label: string; variant: "success" | "warning" | "info" | "neutral" }> = {
   CASH: { label: "Efectivo", variant: "success" },
@@ -36,6 +38,7 @@ export default function RecibosPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterYear, setFilterYear] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "paid" | "pending">("all");
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -44,7 +47,8 @@ export default function RecibosPage() {
   const [openPrintId, setOpenPrintId] = useState<string | null>(null);
 
   const [selectedInvoice, setSelectedInvoice] = useState("");
-  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split("T")[0]);
+  const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
+  const [receiptDate, setReceiptDate] = useState(getLocalDateString());
   const [amount, setAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "TRANSFER" | "CARD">("CASH");
   const [bankAccountId, setBankAccountId] = useState("");
@@ -76,7 +80,7 @@ export default function RecibosPage() {
 
   function resetForm() {
     setSelectedInvoice("");
-    setReceiptDate(new Date().toISOString().split("T")[0]);
+    setReceiptDate(getLocalDateString());
     setAmount(0);
     setPaymentMethod("CASH");
     setBankAccountId("");
@@ -87,21 +91,32 @@ export default function RecibosPage() {
   const balanceDue = selectedInvoiceData ? Number(selectedInvoiceData.total) - Number(selectedInvoiceData.amount_paid || 0) : 0;
 
   const receiptSearchFiltered = receipts.filter((r: any) => {
-    if (!searchQuery) {
-      if (filterMonth || filterYear) {
-        const d = new Date(r.created_at);
-        if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
-        if (filterYear && String(d.getFullYear()) !== filterYear) return false;
-      }
-      return true;
+    // Filter by status
+    if (filterStatus !== "all") {
+      const invoiceStatus = r.invoices?.status;
+      if (filterStatus === "paid" && invoiceStatus !== "PAID") return false;
+      if (filterStatus === "pending" && invoiceStatus === "PAID") return false;
     }
-    const q = normalize(searchQuery);
-    return (
-      normalize(r.receipt_number ?? "").includes(q) ||
-      normalize(r.invoices?.invoice_number ?? "").includes(q) ||
-      normalize(r.clients?.full_name ?? "").includes(q) ||
-      normalize(r.invoices?.clients?.full_name ?? "").includes(q)
-    );
+
+    // Filter by search query
+    if (searchQuery) {
+      const q = normalize(searchQuery);
+      const matchesSearch =
+        normalize(r.receipt_number ?? "").includes(q) ||
+        normalize(r.invoices?.invoice_number ?? "").includes(q) ||
+        normalize(r.clients?.full_name ?? "").includes(q) ||
+        normalize(r.invoices?.clients?.full_name ?? "").includes(q);
+      if (!matchesSearch) return false;
+    }
+
+    // Filter by month/year
+    if (filterMonth || filterYear) {
+      const d = new Date(r.created_at);
+      if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
+      if (filterYear && String(d.getFullYear()) !== filterYear) return false;
+    }
+
+    return true;
   });
 
   async function buildReceiptPreviewEl(data: any, settings: any) {
@@ -199,7 +214,8 @@ export default function RecibosPage() {
       const jspdfModule = await import("jspdf");
       const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
       pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
-      pdf.save(`recibo-${receipt_number}.pdf`);
+      const clientName = rec.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      pdf.save(`recibo-${receipt_number}-${clientName}.pdf`);
       toast.success("PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
@@ -212,7 +228,8 @@ export default function RecibosPage() {
     try {
       const { canvas, receipt_number } = await captureReceipt(rec);
       const link = document.createElement("a");
-      link.download = `recibo-${receipt_number}.jpg`;
+      const clientName = rec.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      link.download = `recibo-${receipt_number}-${clientName}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
       toast.success("JPG descargado");
@@ -296,7 +313,7 @@ export default function RecibosPage() {
       payment_method: rec.payment_method,
       bank_account_id: rec.bank_account_id || "",
       concept: rec.concept || "",
-      receipt_date: rec.receipt_date || new Date().toISOString().split("T")[0],
+      receipt_date: rec.receipt_date || getLocalDateString(),
     });
     setShowEditModal(true);
   }
@@ -326,7 +343,13 @@ export default function RecibosPage() {
         />
       </div>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as any)}
+          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
+          <option value="all">Todos los estados</option>
+          <option value="paid">Pagados</option>
+          <option value="pending">Pendientes</option>
+        </select>
         <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
           className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
           <option value="">Todos los meses</option>
@@ -341,8 +364,8 @@ export default function RecibosPage() {
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
-        {(filterMonth || filterYear) && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
+        {(filterMonth || filterYear || filterStatus !== "all") && (
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus("all"); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
         )}
       </div>
 
@@ -364,6 +387,7 @@ export default function RecibosPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Factura</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Monto</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Método</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
               </tr>
             </thead>
@@ -378,6 +402,11 @@ export default function RecibosPage() {
                     <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{rec.invoices?.invoice_number || "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{formatCurrency(rec.amount)}</td>
                     <td className="px-4 py-3.5 text-center"><Badge variant={m.variant}>{m.label}</Badge></td>
+                    <td className="px-4 py-3.5 text-center">
+                      <Badge variant={rec.invoices?.status === "PAID" ? "success" : "warning"}>
+                        {rec.invoices?.status === "PAID" ? "Pagado" : "Pendiente"}
+                      </Badge>
+                    </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="Ver"><Eye size={15} /></button>
@@ -461,17 +490,73 @@ export default function RecibosPage() {
               </div>
             )}
 
-            <div className="flex gap-3">
-              <button onClick={() => handlePrintPdf(selectedReceipt)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
-                <Printer size={18} /> Descargar PDF
+            <div className="flex flex-wrap gap-3">
+              <button onClick={() => handlePrintPdf(selectedReceipt)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                <Printer size={18} /> PDF
               </button>
-              <button onClick={() => { setShowDetail(false); handlePrintJpg(selectedReceipt); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
-                <Download size={18} /> Descargar JPG
+              <button onClick={() => { setShowDetail(false); handlePrintJpg(selectedReceipt); }} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                <Download size={18} /> JPG
               </button>
+              {(selectedReceipt.clients?.email || selectedReceipt.invoices?.clients?.email) && (
+                <button
+                  onClick={() => setDraftModal({ type: "email" })}
+                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                >
+                  <Mail size={18} /> Email
+                </button>
+              )}
+              {(selectedReceipt.clients?.phone || selectedReceipt.invoices?.clients?.phone) && (
+                <button
+                  onClick={() => setDraftModal({ type: "whatsapp" })}
+                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={18} /> WhatsApp
+                </button>
+              )}
             </div>
           </div>
         )}
       </Modal>
+
+      {draftModal && selectedReceipt && (
+        <CommunicationDraftModal
+          isOpen={true}
+          onClose={() => setDraftModal(null)}
+          type={draftModal.type}
+          client={{
+            id: selectedReceipt.client_id,
+            full_name: selectedReceipt.clients?.full_name || selectedReceipt.invoices?.clients?.full_name || "",
+            email: selectedReceipt.clients?.email || selectedReceipt.invoices?.clients?.email,
+            phone: selectedReceipt.clients?.phone || selectedReceipt.invoices?.clients?.phone,
+          }}
+          documentType="receipt"
+          documentNumber={selectedReceipt.receipt_number}
+          documentId={selectedReceipt.id}
+          total={formatCurrency(selectedReceipt.amount)}
+          businessName={settings?.business_name || "Almaia RD"}
+          senderEmail={settings?.email || undefined}
+          senderName={settings?.sender_name || undefined}
+          emailTemplate={(settings as any)?.email_template || undefined}
+          whatsappTemplate={(settings as any)?.whatsapp_template || undefined}
+          smtp={(settings as any)?.smtp_host ? {
+            host: (settings as any).smtp_host,
+            port: (settings as any).smtp_port || 587,
+            user: (settings as any).smtp_user,
+            pass: (settings as any).smtp_pass,
+            secure: (settings as any).smtp_secure || false,
+            senderName: (settings as any).sender_name || undefined,
+          } : undefined}
+          getAttachment={async () => {
+            const { canvas, receipt_number } = await captureReceipt(selectedReceipt);
+            const jspdfModule = await import("jspdf");
+            const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
+            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
+            const base64 = pdf.output("datauristring").split(",")[1];
+            const clientName = selectedReceipt?.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+            return { filename: `recibo-${receipt_number}-${clientName}.pdf`, base64 };
+          }}
+        />
+      )}
 
       {/* Edit modal */}
       <Modal isOpen={showEditModal} onClose={() => { setShowEditModal(false); setSelectedReceipt(null); }} title="Editar Recibo" subtitle={selectedReceipt?.receipt_number || ""} wide>

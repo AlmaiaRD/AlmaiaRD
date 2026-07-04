@@ -6,6 +6,8 @@ export interface User {
   created_at: string;
 }
 
+export type ClientType = "comprador" | "negocio";
+
 export interface Client {
   id: string;
   full_name: string;
@@ -14,12 +16,19 @@ export interface Client {
   ibo_number: string;
   notes: string;
   credit_balance: number;
+  client_type: ClientType;
   stage: string;
+  qualification_level: string | null;
+  closure_result: string | null;
+  stage_entered_at: string | null;
   first_contact_date: string | null;
   lead_source: string | null;
   interest: string | null;
   next_followup_date: string | null;
   last_contact_date: string | null;
+  birthday: string | null;
+  client_type_changed_at: string | null;
+  previous_client_type: ClientType | null;
   created_at: string;
   updated_at: string;
   created_by?: string;
@@ -38,6 +47,7 @@ export interface ClientCardData extends Client {
   tags: { id: string; name: string }[];
   next_action: { date: string; description: string } | null;
   repurchase_date: string | null;
+  days_in_stage: number | null;
 }
 
 export interface ClientTag {
@@ -80,6 +90,7 @@ export interface Product {
   price_35: number;
   active: boolean;
   apply_itbis: boolean;
+  duracion_dias: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -286,7 +297,17 @@ export interface Settings {
   purchase_prefix: string;
   email: string;
   phone: string;
+  sender_name: string;
+  email_template: string;
+  whatsapp_template: string;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_pass: string;
+  smtp_secure: boolean;
   nutrilite_itbis_enabled?: boolean;
+  ai_client_prompt: string;
+  ai_learning_prompt: string;
   created_at: string;
 }
 
@@ -312,4 +333,31 @@ export interface AuditLog {
   entity_id: string;
   description: string;
   created_at: string;
+}
+
+export type CommunicationType = "email" | "whatsapp";
+export type CommunicationDirection = "outgoing" | "incoming";
+export type CommunicationStatus = "draft" | "sent" | "failed";
+
+export interface Communication {
+  id: string;
+  client_id: string;
+  type: CommunicationType;
+  direction: CommunicationDirection;
+  subject: string;
+  body: string;
+  document_type: "invoice" | "receipt" | null;
+  document_id: string;
+  status: CommunicationStatus;
+  created_at: string;
+  sent_at: string | null;
+}
+
+export interface LearningNote {
+  id: string;
+  title: string;
+  content: string;
+  tags: string;
+  created_at: string;
+  updated_at: string;
 }

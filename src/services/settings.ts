@@ -15,6 +15,25 @@ export async function getSettings() {
       invoice_prefix: "FAC-",
       receipt_prefix: "REC-",
       purchase_prefix: "COM-",
+      ai_client_prompt: `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
+
+Cliente: {{clientName}}
+Etapa: {{stage}}
+Total facturado: RD\${{totalSpent}}
+Deuda pendiente: RD\${{pendingBalance}}
+Compras realizadas: {{numPurchases}}
+Productos favoritos: {{topProducts}}
+
+Responde SOLO en este formato (máximo 4 líneas):
+RESUMEN: [2 oraciones sobre el cliente]
+ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`,
+      ai_learning_prompt: `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
+
+Título: {{title}}
+Contenido: {{content}}
+Etiquetas: {{tags}}
+
+Responde en español en máximo 3 oraciones:`,
     })
     .select()
     .single();
@@ -33,6 +52,16 @@ export async function updateSettings(settings: Partial<Settings>) {
       signature_url: settings.signature_url,
       email: (settings as any).email,
       phone: (settings as any).phone,
+      sender_name: (settings as any).sender_name,
+      email_template: (settings as any).email_template,
+      whatsapp_template: (settings as any).whatsapp_template,
+      smtp_host: (settings as any).smtp_host,
+      smtp_port: (settings as any).smtp_port,
+      smtp_user: (settings as any).smtp_user,
+      smtp_pass: (settings as any).smtp_pass,
+      smtp_secure: (settings as any).smtp_secure,
+      ai_client_prompt: (settings as any).ai_client_prompt,
+      ai_learning_prompt: (settings as any).ai_learning_prompt,
       default_margin: settings.default_margin,
       invoice_prefix: settings.invoice_prefix,
       receipt_prefix: settings.receipt_prefix,

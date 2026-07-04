@@ -7,12 +7,13 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts } from "@/services/invoices";
 import { normalize } from "@/lib/search";
+import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getClients, createClient } from "@/services/clients";
 import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2 } from "lucide-react";
+import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -42,7 +43,7 @@ export default function FacturacionPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
+  const [invoiceDate, setInvoiceDate] = useState(getLocalDateString());
   const [margin, setMargin] = useState(30);
   const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; price_30?: number; price_35?: number; pv: number; itbis: boolean }>>([]);
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -55,6 +56,7 @@ export default function FacturacionPage() {
   const [jpgData, setJpgData] = useState<any>(null);
   const [showNewClient, setShowNewClient] = useState(false);
   const [newClientForm, setNewClientForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
+  const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
   const [showManualProduct, setShowManualProduct] = useState(false);
   const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, itbis: false });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -142,7 +144,7 @@ export default function FacturacionPage() {
     setDiscountPercent(0);
     setDiscountAmount(0);
     setMargin(30);
-    setInvoiceDate(new Date().toISOString().split("T")[0]);
+    setInvoiceDate(getLocalDateString());
     setNotes("");
     setBankAccountId("");
     setEditingId(null);
@@ -320,7 +322,8 @@ export default function FacturacionPage() {
       const jspdfModule = await import("jspdf");
       const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
       pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
-      pdf.save(`factura-${invoice_number}.pdf`);
+      const clientName = inv.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      pdf.save(`factura-${invoice_number}-${clientName}.pdf`);
       toast.success("PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
@@ -332,7 +335,8 @@ export default function FacturacionPage() {
     try {
       const { canvas, invoice_number } = await captureInvoice(inv);
       const link = document.createElement("a");
-      link.download = `factura-${invoice_number}.jpg`;
+      const clientName = inv.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      link.download = `factura-${invoice_number}-${clientName}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
       toast.success("JPG descargado");
@@ -372,7 +376,7 @@ export default function FacturacionPage() {
       setNotes(full.notes || "");
       setBankAccountId(full.bank_account_id || "");
       setMargin(full.margin || 30);
-      setInvoiceDate(full.invoice_date || new Date().toISOString().split("T")[0]);
+      setInvoiceDate(full.invoice_date || getLocalDateString());
       setShowModal(true);
     } catch {
       toast.error("Error al cargar factura");
@@ -719,15 +723,31 @@ export default function FacturacionPage() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => handlePrintPdf(selectedInvoice)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
-                <FileText size={18} /> Descargar PDF
+            <div className="flex flex-wrap gap-3">
+              <button onClick={() => handlePrintPdf(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                <FileText size={18} /> PDF
               </button>
-              <button onClick={() => handlePrintJpg(selectedInvoice)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
-                <Download size={18} /> Descargar JPG
+              <button onClick={() => handlePrintJpg(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                <Download size={18} /> JPG
               </button>
+              {selectedInvoice.clients?.email && (
+                <button
+                  onClick={() => setDraftModal({ type: "email" })}
+                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                >
+                  <Mail size={18} /> Email
+                </button>
+              )}
+              {selectedInvoice.clients?.phone && (
+                <button
+                  onClick={() => setDraftModal({ type: "whatsapp" })}
+                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={18} /> WhatsApp
+                </button>
+              )}
               {(selectedInvoice.status === "PENDING" || selectedInvoice.status === "PARTIAL") && (
-                <button onClick={() => { setShowDetail(false); setSelectedInvoice(null); router.push(`/recibos?nuevo=true&invoice_id=${selectedInvoice.id}`); }} className="flex-1 h-12 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all flex items-center justify-center gap-2">
+                <button onClick={() => { setShowDetail(false); setSelectedInvoice(null); router.push(`/recibos?nuevo=true&invoice_id=${selectedInvoice.id}`); }} className="flex-1 min-w-[120px] h-12 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all flex items-center justify-center gap-2">
                   <DollarSign size={18} /> Registrar Pago
                 </button>
               )}
@@ -735,6 +755,46 @@ export default function FacturacionPage() {
           </div>
         )}
       </Modal>
+
+      {draftModal && selectedInvoice && (
+        <CommunicationDraftModal
+          isOpen={true}
+          onClose={() => setDraftModal(null)}
+          type={draftModal.type}
+          client={{
+            id: selectedInvoice.client_id,
+            full_name: selectedInvoice.clients?.full_name || "",
+            email: selectedInvoice.clients?.email,
+            phone: selectedInvoice.clients?.phone,
+          }}
+          documentType="invoice"
+          documentNumber={selectedInvoice.invoice_number}
+          documentId={selectedInvoice.id}
+          total={formatCurrency(selectedInvoice.total)}
+          businessName={settings?.business_name || "Almaia RD"}
+          senderEmail={settings?.email || undefined}
+          senderName={settings?.sender_name || undefined}
+          emailTemplate={(settings as any)?.email_template || undefined}
+          whatsappTemplate={(settings as any)?.whatsapp_template || undefined}
+          smtp={(settings as any)?.smtp_host ? {
+            host: (settings as any).smtp_host,
+            port: (settings as any).smtp_port || 587,
+            user: (settings as any).smtp_user,
+            pass: (settings as any).smtp_pass,
+            secure: (settings as any).smtp_secure || false,
+            senderName: (settings as any).sender_name || undefined,
+          } : undefined}
+          getAttachment={async () => {
+            const { canvas, invoice_number } = await captureInvoice(selectedInvoice);
+            const jspdfModule = await import("jspdf");
+            const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
+            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
+            const base64 = pdf.output("datauristring").split(",")[1];
+            const clientName = selectedInvoice?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+            return { filename: `factura-${invoice_number}-${clientName}.pdf`, base64 };
+          }}
+        />
+      )}
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingId ? "Editar Factura" : "Nueva Factura"} wide>
         <div className="space-y-5">

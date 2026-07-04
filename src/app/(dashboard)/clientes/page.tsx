@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
@@ -9,11 +10,14 @@ import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
 import type { Client } from "@/types/database";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
-  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet,
+  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { SALES_STAGES, RECRUITMENT_STAGES, getStagesForType } from "@/lib/pipeline-constants";
+import { updateClientStage } from "@/services/clients";
+import type { ClientType } from "@/types/database";
 
 type DetailTab = "info" | "facturas" | "pagos" | "creditos" | "seguimiento";
 
@@ -26,6 +30,7 @@ const statusColor: Record<string, "warning" | "info" | "success" | "danger"> = {
 };
 
 export default function ClientesPage() {
+  const searchParams = useSearchParams();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +40,7 @@ export default function ClientesPage() {
   const [detailTab, setDetailTab] = useState<DetailTab>("info");
   const [detailLoading, setDetailLoading] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [form, setForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
+  const [form, setForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador" as ClientType, birthday: "" });
   const [saving, setSaving] = useState(false);
 
   const [detailInvoices, setDetailInvoices] = useState<any[]>([]);
@@ -58,8 +63,15 @@ export default function ClientesPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    if (searchParams.get("nuevo") === "true") {
+      resetForm();
+      setShowModal(true);
+    }
+  }, [searchParams]);
+
   function resetForm() {
-    setForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
+    setForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador", birthday: "" });
     setEditingClient(null);
   }
 
@@ -76,6 +88,8 @@ export default function ClientesPage() {
       email: client.email || "",
       ibo_number: client.ibo_number || "",
       notes: client.notes || "",
+      client_type: (client.client_type as ClientType) || "comprador",
+      birthday: client.birthday || "",
     });
     setShowModal(true);
   }
@@ -143,7 +157,7 @@ export default function ClientesPage() {
     try {
       await createFollowup({
         client_id: detailClient.id,
-        contact_date: new Date().toISOString().split("T")[0],
+        contact_date: getLocalDateString(),
         comments: newFollowup,
         status: "PENDING",
       });
@@ -165,6 +179,26 @@ export default function ClientesPage() {
       }
     } catch {
       toast.error("Error al actualizar seguimiento");
+    }
+  }
+
+  async function handleConvertClientType(client: Client, newType: ClientType) {
+    const label = newType === "negocio" ? "Prospecto de Negocio" : "Cliente Comprador";
+    if (!window.confirm(`¿Convertir a ${client.full_name} como ${label}?`)) return;
+    
+    try {
+      await updateClient(client.id, {
+        client_type: newType,
+        stage: newType === "negocio" ? "prospecto" : "lead",
+        stage_entered_at: new Date().toISOString(),
+        client_type_changed_at: new Date().toISOString(),
+        previous_client_type: client.client_type,
+      });
+      toast.success(`Cliente convertido a ${label}`);
+      load();
+      setDetailClient(null);
+    } catch (e: any) {
+      toast.error("Error al convertir cliente");
     }
   }
 
@@ -204,11 +238,22 @@ export default function ClientesPage() {
               {clients.map((client: any) => {
                 const pending = Number(client.pending_balance || 0);
                 const credit = Number(client.credit_balance);
+                const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
                 return (
                   <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
                     <div className="flex items-start justify-between">
                       <button onClick={() => openDetail(client)} className="flex-1 text-left">
-                        <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
+                          {stage && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${stage.bg} ${stage.color}`}>
+                              {stage.label}
+                            </span>
+                          )}
+                          {client.client_type === "negocio" && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">Negocio</span>
+                          )}
+                        </div>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#9C8A82]">
                           {client.phone && <span className="flex items-center gap-1"><Phone size={12} />{client.phone}</span>}
                           {client.email && <span className="flex items-center gap-1"><Mail size={12} />{client.email}</span>}
@@ -233,6 +278,21 @@ export default function ClientesPage() {
                         </div>
                       </button>
                       <div className="flex items-center gap-2 ml-4">
+                        <select
+                          value={client.stage || ""}
+                          onChange={async e => {
+                            e.stopPropagation();
+                            try {
+                              await updateClientStage(client.id, e.target.value);
+                              load();
+                              toast.success("Etapa actualizada");
+                            } catch { toast.error("Error al actualizar"); }
+                          }}
+                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                        >
+                          <option value="">Sin etapa</option>
+                          {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                        </select>
                         <button onClick={() => openEdit(client)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
                       </div>
@@ -273,7 +333,7 @@ export default function ClientesPage() {
       <Modal isOpen={showDetail} onClose={() => { setShowDetail(false); setDetailClient(null); }} title={detailClient?.full_name || "Detalle"} wide>
         {detailClient && (
           <div className="space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#B8837E]/10 flex items-center justify-center">
                   <User size={22} className="text-[#B8837E]" />
@@ -287,8 +347,42 @@ export default function ClientesPage() {
                   {detailClient.ibo_number && <p className="text-xs text-[#9C8A82]">IBO: {detailClient.ibo_number}</p>}
                 </div>
               </div>
-              <button onClick={() => openEdit(detailClient)} className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"><Edit2 size={14} /> Editar</button>
+              <div className="flex items-center gap-3 flex-wrap">
+                {detailClient.client_type === "comprador" ? (
+                  <button 
+                    onClick={() => handleConvertClientType(detailClient, "negocio")} 
+                    className="flex items-center gap-1.5 text-sm text-[#86C7A3] hover:underline"
+                  >
+                    <Briefcase size={14} /> <span className="hidden sm:inline">Convertir a Prospecto</span><span className="sm:hidden">Prospecto</span>
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleConvertClientType(detailClient, "comprador")} 
+                    className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"
+                  >
+                    <User size={14} /> <span className="hidden sm:inline">Convertir a Comprador</span><span className="sm:hidden">Comprador</span>
+                  </button>
+                )}
+                <button onClick={() => openEdit(detailClient)} className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"><Edit2 size={14} /> Editar</button>
+              </div>
             </div>
+
+            {detailClient.previous_client_type && detailClient.client_type_changed_at && (
+              <div className="bg-[#FAF6F0] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#B8837E]/10 flex items-center justify-center">
+                  <Briefcase size={14} className="text-[#B8837E]" />
+                </div>
+                <div>
+                  <p className="text-xs text-[#9C8A82]">
+                    Fue {detailClient.previous_client_type === "comprador" ? "Cliente Comprador" : "Prospecto de Negocio"} por{" "}
+                    {Math.floor((new Date(detailClient.client_type_changed_at).getTime() - new Date(detailClient.created_at).getTime()) / (1000 * 60 * 60 * 24))} días
+                  </p>
+                  <p className="text-xs text-[#9C8A82]">
+                    Convertido el {formatDate(detailClient.client_type_changed_at)}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-1 border-b border-[#E8E0D8] overflow-x-auto">
               {(["info", "facturas", "pagos", "creditos", "seguimiento"] as DetailTab[]).map((tab) => (
@@ -446,6 +540,18 @@ export default function ClientesPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingClient ? "Editar Cliente" : "Nuevo Cliente"} subtitle="Registra la información del cliente">
         <div className="space-y-4">
           <div>
+            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Tipo de cliente *</label>
+            <div className="flex gap-3">
+              {([["comprador", "Cliente Comprador", "Compra productos"], ["negocio", "Prospecto de Negocio", "Posible IBO / Demo"]] as const).map(([value, label, desc]) => (
+                <button key={value} type="button" onClick={() => setForm({ ...form, client_type: value as ClientType })}
+                  className={`flex-1 p-3 rounded-xl border text-left transition-all ${form.client_type === value ? "border-[#B8837E] bg-[#B8837E]/5" : "border-[#E8E0D8] bg-white hover:bg-[#FAF6F0]"}`}>
+                  <p className="text-sm font-medium text-[#5C3E35]">{label}</p>
+                  <p className="text-xs text-[#9C8A82] mt-0.5">{desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre completo *</label>
             <input type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
           </div>
@@ -458,6 +564,10 @@ export default function ClientesPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Correo electrónico</label>
               <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de cumpleaños</label>
+            <input type="date" value={form.birthday} onChange={(e) => setForm({ ...form, birthday: e.target.value })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Número IBO (opcional)</label>

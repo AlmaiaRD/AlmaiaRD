@@ -9,7 +9,7 @@ import { getProducts, createProduct, updateProduct, searchProducts, getCategorie
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
-import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon } from "lucide-react";
+import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -29,10 +29,12 @@ export default function CatalogoPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
     cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "",
+    duracion_dias: null as number | null,
   });
 
   const [showNewSubbrand, setShowNewSubbrand] = useState(false);
@@ -46,6 +48,7 @@ export default function CatalogoPage() {
   const [showManageCategories, setShowManageCategories] = useState(false);
   const [deletingSubbrand, setDeletingSubbrand] = useState<string | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<any>(null);
 
   const fetchMeta = useCallback(async () => {
     const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
@@ -61,17 +64,17 @@ export default function CatalogoPage() {
       if (query) {
         data = await searchProducts(query);
       } else {
-        data = await getProducts();
+        data = await getProducts(true);
       }
       if (sb) data = data.filter((p: any) => p.subbrand_id === sb);
       if (cat) data = data.filter((p: any) => p.category_id === cat);
-      setProducts(data);
+      setProducts(showArchived ? data.filter((p: any) => !p.active) : data.filter((p: any) => p.active));
     } catch {
       toast.error("Error al cargar productos");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showArchived]);
 
   useEffect(() => {
     fetchMeta();
@@ -82,7 +85,7 @@ export default function CatalogoPage() {
   }, [load, searchQuery, filterSubbrand, filterCategory]);
 
   function resetForm() {
-    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "" });
+    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "", duracion_dias: null });
     setEditingProduct(null);
   }
 
@@ -96,6 +99,7 @@ export default function CatalogoPage() {
       price_30: product.price_30 || 0, price_35: product.price_35 || 0,
       apply_itbis: product.apply_itbis !== false,
       category_id: product.category_id || "", subbrand_id: product.subbrand_id || "",
+      duracion_dias: product.duracion_dias || null,
     });
     setShowModal(true);
   }
@@ -123,6 +127,7 @@ export default function CatalogoPage() {
         subbrand_id: form.subbrand_id || null,
         price_30: Number(form.price_30) || auto30,
         price_35: Number(form.price_35) || auto35,
+        duracion_dias: form.duracion_dias || null,
       };
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData as any);
@@ -162,13 +167,21 @@ export default function CatalogoPage() {
     finally { setSavingItbis(null); }
   }
 
-  async function handleDeleteProduct(product: any) {
-    if (!confirm(`¿Eliminar "${product.name}" del catálogo?`)) return;
+  async function handleArchiveProduct(product: any) {
+    if (!confirm(`¿Archivar "${product.name}"?`)) return;
     try {
       await updateProduct(product.id, { active: false } as any);
       setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
-      toast.success("Producto eliminado");
-    } catch { toast.error("Error al eliminar producto"); }
+      toast.success("Producto archivado");
+    } catch { toast.error("Error al archivar producto"); }
+  }
+
+  async function handleRestoreProduct(product: any) {
+    try {
+      await updateProduct(product.id, { active: true } as any);
+      setProducts((prev: any[]) => prev.map((p) => (p.id === product.id ? { ...p, active: true } : p)));
+      toast.success("Producto restaurado");
+    } catch { toast.error("Error al restaurar producto"); }
   }
 
   async function handleCreateSubbrand(name: string) {
@@ -219,6 +232,12 @@ export default function CatalogoPage() {
           <p className="text-sm text-[#9C8A82] mt-1">Base de datos de productos Amway</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showArchived ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]" : "border-[#E8E0D8] text-[#9C8A82] hover:bg-[#FAF6F0]"}`}
+          >
+            <Archive size={18} /> {showArchived ? "Ocultar archivados" : "Ver archivados"}
+          </button>
           <button onClick={() => router.push("/recomendaciones")} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
             <Brain size={18} /> IA Recomendaciones
           </button>
@@ -311,8 +330,13 @@ export default function CatalogoPage() {
                     <p className="text-xs text-[#9C8A82] mt-0.5">{product.code}</p>
                   </div>
                   <div className="flex gap-1">
+                    <button onClick={() => setViewingProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Ver detalles"><Eye size={14} /></button>
                     <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors"><Edit2 size={14} /></button>
-                    <button onClick={() => handleDeleteProduct(product)} className="p-2 text-[#C57E7E] hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                    {!product.active ? (
+                      <button onClick={() => handleRestoreProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={14} /></button>
+                    ) : (
+                      <button onClick={() => handleArchiveProduct(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-3">
@@ -459,6 +483,26 @@ export default function CatalogoPage() {
               <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${form.apply_itbis !== false ? "translate-x-[21px]" : "translate-x-0.5"}`} />
             </button>
           </div>
+          <div className="border-t border-[#E8E0D8] pt-4 mt-2">
+            <label className="block text-sm font-medium text-[#5C3E35] mb-2">Duración del producto</label>
+            <p className="text-xs text-[#9C8A82] mb-3">Define cuántos días dura este producto para programar automáticamente la próxima compra en CRM.</p>
+            <div className="flex gap-2 flex-wrap">
+              {[null, 10, 15, 20, 30, 60].map((d) => (
+                <button
+                  key={d ?? 0}
+                  type="button"
+                  onClick={() => setForm({ ...form, duracion_dias: d })}
+                  className={`px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
+                    form.duracion_dias === d
+                      ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
+                      : "border-[#E8E0D8] text-[#9C8A82] hover:border-[#B8837E]/30 hover:text-[#5C3E35]"
+                  }`}
+                >
+                  {d ? `${d} días` : "Sin duración"}
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descripción</label>
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
@@ -556,6 +600,60 @@ export default function CatalogoPage() {
             </div>
           ))}
         </div>
+      </Modal>
+
+      <Modal isOpen={!!viewingProduct} onClose={() => setViewingProduct(null)} title={viewingProduct?.name || "Detalles del Producto"} wide>
+        {viewingProduct && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Código</label>
+                <p className="text-sm text-[#5C3E35]">{viewingProduct.code || "N/A"}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Submarca</label>
+                <p className="text-sm text-[#5C3E35]">{viewingProduct.subbrands?.name || "N/A"}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Categoría</label>
+                <p className="text-sm text-[#5C3E35]">{viewingProduct.categories?.name || "N/A"}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">PV</label>
+                <p className="text-sm text-[#5C3E35]">{viewingProduct.pv || "N/A"}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Costo Amway</label>
+                <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(viewingProduct.cost)}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Costo + ITBIS</label>
+                <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(viewingProduct.cost * (viewingProduct.apply_itbis !== false ? (1 + ITBIS_RATE) : 1))}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Precio 30%</label>
+                <p className="text-sm font-medium text-[#B8837E]">{formatCurrency(viewingProduct.price_30 || 0)}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Precio 35%</label>
+                <p className="text-sm font-medium text-[#B8837E]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
+              </div>
+            </div>
+            {(viewingProduct.description || viewingProduct.benefits) && (
+              <div className="border-t border-[#E8E0D8] pt-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-2">Descripción completa</label>
+                <div className="p-4 bg-[#FAF6F0] rounded-xl max-h-[60vh] overflow-y-auto">
+                  <p className="text-sm text-[#5C3E35] whitespace-pre-wrap leading-relaxed">{viewingProduct.description || viewingProduct.benefits}</p>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end pt-2">
+              <button onClick={() => setViewingProduct(null)} className="h-10 px-6 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cerrar</button>
+            </div>
+          </div>
+        )}
       </Modal>
     </PageContainer>
   );

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getLocalDateString } from "@/lib/utils";
 
 const VIP_THRESHOLD = 50000;
 const INACTIVE_DAYS = 90;
@@ -10,6 +11,7 @@ const PRODUCT_CYCLES: Record<string, number> = {
   "Glister": 45,
 };
 
+// Auto-progresión: al crear primera factura → Cierre (Ganado)
 export async function updateStageOnFirstPurchase(clientId: string) {
   if (!clientId) return;
 
@@ -19,7 +21,10 @@ export async function updateStageOnFirstPurchase(clientId: string) {
     .eq("id", clientId)
     .single();
   if (!client) return;
-  if (client.stage !== "lead" && client.stage !== "contacted" && client.stage !== "quote") return;
+
+  // Solo mover si está en etapa de pipeline (pre-venta)
+  const preSaleStages = ["prospecto", "calificacion", "contacto_inicial", "propuesta", "negociacion"];
+  if (!preSaleStages.includes(client.stage)) return;
 
   const { count } = await supabase
     .from("invoices")
@@ -29,12 +34,15 @@ export async function updateStageOnFirstPurchase(clientId: string) {
 
   if (count === 1) {
     await supabase.from("clients").update({
-      stage: "first_purchase",
-      first_contact_date: new Date().toISOString().split("T")[0],
+      stage: "cierre",
+      closure_result: "ganado",
+      stage_entered_at: new Date().toISOString(),
+      first_contact_date: getLocalDateString(),
     }).eq("id", clientId);
   }
 }
 
+// Auto-progresión: al recibir pago
 export async function updateStageOnPayment(clientId: string) {
   if (!clientId) return;
 
@@ -46,17 +54,7 @@ export async function updateStageOnPayment(clientId: string) {
 
   const paidCount = paidInvoices?.length || 0;
 
-  let newStage = "post_sale";
-  if (paidCount >= 3) {
-    newStage = "active";
-  }
-
-  // Check VIP eligibility
-  const totalSpent = (paidInvoices || []).reduce((s, inv) => s + Number(inv.total), 0);
-  if (totalSpent >= VIP_THRESHOLD) {
-    newStage = "vip";
-  }
-
+  // Solo mover a cierre si tiene 3+ pagos
   const { data: client } = await supabase
     .from("clients")
     .select("stage")
@@ -64,20 +62,15 @@ export async function updateStageOnPayment(clientId: string) {
     .single();
   if (!client) return;
 
-  const currentStageIndex = stageIndex(client.stage);
-  const newStageIndex = stageIndex(newStage);
-
-  if (newStageIndex > currentStageIndex) {
+  const preSaleStages = ["prospecto", "calificacion", "contacto_inicial", "propuesta", "negociacion"];
+  if (preSaleStages.includes(client.stage) && paidCount >= 3) {
     await supabase.from("clients").update({
-      stage: newStage,
-      last_contact_date: new Date().toISOString().split("T")[0],
+      stage: "cierre",
+      closure_result: "ganado",
+      stage_entered_at: new Date().toISOString(),
+      last_contact_date: getLocalDateString(),
     }).eq("id", clientId);
   }
-}
-
-function stageIndex(stage: string): number {
-  const order = ["lead", "contacted", "quote", "first_purchase", "post_sale", "active", "repurchase", "vip", "inactive"];
-  return order.indexOf(stage);
 }
 
 export async function checkVipEligibility(clientId: string): Promise<boolean> {
@@ -108,7 +101,7 @@ export async function checkInactiveStatus(clientId: string): Promise<boolean> {
 }
 
 export async function getInactiveCandidates() {
-  const { data: clients } = await supabase.from("clients").select("id, full_name, stage").neq("stage", "inactive");
+  const { data: clients } = await supabase.from("clients").select("id, full_name, stage").neq("stage", "cierre");
   if (!clients) return [];
 
   const inactive: { id: string; full_name: string; days_since: number }[] = [];
@@ -136,7 +129,7 @@ export async function getInactiveCandidates() {
 export async function calculateRepurchaseDate(clientId: string): Promise<string | null> {
   const { data: items } = await supabase
     .from("invoice_items")
-    .select("products(name), invoice_id, invoices!inner(invoice_date, client_id)")
+    .select("products(name, duracion_dias), invoice_id, invoices!inner(invoice_date, client_id)")
     .eq("invoices.client_id", clientId)
     .neq("invoices.status", "CANCELLED")
     .order("invoices.invoice_date", { ascending: false })
@@ -145,7 +138,16 @@ export async function calculateRepurchaseDate(clientId: string): Promise<string 
   if (!items || items.length === 0) return null;
 
   for (const item of items) {
-    const productName = (item as any).products?.name || "";
+    const product = (item as any).products;
+    const productName = product?.name || "";
+    const duration = product?.duracion_dias;
+    
+    if (duration && duration > 0) {
+      const lastDate = new Date((item as any).invoices?.invoice_date);
+      lastDate.setDate(lastDate.getDate() + duration);
+      return lastDate.toISOString().split("T")[0];
+    }
+    
     const cycle = Object.entries(PRODUCT_CYCLES).find(([key]) =>
       productName.toLowerCase().includes(key.toLowerCase())
     );
@@ -167,17 +169,10 @@ export async function autoSuggestStageUpdate(clientId: string): Promise<{ curren
     .single();
   if (!client) return null;
 
-  if (client.stage === "active" || client.stage === "vip") {
+  if (client.stage === "cierre") {
     const isInactive = await checkInactiveStatus(clientId);
     if (isInactive) {
-      return { current: client.stage, suggested: "inactive", reason: `Más de ${INACTIVE_DAYS} días sin comprar` };
-    }
-  }
-
-  if (client.stage !== "vip") {
-    const isVip = await checkVipEligibility(clientId);
-    if (isVip) {
-      return { current: client.stage, suggested: "vip", reason: `Superó RD$${VIP_THRESHOLD.toLocaleString()} en compras` };
+      return { current: client.stage, suggested: "prospecto", reason: `Más de ${INACTIVE_DAYS} días sin comprar — reiniciar ciclo` };
     }
   }
 

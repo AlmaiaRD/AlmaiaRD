@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
 
-type Tab = "general" | "banks" | "backup";
+type Tab = "general" | "ai" | "banks" | "backup";
 
 export default function ConfiguracionPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -24,10 +24,54 @@ export default function ConfiguracionPage() {
     signature_url: "",
     email: "",
     phone: "",
+    sender_name: "",
     default_margin: 30,
     invoice_prefix: "FAC-",
     receipt_prefix: "REC-",
     purchase_prefix: "COM-",
+    email_template: `Hola, {{clientName}}.
+
+Espero que te encuentres muy bien.
+
+Te comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.
+
+Si tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.
+
+Muchas gracias por tu confianza.
+
+Saludos,
+{{senderName}}`,
+    whatsapp_template: `Hola {{clientName}} 👋
+
+Te envío {{label}} {{documentNumber}} por un total de {{total}}.
+
+Gracias por tu confianza.
+
+{{businessName}}`,
+    smtp_host: "",
+    smtp_port: 587,
+    smtp_user: "",
+    smtp_pass: "",
+    smtp_secure: false,
+    ai_client_prompt: `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
+
+Cliente: {{clientName}}
+Etapa: {{stage}}
+Total facturado: RD\${{totalSpent}}
+Deuda pendiente: RD\${{pendingBalance}}
+Compras realizadas: {{numPurchases}}
+Productos favoritos: {{topProducts}}
+
+Responde SOLO en este formato (máximo 4 líneas):
+RESUMEN: [2 oraciones sobre el cliente]
+ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`,
+    ai_learning_prompt: `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
+
+Título: {{title}}
+Contenido: {{content}}
+Etiquetas: {{tags}}
+
+Responde en español en máximo 3 oraciones:`,
   });
 
   const [newBank, setNewBank] = useState({
@@ -57,6 +101,33 @@ export default function ConfiguracionPage() {
           signature_url: settingsData.signature_url || "",
           email: (settingsData as any).email || "",
           phone: (settingsData as any).phone || "",
+          sender_name: (settingsData as any).sender_name || "",
+          email_template: (settingsData as any).email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
+          whatsapp_template: (settingsData as any).whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
+          smtp_host: (settingsData as any).smtp_host || "",
+          smtp_port: (settingsData as any).smtp_port || 587,
+          smtp_user: (settingsData as any).smtp_user || "",
+          smtp_pass: (settingsData as any).smtp_pass || "",
+          smtp_secure: (settingsData as any).smtp_secure || false,
+          ai_client_prompt: (settingsData as any).ai_client_prompt || `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
+
+Cliente: {{clientName}}
+Etapa: {{stage}}
+Total facturado: RD\${{totalSpent}}
+Deuda pendiente: RD\${{pendingBalance}}
+Compras realizadas: {{numPurchases}}
+Productos favoritos: {{topProducts}}
+
+Responde SOLO en este formato (máximo 4 líneas):
+RESUMEN: [2 oraciones sobre el cliente]
+ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`,
+          ai_learning_prompt: (settingsData as any).ai_learning_prompt || `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
+
+Título: {{title}}
+Contenido: {{content}}
+Etiquetas: {{tags}}
+
+Responde en español en máximo 3 oraciones:`,
           default_margin: settingsData.default_margin || 30,
           invoice_prefix: settingsData.invoice_prefix || "FAC-",
           receipt_prefix: settingsData.receipt_prefix || "REC-",
@@ -85,6 +156,16 @@ export default function ConfiguracionPage() {
         signature_url: form.signature_url,
         email: form.email,
         phone: form.phone,
+        sender_name: form.sender_name,
+        email_template: form.email_template,
+        whatsapp_template: form.whatsapp_template,
+        smtp_host: form.smtp_host,
+        smtp_port: form.smtp_port,
+        smtp_user: form.smtp_user,
+        smtp_pass: form.smtp_pass,
+        smtp_secure: form.smtp_secure,
+        ai_client_prompt: form.ai_client_prompt,
+        ai_learning_prompt: form.ai_learning_prompt,
         default_margin: form.default_margin,
         invoice_prefix: form.invoice_prefix,
         receipt_prefix: form.receipt_prefix,
@@ -223,7 +304,7 @@ export default function ConfiguracionPage() {
 
       <div className="border-b border-[#E8E0D8] mb-6">
         <div className="flex gap-6">
-          {([["general", "Datos del Negocio"], ["banks", "Cuentas Bancarias"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
+          {([["general", "Datos del Negocio"], ["ai", "Prompts IA"], ["banks", "Cuentas Bancarias"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
             <button key={key} onClick={() => setActiveTab(key)}
               className={`pb-3 text-sm font-medium transition-colors ${
                 activeTab === key ? "text-[#B8837E] border-b-2 border-[#B8837E]" : "text-[#9C8A82] hover:text-[#5C3E35]"
@@ -253,18 +334,80 @@ export default function ConfiguracionPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Email</label>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Email de envío</label>
                 <input type="email" value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="info@almaia-rd.com"
                   className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Teléfono</label>
-                <input type="tel" value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="809-XXX-XXXX"
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre del remitente</label>
+                <input type="text" value={form.sender_name}
+                  onChange={(e) => setForm({ ...form, sender_name: e.target.value })}
+                  placeholder="Yrahisa Mateo"
                   className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+              </div>
+            </div>
+
+            <div className="border-t border-[#E8E0D8] pt-5">
+              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Plantillas de Mensajes</h4>
+              <p className="text-xs text-[#9C8A82] mb-4">Usa <code className="text-[#B8837E]">{"{{clientName}}"}</code>, <code className="text-[#B8837E]">{"{{documentNumber}}"}</code>, <code className="text-[#B8837E]">{"{{businessName}}"}</code>, <code className="text-[#B8837E]">{"{{senderName}}"}</code>, <code className="text-[#B8837E]">{"{{total}}"}</code>, <code className="text-[#B8837E]">{"{{label}}"}</code></p>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Plantilla Email</label>
+                  <textarea value={form.email_template} rows={8}
+                    onChange={(e) => setForm({ ...form, email_template: e.target.value })}
+                    placeholder="Hola, {{clientName}}..."
+                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Plantilla WhatsApp</label>
+                  <textarea value={form.whatsapp_template} rows={5}
+                    onChange={(e) => setForm({ ...form, whatsapp_template: e.target.value })}
+                    placeholder="Hola {{clientName}}..."
+                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-[#E8E0D8] pt-5">
+              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Servidor SMTP (Gmail)</h4>
+              <p className="text-xs text-[#9C8A82] mb-4">Configuración para enviar correos realmente. Para Gmail usa <strong>smtp.gmail.com</strong>, puerto <strong>587</strong>, y una <a href="https://support.google.com/accounts/answer/185833" target="_blank" className="text-[#B8837E] underline">Contraseña de Aplicación</a> de Google.</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Servidor SMTP</label>
+                  <input type="text" value={form.smtp_host}
+                    onChange={(e) => setForm({ ...form, smtp_host: e.target.value })}
+                    placeholder="smtp.gmail.com"
+                    className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Puerto</label>
+                  <input type="number" value={form.smtp_port}
+                    onChange={(e) => setForm({ ...form, smtp_port: Number(e.target.value) })}
+                    placeholder="587"
+                    className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Usuario (correo)</label>
+                  <input type="text" value={form.smtp_user}
+                    onChange={(e) => setForm({ ...form, smtp_user: e.target.value })}
+                    placeholder="tucorreo@gmail.com"
+                    className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Contraseña / App Password</label>
+                  <input type="password" value={form.smtp_pass}
+                    onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div className="flex items-center gap-3 h-11">
+                  <input type="checkbox" id="smtp_secure" checked={form.smtp_secure}
+                    onChange={(e) => setForm({ ...form, smtp_secure: e.target.checked })}
+                    className="w-4 h-4 rounded border-[#E8E0D8] text-[#B8837E] focus:ring-[#B8837E]/30" />
+                  <label htmlFor="smtp_secure" className="text-xs text-[#5C3E35]">Usar SSL (puerto 465)</label>
+                </div>
               </div>
             </div>
 
@@ -330,6 +473,81 @@ export default function ConfiguracionPage() {
                     onChange={(e) => setForm({ ...form, purchase_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <button onClick={handleSaveSettings} disabled={saving}
+            className="flex items-center gap-2 bg-[#B8837E] text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">
+            <Save size={18} /> {saving ? "Guardando..." : "Guardar Configuración"}
+          </button>
+        </div>
+      )}
+
+      {activeTab === "ai" && (
+        <div className="max-w-2xl space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8] space-y-6">
+            <h3 className="text-sm font-semibold text-[#5C3E35]">Prompts de Inteligencia Artificial</h3>
+            <p className="text-xs text-xs text-[#9C8A82]">
+              Personaliza los prompts que usa la IA para generar resúmenes de clientes y analizar notas de aprendizaje.
+              Usa variables entre llaves dobles: <code className="text-[#B8837E] bg-[#FAF6F0] px-1.5 py-0.5 rounded text-[10px]">{"{{clientName}}"}</code>, <code className="text-[#B8837E] bg-[#FAF6F0] px-1.5 py-0.5 rounded text-[10px]">{"{{totalSpent}}"}</code>, etc.
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-[#9C8A82] mb-2">Prompt para Resumen de Cliente</label>
+              <p className="text-[10px] text-[#9C8A82] mb-2">Se usa al generar resúmenes en Pipeline y reportes.</p>
+              <textarea
+                value={form.ai_client_prompt}
+                onChange={(e) => setForm({ ...form, ai_client_prompt: e.target.value })}
+                rows={10}
+                placeholder="Eres un asesor de ventas de Amway. Genera un resumen profesional en español (2-3 oraciones) sobre este cliente:
+
+Nombre: {{clientName}}
+Etapa: {{stage}}
+Total facturado: RD${{totalSpent}}
+Total pagado: RD${{totalPaid}}
+Facturas pendientes: {{pendingCount}}
+Ticket promedio: RD${{avgTicket}}
+Compras realizadas: {{numPurchases}}
+Productos favoritos: {{topProducts}}
+
+Destaca el valor del cliente, su comportamiento de pago, y sugiere oportunidades de venta."
+                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 font-mono text-[11px]"
+              />
+            </div>
+
+            <div className="border-t border-[#E8E0D8] pt-6">
+              <label className="block text-xs font-medium text-[#9C8A82] mb-2">Prompt para Notas de Aprendizaje</label>
+              <p className="text-[10px] text-[#9C8A82] mb-2">Se usa al analizar notas en el módulo de Aprendizaje.</p>
+              <textarea
+                value={form.ai_learning_prompt}
+                onChange={(e) => setForm({ ...form, ai_learning_prompt: e.target.value })}
+                rows={8}
+                placeholder="Eres un mentor de ventas. Analiza esta nota de aprendizaje y extrae la lección clave, el error cometido, y una acción correctiva concreta en español (máx. 3 oraciones):
+
+Título: {{title}}
+Contenido: {{content}}
+Etiquetas: {{tags}}
+
+Responde en formato:
+LECCIÓN: ...
+ERROR: ...
+ACCIÓN: ..."
+                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 font-mono text-[11px]"
+              />
+            </div>
+
+            <div className="bg-[#FAF6F0] rounded-xl p-4 border border-[#E8E0D8]">
+              <h4 className="text-xs font-semibold text-[#5C3E35] mb-2">Variables disponibles</h4>
+              <div className="grid grid-cols-2 gap-1 text-[10px] text-[#9C8A82] font-mono">
+                <span>{"{{clientName}}"}</span><span>{"{{stage}}"}</span>
+                <span>{"{{totalSpent}}"}</span><span>{"{{totalPaid}}"}</span>
+                <span>{"{{pendingCount}}"}</span><span>{"{{avgTicket}}"}</span>
+                <span>{"{{numPurchases}}"}</span><span>{"{{topProducts}}"}</span>
+                <span>{"{{title}}"}</span><span>{"{{content}}"}</span>
+                <span>{"{{tags}}"}</span><span>{"{{senderName}}"}</span>
+                <span>{"{{businessName}}"}</span><span>{"{{documentNumber}}"}</span>
+                <span>{"{{total}}"}</span><span>{"{{label}}"}</span>
               </div>
             </div>
           </div>

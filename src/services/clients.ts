@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { normalize } from "@/lib/search";
-import type { Client, ClientCardData, ClientTag, ClientTagRelation } from "@/types/database";
+import type { Client, ClientCardData, ClientTag, ClientTagRelation, ClientType } from "@/types/database";
+import { STAGE_MIGRATION_MAP } from "@/lib/pipeline-constants";
 
 export async function getClients() {
   const { data, error } = await supabase.from("clients").select("*").order("full_name");
@@ -153,6 +154,9 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
       tags: tagsByClient[c.id] || [],
       next_action: nextActionByClient[c.id] || null,
       repurchase_date: repurchaseDate,
+      days_in_stage: c.stage_entered_at
+        ? Math.floor((now.getTime() - new Date(c.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24))
+        : null,
     } as ClientCardData;
   });
 }
@@ -208,4 +212,40 @@ export async function getClientTagRelations(clientId: string) {
     .eq("client_id", clientId);
   if (error) throw error;
   return data;
+}
+
+// ── Pipeline: cambiar stage con timestamp ───────────────────────
+export async function updateClientStage(
+  clientId: string,
+  newStage: string,
+  extra?: { qualification_level?: string; closure_result?: string }
+) {
+  const updates: Record<string, any> = {
+    stage: newStage,
+    stage_entered_at: new Date().toISOString(),
+  };
+  if (extra?.qualification_level !== undefined) updates.qualification_level = extra.qualification_level;
+  if (extra?.closure_result !== undefined) updates.closure_result = extra.closure_result;
+  const { data, error } = await supabase.from("clients").update(updates).eq("id", clientId).select();
+  if (error) throw error;
+  return data?.[0] as Client;
+}
+
+// ── Migrar stages antiguos a nuevos ────────────────────────────
+export async function migrateStages() {
+  const clients = await getClients();
+  let migrated = 0;
+  for (const c of clients) {
+    const newStage = STAGE_MIGRATION_MAP[c.stage];
+    if (newStage && newStage !== c.stage) {
+      await supabase.from("clients").update({
+        stage: newStage,
+        client_type: "comprador",
+        stage_entered_at: c.created_at,
+      }).eq("id", c.id);
+      migrated++;
+    }
+    // Si el stage no está en el mapa (ya es un stage nuevo), no hacer nada
+  }
+  return migrated;
 }

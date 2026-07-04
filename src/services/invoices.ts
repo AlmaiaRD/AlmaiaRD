@@ -3,6 +3,7 @@ import type { Invoice, InvoiceItem } from "@/types/database";
 import { getSettings } from "./settings";
 import { subtractInventoryStock, addInventoryStock, restoreInventoryStock } from "./inventory";
 import { updateStageOnFirstPurchase } from "./pipeline";
+import { getLocalDateString } from "@/lib/utils";
 
 export async function getInvoices() {
   const { data, error } = await supabase
@@ -56,7 +57,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
       .insert({
         invoice_number: `${prefix}${String(num).padStart(6, "0")}`,
         client_id: invoice.client_id,
-        invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
+        invoice_date: invoice.invoice_date || getLocalDateString(),
         status: invoice.status || "PENDING",
         subtotal,
         discount_amount: discount,
@@ -116,7 +117,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     }
   }
 
-  // Pipeline automation: move to first_purchase if first invoice
+  // Pipeline automation: move to cierre (ganado) if first invoice
   if (invoice.client_id) {
     await updateStageOnFirstPurchase(invoice.client_id);
   }
@@ -138,7 +139,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     .from("invoices")
     .update({
       client_id: invoice.client_id,
-      invoice_date: invoice.invoice_date || new Date().toISOString().split("T")[0],
+      invoice_date: invoice.invoice_date || getLocalDateString(),
       subtotal,
       discount_amount: discount,
       itbis_total: itbisTotal,
@@ -209,7 +210,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     }
   }
 
-  // Pipeline automation: move to first_purchase if first invoice
+  // Pipeline automation: move to cierre (ganado) if first invoice
   if (invoice.client_id) {
     await updateStageOnFirstPurchase(invoice.client_id);
   }

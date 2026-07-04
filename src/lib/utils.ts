@@ -107,3 +107,11 @@ export function getInitials(name: string): string {
 export function roundToNearest50(value: number): number {
   return Math.ceil(value / 50) * 50;
 }
+
+export function getLocalDateString(date?: Date): string {
+  const d = date || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}

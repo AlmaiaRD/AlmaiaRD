@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         id,
         name,
         code,
-        price,
+        price_30,
         subbrands (name),
         categories (name)
       `)
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       id: p.id,
       name: p.name,
       code: p.code,
-      price: p.price,
+      price: p.price_30,
       subbrand: (p.subbrands as any)?.name || "Sin submarca",
       category: (p.categories as any)?.name || "Sin categoría",
     }));

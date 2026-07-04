@@ -313,6 +313,23 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 17. COMUNICACIONES
+-- ============================================================
+
+CREATE TABLE communications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
+  type TEXT NOT NULL CHECK (type IN ('email', 'whatsapp')),
+  direction TEXT NOT NULL DEFAULT 'outgoing' CHECK (direction IN ('outgoing', 'incoming')),
+  subject TEXT,
+  body TEXT,
+  document_type TEXT CHECK (document_type IN ('invoice', 'receipt')),
+  document_id UUID,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'failed')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  sent_at TIMESTAMPTZ
+);
+
 -- ============================================================
 -- FUNCIONES DE GENERACIÓN DE NÚMEROS
 -- ============================================================
@@ -608,6 +625,7 @@ ALTER TABLE followups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bonuses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bank_accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
@@ -664,6 +682,7 @@ CREATE POLICY "authenticated_access" ON settings FOR ALL USING (auth.role() = 'a
 CREATE POLICY "authenticated_access" ON suppliers FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_access" ON purchases FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_access" ON purchase_items FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "authenticated_access" ON communications FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 -- ============================================================
 -- SEED DATA INICIAL
@@ -755,6 +774,14 @@ END $$;
 DO $$ BEGIN
   ALTER TABLE settings ADD COLUMN IF NOT EXISTS email TEXT;
   ALTER TABLE settings ADD COLUMN IF NOT EXISTS phone TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS sender_name TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_template TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS whatsapp_template TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_host TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_port INTEGER DEFAULT 587;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_user TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_pass TEXT;
+  ALTER TABLE settings ADD COLUMN IF NOT EXISTS smtp_secure BOOLEAN DEFAULT false;
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 

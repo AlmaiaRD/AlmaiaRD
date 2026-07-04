@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 const PROJECT_REF = "rexebvnzgnnrxhxmwayx";
 
 export async function GET() {
+  // Auth check: only admin can run migrations
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
   const token = process.env.SUPABASE_ACCESS_TOKEN;
   if (!token) {
     return NextResponse.json({ error: "SUPABASE_ACCESS_TOKEN no configurado" }, { status: 500 });

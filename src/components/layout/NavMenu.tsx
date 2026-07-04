@@ -16,19 +16,25 @@ import {
   Menu,
   X,
   GitBranch,
+  Mail,
+  Notebook,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Estadísticas", icon: BarChart3 },
-  { href: "/pipeline", label: "Pipeline", icon: GitBranch },
-  { href: "/crm", label: "CRM y Seguimiento", icon: Calendar },
   { href: "/facturacion", label: "Facturas", icon: FileText },
   { href: "/recibos", label: "Recibos", icon: Receipt },
-  { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/inventario", label: "Inventario", icon: Package },
-  { href: "/catalogo", label: "Catálogo", icon: BookOpen },
   { href: "/gastos", label: "Gastos", icon: DollarSign },
+  { href: "/catalogo", label: "Catálogo", icon: BookOpen },
+  { href: "/recomendaciones", label: "Recomendaciones IA", icon: Sparkles },
+  { href: "/inventario", label: "Inventario", icon: Package },
+  { href: "/crm", label: "CRM y Seguimiento", icon: Calendar },
+  { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/pipeline", label: "Pipeline", icon: GitBranch },
+  { href: "/comunicaciones", label: "Comunicaciones", icon: Mail },
+  { href: "/aprendizaje", label: "Aprendizaje", icon: Notebook },
   { href: "/configuracion", label: "Configuración", icon: Settings },
 ];
 
@@ -74,7 +80,7 @@ export default function NavMenu() {
 
       <nav className="hidden md:flex flex-col items-center gap-1 py-1">
         <div className="flex items-center justify-center gap-2">
-          {navItems.slice(0, 5).map((item) => {
+          {navItems.slice(0, 6).map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (
@@ -95,7 +101,7 @@ export default function NavMenu() {
           })}
         </div>
         <div className="flex items-center justify-center gap-2">
-          {navItems.slice(5).map((item) => {
+          {navItems.slice(6).map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (

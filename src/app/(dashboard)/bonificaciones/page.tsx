@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { getBonuses, createBonus, updateBonus, deleteBonus } from "@/services/bonuses";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,7 +37,7 @@ export default function BonificacionesPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    bonus_date: new Date().toISOString().split("T")[0],
+    bonus_date: getLocalDateString(),
     bonus_type: "BONIFICACIÓN" as BonusType,
     description: "",
     amount: 0,
@@ -66,7 +66,7 @@ export default function BonificacionesPage() {
 
   function resetForm() {
     setForm({
-      bonus_date: new Date().toISOString().split("T")[0],
+      bonus_date: getLocalDateString(),
       bonus_type: "BONIFICACIÓN",
       description: "",
       amount: 0,

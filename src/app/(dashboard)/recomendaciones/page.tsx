@@ -1,17 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { normalize } from "@/lib/search";
 import {
   getProductRecommendations,
-  getClientRecommendations,
-  getSeasonalRecommendations,
   getSeasonFromMonth,
-  getAIRecommendations,
-  getAISeasonalRecommendations,
   type ProductRecommendation,
-  type ClientRecommendation,
   type Season,
 } from "@/services/recommendations";
 import {
@@ -30,6 +25,11 @@ import {
   Lightbulb,
   X,
   RefreshCw,
+  Send,
+  Bot,
+  User,
+  MessageCircle,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -51,9 +51,10 @@ export default function RecommendationsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [productRecs, setProductRecs] = useState<ProductRecommendation[]>([]);
-  const [clientRecs, setClientRecs] = useState<ClientRecommendation[]>([]);
+  const [productRecsLoading, setProductRecsLoading] = useState(false);
   const [seasonalRecs, setSeasonalRecs] = useState<ProductRecommendation[]>([]);
-  const [activeTab, setActiveTab] = useState<"products" | "clients" | "seasonal" | "needs">("needs");
+  const [seasonalRecsLoading, setSeasonalRecsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"products" | "seasonal" | "needs">("needs");
   const [customNeed, setCustomNeed] = useState("");
   const [customRecs, setCustomRecs] = useState<ProductRecommendation[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<Season>(getSeasonFromMonth(new Date().getMonth() + 1));
@@ -61,40 +62,71 @@ export default function RecommendationsPage() {
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [products, clients] = await Promise.all([
-        getProductRecommendations(["nutricion", "belleza", "cabello", "hogar"]),
-        getClientRecommendations(),
-      ]);
-      setProductRecs(products);
-      setClientRecs(clients);
-      // Load seasonal with AI
-      await loadSeasonalAI(selectedSeason);
-    } catch {
-      // Fallback to local
-      const seasonal = await getSeasonalRecommendations(selectedSeason);
-      setSeasonalRecs(seasonal);
-    } finally {
-      setLoading(false);
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string; recommendations?: ProductRecommendation[] }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("aiChatHistory");
+      if (saved) try { return JSON.parse(saved); } catch {}
     }
-  }, [selectedSeason]);
+    return [];
+  });
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  async function loadSeasonalAI(season: Season) {
-    try {
-      const recs = await getAISeasonalRecommendations(season);
-      setSeasonalRecs(recs);
-      setAiAvailable(true);
-    } catch {
-      // Fallback to local matching
-      const recs = await getSeasonalRecommendations(season);
-      setSeasonalRecs(recs);
-      setAiAvailable(false);
+  // Persist chat to localStorage
+  useEffect(() => {
+    localStorage.setItem("aiChatHistory", JSON.stringify(chatMessages));
+  }, [chatMessages]);
+
+  function clearChat() {
+    if (chatMessages.length === 0) return;
+    if (window.confirm("¿Borrar todo el historial de la conversación?")) {
+      setChatMessages([]);
+      localStorage.removeItem("aiChatHistory");
+      toast.success("Historial borrado");
     }
   }
 
-  useEffect(() => { loadData(); }, [loadData]);
+  async function loadProducts() {
+    setProductRecsLoading(true);
+    try {
+      const res = await fetch("/api/ai-recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: "nutrición, belleza, cabello, hogar, salud, vitaminas, proteínas, cuidado personal, limpieza, energía" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProductRecs(data.recommendations || []);
+      }
+    } catch {} finally {
+      setProductRecsLoading(false);
+    }
+  }
+
+  async function loadSeasonal(season: Season) {
+    setSeasonalRecsLoading(true);
+    try {
+      const res = await fetch("/api/ai-recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: `productos recomendados para ${season}`, season }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSeasonalRecs(data.recommendations || []);
+      }
+    } catch {} finally {
+      setSeasonalRecsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProducts();
+    loadSeasonal(selectedSeason);
+    setLoading(false);
+  }, []);
 
   async function handleSearch() {
     if (!customNeed.trim()) {
@@ -102,31 +134,84 @@ export default function RecommendationsPage() {
       return;
     }
     setAiLoading(true);
-    setLoading(true);
     try {
-      // Try AI first
-      try {
-        const recs = await getAIRecommendations(customNeed);
-        setCustomRecs(recs);
-        setAiAvailable(true);
-        if (recs.length === 0) {
-          toast("La IA no encontró productos específicos para esa necesidad", { icon: "🔍" });
-        }
-      } catch {
-        // Fallback to local matching
-        setAiAvailable(false);
-        const needs = customNeed.split(",").map((n) => n.trim()).filter(Boolean);
-        const recs = await getProductRecommendations(needs);
-        setCustomRecs(recs);
-        if (recs.length === 0) {
+      const res = await fetch("/api/ai-recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: customNeed }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomRecs(data.recommendations || []);
+        setAiAvailable(data.recommendations?.length > 0);
+        if (!data.recommendations?.length) {
           toast("No se encontraron productos para esa necesidad", { icon: "🔍" });
         }
       }
     } catch {
       toast.error("Error al buscar");
     } finally {
-      setLoading(false);
       setAiLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  async function handleChatSend(message?: string) {
+    const text = (message || chatInput).trim();
+    if (!text) return;
+
+    setChatInput("");
+    setChatLoading(true);
+    const userMsg = { role: "user" as const, content: text };
+    setChatMessages((prev) => [...prev, userMsg]);
+
+    try {
+      const [chatRes, productRes] = await Promise.all([
+        fetch("/api/ai-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text }),
+        }),
+        fetch("/api/ai-recommendations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text }),
+        }).then((r) => r.ok ? r.json() : { recommendations: [] }),
+      ]);
+      const prodRecs = productRes.recommendations || [];
+
+      if (chatRes.ok) {
+        const data = await chatRes.json();
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.response,
+            recommendations: prodRecs.length > 0 ? prodRecs : undefined,
+          },
+        ]);
+      } else {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: prodRecs.length > 0
+              ? "Encontré estos productos que podrían interesarte:"
+              : "Lo siento, no pude procesar tu consulta. Intenta de nuevo.",
+            recommendations: prodRecs.length > 0 ? prodRecs : undefined,
+          },
+        ]);
+      }
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Ocurrió un error. Intenta de nuevo." },
+      ]);
+    } finally {
+      setChatLoading(false);
     }
   }
 
@@ -175,12 +260,11 @@ export default function RecommendationsPage() {
 
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-6 border-b border-[#E8E0D8] pb-2 flex-wrap">
-        {[
-          { key: "needs", label: "Por Necesidad", icon: Lightbulb },
-          { key: "products", label: "Productos", icon: Package },
-          { key: "clients", label: "Clientes", icon: Users },
-          { key: "seasonal", label: "Temporada", icon: Sun },
-        ].map((tab) => (
+          {[
+            { key: "needs", label: "Asistente IA", icon: Lightbulb },
+            { key: "products", label: "Productos", icon: Package },
+            { key: "seasonal", label: "Temporada", icon: Sun },
+          ].map((tab) => (
           <button key={tab.key} onClick={() => { setActiveTab(tab.key as any); setSearchFilter(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.key ? "bg-[#B8837E]/10 text-[#B8837E]" : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"}`}>
             <tab.icon size={16} /> {tab.label}
@@ -202,7 +286,9 @@ export default function RecommendationsPage() {
                   className="w-full h-12 pl-12 pr-10 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
                 {searchFilter && <button onClick={() => setSearchFilter("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9C8A82] hover:text-[#5C3E35]"><X size={16} /></button>}
               </div>
-              {filteredProducts.length === 0 ? (
+              {productRecsLoading ? (
+                <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-16 text-[#9C8A82]"><Sparkles size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">{searchFilter ? "No se encontraron resultados" : "No hay recomendaciones"}</p></div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,29 +308,6 @@ export default function RecommendationsPage() {
             </div>
           )}
 
-          {/* ===================== CLIENTS TAB ===================== */}
-          {activeTab === "clients" && (
-            <div className="space-y-4">
-              {clientRecs.length === 0 ? (
-                <div className="text-center py-16 text-[#9C8A82]"><CheckCircle size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">Todos los clientes están al día</p></div>
-              ) : (
-                <div className="space-y-3">
-                  {clientRecs.map((rec) => (
-                    <div key={`${rec.client_id}-${rec.action}`} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${rec.priority === "high" ? "bg-red-50" : "bg-amber-50"}`}>
-                          {rec.priority === "high" ? <AlertTriangle size={18} className="text-red-500" /> : <Users size={18} className="text-amber-500" />}
-                        </div>
-                        <div><p className="text-sm font-medium text-[#5C3E35]">{rec.client_name}</p><p className="text-xs text-[#9C8A82]">{rec.action}</p></div>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${rec.priority === "high" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{rec.reason}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* ===================== SEASONAL TAB ===================== */}
           {activeTab === "seasonal" && (
             <div className="space-y-4">
@@ -255,7 +318,7 @@ export default function RecommendationsPage() {
                   return (
                     <button
                       key={season.key}
-                      onClick={() => { setSelectedSeason(season.key); loadSeasonalAI(season.key); }}
+                      onClick={() => { setSelectedSeason(season.key); loadSeasonal(season.key); }}
                       className={`p-4 rounded-2xl border-2 transition-all text-left ${
                         selectedSeason === season.key
                           ? `border-[#B8837E] ${season.bgColor} shadow-sm`
@@ -282,7 +345,9 @@ export default function RecommendationsPage() {
                   className="w-full h-11 px-4 pr-10 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
               </div>
 
-              {filteredSeasonal.length === 0 ? (
+              {seasonalRecsLoading ? (
+                <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+              ) : filteredSeasonal.length === 0 ? (
                 <div className="text-center py-16 text-[#9C8A82]">
                   <Sparkles size={40} className="mx-auto mb-3 opacity-40" />
                   <p className="text-sm">No hay recomendaciones para esta temporada</p>
@@ -303,69 +368,139 @@ export default function RecommendationsPage() {
             </div>
           )}
 
-          {/* ===================== NEEDS TAB ===================== */}
+          {/* ===================== ASISTENTE IA TAB (chat) ===================== */}
           {activeTab === "needs" && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-[#5C3E35]">¿Qué necesitas?</h3>
-                  {aiAvailable !== null && (
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${aiAvailable ? "bg-purple-50 text-purple-600" : "bg-gray-100 text-gray-500"}`}>
-                      {aiAvailable ? "IA Activada" : "Modo Local"}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-[#9C8A82] mb-4">Describe la necesidad y la IA te sugiere los mejores productos del catálogo.</p>
-                <div className="flex gap-3 mb-4">
-                  <input type="text" value={customNeed} onChange={(e) => setCustomNeed(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder="Ej: Necesito algo para el cabello dañado, vitaminas para energía"
-                    className="flex-1 h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-                  {customNeed && <button onClick={clearSearch} className="p-2 text-[#9C8A82] hover:text-[#5C3E35]"><X size={18} /></button>}
-                  <button onClick={handleSearch} disabled={!customNeed.trim() || loading}
-                    className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">
-                    {aiLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Sparkles size={16} />}
-                    {aiLoading ? "IA Pensando..." : "Buscar"}
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {SUGGESTED_NEEDS.map((need) => (
-                    <button key={need} onClick={() => { setCustomNeed((prev) => prev ? `${prev}, ${need}` : need); }}
-                      className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FAF6F0] text-[#5C3E35] hover:bg-[#B8837E]/10 hover:text-[#B8837E] transition-all">
-                      {need}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {customRecs.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-[#5C3E35]">Resultados para &quot;{customNeed}&quot;</h3>
-                    <button onClick={clearSearch} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] flex items-center gap-1">
-                      <RefreshCw size={12} /> Limpiar
-                    </button>
+            <div className="flex flex-col h-[calc(100vh-280px)] min-h-[500px]">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] flex flex-col flex-1 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E8E0D8] bg-[#FAF6F0]">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <Bot size={18} className="text-white" />
                   </div>
-                  {customRecs.map((rec) => (
-                    <div key={rec.product_id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-[#B8837E]/10 flex items-center justify-center"><Package size={18} className="text-[#B8837E]" /></div>
-                        <div><p className="text-sm font-medium text-[#5C3E35]">{rec.product_name}</p><p className="text-xs text-[#9C8A82]">{rec.code} · {rec.subbrand}</p><p className="text-xs text-[#B8837E]">{rec.reason}</p></div>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${rec.priority === "high" ? "bg-red-100 text-red-700" : rec.priority === "medium" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
-                        {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Media" : "Baja"}
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-[#5C3E35]">Asistente IA</p>
+                    <p className="text-xs text-[#9C8A82]">Describe tu situación y recibe recomendaciones</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {chatMessages.length > 0 && (
+                      <button onClick={clearChat} className="p-1.5 text-[#9C8A82] hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg" title="Borrar historial">
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                    {aiAvailable !== null && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${aiAvailable ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}>
+                        {aiAvailable ? "IA" : "Local"}
                       </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                  {chatMessages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                      <MessageCircle size={40} className="text-[#E8E0D8] mb-3" />
+                      <p className="text-sm text-[#9C8A82] mb-1">¿En qué puedo ayudarte?</p>
+                      <p className="text-xs text-[#9C8A82]/60">
+                        Ej: &quot;Una madre lactante con estrés, ¿qué suplementos ofrecerle?&quot;
+                      </p>
+                    </div>
+                  )}
+
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      {msg.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Bot size={14} className="text-white" />
+                        </div>
+                      )}
+                      <div className={`max-w-[85%] ${msg.role === "user" ? "order-1" : "order-1"}`}>
+                        <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                          msg.role === "user"
+                            ? "bg-[#B8837E] text-white rounded-br-md"
+                            : "bg-[#FAF6F0] text-[#5C3E35] rounded-bl-md border border-[#E8E0D8]"
+                        }`}>
+                          {msg.content}
+                        </div>
+
+                        {/* Product cards after AI message */}
+                        {msg.role === "assistant" && msg.recommendations && msg.recommendations.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {msg.recommendations.slice(0, 5).map((rec) => (
+                              <div key={rec.product_id} className="bg-white rounded-xl p-3 border border-[#E8E0D8] shadow-sm">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-8 h-8 rounded-lg bg-[#B8837E]/10 flex items-center justify-center flex-shrink-0">
+                                      <Package size={14} className="text-[#B8837E]" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-medium text-[#5C3E35] truncate">{rec.product_name}</p>
+                                      <p className="text-[10px] text-[#9C8A82] truncate">{rec.code} · {rec.subbrand}</p>
+                                    </div>
+                                  </div>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ${
+                                    rec.priority === "high" ? "bg-red-50 text-red-600" :
+                                    rec.priority === "medium" ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"
+                                  }`}>
+                                    {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Media" : "Baja"}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#9C8A82] mt-1.5 leading-relaxed">{rec.reason}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {msg.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-[#B8837E]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <User size={14} className="text-[#B8837E]" />
+                        </div>
+                      )}
                     </div>
                   ))}
-                </div>
-              )}
 
-              {customNeed && customRecs.length === 0 && !loading && (
-                <div className="text-center py-8 text-[#9C8A82]">
-                  <Search size={32} className="mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">Presiona &quot;Buscar&quot; para obtener recomendaciones</p>
+                  {chatLoading && (
+                    <div className="flex gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                        <Bot size={14} className="text-white" />
+                      </div>
+                      <div className="bg-[#FAF6F0] rounded-2xl rounded-bl-md px-4 py-3 border border-[#E8E0D8]">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-[#B8837E]/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <div className="w-2 h-2 rounded-full bg-[#B8837E]/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <div className="w-2 h-2 rounded-full bg-[#B8837E]/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={chatEndRef} />
                 </div>
-              )}
+
+                {/* Input */}
+                <div className="border-t border-[#E8E0D8] p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {SUGGESTED_NEEDS.slice(0, 6).map((need) => (
+                        <button key={need} onClick={() => handleChatSend(need)}
+                          className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#FAF6F0] text-[#9C8A82] hover:bg-[#B8837E]/10 hover:text-[#B8837E] transition-all">
+                          {need}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && !chatLoading && handleChatSend()}
+                      placeholder="Describe tu situación..."
+                      className="flex-1 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                    <button onClick={() => handleChatSend()} disabled={!chatInput.trim() || chatLoading}
+                      className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </>

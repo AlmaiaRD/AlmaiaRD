@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
 import Footer from "@/components/layout/Footer";
+import FloatingActionButton from "@/components/layout/FloatingActionButton";
 import ToastProvider from "@/components/ui/ToastProvider";
 
 export default function DashboardLayout({
@@ -41,6 +42,7 @@ export default function DashboardLayout({
       </div>
       <div className="flex-1 flex flex-col">{children}</div>
       <Footer />
+      <FloatingActionButton />
     </div>
   );
 }
