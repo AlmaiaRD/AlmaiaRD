@@ -30,6 +30,8 @@ export default function FloatingActionButton() {
   const startRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const didDrag = useRef(false);
 
+  const menuUp = pos.y > (typeof window !== "undefined" ? window.innerHeight / 2 : 400);
+
   const savePos = useCallback((p: { x: number; y: number }) => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {}
   }, []);
@@ -84,13 +86,13 @@ export default function FloatingActionButton() {
   return (
     <div
       ref={dragRef}
-      className="fixed z-50 select-none"
+      className="fixed z-50 select-none relative"
       style={{ left: pos.x, top: pos.y, touchAction: "none" }}
       onMouseDown={e => onStart(e.clientX, e.clientY)}
       onTouchStart={e => onStart(e.touches[0].clientX, e.touches[0].clientY)}
     >
       {open && (
-        <div className="absolute bottom-16 right-0 flex flex-col gap-3 items-end pointer-events-auto">
+        <div className={`absolute right-0 flex flex-col gap-3 items-end pointer-events-auto ${menuUp ? "bottom-16" : "top-16"}`}>
           {actions.map((action) => {
             const Icon = action.icon;
             return (
