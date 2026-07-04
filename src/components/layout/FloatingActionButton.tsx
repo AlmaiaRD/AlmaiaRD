@@ -11,55 +11,53 @@ const actions = [
   { href: "/clientes?nuevo=true", label: "Añadir Cliente", icon: UserPlus, color: "bg-[#B8837E]" },
 ];
 
-const STORAGE_KEY = "fab-position";
+const STORAGE_KEY = "fab-pos-right";
+const STORAGE_KEY_BOTTOM = "fab-pos-bottom";
 
-function getInitialPosition() {
-  if (typeof window === "undefined") return { x: 16, y: 96 };
+function loadPosition() {
+  if (typeof window === "undefined") return null;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    const r = localStorage.getItem(STORAGE_KEY);
+    const b = localStorage.getItem(STORAGE_KEY_BOTTOM);
+    if (r || b) return { right: r ? Number(r) : 16, bottom: b ? Number(b) : 24 };
   } catch {}
-  return { x: window.innerWidth - 70, y: window.innerHeight - 96 };
+  return null;
 }
 
 export default function FloatingActionButton() {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<{ x: number; y: number }>(getInitialPosition);
   const [dragging, setDragging] = useState(false);
-  const dragRef = useRef<HTMLDivElement>(null);
-  const startRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
+  const [pos, setPos] = useState(() => loadPosition() || { right: 16, bottom: 24 });
+  const startRef = useRef({ x: 0, y: 0, r: 0, b: 0 });
   const didDrag = useRef(false);
 
-  const menuUp = pos.y > (typeof window !== "undefined" ? window.innerHeight / 2 : 400);
-
-  const savePos = useCallback((p: { x: number; y: number }) => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {}
+  const savePos = useCallback((r: number, b: number) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(r));
+      localStorage.setItem(STORAGE_KEY_BOTTOM, String(b));
+    } catch {}
   }, []);
-
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
   const onStart = useCallback((clientX: number, clientY: number) => {
     didDrag.current = false;
     setDragging(true);
-    startRef.current = { x: clientX, y: clientY, posX: pos.x, posY: pos.y };
-  }, [pos]);
+    startRef.current = { x: clientX, y: clientY, r: pos.right, b: pos.bottom };
+  }, [pos.right, pos.bottom]);
 
   const onMove = useCallback((clientX: number, clientY: number) => {
     if (!dragging) return;
-    const dx = clientX - startRef.current.x;
-    const dy = clientY - startRef.current.y;
+    const dx = startRef.current.x - clientX;
+    const dy = startRef.current.y - clientY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-    const maxX = typeof window !== "undefined" ? window.innerWidth - 64 : 300;
-    const maxY = typeof window !== "undefined" ? window.innerHeight - 64 : 600;
-    const newX = clamp(startRef.current.posX + dx, 8, maxX);
-    const newY = clamp(startRef.current.posY + dy, 8, maxY);
-    setPos({ x: newX, y: newY });
+    const newR = Math.max(8, Math.min(window.innerWidth - 72, startRef.current.r + dx));
+    const newB = Math.max(8, Math.min(window.innerHeight - 72, startRef.current.b + dy));
+    setPos({ right: newR, bottom: newB });
   }, [dragging]);
 
   const onEnd = useCallback(() => {
     setDragging(false);
-    savePos(pos);
-  }, [pos, savePos]);
+    savePos(pos.right, pos.bottom);
+  }, [pos.right, pos.bottom, savePos]);
 
   useEffect(() => {
     if (!dragging) return;
@@ -83,16 +81,17 @@ export default function FloatingActionButton() {
     setOpen(!open);
   }
 
+  const menuUp = pos.bottom < (typeof window !== "undefined" ? window.innerHeight / 2 : 400);
+
   return (
     <div
-      ref={dragRef}
-      className="fixed z-50 select-none relative"
-      style={{ left: pos.x, top: pos.y, touchAction: "none" }}
+      className="fixed z-[9999] select-none"
+      style={{ right: pos.right, bottom: pos.bottom, touchAction: "none" }}
       onMouseDown={e => onStart(e.clientX, e.clientY)}
       onTouchStart={e => onStart(e.touches[0].clientX, e.touches[0].clientY)}
     >
       {open && (
-        <div className={`absolute right-0 flex flex-col gap-3 items-end pointer-events-auto ${menuUp ? "bottom-16" : "top-16"}`}>
+        <div className={`absolute right-0 flex flex-col gap-3 items-end ${menuUp ? "bottom-16" : "top-16"}`}>
           {actions.map((action) => {
             const Icon = action.icon;
             return (
@@ -113,7 +112,7 @@ export default function FloatingActionButton() {
       )}
       <button
         onClick={handleClick}
-        className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 pointer-events-auto ${dragging ? "scale-110" : ""} ${open ? "bg-[#5C3E35] rotate-45" : "bg-[#B8837E] hover:bg-[#9A6B66]"}`}
+        className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 ${dragging ? "scale-110" : "hover:scale-105"} ${open ? "bg-[#5C3E35] rotate-45" : "bg-[#B8837E] hover:bg-[#9A6B66]"}`}
       >
         {open ? <X size={24} className="text-white" /> : <Plus size={28} className="text-white" />}
       </button>
