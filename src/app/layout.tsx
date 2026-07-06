@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import KillServiceWorker from "@/components/KillServiceWorker";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 
 
@@ -22,25 +23,12 @@ const greatVibes = Great_Vibes({
 export const metadata: Metadata = {
   title: "Almaia RD - Gestión Comercial",
   description: "Sistema de gestión comercial para submarcas Amway",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Almaia RD",
-  },
-  formatDetection: {
-    telephone: false,
-  },
   icons: {
     apple: "/icons/icon-192x192.png",
   },
 };
 
 export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#B8837E",
 };
 
@@ -56,7 +44,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#FCFAF7] text-[#5C3E35]">
         <KillServiceWorker />
-        <AuthProvider>{children}</AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>{children}</AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
