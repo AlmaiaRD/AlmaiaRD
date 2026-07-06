@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Flower2, LogIn, Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -13,8 +13,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
-  const { signIn } = useAuth();
+  const [pendingRedirect, setPendingRedirect] = useState(false);
+  const { user, signIn } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (pendingRedirect && user) {
+      router.replace("/dashboard");
+    }
+  }, [pendingRedirect, user, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +37,8 @@ export default function LoginPage() {
       setLoggingIn(false);
       toast.error(signInError);
     } else {
-      router.push("/dashboard");
+      setLoggingIn(false);
+      setPendingRedirect(true);
     }
   }
 
