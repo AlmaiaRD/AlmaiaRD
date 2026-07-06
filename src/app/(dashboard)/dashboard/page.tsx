@@ -43,11 +43,9 @@ const PIE_COLORS = ["#86C7A3", "#B8837E", "#E8C87A"];
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function DashboardPage() {
-  const user = useAuth((s) => s.user);
-  const initialized = useAuth((s) => s.initialized);
-  const initialize = useAuth((s) => s.initialize);
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
 
   const [stats, setStats] = useState<any>({});
   const [lowStock, setLowStock] = useState<any[]>([]);
@@ -61,12 +59,8 @@ export default function DashboardPage() {
   const [goalMonth, setGoalMonth] = useState("");
 
   useEffect(() => {
-    if (!initialized) initialize();
-  }, [initialized, initialize]);
-
-  useEffect(() => {
-    if (initialized && !user) router.push("/login");
-  }, [initialized, user, router]);
+    if (!loading && !user) router.replace("/login");
+  }, [loading, user, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -205,7 +199,7 @@ export default function DashboardPage() {
       } catch {
         // fallback to defaults
       } finally {
-        setLoading(false);
+        setLoadingData(false);
       }
     }
     load();

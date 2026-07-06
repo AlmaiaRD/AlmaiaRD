@@ -14,21 +14,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = useAuth((s) => s.user);
-  const loading = useAuth((s) => s.loading);
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.push("/login");
+    if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]">
-        <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return null;
 
   if (!user) return null;
 
