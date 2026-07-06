@@ -49,7 +49,11 @@ export const useAuth = create<AuthState>((set) => ({
       return;
     }
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const result = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Auth timeout")), 8000)),
+      ]);
+      const { session } = result.data;
       if (session?.user) {
         const profile = await ensureProfile(session);
         set({ user: profile, initialized: true, loading: false });
