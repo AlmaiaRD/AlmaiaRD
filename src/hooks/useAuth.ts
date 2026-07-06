@@ -68,15 +68,23 @@ export const useAuth = create<AuthState>((set) => ({
   signIn: async (email, password) => {
     if (!isConfigured) return { error: "Supabase no está configurado. Revisa el archivo .env.local" };
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return { error: error.message };
+      const result = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Auth timeout")), 8000)),
+      ]);
+      const { data, error } = result;
+      if (error) { set({ loading: false }); return { error: error.message }; }
 
       const profile = await ensureProfile(data);
-      if (!profile) return { error: "Error al cargar tu perfil de usuario. Contacta al administrador." };
+      if (!profile) {
+        set({ loading: false });
+        return { error: "Error al cargar tu perfil de usuario. Contacta al administrador." };
+      }
 
-      set({ user: profile });
+      set({ user: profile, loading: false });
       return { error: null };
     } catch (err: any) {
+      set({ loading: false });
       return { error: err?.message || "Error inesperado al iniciar sesión" };
     }
   },
@@ -84,7 +92,11 @@ export const useAuth = create<AuthState>((set) => ({
   signUp: async (email, password, name) => {
     if (!isConfigured) return { error: "Supabase no está configurado" };
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+      const result = await Promise.race([
+        supabase.auth.signUp({ email, password, options: { data: { name } } }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Auth timeout")), 8000)),
+      ]);
+      const { data, error } = result;
       if (error) return { error: error.message };
       if (data.user) {
         await supabase.from("users").insert({
