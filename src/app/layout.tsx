@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
+import KillServiceWorker from "@/components/KillServiceWorker";
 
 
 
@@ -54,6 +55,7 @@ export default function RootLayout({
       className={`${jakarta.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FCFAF7] text-[#5C3E35]">
+        <KillServiceWorker />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
