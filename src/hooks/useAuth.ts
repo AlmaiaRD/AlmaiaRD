@@ -1,6 +1,6 @@
 "use client";
 
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import { supabase, isConfigured } from "@/lib/supabase";
 import type { User } from "@/types/database";
 
@@ -38,7 +38,7 @@ async function ensureProfile(session: any): Promise<User | null> {
   return created as User;
 }
 
-export const useAuth = create<AuthState>((set) => ({
+export const useAuth = createWithEqualityFn<AuthState>((set) => ({
   user: null,
   loading: true,
   initialized: false,
@@ -116,4 +116,4 @@ export const useAuth = create<AuthState>((set) => ({
     if (isConfigured) await supabase.auth.signOut();
     set({ user: null });
   },
-}));
+}), Object.is);

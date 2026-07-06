@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
-  const { signOut } = useAuth();
+  const signOut = useAuth((s) => s.signOut);
   const router = useRouter();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 

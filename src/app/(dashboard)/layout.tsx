@@ -14,7 +14,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const user = useAuth((s) => s.user);
+  const loading = useAuth((s) => s.loading);
   const router = useRouter();
 
   useEffect(() => {

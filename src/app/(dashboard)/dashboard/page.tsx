@@ -43,7 +43,9 @@ const PIE_COLORS = ["#86C7A3", "#B8837E", "#E8C87A"];
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function DashboardPage() {
-  const { user, initialized, initialize } = useAuth();
+  const user = useAuth((s) => s.user);
+  const initialized = useAuth((s) => s.initialized);
+  const initialize = useAuth((s) => s.initialize);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 

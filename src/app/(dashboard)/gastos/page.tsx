@@ -100,7 +100,7 @@ function badgeColor(cat: string) {
 }
 
 export default function GastosPage() {
-  const { user } = useAuth();
+  const user = useAuth((s) => s.user);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);

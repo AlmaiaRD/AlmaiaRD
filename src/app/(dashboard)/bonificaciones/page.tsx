@@ -26,7 +26,7 @@ function badgeType(type: BonusType) {
 
 export default function BonificacionesPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const user = useAuth((s) => s.user);
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
