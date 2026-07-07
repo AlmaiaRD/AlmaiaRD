@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
 import Footer from "@/components/layout/Footer";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
-import ToastProvider from "@/components/ui/ToastProvider";
 
 export default function DashboardLayout({
   children,
@@ -27,7 +26,6 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FCFAF7]">
-      <ToastProvider />
       <Header />
       <div className="border-b border-[#E8E0D8] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">

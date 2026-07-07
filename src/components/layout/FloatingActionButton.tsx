@@ -5,10 +5,10 @@ import { Plus, X, FileText, Receipt, ShoppingCart, UserPlus } from "lucide-react
 import Link from "next/link";
 
 const actions = [
-  { href: "/facturacion?nueva=true", label: "Nueva Factura", icon: FileText, color: "bg-[#B8837E]" },
-  { href: "/recibos?nuevo=true", label: "Registrar Pago", icon: Receipt, color: "bg-[#86C7A3]" },
-  { href: "/inventario?nueva-compra=true", label: "Registrar Compra", icon: ShoppingCart, color: "bg-[#C9A89C]" },
-  { href: "/clientes?nuevo=true", label: "Añadir Cliente", icon: UserPlus, color: "bg-[#B8837E]" },
+  { href: "/facturacion?nueva=true", label: "Nueva Factura", icon: FileText, color: "bg-[#B8837E]", bgLight: "bg-[#B8837E]/10", textColor: "text-[#B8837E]" },
+  { href: "/recibos?nuevo=true", label: "Registrar Pago", icon: Receipt, color: "bg-[#86C7A3]", bgLight: "bg-[#86C7A3]/10", textColor: "text-[#86C7A3]" },
+  { href: "/inventario?nueva-compra=true", label: "Registrar Compra", icon: ShoppingCart, color: "bg-[#C9A89C]", bgLight: "bg-[#C9A89C]/10", textColor: "text-[#C9A89C]" },
+  { href: "/clientes?nuevo=true", label: "Añadir Cliente", icon: UserPlus, color: "bg-[#B8837E]", bgLight: "bg-[#B8837E]/10", textColor: "text-[#B8837E]" },
 ];
 
 const STORAGE_KEY = "fab-pos-right";
@@ -102,8 +102,8 @@ export default function FloatingActionButton() {
                 className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl shadow-lg border border-[#E8E0D8] hover:shadow-xl transition-all"
               >
                 <span className="text-sm font-medium text-[#5C3E35] whitespace-nowrap">{action.label}</span>
-                <div className={`w-8 h-8 rounded-lg ${action.color}/10 flex items-center justify-center`}>
-                  <Icon size={16} className={action.color.replace("bg-", "text-")} />
+                <div className={`w-8 h-8 rounded-lg ${action.bgLight} flex items-center justify-center`}>
+                  <Icon size={16} className={action.textColor} />
                 </div>
               </Link>
             );

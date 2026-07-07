@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import KillServiceWorker from "@/components/KillServiceWorker";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ToastProvider from "@/components/ui/ToastProvider";
 
 
 
@@ -45,7 +46,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#FCFAF7] text-[#5C3E35]">
         <KillServiceWorker />
         <ErrorBoundary>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ToastProvider />
+            {children}
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>

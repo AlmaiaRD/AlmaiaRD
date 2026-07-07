@@ -54,12 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    const timer = setTimeout(() => {
-      if (!cancelled) setLoading(false);
-    }, 8000);
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
-      clearTimeout(timer);
       if (session?.user) {
         ensureProfile(session).then((profile) => {
           if (!cancelled) {
@@ -71,22 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     }).catch(() => {
-      if (!cancelled) {
-        clearTimeout(timer);
-        setLoading(false);
-      }
+      if (!cancelled) setLoading(false);
     });
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => { cancelled = true; };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     if (!isConfigured) return { error: "Supabase no configurado" };
     try {
-      const result = await Promise.race([
-        supabase.auth.signInWithPassword({ email, password }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)),
-      ]);
-      const { data, error } = result;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { error: error.message };
       const profile = await ensureProfile(data);
       if (!profile) return { error: "Error al cargar el perfil" };

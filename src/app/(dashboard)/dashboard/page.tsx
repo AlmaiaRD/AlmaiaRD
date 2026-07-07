@@ -59,10 +59,6 @@ export default function DashboardPage() {
   const [goalMonth, setGoalMonth] = useState("");
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/login");
-  }, [loading, user, router]);
-
-  useEffect(() => {
     if (!user) return;
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
