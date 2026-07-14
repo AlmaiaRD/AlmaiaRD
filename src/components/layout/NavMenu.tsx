@@ -19,6 +19,7 @@ import {
   Mail,
   Notebook,
   Sparkles,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/dashboard", label: "Estadísticas", icon: BarChart3 },
   { href: "/facturacion", label: "Facturas", icon: FileText },
   { href: "/recibos", label: "Recibos", icon: Receipt },
+  { href: "/devoluciones", label: "Devoluciones", icon: RotateCcw },
   { href: "/gastos", label: "Gastos", icon: DollarSign },
   { href: "/catalogo", label: "Catálogo", icon: BookOpen },
   { href: "/recomendaciones", label: "Recomendaciones IA", icon: Sparkles },
@@ -46,7 +48,7 @@ export default function NavMenu() {
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="md:hidden flex items-center gap-2 text-[#9C8A82] hover:text-[#5C3E35] px-2 py-2"
+        className="md:hidden flex items-center gap-2 text-text-muted hover:text-foreground px-2 py-2"
         aria-label="Menú de navegación"
       >
         {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -66,8 +68,8 @@ export default function NavMenu() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
                   isActive
-                    ? "bg-[#B8837E]/10 text-[#B8837E]"
-                    : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                    ? "bg-primary/10 text-primary"
+                    : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
                 )}
               >
                 <Icon size={20} />
@@ -90,8 +92,8 @@ export default function NavMenu() {
                 className={cn(
                   "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
                   isActive
-                    ? "bg-[#B8837E]/10 text-[#B8837E] border-b-2 border-[#B8837E]"
-                    : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                    ? "bg-primary/10 text-primary border-b-2 border-primary"
+                    : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
                 )}
               >
                 <Icon size={24} />
@@ -111,8 +113,8 @@ export default function NavMenu() {
                 className={cn(
                   "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
                   isActive
-                    ? "bg-[#B8837E]/10 text-[#B8837E] border-b-2 border-[#B8837E]"
-                    : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                    ? "bg-primary/10 text-primary border-b-2 border-primary"
+                    : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
                 )}
               >
                 <Icon size={24} />

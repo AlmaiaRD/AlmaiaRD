@@ -288,14 +288,6 @@ export default function ComunicacionesPage() {
                             to: detailComm.clients?.email || "",
                             subject: editSubject,
                             body: editBody,
-                            smtp: {
-                              host: smtp.smtp_host,
-                              port: smtp.smtp_port || 587,
-                              user: smtp.smtp_user,
-                              pass: smtp.smtp_pass,
-                              secure: smtp.smtp_secure || false,
-                              senderName: smtp.sender_name || undefined,
-                            },
                           }),
                         });
                         if (!res.ok) { const d = await res.json(); throw new Error(d.error); }

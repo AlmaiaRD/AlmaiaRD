@@ -181,6 +181,7 @@ export interface Invoice {
   notes?: string;
   bank_account_id?: string;
   margin?: number;
+  currency?: string;
   created_at: string;
   updated_at: string;
   created_by?: string;
@@ -295,6 +296,7 @@ export interface Settings {
   invoice_prefix: string;
   receipt_prefix: string;
   purchase_prefix: string;
+  currency?: string;
   email: string;
   phone: string;
   sender_name: string;
@@ -351,6 +353,35 @@ export interface Communication {
   status: CommunicationStatus;
   created_at: string;
   sent_at: string | null;
+}
+
+export type ReturnStatus = "DRAFT" | "COMPLETED" | "CANCELLED";
+
+export interface Return {
+  id: string;
+  return_number: string;
+  invoice_id: string;
+  client_id: string;
+  return_date: string;
+  subtotal: number;
+  total: number;
+  reason: string;
+  status: ReturnStatus;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReturnItem {
+  id: string;
+  return_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  reason?: string;
+  created_at: string;
 }
 
 export interface LearningNote {

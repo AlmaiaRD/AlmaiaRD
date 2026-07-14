@@ -67,14 +67,27 @@ export default function RecibosPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const [rec, inv, ba, st] = await Promise.all([getReceipts(), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
+        setReceipts(rec);
+        setPendingInvoices(inv.filter((i: any) => i.status !== "PAID" && i.status !== "CANCELLED"));
+        setBankAccounts(ba);
+        setSettings(st);
+      } catch { toast.error("Error al cargar recibos"); }
+      finally { setLoading(false); }
+    })();
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
-      resetForm();
-      const invId = searchParams.get("invoice_id");
-      if (invId) setSelectedInvoice(invId);
-      setShowModal(true);
+      (async () => {
+        resetForm();
+        const invId = searchParams.get("invoice_id");
+        if (invId) setSelectedInvoice(invId);
+        setShowModal(true);
+      })();
     }
   }, [searchParams]);
 

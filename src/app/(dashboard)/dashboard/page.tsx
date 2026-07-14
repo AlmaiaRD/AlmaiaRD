@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import PageContainer from "@/components/layout/PageContainer";
 import KpiCard from "@/components/ui/KpiCard";
+import { SkeletonCard, SkeletonTable } from "@/components/ui/Skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { getInvoices } from "@/services/invoices";
 import { getReceipts } from "@/services/receipts";
@@ -66,18 +67,18 @@ export default function DashboardPage() {
     const savedGoal = localStorage.getItem("almaia_monthly_goal");
 
     if (savedMonth !== currentMonth) {
-      // New month — archive old goal if exists
       if (savedMonth && savedGoal && Number(savedGoal) > 0) {
         const history = JSON.parse(localStorage.getItem("almaia_goal_history") || "[]");
         history.push({ month: savedMonth, goal: Number(savedGoal), date: new Date().toISOString() });
         localStorage.setItem("almaia_goal_history", JSON.stringify(history));
       }
-      // Reset for new month
       localStorage.setItem("almaia_goal_month", currentMonth);
       localStorage.setItem("almaia_monthly_goal", "0");
-      setMonthlyGoal(0);
-      setGoalInput("");
-      setGoalMonth(currentMonth);
+      Promise.resolve().then(() => {
+        setMonthlyGoal(0);
+        setGoalInput("");
+        setGoalMonth(currentMonth);
+      });
     } else if (savedGoal) {
       setMonthlyGoal(Number(savedGoal));
       setGoalInput(savedGoal);
@@ -87,28 +88,33 @@ export default function DashboardPage() {
       setGoalMonth(currentMonth);
     }
 
-    async function load() {
+    (async () => {
       try {
-        const [s, inv, rec] = await Promise.all([
-          getDashboardStats(),
-          getInvoices(),
-          getReceipts(),
-        ]);
-        setStats(s);
-
-        setRecentInvoices(inv.slice(0, 5));
-        setRecentReceipts(rec.slice(0, 5));
-
+        const today = new Date();
+        const monthStart = today.toISOString().split("T")[0].substring(0, 7) + "-01";
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
         sixMonthsAgo.setDate(1);
         const cutoff = sixMonthsAgo.toISOString().split("T")[0];
 
-        const { data: monthRaw } = await supabase
-          .from("invoices")
-          .select("created_at, total, amount_paid")
-          .gte("created_at", cutoff)
-          .not("status", "eq", "CANCELLED");
+        const [s, inv, rec, monthRawRes, dailyRes, pmRes, invValRes] = await Promise.all([
+          getDashboardStats(),
+          getInvoices(),
+          getReceipts(),
+          supabase.from("invoices").select("created_at, total, amount_paid").gte("created_at", cutoff).not("status", "eq", "CANCELLED"),
+          supabase.from("invoices").select("created_at, total").gte("created_at", monthStart).not("status", "eq", "CANCELLED"),
+          supabase.from("receipts").select("payment_method, amount").gte("created_at", monthStart),
+          supabase.from("vw_inventory_value").select("product_name, stock, stock_status").in("stock_status", ["BAJO", "AGOTADO"]).limit(5),
+        ]);
+
+        setStats(s);
+        setRecentInvoices(inv.slice(0, 5));
+        setRecentReceipts(rec.slice(0, 5));
+
+        const monthRaw = monthRawRes.data || [];
+        const dailyRaw = dailyRes.data || [];
+        const pmRaw = pmRes.data || [];
+        const invVal = invValRes.data || [];
 
         const monthly: Record<string, { ventas: number; cobros: number }> = {};
         for (let i = 0; i < 6; i++) {
@@ -133,14 +139,6 @@ export default function DashboardPage() {
           }))
         );
 
-        const today = new Date();
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-          .toISOString().split("T")[0];
-        const { data: dailyRaw } = await supabase
-          .from("invoices")
-          .select("created_at, total")
-          .gte("created_at", monthStart)
-          .not("status", "eq", "CANCELLED");
         const daily: Record<string, number> = {};
         (dailyRaw || []).forEach((inv: any) => {
           const day = inv.created_at?.substring(8, 10);
@@ -154,10 +152,6 @@ export default function DashboardPage() {
           }))
         );
 
-        const { data: pmRaw } = await supabase
-          .from("receipts")
-          .select("payment_method, amount")
-          .gte("created_at", monthStart);
         const pm: Record<string, number> = {};
         (pmRaw || []).forEach((r: any) => {
           pm[r.payment_method] = (pm[r.payment_method] || 0) + Number(r.amount);
@@ -182,11 +176,6 @@ export default function DashboardPage() {
           ]);
         }
 
-        const { data: invVal } = await supabase
-          .from("vw_inventory_value")
-          .select("product_name, stock, stock_status")
-          .in("stock_status", ["BAJO", "AGOTADO"])
-          .limit(5);
         setLowStock((invVal || []).map((i: any) => ({
           name: i.product_name,
           stock: i.stock,
@@ -197,8 +186,7 @@ export default function DashboardPage() {
       } finally {
         setLoadingData(false);
       }
-    }
-    load();
+    })();
   }, [user]);
 
   if (!user) return null;
@@ -224,8 +212,14 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonTable rows={5} />
+            <SkeletonTable rows={5} />
+          </div>
         </div>
       ) : (
         <>

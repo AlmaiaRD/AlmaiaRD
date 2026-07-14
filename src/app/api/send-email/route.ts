@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTransport } from "nodemailer";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getSettings } from "@/services/settings";
 
 export async function POST(req: NextRequest) {
-  try {
-    const { to, subject, body, smtp, attachment } = await req.json();
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = checkRateLimit(`send-email:${ip}`, 5, 60000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
+      { status: 429 }
+    );
+  }
 
-    if (!smtp?.host || !smtp?.user || !smtp?.pass) {
+  try {
+    const { to, subject, body, attachment } = await req.json();
+
+    const settings = await getSettings();
+
+    if (!settings.smtp_host || !settings.smtp_user || !settings.smtp_pass) {
       return NextResponse.json(
         { error: "SMTP no configurado. Ve a Configuración e ingresa los datos de tu servidor SMTP." },
         { status: 400 }
@@ -13,14 +26,14 @@ export async function POST(req: NextRequest) {
     }
 
     const transporter = createTransport({
-      host: smtp.host,
-      port: smtp.port || 587,
-      secure: smtp.secure || false,
-      auth: { user: smtp.user, pass: smtp.pass },
+      host: settings.smtp_host,
+      port: settings.smtp_port || 587,
+      secure: settings.smtp_secure || false,
+      auth: { user: settings.smtp_user, pass: settings.smtp_pass },
     });
 
     const mailOptions: any = {
-      from: `"${smtp.senderName || smtp.user}" <${smtp.user}>`,
+      from: `"${settings.sender_name || settings.smtp_user}" <${settings.smtp_user}>`,
       to,
       subject,
       text: body,

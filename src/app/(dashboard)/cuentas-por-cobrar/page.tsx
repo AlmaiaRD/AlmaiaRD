@@ -13,13 +13,13 @@ export default function CuentasPorCobrarPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const load = useCallback(async () => {
-    try { setInvoices(await getInvoices()); }
-    catch {}
-    finally { setLoading(false); }
+  useEffect(() => {
+    (async () => {
+      try { setInvoices(await getInvoices()); }
+      catch {}
+      finally { setLoading(false); }
+    })();
   }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   const pending = invoices.filter(i => i.status !== "PAID" && i.status !== "CANCELLED");
   const filtered = pending.filter(i =>

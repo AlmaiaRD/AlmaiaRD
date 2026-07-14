@@ -185,16 +185,19 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
 
   useEffect(() => {
     if (!isOpen) return;
-    Promise.all([getClients(), getInvoices(), getProducts()]).then(([c, i, p]) => {
-      setClients(c);
-      setInvoices(i);
-      setProducts(p);
-    }).catch(() => {});
+    (async () => {
+      try {
+        const [c, i, p] = await Promise.all([getClients(), getInvoices(), getProducts()]);
+        setClients(c);
+        setInvoices(i);
+        setProducts(p);
+      } catch {}
+    })();
   }, [isOpen]);
 
   useEffect(() => {
     if (defaultClient?.id) {
-      setSelectedClientId(defaultClient.id);
+      Promise.resolve().then(() => setSelectedClientId(defaultClient.id));
     }
   }, [defaultClient]);
 
@@ -247,7 +250,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       values.nombre_vendedor = fieldValues.nombre_vendedor || DEFAULT_SENDER;
     }
 
-    setFieldValues(prev => ({ ...values, ...prev }));
+    Promise.resolve().then(() => setFieldValues(prev => ({ ...values, ...prev })));
   }, [selectedClientId, selectedInvoiceId, clients, currentTemplate, showInvoice, invoiceProducts]);
 
   useEffect(() => {
@@ -256,9 +259,9 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       Object.entries(fieldValues).forEach(([key, value]) => {
         filledSubject = filledSubject.replace(new RegExp(`{{${key}}}`, "g"), value || `{{${key}}}`);
       });
-      setSubject(filledSubject);
+      Promise.resolve().then(() => setSubject(filledSubject));
     } else {
-      setSubject("");
+      Promise.resolve().then(() => setSubject(""));
     }
 
     if (currentTemplate.body) {
@@ -266,9 +269,9 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       Object.entries(fieldValues).forEach(([key, value]) => {
         filledBody = filledBody.replace(new RegExp(`{{${key}}}`, "g"), value || `{{${key}}}`);
       });
-      setBody(filledBody);
+      Promise.resolve().then(() => setBody(filledBody));
     } else {
-      setBody("");
+      Promise.resolve().then(() => setBody(""));
     }
   }, [fieldValues, currentTemplate]);
 

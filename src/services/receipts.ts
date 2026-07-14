@@ -67,7 +67,7 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   const receiptNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
 
   const { data: sessData } = await supabase.auth.getSession();
-  const userId = (sessData as any)?.session?.user?.id;
+  const userId = sessData.session?.user?.id;
 
   const { data, error } = await supabase.from("receipts").insert({
     ...receipt,

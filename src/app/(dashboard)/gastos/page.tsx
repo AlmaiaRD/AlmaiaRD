@@ -155,7 +155,20 @@ export default function GastosPage() {
     }
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const [data, st] = await Promise.all([getExpenses(), getSettings().catch(() => null)]);
+        setExpenses(data);
+        setSettings(st);
+      } catch {
+        toast.error("Error al cargar gastos");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const total = expenses.reduce((s, g) => s + Number(g.amount), 0);
   const totalDeductible = expenses.reduce((s, g) => s + (g.is_deductible ? Number(g.amount) : 0), 0);

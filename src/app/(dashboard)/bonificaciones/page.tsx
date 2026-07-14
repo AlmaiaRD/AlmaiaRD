@@ -55,7 +55,21 @@ export default function BonificacionesPage() {
     }
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await getBonuses();
+        if (mounted) setBonuses(data);
+      } catch {
+        toast.error("Error al cargar bonificaciones");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const total = bonuses.reduce((s, b) => s + Number(b.amount), 0);
   const filtered = bonuses.filter((b) => {

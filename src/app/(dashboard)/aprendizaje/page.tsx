@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { Plus, Search, Trash2, Edit3, Lightbulb, Tag } from "lucide-react";
@@ -28,17 +28,13 @@ function saveNotes(notes: Note[]) {
 }
 
 export default function AprendizajePage() {
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>(loadNotes);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [form, setForm] = useState({ title: "", content: "", tags: "" });
   const [saving, setSaving] = useState(false);
   const [filterTag, setFilterTag] = useState("");
-
-  useEffect(() => {
-    setNotes(loadNotes());
-  }, []);
 
   const allTags = [...new Set(notes.flatMap((n) => n.tags ? n.tags.split(",").map((t) => t.trim()).filter(Boolean) : []))].sort();
 

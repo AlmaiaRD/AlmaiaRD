@@ -13,6 +13,7 @@ import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -62,6 +63,7 @@ export default function FacturacionPage() {
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch))));
 
@@ -86,16 +88,37 @@ export default function FacturacionPage() {
     }
   }, []);
 
-  useEffect(() => { load(searchRef.current); }, [load]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const [inv, cl, pr, ba, st] = await Promise.all([
+          searchRef.current ? searchInvoices(searchRef.current) : getInvoices(),
+          getClients(),
+          getProducts(),
+          getBankAccounts(),
+          getSettings().catch(() => null),
+        ]);
+        setInvoices(inv);
+        setClients(cl);
+        setProducts(pr);
+        setBankAccounts(ba);
+        setSettings(st);
+      } catch {
+        toast.error("Error al cargar facturas");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
-    if (settings?.default_margin) setMargin(settings.default_margin);
+    if (settings?.default_margin) Promise.resolve().then(() => setMargin(settings.default_margin));
   }, [settings]);
 
   useEffect(() => {
     if (searchParams.get("nueva") === "true") {
       resetForm();
-      setShowModal(true);
+      Promise.resolve().then(() => setShowModal(true));
     }
   }, [searchParams]);
 
@@ -396,6 +419,7 @@ export default function FacturacionPage() {
         margin,
         notes: notes || undefined,
         bank_account_id: bankAccountId || undefined,
+        currency: (settings as any)?.currency || "DOP",
       };
       const invoiceItems = items.map((i) => ({
         product_id: i.product_id || undefined,
@@ -436,6 +460,14 @@ export default function FacturacionPage() {
     }
   }
 
+  useKeyboardShortcuts([
+    { key: "n", ctrl: true, handler: () => { resetForm(); setShowModal(true); } },
+    { key: "s", ctrl: true, handler: () => { if (showModal) handleSave(); }, enabled: showModal },
+    { key: "Escape", handler: () => { if (showModal) { setShowModal(false); resetForm(); } } },
+    { key: "/", handler: () => searchInputRef.current?.focus() },
+    { key: "f", ctrl: true, handler: () => searchInputRef.current?.focus() },
+  ]);
+
   return (
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
@@ -455,6 +487,7 @@ export default function FacturacionPage() {
       <div className="relative mb-6">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
         <input
+          ref={searchInputRef}
           type="text"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}

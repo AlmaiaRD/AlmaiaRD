@@ -53,6 +53,7 @@ Gracias por tu confianza.
     smtp_user: "",
     smtp_pass: "",
     smtp_secure: false,
+    currency: "DOP",
     ai_client_prompt: `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
 
 Cliente: {{clientName}}
@@ -86,30 +87,29 @@ Responde en español en máximo 3 oraciones:`,
 
   const [editingBank, setEditingBank] = useState<string | null>(null);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const settingsData = await getSettings();
+        const banksData = await getBankAccounts();
 
-  async function loadData() {
-    try {
-      const settingsData = await getSettings();
-      const banksData = await getBankAccounts();
-
-      if (settingsData) {
-        setSettings(settingsData);
-        setForm({
-          business_name: settingsData.business_name || "Almaia RD",
-          logo_url: settingsData.logo_url || "",
-          signature_url: settingsData.signature_url || "",
-          email: (settingsData as any).email || "",
-          phone: (settingsData as any).phone || "",
-          sender_name: (settingsData as any).sender_name || "",
-          email_template: (settingsData as any).email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
-          whatsapp_template: (settingsData as any).whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
-          smtp_host: (settingsData as any).smtp_host || "",
-          smtp_port: (settingsData as any).smtp_port || 587,
-          smtp_user: (settingsData as any).smtp_user || "",
-          smtp_pass: (settingsData as any).smtp_pass || "",
-          smtp_secure: (settingsData as any).smtp_secure || false,
-          ai_client_prompt: (settingsData as any).ai_client_prompt || `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
+        if (settingsData) {
+          setSettings(settingsData);
+          setForm({
+            business_name: settingsData.business_name || "Almaia RD",
+            logo_url: settingsData.logo_url || "",
+            signature_url: settingsData.signature_url || "",
+            email: (settingsData as any).email || "",
+            phone: (settingsData as any).phone || "",
+            sender_name: (settingsData as any).sender_name || "",
+            email_template: (settingsData as any).email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
+            whatsapp_template: (settingsData as any).whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
+            smtp_host: (settingsData as any).smtp_host || "",
+            smtp_port: (settingsData as any).smtp_port || 587,
+            smtp_user: (settingsData as any).smtp_user || "",
+            smtp_pass: (settingsData as any).smtp_pass || "",
+            smtp_secure: (settingsData as any).smtp_secure || false,
+            ai_client_prompt: (settingsData as any).ai_client_prompt || `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
 
 Cliente: {{clientName}}
 Etapa: {{stage}}
@@ -121,26 +121,28 @@ Productos favoritos: {{topProducts}}
 Responde SOLO en este formato (máximo 4 líneas):
 RESUMEN: [2 oraciones sobre el cliente]
 ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`,
-          ai_learning_prompt: (settingsData as any).ai_learning_prompt || `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
+            ai_learning_prompt: (settingsData as any).ai_learning_prompt || `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
 
 Título: {{title}}
 Contenido: {{content}}
 Etiquetas: {{tags}}
 
 Responde en español en máximo 3 oraciones:`,
-          default_margin: settingsData.default_margin || 30,
-          invoice_prefix: settingsData.invoice_prefix || "FAC-",
-          receipt_prefix: settingsData.receipt_prefix || "REC-",
-          purchase_prefix: settingsData.purchase_prefix || "COM-",
-        });
+            default_margin: settingsData.default_margin || 30,
+            invoice_prefix: settingsData.invoice_prefix || "FAC-",
+            receipt_prefix: settingsData.receipt_prefix || "REC-",
+            purchase_prefix: settingsData.purchase_prefix || "COM-",
+            currency: (settingsData as any).currency || "DOP",
+          });
+        }
+        setBanks(banksData as BankAccount[]);
+      } catch (err) {
+        console.error("loadData error:", err);
+      } finally {
+        setLoading(false);
       }
-      setBanks(banksData as BankAccount[]);
-    } catch (err) {
-      console.error("loadData error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+    })();
+  }, []);
 
   async function handleSaveSettings() {
     if (!settings) {
@@ -170,6 +172,7 @@ Responde en español en máximo 3 oraciones:`,
         invoice_prefix: form.invoice_prefix,
         receipt_prefix: form.receipt_prefix,
         purchase_prefix: form.purchase_prefix,
+        currency: form.currency,
       };
       const result = await updateSettings(payload);
       setSettings(result);
@@ -331,6 +334,15 @@ Responde en español en máximo 3 oraciones:`,
                   className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
                   <option value={30}>30%</option>
                   <option value={35}>35%</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Moneda</label>
+                <select value={form.currency}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+                  <option value="DOP">DOP (RD$)</option>
+                  <option value="USD">USD ($)</option>
                 </select>
               </div>
               <div>

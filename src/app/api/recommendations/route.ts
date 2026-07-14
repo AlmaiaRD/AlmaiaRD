@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = checkRateLimit(`recommendations:${ip}`, 10, 60000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
+      { status: 429 }
+    );
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {

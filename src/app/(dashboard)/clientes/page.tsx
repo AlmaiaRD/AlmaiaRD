@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -9,6 +9,7 @@ import { getClients, getClientsWithBalances, createClient, updateClient, deleteC
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { Client } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
@@ -42,6 +43,7 @@ export default function ClientesPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [form, setForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador" as ClientType, birthday: "" });
   const [saving, setSaving] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [detailInvoices, setDetailInvoices] = useState<any[]>([]);
   const [detailReceipts, setDetailReceipts] = useState<any[]>([]);
@@ -61,11 +63,24 @@ export default function ClientesPage() {
     }
   }, [searchQuery]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = searchQuery ? await searchClients(searchQuery) : await getClientsWithBalances();
+        setClients(data);
+      } catch (e: any) {
+        console.error("Error al cargar clientes:", e);
+        toast.error("Error al cargar clientes");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [searchQuery]);
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
-      resetForm();
+      setForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador", birthday: "" });
+      setEditingClient(null);
       setShowModal(true);
     }
   }, [searchParams]);
@@ -145,7 +160,7 @@ export default function ClientesPage() {
     if (!window.confirm(`¿Estás segura de eliminar a ${name}?`)) return;
     try {
       await deleteClient(id);
-      toast.success("Cliente eliminado");
+      toast("Cliente archivado. Para restaurarlo, contacta a un administrador.", { duration: 5000 });
       load();
     } catch {
       toast.error("Error al eliminar cliente");
@@ -207,6 +222,13 @@ export default function ClientesPage() {
   const totalInvoiced = detailInvoices.reduce((s, i) => s + Number(i.total), 0);
   const totalPaid = detailReceipts.reduce((s, r) => s + Number(r.amount), 0);
 
+  useKeyboardShortcuts([
+    { key: "n", ctrl: true, handler: () => { resetForm(); setShowModal(true); } },
+    { key: "Escape", handler: () => { if (showModal) { setShowModal(false); resetForm(); } if (showDetail) setShowDetail(false); } },
+    { key: "/", handler: () => searchInputRef.current?.focus() },
+    { key: "f", ctrl: true, handler: () => searchInputRef.current?.focus() },
+  ]);
+
   return (
     <PageContainer>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -223,7 +245,7 @@ export default function ClientesPage() {
 
           <div className="relative mb-4">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar cliente por nombre, teléfono o correo..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+            <input ref={searchInputRef} type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar cliente por nombre, teléfono o correo..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
           </div>
 
           {loading ? (

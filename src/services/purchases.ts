@@ -1,8 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getSettings } from "./settings";
 import { addInventoryStock, subtractInventoryStock } from "./inventory";
-
-const ITBIS_RATE = 0.18;
+import { ITBIS_RATE } from "@/lib/constants";
 
 export async function createPurchase(data: {
   supplier_name?: string;
@@ -16,7 +15,7 @@ export async function createPurchase(data: {
   items: Array<{ product_id: string; quantity: number; unit_cost: number; itbis?: boolean }>;
 }) {
   const { data: sessData } = await supabase.auth.getSession();
-  const userId = (sessData as any)?.session?.user?.id;
+  const userId = sessData.session?.user?.id;
 
   const { data: lastPur } = await supabase
     .from("purchases")
@@ -116,7 +115,7 @@ export async function updatePurchase(
   }
 ) {
   const { data: sessData } = await supabase.auth.getSession();
-  const userId = (sessData as any)?.session?.user?.id;
+  const userId = sessData.session?.user?.id;
 
   const subtotal = data.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
   const itbis = Math.round(data.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0) * 100) / 100;
@@ -214,7 +213,7 @@ export async function getSoldQuantities() {
     .neq("invoices.status", "CANCELLED");
   if (error) throw error;
   const map: Record<string, number> = {};
-  (data || []).forEach((item: any) => {
+  (data || []).forEach((item: { product_id: string; quantity: number }) => {
     map[item.product_id] = (map[item.product_id] || 0) + item.quantity;
   });
   return map;
@@ -226,7 +225,7 @@ export async function getPurchasedQuantities() {
     .select("product_id, quantity");
   if (error) throw error;
   const map: Record<string, number> = {};
-  (data || []).forEach((item: any) => {
+  (data || []).forEach((item: { product_id: string; quantity: number }) => {
     map[item.product_id] = (map[item.product_id] || 0) + item.quantity;
   });
   return map;

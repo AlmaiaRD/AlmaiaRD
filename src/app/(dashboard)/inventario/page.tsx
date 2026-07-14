@@ -66,6 +66,7 @@ function InventarioContent() {
   const [showConfirmDeleteProduct, setShowConfirmDeleteProduct] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState(false);
   const [productUsage, setProductUsage] = useState<{ movements: number; invoices: number; purchases: number } | null>(null);
+  const [confirmDeleteText, setConfirmDeleteText] = useState("");
 
   // Rotation state
   const [rotationData, setRotationData] = useState<any[]>([]);
@@ -338,15 +339,40 @@ function InventarioContent() {
     setPurchaseForm({ ...purchaseForm, items });
   }
 
-  useEffect(() => { load(); }, []);
-
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
+    (async () => {
+      try {
+        const [inv, pro, sold, purchased, sup, ba, st] = await Promise.all([
+          getInventory(),
+          getProducts(),
+          getSoldQuantities(),
+          getPurchasedQuantities(),
+          getSuppliers(),
+          getBankAccounts(),
+          getSettings().catch(() => null),
+        ]);
+        setInventory(inv);
+        setProducts(pro);
+        setSoldMap(sold);
+        setPurchasedMap(purchased);
+        setSuppliers(sup);
+        setBankAccounts(ba);
+        setSettings(st);
+      } catch {
+        toast.error("Error al cargar inventario");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     if (searchParams.get("nueva-compra") === "true") {
       resetPurchaseForm();
-      setShowPurchase(true);
+      Promise.resolve().then(() => setShowPurchase(true));
       router.replace("/inventario");
     }
   }, [searchParams]);
@@ -469,8 +495,99 @@ function InventarioContent() {
   }
 
   useEffect(() => {
-    if (activeTab === "history") loadPurchases();
-    if (activeTab === "rotation") loadRotation();
+    if (activeTab === "history") {
+      (async () => {
+        try {
+          const data = await getPurchases();
+          setPurchases(data);
+        } catch {
+          toast.error("Error al cargar compras");
+        }
+      })();
+    }
+    if (activeTab === "rotation") {
+      (async () => {
+        setRotationLoading(true);
+        try {
+          const [inv, sold, purchased, lastSales, lastPurchases, firstPurchases] = await Promise.all([
+            getInventory(),
+            getSoldQuantities(),
+            getPurchasedQuantities(),
+            getLastSalePerProduct(),
+            getLastPurchasePerProduct(),
+            getFirstPurchasePerProduct(),
+          ]);
+
+          const now = new Date();
+
+          const data = inv.map((item: any) => {
+            const product = item.products;
+            const itemSold = sold[item.product_id] || 0;
+            const itemPurchased = purchased[item.product_id] || 0;
+            const stock = Math.max(0, itemPurchased - itemSold);
+            const cost = product?.cost || 0;
+            const lastSale = lastSales[item.product_id];
+            const lastPurchase = lastPurchases[item.product_id];
+            const firstPurchase = firstPurchases[item.product_id];
+
+            let diasEnInventario = 0;
+            let ultimaReferencia = "";
+
+            if (lastSale) {
+              const diff = now.getTime() - new Date(lastSale).getTime();
+              diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
+              ultimaReferencia = `Venta: ${formatDate(lastSale)}`;
+            } else if (lastPurchase) {
+              const diff = now.getTime() - new Date(lastPurchase).getTime();
+              diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
+              ultimaReferencia = `Compra: ${formatDate(lastPurchase)}`;
+            } else {
+              diasEnInventario = 999;
+              ultimaReferencia = "Sin movimientos";
+            }
+
+            let diasDesdeAdquisicion = 0;
+            let velocidadDias = 0;
+            if (firstPurchase) {
+              diasDesdeAdquisicion = Math.floor((now.getTime() - new Date(firstPurchase).getTime()) / (1000 * 60 * 60 * 24));
+              if (itemSold > 0 && diasDesdeAdquisicion > 0) {
+                velocidadDias = Math.round(diasDesdeAdquisicion / itemSold);
+              }
+            }
+
+            return {
+              id: item.id,
+              product_id: item.product_id,
+              products: item.products,
+              code: product?.code || "",
+              name: product?.name || "—",
+              subbrand: product?.subbrands?.name || "—",
+              sold: itemSold,
+              purchased: itemPurchased,
+              stock,
+              costoPromedio: cost,
+              cost,
+              firstPurchase,
+              last_purchase: lastPurchase,
+              last_sale: lastSale,
+              diasEnInventario,
+              ultimaReferencia,
+              velocidadDias,
+              inventory_value: item.inventory_value || 0,
+              minimum_stock: item.minimum_stock || 3,
+            };
+          });
+
+          setRotationData(data);
+        } catch (err) {
+          console.error("[loadRotation] Error:", err);
+          const msg = err instanceof Error ? err.message : JSON.stringify(err);
+          toast.error(`Error al cargar rotación: ${msg}`);
+        } finally {
+          setRotationLoading(false);
+        }
+      })();
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -1067,7 +1184,7 @@ function InventarioContent() {
                   </div>
                 )}
                 {!rotationAiAnalysis && !rotationAiLoading && (
-                  <p className="text-xs text-[#9C8A82]">Haz clic en "Analizar con IA" para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
+                  <p className="text-xs text-[#9C8A82]">Haz clic en &quot;Analizar con IA&quot; para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
                 )}
               </div>
 
@@ -1999,7 +2116,7 @@ function InventarioContent() {
        </Modal>
 
       {/* Delete product confirmation modal */}
-      <Modal isOpen={!!showConfirmDeleteProduct} onClose={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); }} title="Confirmar Eliminación">
+      <Modal isOpen={!!showConfirmDeleteProduct} onClose={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); setConfirmDeleteText(""); }} title={productUsage ? "Forzar Eliminación" : "Confirmar Eliminación"}>
         <div className="space-y-5">
           {productUsage ? (
             <>
@@ -2010,18 +2127,24 @@ function InventarioContent() {
                   {productUsage.invoices > 0 && <li>• {productUsage.invoices} línea(s) en facturas</li>}
                   {productUsage.purchases > 0 && <li>• {productUsage.purchases} línea(s) en compras</li>}
                 </ul>
-                <p className="text-xs text-red-500 mt-2">La eliminación normal no está disponible. Usa "Forzar eliminación" para borrar el producto y todos sus registros asociados. Esta acción no se puede deshacer.</p>
+                <p className="text-xs text-red-500 mt-2">La eliminación normal no está disponible. Usa &quot;Forzar eliminación&quot; para borrar el producto y todos sus registros asociados. Esta acción no se puede deshacer.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
+                <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
+                  placeholder="ELIMINAR"
+                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
               </div>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); }}
+                  onClick={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); setConfirmDeleteText(""); }}
                   className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={() => showConfirmDeleteProduct && handleForceDeleteProduct(showConfirmDeleteProduct)}
-                  disabled={deletingProduct}
+                  disabled={deletingProduct || confirmDeleteText !== "ELIMINAR"}
                   className="flex-1 h-12 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Forzar eliminación"}
@@ -2031,16 +2154,22 @@ function InventarioContent() {
           ) : (
             <>
               <p className="text-sm text-[#5C3E35]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
+              <div>
+                <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
+                <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
+                  placeholder="ELIMINAR"
+                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
+              </div>
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowConfirmDeleteProduct(null)}
+                  onClick={() => { setShowConfirmDeleteProduct(null); setConfirmDeleteText(""); }}
                   className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={() => showConfirmDeleteProduct && handleDeleteProduct(showConfirmDeleteProduct)}
-                  disabled={deletingProduct}
+                  disabled={deletingProduct || confirmDeleteText !== "ELIMINAR"}
                   className="flex-1 h-12 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Eliminar"}

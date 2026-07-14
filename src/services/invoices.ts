@@ -4,6 +4,7 @@ import { getSettings } from "./settings";
 import { subtractInventoryStock, addInventoryStock, restoreInventoryStock } from "./inventory";
 import { updateStageOnFirstPurchase } from "./pipeline";
 import { getLocalDateString } from "@/lib/utils";
+import { ITBIS_RATE, ITBIS_MULTIPLIER } from "@/lib/constants";
 
 export async function getInvoices() {
   const { data, error } = await supabase
@@ -12,6 +13,18 @@ export async function getInvoices() {
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
+}
+
+export async function getInvoicesPaginated(page: number, pageSize = 50) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("invoices")
+    .select("*, clients(full_name, phone, email)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (error) throw error;
+  return { data, total: count || 0, page, pageSize };
 }
 
 export async function getInvoice(id: string) {
@@ -27,12 +40,12 @@ export async function getInvoice(id: string) {
 export async function createInvoice(invoice: Partial<Invoice>, items: Partial<InvoiceItem>[]) {
   const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * Number(i.unit_price || 0), 0);
   const discount = Number(invoice.discount_amount || 0);
-  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
+  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * ITBIS_RATE), 0);
   const total = subtotal + itbisTotal - discount;
   const pvTotal = items.reduce((s, i) => s + ((i.pv || 0) * (i.quantity || 0)), 0);
 
   const { data: sessData } = await supabase.auth.getSession();
-  const userId = (sessData as any)?.session?.user?.id;
+  const userId = sessData.session?.user?.id;
 
   const settings = await getSettings().catch(() => null);
   const prefix = settings?.invoice_prefix || "FAC-";
@@ -85,14 +98,14 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
     .select("id, cost, apply_itbis")
     .in("id", productIds);
   const costMap: Record<string, { cost: number; apply_itbis: boolean }> = {};
-  (costData || []).forEach((p: any) => { costMap[p.id] = { cost: Number(p.cost || 0), apply_itbis: p.apply_itbis !== false }; });
+  (costData || []).forEach((p: { id: string; cost: number | null; apply_itbis: boolean | null }) => { costMap[p.id] = { cost: Number(p.cost || 0), apply_itbis: p.apply_itbis !== false }; });
 
   const itemsWithInvoiceId = items.map((item) => {
     const lineTotal = (item.quantity || 0) * Number(item.unit_price || 0);
     const itbis = item.itbis || false;
     const prod = item.product_id ? costMap[item.product_id] : null;
     const rawCost = prod?.cost || 0;
-    const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? 1.18 : 1.0) * 100) / 100 : 0;
+    const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? ITBIS_MULTIPLIER : 1.0) * 100) / 100 : 0;
     return {
       product_id: item.product_id || null,
       invoice_id: invData.id,
@@ -102,7 +115,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
       line_total: lineTotal,
       pv: (item.pv || 0) * (item.quantity || 0),
       itbis,
-      itbis_amount: itbis ? lineTotal * 0.18 : 0,
+      itbis_amount: itbis ? lineTotal * ITBIS_RATE : 0,
       custom_name: item.custom_name || null,
     };
   });
@@ -128,12 +141,12 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
 export async function updateInvoice(id: string, invoice: Partial<Invoice>, items: Partial<InvoiceItem>[]) {
   const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * Number(i.unit_price || 0), 0);
   const discount = Number(invoice.discount_amount || 0);
-  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * 0.18), 0);
+  const itbisTotal = items.reduce((s, i) => s + ((i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * ITBIS_RATE), 0);
   const total = subtotal + itbisTotal - discount;
   const pvTotal = items.reduce((s, i) => s + ((i.pv || 0) * (i.quantity || 0)), 0);
 
   const { data: sessData } = await supabase.auth.getSession();
-  const userId = (sessData as any)?.session?.user?.id;
+  const userId = sessData.session?.user?.id;
 
   const { error: invError } = await supabase
     .from("invoices")
@@ -171,7 +184,6 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
   if (delError) throw delError;
 
   if (items.length > 0) {
-    // Fetch product costs to calculate real unit_cost
     const productIds = items.map(i => i.product_id).filter(Boolean) as string[];
     const { data: costData } = await supabase
       .from("products")
@@ -185,7 +197,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
       const itbis = item.itbis || false;
       const prod = item.product_id ? costMap[item.product_id] : null;
       const rawCost = prod?.cost || 0;
-      const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? 1.18 : 1.0) * 100) / 100 : 0;
+      const unitCost = prod ? Math.round(rawCost * (prod.apply_itbis ? ITBIS_MULTIPLIER : 1.0) * 100) / 100 : 0;
       return {
         product_id: item.product_id || null,
         invoice_id: id,
@@ -195,7 +207,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
         line_total: lineTotal,
         pv: (item.pv || 0) * (item.quantity || 0),
         itbis,
-        itbis_amount: itbis ? lineTotal * 0.18 : 0,
+        itbis_amount: itbis ? lineTotal * ITBIS_RATE : 0,
         custom_name: item.custom_name || null,
       };
     });

@@ -82,7 +82,6 @@ export default function CommunicationDraftModal({
             to: client.email,
             subject,
             body,
-            smtp: { ...smtp, senderName: senderName || businessName },
             attachment,
           }),
         });

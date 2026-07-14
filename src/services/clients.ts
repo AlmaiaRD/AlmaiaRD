@@ -3,10 +3,25 @@ import { normalize } from "@/lib/search";
 import type { Client, ClientCardData, ClientTag, ClientTagRelation, ClientType } from "@/types/database";
 import { STAGE_MIGRATION_MAP } from "@/lib/pipeline-constants";
 
+export type PaginatedResult<T> = { data: T[]; total: number; page: number; pageSize: number };
+
 export async function getClients() {
-  const { data, error } = await supabase.from("clients").select("*").order("full_name");
+  const { data, error } = await supabase.from("clients").select("*").is("deleted_at", null).order("full_name");
   if (error) throw error;
   return data as Client[];
+}
+
+export async function getClientsPaginated(page: number, pageSize = 50) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("clients")
+    .select("*", { count: "exact" })
+    .is("deleted_at", null)
+    .order("full_name")
+    .range(from, to);
+  if (error) throw error;
+  return { data: data as Client[], total: count || 0, page, pageSize };
 }
 
 export async function getClientsWithBalances() {
@@ -24,37 +39,47 @@ export async function getClientsWithBalances() {
 }
 
 export async function getClientCardData(): Promise<ClientCardData[]> {
-  const clients = await getClients();
+  const [clients, invoicesResult, balanceResult, followupsResult, tagResult] = await Promise.all([
+    getClients(),
+    supabase
+      .from("invoices")
+      .select("id, client_id, invoice_date, total, status, pv_total")
+      .neq("status", "CANCELLED"),
+    supabase
+      .from("invoices")
+      .select("client_id, balance_due")
+      .neq("status", "PAID"),
+    supabase
+      .from("followups")
+      .select("client_id, next_followup, comments, status")
+      .in("status", ["PENDING", "OVERDUE"])
+      .order("next_followup", { ascending: true }),
+    supabase
+      .from("client_tag_relations")
+      .select("*, client_tags(name)"),
+  ]);
 
-  const { data: invoices, error: invErr } = await supabase
-    .from("invoices")
-    .select("id, client_id, invoice_date, total, status, pv_total")
-    .neq("status", "CANCELLED");
+  const invoices = invoicesResult.data;
+  const invErr = invoicesResult.error;
   if (invErr) throw invErr;
+
+  const balanceInvoices = balanceResult.data;
+  const balErr = balanceResult.error;
+  if (balErr) throw balErr;
+
+  const followups = followupsResult.data;
+  const fupErr = followupsResult.error;
+  if (fupErr) throw fupErr;
+
+  const tagRelations = tagResult.data;
+  const tagErr = tagResult.error;
+  if (tagErr) throw tagErr;
 
   const { data: items, error: itemsErr } = await supabase
     .from("invoice_items")
     .select("invoice_id, product_id, quantity, pv, products!inner(name)")
     .in("invoice_id", (invoices || []).map(i => i.id));
   if (itemsErr) throw itemsErr;
-
-  const { data: balanceInvoices, error: balErr } = await supabase
-    .from("invoices")
-    .select("client_id, balance_due")
-    .neq("status", "PAID");
-  if (balErr) throw balErr;
-
-  const { data: followups, error: fupErr } = await supabase
-    .from("followups")
-    .select("client_id, next_followup, comments, status")
-    .in("status", ["PENDING", "OVERDUE"])
-    .order("next_followup", { ascending: true });
-  if (fupErr) throw fupErr;
-
-  const { data: tagRelations, error: tagErr } = await supabase
-    .from("client_tag_relations")
-    .select("*, client_tags(name)");
-  if (tagErr) throw tagErr;
 
   const balanceMap: Record<string, number> = {};
   for (const inv of balanceInvoices || []) {
@@ -161,8 +186,10 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
   });
 }
 
-export async function getClient(id: string) {
-  const { data, error } = await supabase.from("clients").select("*").eq("id", id);
+export async function getClient(id: string, includeDeleted = false) {
+  let query = supabase.from("clients").select("*").eq("id", id);
+  if (!includeDeleted) query = query.is("deleted_at", null);
+  const { data, error } = await query;
   if (error) throw error;
   if (!data || data.length === 0) throw new Error("No se encontró el cliente");
   return data[0] as Client;
@@ -183,20 +210,32 @@ export async function updateClient(id: string, client: Partial<Client>) {
 }
 
 export async function deleteClient(id: string) {
-  const { error } = await supabase.from("clients").delete().eq("id", id);
+  const { error } = await supabase
+    .from("clients")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function restoreClient(id: string) {
+  const { error } = await supabase
+    .from("clients")
+    .update({ deleted_at: null })
+    .eq("id", id);
   if (error) throw error;
 }
 
 export async function searchClients(query: string) {
-  const all = await getClients();
-  const q = normalize(query);
-  return all.filter(
-    (c: Client) =>
-      normalize(c.full_name).includes(q) ||
-      (c.phone && normalize(c.phone).includes(q)) ||
-      (c.email && normalize(c.email).includes(q)) ||
-      (c.ibo_number && normalize(c.ibo_number).includes(q))
-  );
+  const q = `%${query}%`;
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .is("deleted_at", null)
+    .or(`full_name.ilike.${q},phone.ilike.${q},email.ilike.${q},ibo_number.ilike.${q}`)
+    .order("full_name")
+    .limit(50);
+  if (error) throw error;
+  return data as Client[];
 }
 
 export async function getClientTags() {
@@ -220,7 +259,7 @@ export async function updateClientStage(
   newStage: string,
   extra?: { qualification_level?: string; closure_result?: string }
 ) {
-  const updates: Record<string, any> = {
+  const updates: Record<string, string | undefined> = {
     stage: newStage,
     stage_entered_at: new Date().toISOString(),
   };

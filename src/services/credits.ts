@@ -21,7 +21,7 @@ export async function createCreditBalance(credit: Partial<CreditBalance>) {
   return data as CreditBalance;
 }
 
-export async function useCreditBalance(creditId: string, amount: number) {
+export async function applyCreditBalance(creditId: string, amount: number) {
   const { data, error } = await supabase.rpc("use_credit_balance", {
     p_credit_id: creditId,
     p_amount: amount,

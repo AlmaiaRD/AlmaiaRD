@@ -36,7 +36,7 @@ async function ensureProfile(session: any): Promise<User | null> {
   const email = session.user.email || "";
   const { data: created, error } = await supabase
     .from("users")
-    .insert({ id: userId, name, email, role: "admin" })
+    .insert({ id: userId, name, email, role: "assistant" })
     .select()
     .single();
 
@@ -49,11 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     if (!isConfigured) {
-      setLoading(false);
+      Promise.resolve().then(() => { if (!cancelled) setLoading(false); });
       return;
     }
-    let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
       if (session?.user) {
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
       if (error) return { error: error.message };
       if (data.user) {
-        await supabase.from("users").insert({ id: data.user.id, name, email, role: "admin" });
+        await supabase.from("users").insert({ id: data.user.id, name, email, role: "assistant" });
       }
       return { error: null };
     } catch (err: any) {

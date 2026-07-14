@@ -708,7 +708,7 @@ export default function PipelinePage() {
             <p><strong>Cotización</strong> → Propuesta</p>
             <p><strong>1ra Compra / Postventa / Activo / Recompra / VIP</strong> → Cierre</p>
           </div>
-          <p className="text-xs text-[#9C8A82]">Los clientes se marcarán como "comprador" por defecto.</p>
+          <p className="text-xs text-[#9C8A82]">Los clientes se marcarán como &quot;comprador&quot; por defecto.</p>
           <div className="flex gap-3">
             <button onClick={() => setShowMigrateModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0]">Cancelar</button>
             <button onClick={handleMigrate} disabled={migrating} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] disabled:opacity-50">{migrating ? "Migrando..." : "Migrar ahora"}</button>

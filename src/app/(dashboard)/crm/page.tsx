@@ -131,7 +131,25 @@ export default function CrmPage() {
     }
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const [fol, cli, cardData] = await Promise.all([getAllFollowups(), getClients(), getClientCardData()]);
+        setFollowups(fol);
+        setClients(cli.map((c) => ({ id: c.id, full_name: c.full_name })));
+        const map: Record<string, string> = {};
+        for (const c of cardData) {
+          if (c.repurchase_date) map[c.id] = c.repurchase_date;
+        }
+        setRepurchaseMap(map);
+      } catch {
+        toast.error("Error al cargar datos");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const pending = followups.filter((f) => f.status === "PENDING").length;
   const completed = followups.filter((f) => f.status === "COMPLETED").length;

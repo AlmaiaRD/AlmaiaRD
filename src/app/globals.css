@@ -18,6 +18,21 @@
   --font-signature: "Great Vibes", cursive;
 }
 
+.dark {
+  --color-background: #1A1412;
+  --color-foreground: #E8E0D8;
+  --color-primary: #C99A94;
+  --color-primary-light: #D4A8A4;
+  --color-primary-dark: #B8837E;
+  --color-card: #2A2220;
+  --color-secondary-bg: #332B29;
+  --color-success: #86C7A3;
+  --color-warning: #E8C87A;
+  --color-danger: #D4A0A0;
+  --color-text-muted: #9C8A82;
+  --color-border: #3D3533;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function callOllama(prompt: string): Promise<string | null> {
   try {
@@ -63,6 +64,15 @@ function generarResumen(client: any, stats: any): string {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = checkRateLimit(`client-summary:${ip}`, 15, 60000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
+      { status: 429 }
+    );
+  }
+
   try {
     const { clientId, client, stats } = await req.json();
     if (!clientId || !client) {

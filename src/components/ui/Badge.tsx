@@ -11,11 +11,11 @@ interface BadgeProps {
 }
 
 const variantMap: Record<BadgeVariant, string> = {
-  success: "bg-[#86C7A3]/15 text-[#86C7A3]",
-  warning: "bg-[#E8C87A]/15 text-[#E8C87A]",
-  danger: "bg-[#D4A0A0]/15 text-[#D4A0A0]",
-  neutral: "bg-[#E8E0D8]/50 text-[#9C8A82]",
-  info: "bg-[#B8837E]/10 text-[#B8837E]",
+  success: "bg-success/15 text-success",
+  warning: "bg-warning/15 text-warning",
+  danger: "bg-danger/15 text-danger",
+  neutral: "bg-border/50 text-text-muted",
+  info: "bg-primary/10 text-primary",
 };
 
 export default function Badge({ children, variant = "neutral", className }: BadgeProps) {

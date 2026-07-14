@@ -70,7 +70,7 @@ export default function DocumentosPage() {
   const [expandedGuides, setExpandedGuides] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    async function load() {
+    (async () => {
       try {
         const data = await getDocuments();
         setDocs(data);
@@ -79,13 +79,12 @@ export default function DocumentosPage() {
       } finally {
         setLoading(false);
       }
-    }
-    load();
+    })();
   }, []);
 
   useEffect(() => {
     if (activeTab === "guides") {
-      setLoadingGuides(true);
+      Promise.resolve().then(() => setLoadingGuides(true));
       fetch("/api/guides")
         .then((r) => r.json())
         .then((data) => setGuides(data.groups || []))

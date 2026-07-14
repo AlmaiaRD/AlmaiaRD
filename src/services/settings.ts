@@ -1,10 +1,16 @@
 import { supabase } from "@/lib/supabase";
-import type { Settings } from "@/types/database";
+import { getCached, setCache, invalidateCache } from "@/lib/cache";
+import type { Settings, BankAccount } from "@/types/database";
 
-export async function getSettings() {
+export async function getSettings(useCache = true) {
+  const cached = useCache ? getCached<Settings>("settings") : undefined;
+  if (cached) return cached;
   const { data, error } = await supabase.from("settings").select("*").limit(1).maybeSingle();
 
-  if (data) return data as Settings;
+  if (data) {
+    setCache("settings", data as Settings, 120_000);
+    return data as Settings;
+  }
 
   // No row exists — create one
   const { data: created, error: createError } = await supabase
@@ -39,6 +45,7 @@ Responde en español en máximo 3 oraciones:`,
     .single();
 
   if (createError) throw createError;
+  setCache("settings", created as Settings, 120_000);
   return created as Settings;
 }
 
@@ -50,18 +57,18 @@ export async function updateSettings(settings: Partial<Settings>) {
       business_name: settings.business_name,
       logo_url: settings.logo_url,
       signature_url: settings.signature_url,
-      email: (settings as any).email,
-      phone: (settings as any).phone,
-      sender_name: (settings as any).sender_name,
-      email_template: (settings as any).email_template,
-      whatsapp_template: (settings as any).whatsapp_template,
-      smtp_host: (settings as any).smtp_host,
-      smtp_port: (settings as any).smtp_port,
-      smtp_user: (settings as any).smtp_user,
-      smtp_pass: (settings as any).smtp_pass,
-      smtp_secure: (settings as any).smtp_secure,
-      ai_client_prompt: (settings as any).ai_client_prompt,
-      ai_learning_prompt: (settings as any).ai_learning_prompt,
+      email: settings.email,
+      phone: settings.phone,
+      sender_name: settings.sender_name,
+      email_template: settings.email_template,
+      whatsapp_template: settings.whatsapp_template,
+      smtp_host: settings.smtp_host,
+      smtp_port: settings.smtp_port,
+      smtp_user: settings.smtp_user,
+      smtp_pass: settings.smtp_pass,
+      smtp_secure: settings.smtp_secure,
+      ai_client_prompt: settings.ai_client_prompt,
+      ai_learning_prompt: settings.ai_learning_prompt,
       default_margin: settings.default_margin,
       invoice_prefix: settings.invoice_prefix,
       receipt_prefix: settings.receipt_prefix,
@@ -71,6 +78,7 @@ export async function updateSettings(settings: Partial<Settings>) {
     .select()
     .single();
   if (error) throw error;
+  invalidateCache("settings");
   return data as Settings;
 }
 
@@ -80,13 +88,13 @@ export async function getBankAccounts() {
   return data;
 }
 
-export async function createBankAccount(account: any) {
+export async function createBankAccount(account: Partial<BankAccount>) {
   const { data, error } = await supabase.from("bank_accounts").insert(account).select().single();
   if (error) throw error;
   return data;
 }
 
-export async function updateBankAccount(id: string, account: any) {
+export async function updateBankAccount(id: string, account: Partial<BankAccount>) {
   const { data, error } = await supabase.from("bank_accounts").update(account).eq("id", id).select().single();
   if (error) throw error;
   return data;

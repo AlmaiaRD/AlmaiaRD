@@ -5,10 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-DO", {
+export function formatCurrency(amount: number, currency = "DOP"): string {
+  const locale = currency === "USD" ? "en-US" : "es-DO";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: "DOP",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
@@ -34,11 +35,17 @@ export function formatDateShort(date: string | Date): string {
 export function numberToWords(amount: number): string {
   const unidades = [
     "", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
+  ];
+  const diezAveinte = [
     "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis",
     "diecisiete", "dieciocho", "diecinueve", "veinte",
   ];
+  const veinti = [
+    "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
+    "veintiséis", "veintisiete", "veintiocho", "veintinueve",
+  ];
   const decenas = [
-    "", "", "veinti", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa",
+    "", "", "", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa",
   ];
   const centenas = [
     "", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos",
@@ -57,8 +64,10 @@ export function numberToWords(amount: number): string {
       r += decenas[Math.floor(n / 10)];
       n %= 10;
       if (n > 0) r += " y " + unidades[n];
-    } else if (n >= 20) {
-      r += "veinti" + unidades[n - 20];
+    } else if (n >= 21) {
+      r += veinti[n - 21];
+    } else if (n >= 10) {
+      r += diezAveinte[n - 10];
     } else {
       r += unidades[n];
     }

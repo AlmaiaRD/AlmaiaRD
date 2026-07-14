@@ -43,7 +43,7 @@ export default function RootLayout({
       lang="es"
       className={`${jakarta.variable} ${greatVibes.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#FCFAF7] text-[#5C3E35]">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <KillServiceWorker />
         <ErrorBoundary>
           <AuthProvider>

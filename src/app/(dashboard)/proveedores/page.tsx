@@ -30,7 +30,13 @@ export default function ProveedoresPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    (async () => {
+      try { setSuppliers(await getSuppliers()); }
+      catch { toast.error("Error al cargar proveedores"); }
+      finally { setLoading(false); }
+    })();
+  }, []);
 
   function resetForm() {
     setForm({ name: "", contact_person: "", phone: "", email: "", city: "", notes: "" });

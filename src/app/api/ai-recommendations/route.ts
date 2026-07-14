@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 interface ProductRec {
   product_id: string;
@@ -101,6 +102,15 @@ function keywordFallback(
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = checkRateLimit(`ai-recommendations:${ip}`, 10, 60000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
+      { status: 429 }
+    );
+  }
+
   try {
     const { query, season } = await req.json();
     if (!query || typeof query !== "string") {
@@ -155,7 +165,7 @@ Instrucciones:
 - Ordena por score descendente (mejor primero).
 - Si ningún producto es relevante, devuelve []`;
 
-    let ollamaResponse = await callOllama(prompt);
+    const ollamaResponse = await callOllama(prompt);
     let recommendations: ProductRec[] = [];
 
     if (ollamaResponse) {

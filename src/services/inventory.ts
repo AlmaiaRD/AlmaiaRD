@@ -32,10 +32,9 @@ export async function getLowStockProducts() {
   const { data, error } = await supabase
     .from("inventory")
     .select("*, products(name, code)")
-    .lte("stock", supabase.rpc("get_minimum_stock_column"))
     .order("stock");
   if (error) throw error;
-  return data;
+  return (data || []).filter((item: any) => item.stock <= item.minimum_stock);
 }
 
 export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {

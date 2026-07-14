@@ -123,9 +123,39 @@ export default function RecommendationsPage() {
   }
 
   useEffect(() => {
-    loadProducts();
-    loadSeasonal(selectedSeason);
-    setLoading(false);
+    (async () => {
+      setProductRecsLoading(true);
+      try {
+        const res = await fetch("/api/ai-recommendations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: "nutrición, belleza, cabello, hogar, salud, vitaminas, proteínas, cuidado personal, limpieza, energía" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProductRecs(data.recommendations || []);
+        }
+      } catch {} finally {
+        setProductRecsLoading(false);
+      }
+    })();
+    (async () => {
+      setSeasonalRecsLoading(true);
+      try {
+        const res = await fetch("/api/ai-recommendations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: `productos recomendados para ${selectedSeason}`, season: selectedSeason }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSeasonalRecs(data.recommendations || []);
+        }
+      } catch {} finally {
+        setSeasonalRecsLoading(false);
+        setLoading(false);
+      }
+    })();
   }, []);
 
   async function handleSearch() {

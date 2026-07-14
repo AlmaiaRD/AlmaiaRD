@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
@@ -9,6 +9,7 @@ import { getProducts, createProduct, updateProduct, searchProducts, getCategorie
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export default function CatalogoPage() {
     code: "", name: "", description: "", benefits: "",
     cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "",
     duracion_dias: null as number | null,
+    image_url: null as string | null,
   });
 
   const [showNewSubbrand, setShowNewSubbrand] = useState(false);
@@ -50,42 +52,57 @@ export default function CatalogoPage() {
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<any>(null);
 
-  const fetchMeta = useCallback(async () => {
-    const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
-    setCategories(cats);
-    setSubbrands(brands);
-    if (st) setSettings(st);
+  useEffect(() => {
+    (async () => {
+      const [cats, brands, st] = await Promise.all([getCategories(), getSubbrands(), getSettings().catch(() => null)]);
+      setCategories(cats);
+      setSubbrands(brands);
+      if (st) setSettings(st);
+    })();
   }, []);
 
-  const load = useCallback(async (query: string, sb: string, cat: string) => {
+  async function loadProducts() {
     setLoading(true);
     try {
       let data;
-      if (query) {
-        data = await searchProducts(query);
+      if (searchQuery) {
+        data = await searchProducts(searchQuery);
       } else {
         data = await getProducts(true);
       }
-      if (sb) data = data.filter((p: any) => p.subbrand_id === sb);
-      if (cat) data = data.filter((p: any) => p.category_id === cat);
+      if (filterSubbrand) data = data.filter((p: any) => p.subbrand_id === filterSubbrand);
+      if (filterCategory) data = data.filter((p: any) => p.category_id === filterCategory);
       setProducts(showArchived ? data.filter((p: any) => !p.active) : data.filter((p: any) => p.active));
     } catch {
       toast.error("Error al cargar productos");
     } finally {
       setLoading(false);
     }
-  }, [showArchived]);
+  }
 
   useEffect(() => {
-    fetchMeta();
-  }, [fetchMeta]);
-
-  useEffect(() => {
-    load(searchQuery, filterSubbrand, filterCategory);
-  }, [load, searchQuery, filterSubbrand, filterCategory]);
+    (async () => {
+      setLoading(true);
+      try {
+        let data;
+        if (searchQuery) {
+          data = await searchProducts(searchQuery);
+        } else {
+          data = await getProducts(true);
+        }
+        if (filterSubbrand) data = data.filter((p: any) => p.subbrand_id === filterSubbrand);
+        if (filterCategory) data = data.filter((p: any) => p.category_id === filterCategory);
+        setProducts(showArchived ? data.filter((p: any) => !p.active) : data.filter((p: any) => p.active));
+      } catch {
+        toast.error("Error al cargar productos");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [searchQuery, filterSubbrand, filterCategory, showArchived]);
 
   function resetForm() {
-    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "", duracion_dias: null });
+    setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "", duracion_dias: null, image_url: null });
     setEditingProduct(null);
   }
 
@@ -100,6 +117,7 @@ export default function CatalogoPage() {
       apply_itbis: product.apply_itbis !== false,
       category_id: product.category_id || "", subbrand_id: product.subbrand_id || "",
       duracion_dias: product.duracion_dias || null,
+      image_url: product.image_url || null,
     });
     setShowModal(true);
   }
@@ -128,6 +146,7 @@ export default function CatalogoPage() {
         price_30: Number(form.price_30) || auto30,
         price_35: Number(form.price_35) || auto35,
         duracion_dias: form.duracion_dias || null,
+        image_url: form.image_url || null,
       };
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData as any);
@@ -138,7 +157,7 @@ export default function CatalogoPage() {
       }
       setShowModal(false);
       resetForm();
-      load(searchQuery, filterSubbrand, filterCategory);
+      loadProducts();
     } catch (e: any) {
       toast.error(e?.message || "Error al guardar producto");
     } finally {
@@ -324,6 +343,11 @@ export default function CatalogoPage() {
           {products.map((product: any) => {
             return (
               <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200">
+                {product.image_url && (
+                  <div className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#FAF6F0]">
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-medium text-[#5C3E35]">{product.name}</h3>
@@ -503,6 +527,12 @@ export default function CatalogoPage() {
               ))}
             </div>
           </div>
+          <div className="border-t border-[#E8E0D8] pt-4">
+            <ImageUpload
+              currentUrl={form.image_url}
+              onUploaded={(url) => setForm({ ...form, image_url: url })}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descripción</label>
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
@@ -605,6 +635,11 @@ export default function CatalogoPage() {
       <Modal isOpen={!!viewingProduct} onClose={() => setViewingProduct(null)} title={viewingProduct?.name || "Detalles del Producto"} wide>
         {viewingProduct && (
           <div className="space-y-4">
+            {viewingProduct.image_url && (
+              <div className="w-full h-48 rounded-xl overflow-hidden bg-[#FAF6F0]">
+                <img src={viewingProduct.image_url} alt={viewingProduct.name} className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-[#9C8A82] mb-1">Código</label>

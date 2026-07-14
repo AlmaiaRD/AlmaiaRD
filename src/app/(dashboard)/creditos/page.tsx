@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
-import { getCreditsSummary, useCreditBalance } from "@/services/credits";
+import { getCreditsSummary, applyCreditBalance } from "@/services/credits";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Wallet, Search, ArrowRight, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
@@ -42,7 +42,19 @@ export default function CreditosPage() {
     }
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getCreditsSummary();
+        setCredits(data.active as CreditRecord[]);
+        setTotalAvailable(data.totalAvailable);
+      } catch {
+        toast.error("Error al cargar créditos");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const filtered = credits.filter((c) => {
     const q = normalize(searchQuery);
@@ -55,7 +67,7 @@ export default function CreditosPage() {
     if (applyAmount > Number(credit.amount)) { toast.error("Excede el saldo disponible"); return; }
     setSaving(true);
     try {
-      await useCreditBalance(credit.id, applyAmount);
+      await applyCreditBalance(credit.id, applyAmount);
       toast.success("Crédito aplicado");
       setSelectedId(null);
       await loadData();
