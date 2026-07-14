@@ -18,14 +18,19 @@ const EXCLUDE_TABLES = new Set([
 ]);
 
 async function getTables() {
-  const { data, error } = await supabase
-    .from("information_schema.tables")
-    .select("table_name, table_type")
-    .eq("table_schema", "public")
-    .eq("table_type", "BASE TABLE");
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+    headers: {
+      apikey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+    },
+  });
 
-  if (error) throw new Error(`Error listing tables: ${error.message}`);
-  return data.map((r) => r.table_name).filter((t) => !EXCLUDE_TABLES.has(t));
+  if (!res.ok) throw new Error(`Error fetching schema: ${res.status}`);
+
+  const spec = await res.json();
+  const definitions = spec?.definitions ?? spec?.components?.schemas ?? {};
+  const tables = Object.keys(definitions).filter((k) => !k.startsWith("vw_"));
+  return tables.filter((t) => !EXCLUDE_TABLES.has(t));
 }
 
 async function exportTable(table) {
@@ -54,7 +59,6 @@ async function exportTable(table) {
 async function run() {
   const start = Date.now();
   const date = new Date().toISOString().split("T")[0];
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const backupName = `backup-${date}`;
 
   console.log(`Iniciando backup: ${backupName}`);
@@ -108,7 +112,6 @@ async function run() {
     throw new Error(`Error subiendo backup: ${uploadError.message}`);
   }
 
-  // Limpiar backups anteriores a 8 semanas
   const { data: existingFiles, error: listError } = await supabase.storage
     .from("backups")
     .list();
