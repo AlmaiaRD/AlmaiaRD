@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient } from "@/services/clients";
+import Pagination from "@/components/ui/Pagination";
+import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
@@ -52,24 +53,38 @@ export default function ClientesPage() {
   const [newFollowup, setNewFollowup] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [archivedClients, setArchivedClients] = useState<Client[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalClients, setTotalClients] = useState(0);
+  const pageSize = 50;
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (p?: number) => {
+    const currentPage = p ?? page;
     try {
-      const data = searchQuery ? await searchClients(searchQuery) : await getClientsWithBalances();
-      setClients(data);
+      if (searchQuery) {
+        const data = await searchClients(searchQuery);
+        setClients(data);
+        setTotalClients(data.length);
+      } else {
+        const result = await getClientsPaginated(currentPage, pageSize);
+        setClients(result.data);
+        setTotalClients(result.total);
+      }
     } catch (e: any) {
       console.error("Error al cargar clientes:", e);
       toast.error("Error al cargar clientes");
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, page]);
 
   useEffect(() => {
+    setPage(1);
+    setLoading(true);
     (async () => {
       try {
         const data = searchQuery ? await searchClients(searchQuery) : await getClientsWithBalances();
         setClients(data);
+        setTotalClients(data.length);
       } catch (e: any) {
         console.error("Error al cargar clientes:", e);
         toast.error("Error al cargar clientes");
@@ -78,6 +93,12 @@ export default function ClientesPage() {
       }
     })();
   }, [searchQuery]);
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    setLoading(true);
+    load(newPage);
+  }
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
@@ -284,6 +305,77 @@ export default function ClientesPage() {
               <Users size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay clientes registrados</p>
             </div>
+          ) : !searchQuery && totalClients > pageSize ? (
+            <>
+            <div className="space-y-3">
+              {clients.map((client: any) => {
+                const pending = Number(client.pending_balance || 0);
+                const credit = Number(client.credit_balance);
+                const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
+                return (
+                  <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between">
+                      <button onClick={() => openDetail(client)} className="flex-1 text-left">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
+                          {stage && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${stage.bg} ${stage.color}`}>
+                              {stage.label}
+                            </span>
+                          )}
+                          {client.client_type === "negocio" && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">Negocio</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#9C8A82]">
+                          {client.phone && <span className="flex items-center gap-1"><Phone size={12} />{client.phone}</span>}
+                          {client.email && <span className="flex items-center gap-1"><Mail size={12} />{client.email}</span>}
+                        </div>
+                        <div className="flex items-center gap-4 mt-2">
+                          {pending > 0 ? (
+                            <>
+                              <span className="text-sm text-[#5C3E35]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
+                              <Badge variant="danger">DEBE {formatCurrency(pending)}</Badge>
+                            </>
+                          ) : credit > 0 ? (
+                            <>
+                              <span className="text-sm text-[#5C3E35]">A favor: <strong>{formatCurrency(credit)}</strong></span>
+                              <Badge variant="success">A FAVOR {formatCurrency(credit)}</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-sm text-[#5C3E35]">Saldo: <strong>{formatCurrency(0)}</strong></span>
+                              <Badge variant="neutral">SALDADO</Badge>
+                            </>
+                          )}
+                        </div>
+                      </button>
+                      <div className="flex items-center gap-2 ml-4">
+                        <select
+                          value={client.stage || ""}
+                          onChange={async e => {
+                            e.stopPropagation();
+                            try {
+                              await updateClientStage(client.id, e.target.value);
+                              load();
+                              toast.success("Etapa actualizada");
+                            } catch { toast.error("Error al actualizar"); }
+                          }}
+                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                        >
+                          <option value="">Sin etapa</option>
+                          {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                        </select>
+                        <button onClick={() => openEdit(client)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <Pagination page={page} pageSize={pageSize} total={totalClients} onPageChange={handlePageChange} />
+            </>
           ) : (
             <div className="space-y-3">
               {clients.map((client: any) => {
@@ -579,9 +671,13 @@ export default function ClientesPage() {
                           <p className="text-xs text-[#9C8A82] mt-1">{formatDate(f.contact_date)}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+              ))}
+            </div>
+            <Pagination page={page} pageSize={pageSize} total={totalClients} onPageChange={handlePageChange} />
+            </>
+          ) : (
+            <div className="space-y-3">
+              {clients.map((client: any) => {
               </div>
             )}
           </div>
