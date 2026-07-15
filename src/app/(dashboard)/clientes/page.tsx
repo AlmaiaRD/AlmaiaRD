@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients } from "@/services/clients";
+import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient } from "@/services/clients";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
@@ -13,7 +13,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { Client } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
-  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase,
+  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { SALES_STAGES, RECRUITMENT_STAGES, getStagesForType } from "@/lib/pipeline-constants";
@@ -50,6 +50,8 @@ export default function ClientesPage() {
   const [detailCredits, setDetailCredits] = useState<any[]>([]);
   const [detailFollowups, setDetailFollowups] = useState<any[]>([]);
   const [newFollowup, setNewFollowup] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivedClients, setArchivedClients] = useState<Client[]>([]);
 
   const load = useCallback(async () => {
     try {
@@ -157,13 +159,35 @@ export default function ClientesPage() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!window.confirm(`¿Estás segura de eliminar a ${name}?`)) return;
+    if (!window.confirm(`¿Archivar a ${name}?`)) return;
     try {
       await deleteClient(id);
-      toast("Cliente archivado. Para restaurarlo, contacta a un administrador.", { duration: 5000 });
+      toast.success("Cliente archivado. Puedes restaurarlo desde Archivos.", { duration: 4000 });
       load();
     } catch {
-      toast.error("Error al eliminar cliente");
+      toast.error("Error al archivar cliente");
+    }
+  }
+
+  async function handleRestore(id: string, name: string) {
+    if (!window.confirm(`¿Restaurar a ${name}?`)) return;
+    try {
+      await restoreClient(id);
+      toast.success("Cliente restaurado exitosamente");
+      setArchivedClients((prev) => prev.filter((c) => c.id !== id));
+      load();
+    } catch {
+      toast.error("Error al restaurar cliente");
+    }
+  }
+
+  async function openArchived() {
+    try {
+      const data = await getArchivedClients();
+      setArchivedClients(data);
+      setShowArchived(true);
+    } catch {
+      toast.error("Error al cargar clientes archivados");
     }
   }
 
@@ -238,9 +262,14 @@ export default function ClientesPage() {
               <h1 className="text-xl font-bold text-[#5C3E35]">Clientes y Deudas</h1>
               <p className="text-sm text-[#9C8A82] mt-1">Directorio de clientes</p>
             </div>
-            <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
-              <Plus size={18} /> Añadir
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={openArchived} className="flex items-center gap-2 bg-white text-[#9C8A82] px-4 py-2.5 rounded-xl text-sm font-medium border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+                <Archive size={16} /> Archivados
+              </button>
+              <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+                <Plus size={18} /> Añadir
+              </button>
+            </div>
           </div>
 
           <div className="relative mb-4">
@@ -606,6 +635,28 @@ export default function ClientesPage() {
             </button>
           </div>
         </div>
+      </Modal>
+      <Modal isOpen={showArchived} onClose={() => setShowArchived(false)} title="Clientes Archivados" subtitle="Restaura clientes previamente archivados">
+        {archivedClients.length === 0 ? (
+          <div className="text-center py-10 text-[#9C8A82] text-sm">No hay clientes archivados</div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {archivedClients.map((client) => (
+              <div key={client.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                <div>
+                  <p className="text-sm font-medium text-[#5C3E35]">{client.full_name}</p>
+                  <p className="text-xs text-[#9C8A82]">{client.phone || client.email || "Sin contacto"}</p>
+                </div>
+                <button
+                  onClick={() => handleRestore(client.id, client.full_name)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF6F0] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-[#B8837E]/10 transition-all"
+                >
+                  <RotateCcw size={14} /> Restaurar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </Modal>
     </PageContainer>
   );

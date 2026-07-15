@@ -217,6 +217,16 @@ export async function deleteClient(id: string) {
   if (error) throw error;
 }
 
+export async function getArchivedClients() {
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false });
+  if (error) throw error;
+  return data as Client[];
+}
+
 export async function restoreClient(id: string) {
   const { error } = await supabase
     .from("clients")
