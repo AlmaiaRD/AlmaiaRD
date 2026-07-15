@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { supabase, isConfigured } from "@/lib/supabase";
+import { SESSION_TIMEOUT_MS } from "@/lib/constants";
 import type { User } from "@/types/database";
 
 interface AuthContextType {
@@ -104,6 +105,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isConfigured) await supabase.auth.signOut();
     setUser(null);
   }, []);
+
+  const signOutRef = useRef(signOut);
+  signOutRef.current = signOut;
+
+  const lastActivity = useRef(Date.now());
+
+  useEffect(() => {
+    if (loading || !user) return;
+    lastActivity.current = Date.now();
+    const events = ["mousedown", "keydown", "touchstart", "scroll"];
+    const reset = () => { lastActivity.current = Date.now(); };
+    events.forEach((e) => window.addEventListener(e, reset));
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivity.current > SESSION_TIMEOUT_MS) {
+        signOutRef.current();
+      }
+    }, 60_000);
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, reset));
+      clearInterval(interval);
+    };
+  }, [loading, user]);
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
