@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { getSettings, updateSettings, getBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from "@/services/settings";
 import type { Settings, BankAccount } from "@/types/database";
-import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2 } from "lucide-react";
+import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2, Cloud } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -246,6 +246,22 @@ Responde en español en máximo 3 oraciones:`,
       toast.success("Cuenta predeterminada actualizada");
     } catch {
       toast.error("Error al actualizar cuenta");
+    }
+  }
+
+  const [backingUp, setBackingUp] = useState(false);
+
+  async function handleCloudBackup() {
+    setBackingUp(true);
+    try {
+      const res = await fetch("/api/backup", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error);
+      toast.success(`Backup subido: ${json.backup} (${json.tables.length} tablas, ${json.size_mb} MB)`);
+    } catch (err: any) {
+      toast.error(err.message || "Error al respaldar");
+    } finally {
+      setBackingUp(false);
     }
   }
 
@@ -683,6 +699,22 @@ ACCIÓN: ..."
             <button onClick={handleExportBackup}
               className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
               <Download size={18} /> Descargar Backup
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                <Cloud size={20} className="text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[#5C3E35]">Respaldar a la nube</h3>
+                <p className="text-xs text-[#9C8A82]">Sube el backup a Supabase Storage (automatizado cada viernes vía GitHub Actions)</p>
+              </div>
+            </div>
+            <button onClick={handleCloudBackup} disabled={backingUp}
+              className="flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-700 transition-all shadow-sm disabled:opacity-50">
+              <Upload size={18} /> {backingUp ? "Respaldando..." : "Respaldar ahora"}
             </button>
           </div>
 
