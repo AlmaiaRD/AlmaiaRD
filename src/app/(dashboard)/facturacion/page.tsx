@@ -283,7 +283,7 @@ export default function FacturacionPage() {
       ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
         <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
-          <div style="display:flex;flex-wrap:wrap;gap:4px 24px;font-size:13px;margin-bottom:10px;">
+          <div style="display:flex;white-space:nowrap;gap:0 24px;font-size:13px;margin-bottom:10px;">
             <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc(bankAccounts[0].holder_name)}</p>
             ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(bankAccounts[0].id_number)}</p>` : ""}
             ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(bankAccounts[0].email)}</p>` : ""}
@@ -723,7 +723,7 @@ export default function FacturacionPage() {
                   <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                   {selectedInvoice.show_all_bank_accounts ? (
                     <>
-                      <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-sm mb-2.5">
+                      <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
                         <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
                         {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
                         {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
@@ -1289,7 +1289,7 @@ export default function FacturacionPage() {
                 <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                 {jpgData.show_all_bank_accounts ? (
                   <>
-                    <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-sm mb-2.5">
+                    <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
                       <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
                       {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
                       {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
