@@ -56,9 +56,11 @@ export async function searchProducts(query: string) {
   const all = await getProducts();
   const q = normalize(query);
   return all.filter(
-    (p: any) =>
-      normalize(p.name).includes(q) ||
-      (p.code && normalize(p.code).includes(q))
+    (p: unknown) => {
+      const pp = p as Record<string, unknown>;
+      return normalize(pp.name as string).includes(q) ||
+        (pp.code && normalize(pp.code as string).includes(q));
+    }
   );
 }
 

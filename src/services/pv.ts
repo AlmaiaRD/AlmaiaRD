@@ -19,10 +19,12 @@ export async function getPvByClient() {
   if (error) throw error;
 
   const byClient: Record<string, { name: string; pv: number; invoices: number }> = {};
-  (data || []).forEach((inv: any) => {
-    const id = inv.client_id;
-    if (!byClient[id]) byClient[id] = { name: inv.clients?.full_name || "Sin cliente", pv: 0, invoices: 0 };
-    byClient[id].pv += Number(inv.pv_total || 0);
+  (data || []).forEach((inv: unknown) => {
+    const i = inv as Record<string, unknown>;
+    const clients = i.clients as Record<string, unknown> | null;
+    const id = i.client_id as string;
+    if (!byClient[id]) byClient[id] = { name: (clients?.full_name as string) || "Sin cliente", pv: 0, invoices: 0 };
+    byClient[id].pv += Number(i.pv_total || 0);
     byClient[id].invoices += 1;
   });
 
@@ -50,9 +52,10 @@ export async function getPvByMonth() {
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     monthly[key] = 0;
   }
-  (data || []).forEach((inv: any) => {
-    const key = inv.created_at?.substring(0, 7);
-    if (monthly[key] !== undefined) monthly[key] += Number(inv.pv_total || 0);
+  (data || []).forEach((inv: unknown) => {
+    const i = inv as Record<string, unknown>;
+    const key = (i.created_at as string)?.substring(0, 7);
+    if (key && monthly[key] !== undefined) monthly[key] += Number(i.pv_total || 0);
   });
 
   return Object.entries(monthly).map(([key, pv]) => ({
@@ -70,9 +73,12 @@ export async function getPvBySubbrand() {
   if (error) throw error;
 
   const bySubbrand: Record<string, number> = {};
-  (data || []).forEach((item: any) => {
-    const name = item.products?.subbrands?.name || "Sin submarca";
-    bySubbrand[name] = (bySubbrand[name] || 0) + Number(item.pv || 0);
+  (data || []).forEach((item: unknown) => {
+    const it = item as Record<string, unknown>;
+    const products = it.products as Record<string, unknown> | null;
+    const subbrands = products?.subbrands as Record<string, unknown> | null;
+    const name = (subbrands?.name as string) || "Sin submarca";
+    bySubbrand[name] = (bySubbrand[name] || 0) + Number(it.pv || 0);
   });
 
   return Object.entries(bySubbrand)

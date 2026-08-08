@@ -64,6 +64,9 @@ function generarResumen(client: any, stats: any): string {
 }
 
 export async function POST(req: NextRequest) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   const limit = checkRateLimit(`client-summary:${ip}`, 15, 60000);
   if (!limit.allowed) {

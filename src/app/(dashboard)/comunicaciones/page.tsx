@@ -225,7 +225,7 @@ export default function ComunicacionesPage() {
         isOpen={showComposer}
         onClose={() => setShowComposer(false)}
         onSaved={() => {
-          getCommunications().then(setComms).catch(() => {});
+          getCommunications().then(setComms).catch((e) => console.error("Error al cargar comunicaciones", e));
           setShowComposer(false);
           setActiveTab("historial");
         }}

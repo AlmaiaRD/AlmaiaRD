@@ -72,13 +72,13 @@ export async function createReturn(
     reason: item.reason || null,
   }));
 
+  invalidateCache("next_return_number");
   const { error: itemsError } = await supabase
     .from("return_items")
     .insert(returnItems);
 
   if (itemsError) throw itemsError;
 
-  invalidateCache("next_return_number");
   return data as Return;
 }
 

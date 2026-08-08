@@ -167,7 +167,7 @@ export default function PipelinePage() {
     if (ids.length === 0) return;
     let success = 0;
     for (const id of ids) {
-      try { await updateClientStage(id, newStage); success++; } catch {}
+      try { await updateClientStage(id, newStage); success++; } catch { toast.error("Error al mover cliente"); }
     }
     setClients(prev => prev.map(c => selectedIds.has(c.id) ? { ...c, stage: newStage, stage_entered_at: new Date().toISOString() } : c));
     setSelectedIds(new Set());
@@ -282,7 +282,7 @@ export default function PipelinePage() {
           if (editingNote) return;
           setSelectedClient(client);
           setRiskScore(null); setAiSummary("");
-          calculateRiskScore(client.id).then(setRiskScore).catch(() => {});
+          calculateRiskScore(client.id).then(setRiskScore).catch((e) => console.error("Error al calcular riesgo", e));
         }}
       >
         <div className="flex items-start justify-between gap-2 mb-2">

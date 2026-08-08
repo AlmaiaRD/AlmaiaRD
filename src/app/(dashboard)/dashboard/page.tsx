@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import { getInvoices } from "@/services/invoices";
 import { getReceipts } from "@/services/receipts";
 import { getDashboardStats } from "@/services/dashboard";
+import { getPreferences, updatePreferences } from "@/services/preferences";
 import { supabase } from "@/lib/supabase";
 import {
   DollarSign,
@@ -57,36 +58,57 @@ export default function DashboardPage() {
   const [paymentMethodData, setPaymentMethodData] = useState<any[]>([]);
   const [monthlyGoal, setMonthlyGoal] = useState(0);
   const [goalInput, setGoalInput] = useState("");
-  const [goalMonth, setGoalMonth] = useState("");
+  const defaultMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  const [goalMonth, setGoalMonth] = useState(defaultMonth);
 
   useEffect(() => {
     if (!user) return;
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const savedMonth = localStorage.getItem("almaia_goal_month");
-    const savedGoal = localStorage.getItem("almaia_monthly_goal");
 
-    if (savedMonth !== currentMonth) {
-      if (savedMonth && savedGoal && Number(savedGoal) > 0) {
-        const history = JSON.parse(localStorage.getItem("almaia_goal_history") || "[]");
-        history.push({ month: savedMonth, goal: Number(savedGoal), date: new Date().toISOString() });
-        localStorage.setItem("almaia_goal_history", JSON.stringify(history));
-      }
-      localStorage.setItem("almaia_goal_month", currentMonth);
-      localStorage.setItem("almaia_monthly_goal", "0");
-      Promise.resolve().then(() => {
-        setMonthlyGoal(0);
-        setGoalInput("");
+    (async () => {
+      try {
+        const prefs = await getPreferences(user.id);
+        const savedMonth = prefs.goal_month;
+        const savedGoal = prefs.monthly_goal;
         setGoalMonth(currentMonth);
-      });
-    } else if (savedGoal) {
-      setMonthlyGoal(Number(savedGoal));
-      setGoalInput(savedGoal);
-      setGoalMonth(currentMonth);
-    } else {
-      setGoalInput("");
-      setGoalMonth(currentMonth);
-    }
+
+        if (savedMonth !== currentMonth) {
+          if (savedMonth && savedGoal && savedGoal > 0) {
+            const history = [...(prefs.goal_history || [])];
+            history.push({ month: savedMonth, goal: savedGoal, date: new Date().toISOString() });
+            await updatePreferences(user.id, {
+              goal_month: currentMonth,
+              monthly_goal: 0,
+              goal_history: history,
+            });
+          } else {
+            await updatePreferences(user.id, {
+              goal_month: currentMonth,
+              monthly_goal: 0,
+            });
+          }
+          setMonthlyGoal(0);
+          setGoalInput("");
+        } else if (savedGoal) {
+          setMonthlyGoal(savedGoal);
+          setGoalInput(String(savedGoal));
+        } else {
+          setGoalInput("");
+        }
+      } catch {
+        setGoalMonth(currentMonth);
+        const savedMonth = localStorage.getItem("almaia_goal_month");
+        const savedGoal = localStorage.getItem("almaia_monthly_goal");
+        if (savedMonth !== currentMonth) {
+          localStorage.setItem("almaia_goal_month", currentMonth);
+          localStorage.setItem("almaia_monthly_goal", "0");
+        } else if (savedGoal) {
+          setMonthlyGoal(Number(savedGoal));
+          setGoalInput(savedGoal);
+        }
+      }
+    })();
 
     (async () => {
       try {
@@ -145,10 +167,12 @@ export default function DashboardPage() {
           daily[day] = (daily[day] || 0) + Number(inv.total);
         });
         const daysInMonth = today.getDate();
+        const startDay = Math.max(1, daysInMonth - 14);
+        const length = Math.min(15, daysInMonth);
         setDailySales(
-          Array.from({ length: Math.min(15, daysInMonth) }, (_, i) => ({
-            dia: `${daysInMonth - 14 + i}`,
-            ventas: daily[String(daysInMonth - 14 + i).padStart(2, "0")] || 0,
+          Array.from({ length }, (_, i) => ({
+            dia: `${startDay + i}`,
+            ventas: daily[String(startDay + i).padStart(2, "0")] || 0,
           }))
         );
 
@@ -189,7 +213,10 @@ export default function DashboardPage() {
     })();
   }, [user]);
 
-  if (!user) return null;
+  if (!user) {
+    router.push("/auth/login");
+    return null;
+  }
 
   // KPI Metas calculations
   const vendido = Number(stats.salesMonth) || 0;
@@ -253,11 +280,15 @@ export default function DashboardPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const val = Number(goalInput) || 0;
                     setMonthlyGoal(val);
                     setGoalInput(String(val));
-                    localStorage.setItem("almaia_monthly_goal", String(val));
+                    try {
+                      if (user) await updatePreferences(user.id, { monthly_goal: val, goal_month: goalMonth });
+                    } catch {
+                      localStorage.setItem("almaia_monthly_goal", String(val));
+                    }
                   }}
                   className="text-xs bg-[#B8837E] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9A6B66] active:scale-95 transition-all cursor-pointer"
                 >
@@ -266,7 +297,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex mb-1.5 text-xs font-semibold text-[#5C3E35]">
+{monthlyGoal ? (
+          <><div className="flex mb-1.5 text-xs font-semibold text-[#5C3E35]">
               <div style={{ flex: barCobrado || 1 }} className="text-left">Cobrado</div>
               <div style={{ flex: barVendido || 1 }} className="text-center">Vendido</div>
               <div style={{ flex: barRestante || 1 }} className="text-right">Restante</div>
@@ -310,6 +342,10 @@ export default function DashboardPage() {
                 <div className="text-xs text-[#9C8A82] mt-0.5">{monthlyGoal > 0 ? (Math.max(100 - vendidoPct, 0)).toFixed(1) + "%" : "—"}</div>
               </div>
             </div>
+</>
+) : (
+  <div className="text-center py-4 text-[#9C8A82] text-sm">No has establecido una meta este mes</div>
+)}
           </div>
 
           <div className="mb-8">

@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Badge from "@/components/ui/Badge";
 import { normalize } from "@/lib/search";
-import { getInvoices } from "@/services/invoices";
+import { getInvoices, getInvoicesPaginated } from "@/services/invoices";
+import Pagination from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Search, Phone, Wallet, ArrowUpRight } from "lucide-react";
 
@@ -12,14 +13,26 @@ export default function CuentasPorCobrarPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalInvoices, setTotalInvoices] = useState(0);
+  const pageSize = 50;
 
   useEffect(() => {
     (async () => {
-      try { setInvoices(await getInvoices()); }
-      catch {}
+      try {
+        const result = await getInvoicesPaginated(page, pageSize);
+        const unpaid = (result.data || []).filter((inv: any) => inv.status !== "PAID" && inv.status !== "CANCELLED");
+        setInvoices(unpaid);
+        setTotalInvoices(result.total);
+      }
+      catch { console.error("Error al cargar facturas"); }
       finally { setLoading(false); }
     })();
-  }, []);
+  }, [page]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   const pending = invoices.filter(i => i.status !== "PAID" && i.status !== "CANCELLED");
   const filtered = pending.filter(i =>
@@ -96,6 +109,7 @@ export default function CuentasPorCobrarPage() {
           })}
         </div>
       )}
+      <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
     </PageContainer>
   );
 }

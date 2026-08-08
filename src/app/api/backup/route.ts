@@ -1,17 +1,40 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const EXCLUDE_TABLES = new Set(["_prisma_migrations"]);
 
 export const maxDuration = 60;
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !anonKey) {
     return NextResponse.json({ error: "Backup no configurado" }, { status: 500 });
+  }
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const { allowed } = checkRateLimit(`backup:${ip}`, 2, 60000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Demasiadas solicitudes. Espera un minuto." }, { status: 429 });
+  }
+
+  // Verify auth + admin role
+  const cookieStore = await cookies();
+  const authSupabase = createServerClient(supabaseUrl, anonKey, {
+    cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
+  });
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  const { data: userData } = await authSupabase.from("users").select("role").eq("id", user.id).single();
+  if (userData?.role !== "admin") {
+    return NextResponse.json({ error: "Solo administradores" }, { status: 403 });
   }
 
   const key = serviceRoleKey || anonKey;

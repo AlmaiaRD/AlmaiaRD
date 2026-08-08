@@ -12,6 +12,18 @@ export async function getReceipts() {
   return data;
 }
 
+export async function getReceiptsPaginated(page: number, pageSize = 50) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("receipts")
+    .select("*, clients(full_name, phone, email), invoices(id, invoice_number, total, amount_paid, balance_due, status, client_id, clients(full_name)), bank_accounts(bank_name, account_number)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (error) throw error;
+  return { data, total: count || 0, page, pageSize };
+}
+
 export async function updateReceipt(id: string, data: Partial<Receipt>) {
   const { error } = await supabase.from("receipts").update(data).eq("id", id);
   if (error) throw error;
@@ -26,20 +38,11 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
 
   if (data.amount !== undefined && oldAmount !== undefined && data.amount !== oldAmount && data.invoice_id) {
     const diff = data.amount - oldAmount;
-    const { data: inv, error: invErr } = await supabase
-      .from("invoices")
-      .select("total, amount_paid")
-      .eq("id", data.invoice_id)
-      .single();
-    if (invErr) throw invErr;
-    const newPaid = Number(inv.amount_paid) + diff;
-    const newBalance = Number(inv.total) - newPaid;
-    const newStatus = newBalance <= 0 ? "PAID" : newPaid > 0 ? "PARTIAL" : "PENDING";
-    const { error: updErr } = await supabase
-      .from("invoices")
-      .update({ amount_paid: newPaid, balance_due: newBalance, status: newStatus })
-      .eq("id", data.invoice_id);
-    if (updErr) throw updErr;
+    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
+      p_invoice_id: data.invoice_id,
+      p_diff: diff,
+    });
+    if (rpcError) throw rpcError;
   }
 }
 
@@ -79,6 +82,14 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   // Pipeline automation: move to cierre (ganado)
   if (receipt.client_id) {
     await updateStageOnPayment(receipt.client_id);
+  }
+
+  if (receipt.invoice_id && receipt.amount) {
+    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
+      p_invoice_id: receipt.invoice_id,
+      p_diff: receipt.amount,
+    });
+    if (rpcError) throw rpcError;
   }
 
   return data as Receipt;

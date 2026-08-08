@@ -179,14 +179,14 @@ export async function getClientRecommendations(): Promise<ClientRecommendation[]
 
   const { data: clientsWithDebt } = await supabase
     .from("clients")
-    .select("id, name")
-    .eq("status", "deuda");
+    .select("id, full_name")
+    .eq("stage", "deuda");
 
   if (clientsWithDebt) {
     for (const client of clientsWithDebt) {
       recommendations.push({
         client_id: client.id,
-        client_name: client.name,
+        client_name: client.full_name,
         action: "Cobrar deuda pendiente",
         reason: "Cliente tiene saldo pendiente",
         priority: "high",
@@ -199,7 +199,7 @@ export async function getClientRecommendations(): Promise<ClientRecommendation[]
 
   const { data: inactiveClients } = await supabase
     .from("clients")
-    .select("id, name")
+    .select("id, full_name")
     .not("id", "in", supabase
       .from("invoices")
       .select("client_id")
@@ -210,7 +210,7 @@ export async function getClientRecommendations(): Promise<ClientRecommendation[]
     for (const client of inactiveClients) {
       recommendations.push({
         client_id: client.id,
-        client_name: client.name,
+        client_name: client.full_name,
         action: "Enviar catálogo actualizado",
         reason: "Sin compras en los últimos 30 días",
         priority: "medium",

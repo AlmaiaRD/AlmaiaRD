@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { ITBIS_RATE } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  const cookieStore = await cookies();
+  const authSupabase = createServerClient(supabaseUrl!, anonKey!, {
+    cookies: { get(name: string) { return cookieStore.get(name)?.value } }
+  });
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { items, discount_amount, margin } = body;
@@ -29,9 +43,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Descuento inválido" }, { status: 400 });
     }
 
+    const discountRatio = subtotal > 0 ? discount / subtotal : 0;
     const itbisTotal = items.reduce(
-      (s: number, i: any) =>
-        s + (i.itbis ? 1 : 0) * (i.quantity || 0) * Number(i.unit_price || 0) * ITBIS_RATE,
+      (s: number, i: any) => {
+        const lineTotal = (i.quantity || 0) * Number(i.unit_price || 0);
+        const discountedLineTotal = lineTotal * (1 - discountRatio);
+        return s + (i.itbis ? 1 : 0) * discountedLineTotal * ITBIS_RATE;
+      },
       0
     );
 

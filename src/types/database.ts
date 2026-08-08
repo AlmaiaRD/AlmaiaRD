@@ -4,6 +4,15 @@ export interface User {
   email: string;
   role: "admin" | "seller" | "assistant";
   created_at: string;
+  preferences?: UserPreferences;
+}
+
+export interface UserPreferences {
+  monthly_goal?: number;
+  goal_month?: string;
+  goal_history?: { month: string; goal: number; date: string }[];
+  hidden_stock_ids?: string[];
+  hidden_rotation_ids?: string[];
 }
 
 export type ClientType = "comprador" | "negocio";
@@ -180,6 +189,7 @@ export interface Invoice {
   pv_total: number;
   notes?: string;
   bank_account_id?: string;
+  show_all_bank_accounts?: boolean;
   margin?: number;
   currency?: string;
   created_at: string;

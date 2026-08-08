@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice } from "@/services/receipts";
+import Pagination from "@/components/ui/Pagination";
+import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice, getReceiptsPaginated } from "@/services/receipts";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import { getLocalDateString } from "@/lib/utils";
@@ -45,6 +46,9 @@ export default function RecibosPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [openPrintId, setOpenPrintId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalReceipts, setTotalReceipts] = useState(0);
+  const pageSize = 50;
 
   const [selectedInvoice, setSelectedInvoice] = useState("");
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
@@ -58,27 +62,29 @@ export default function RecibosPage() {
 
   const load = useCallback(async () => {
     try {
-      const [rec, inv, ba, st] = await Promise.all([getReceipts(), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
-      setReceipts(rec);
+      const [recResult, inv, ba, st] = await Promise.all([getReceiptsPaginated(page, pageSize), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
+      setReceipts(recResult.data || []);
+      setTotalReceipts(recResult.total);
       setPendingInvoices(inv.filter((i: any) => i.status !== "PAID" && i.status !== "CANCELLED"));
       setBankAccounts(ba);
       setSettings(st);
     } catch { toast.error("Error al cargar recibos"); }
     finally { setLoading(false); }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     (async () => {
       try {
-        const [rec, inv, ba, st] = await Promise.all([getReceipts(), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
-        setReceipts(rec);
+        const [recResult, inv, ba, st] = await Promise.all([getReceiptsPaginated(page, pageSize), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
+        setReceipts(recResult.data || []);
+        setTotalReceipts(recResult.total);
         setPendingInvoices(inv.filter((i: any) => i.status !== "PAID" && i.status !== "CANCELLED"));
         setBankAccounts(ba);
         setSettings(st);
       } catch { toast.error("Error al cargar recibos"); }
       finally { setLoading(false); }
     })();
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
@@ -99,6 +105,10 @@ export default function RecibosPage() {
     setBankAccountId("");
     setNotes("");
   }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   const selectedInvoiceData = pendingInvoices.find((i: any) => i.id === selectedInvoice);
   const balanceDue = selectedInvoiceData ? Number(selectedInvoiceData.total) - Number(selectedInvoiceData.amount_paid || 0) : 0;
@@ -135,6 +145,7 @@ export default function RecibosPage() {
   async function buildReceiptPreviewEl(data: any, settings: any) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
+    function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -142,24 +153,24 @@ export default function RecibosPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${settings?.business_name || "ALMAIA"}</h2>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:12px;color:#9C8A82;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0FAF4;color:#6DB08A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${data.receipt_number}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${formatDate(data.receipt_date || data.created_at)}</p>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${esc(data.receipt_number)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${esc(formatDate(data.receipt_date || data.created_at))}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
       <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">INFORMACI\u00d3N DEL PAGO</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${data.clients?.full_name || data.invoices?.clients?.full_name || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${data.invoices?.invoice_number || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${methodLabel[data.payment_method] || data.payment_method}${data.bank_accounts ? ` &mdash; ${data.bank_accounts.bank_name}` : ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${esc(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${esc(data.invoices?.invoice_number) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${esc(methodLabel[data.payment_method] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${esc(data.bank_accounts.bank_name)}` : ""}</p>
         </div>
       </div>
 
@@ -176,7 +187,7 @@ export default function RecibosPage() {
           <tbody>
             ${data.invoices.invoice_items.map((item: any) => `
               <tr style="border-bottom:1px solid #F0EBE3;">
-                <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${item.products?.name || item.custom_name || "Producto"}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.products?.name || item.custom_name) || "Producto"}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${formatCurrency(Number(item.unit_price))}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${formatCurrency(Number(item.line_total))}</td>
@@ -188,20 +199,20 @@ export default function RecibosPage() {
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:20px;">
         <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
           <span style="font-size:14px;color:#9C8A82;">Monto pagado</span>
-          <span style="font-size:24px;font-weight:700;color:#86C7A3;">${formatCurrency(Number(data.amount))}</span>
+          <span style="font-size:24px;font-weight:700;color:#86C7A3;">${esc(formatCurrency(Number(data.amount)))}</span>
         </div>
-        ${data.amount_in_words ? `<p style="font-size:11px;color:#9C8A82;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${data.amount_in_words}</p>` : ""}
+        ${data.amount_in_words ? `<p style="font-size:11px;color:#9C8A82;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${esc(data.amount_in_words)}</p>` : ""}
       </div>
       ${data.concept ? `
         <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:16px;">
           <p style="font-size:11px;color:#9C8A82;margin:0 0 4px;">Notas:</p>
-          <p style="font-size:13px;color:#5C3E35;margin:0;">${data.concept}</p>
+          <p style="font-size:13px;color:#5C3E35;margin:0;">${esc(data.concept)}</p>
         </div>
       ` : ""}
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu pago!</p>
         <div style="text-align:right;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${settings?.business_name || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
@@ -390,22 +401,23 @@ export default function RecibosPage() {
           <p className="text-sm">No hay recibos registrados</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-y-2">
-            <thead>
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Recibo</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Factura</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Monto</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Método</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receiptSearchFiltered.map((rec: any) => {
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-y-2">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Recibo</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Factura</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Monto</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Método</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receiptSearchFiltered.map((rec: any) => {
                 const m = methodMap[rec.payment_method] || methodMap.CASH;
                 return (
                   <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
@@ -435,6 +447,8 @@ export default function RecibosPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} pageSize={pageSize} total={totalReceipts} onPageChange={handlePageChange} />
+        </>
       )}
 
       {/* Detail modal */}

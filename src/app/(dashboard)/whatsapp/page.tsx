@@ -230,7 +230,7 @@ export default function WhatsAppPage() {
         setQuickActions(DEFAULT_QUICK_ACTIONS);
         localStorage.setItem(QUICK_ACTIONS_STORAGE_KEY, JSON.stringify(DEFAULT_QUICK_ACTIONS));
       }
-    } catch {}
+    } catch { toast.error("Error al cargar datos locales"); }
   }
 
   function saveLocalTemplates(templates: LocalTemplate[]) {

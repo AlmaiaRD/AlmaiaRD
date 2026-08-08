@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
@@ -9,7 +10,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export default function Pagination({ page, pageSize, total, onPageChange }: PaginationProps) {
+const Pagination = memo(function Pagination({ page, pageSize, total, onPageChange }: PaginationProps) {
   const totalPages = Math.ceil(total / pageSize);
   if (totalPages <= 1) return null;
 
@@ -61,4 +62,6 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
       </div>
     </div>
   );
-}
+});
+
+export default Pagination;

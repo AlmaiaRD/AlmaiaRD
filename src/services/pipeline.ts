@@ -106,17 +106,25 @@ export async function getInactiveCandidates() {
 
   const inactive: { id: string; full_name: string; days_since: number }[] = [];
 
-  for (const client of clients) {
-    const { data: invoices } = await supabase
-      .from("invoices")
-      .select("invoice_date")
-      .eq("client_id", client.id)
-      .neq("status", "CANCELLED")
-      .order("invoice_date", { ascending: false })
-      .limit(1);
+  const clientIds = clients.map(c => c.id);
+  const { data: allInvoices } = await supabase
+    .from("invoices")
+    .select("client_id, invoice_date")
+    .in("client_id", clientIds)
+    .neq("status", "CANCELLED")
+    .order("invoice_date", { ascending: false });
 
-    if (invoices && invoices.length > 0) {
-      const daysSince = Math.floor((new Date().getTime() - new Date(invoices[0].invoice_date).getTime()) / (1000 * 60 * 60 * 24));
+  const latestByClient: Record<string, string> = {};
+  (allInvoices || []).forEach(inv => {
+    if (!latestByClient[inv.client_id]) {
+      latestByClient[inv.client_id] = inv.invoice_date;
+    }
+  });
+
+  for (const client of clients) {
+    const lastDate = latestByClient[client.id];
+    if (lastDate) {
+      const daysSince = Math.floor((new Date().getTime() - new Date(lastDate).getTime()) / (1000 * 60 * 60 * 24));
       if (daysSince >= INACTIVE_DAYS) {
         inactive.push({ id: client.id, full_name: client.full_name, days_since: daysSince });
       }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
@@ -12,10 +13,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   if (loading) return null;
 
-  if (!user) return null;
+  if (!user) {
+    router.push("/auth/login");
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FCFAF7]">

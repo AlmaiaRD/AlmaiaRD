@@ -10,6 +10,18 @@ export async function getInventory() {
   return data;
 }
 
+export async function getInventoryPaginated(page: number, pageSize = 50) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("inventory")
+    .select("*, products(name, code, pv, cost, subbrands(name))", { count: "exact" })
+    .order("products(name)")
+    .range(from, to);
+  if (error) throw error;
+  return { data, total: count || 0, page, pageSize };
+}
+
 export async function getInventoryMovements(productId: string) {
   const { data, error } = await supabase
     .from("inventory_movements")
@@ -34,93 +46,36 @@ export async function getLowStockProducts() {
     .select("*, products(name, code)")
     .order("stock");
   if (error) throw error;
-  return (data || []).filter((item: any) => item.stock <= item.minimum_stock);
+  return (data || []).filter((item: unknown) => {
+    const i = item as Record<string, unknown>;
+    return Number(i.stock) <= Number(i.minimum_stock);
+  });
 }
 
 export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
-  const { data: existing } = await supabase
-    .from("inventory")
-    .select("stock, average_cost, inventory_value, pending_return")
-    .eq("product_id", productId)
-    .single();
-
-  if (existing) {
-    const pending = existing.pending_return || 0;
-    const fulfillReturn = Math.min(pending, quantity);
-    const newPending = pending - fulfillReturn;
-    const newStock = existing.stock + (quantity - fulfillReturn);
-    const newAvgCost = existing.stock > 0
-      ? ((existing.average_cost * existing.stock) + (quantity * unitCost)) / (existing.stock + quantity)
-      : unitCost;
-    const newValue = (existing.inventory_value || 0) + lineTotal;
-    const { error } = await supabase
-      .from("inventory")
-      .update({
-        stock: newStock,
-        pending_return: newPending,
-        average_cost: Math.round(newAvgCost * 100) / 100,
-        inventory_value: Math.round(newValue * 100) / 100,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("product_id", productId);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("inventory")
-      .insert({ product_id: productId, stock: quantity, pending_return: 0, average_cost: unitCost, inventory_value: lineTotal });
-    if (error) throw error;
-  }
+  const { error } = await supabase.rpc("add_inventory_stock", {
+    p_product_id: productId,
+    p_quantity: quantity,
+    p_unit_cost: Math.round(unitCost * 100) / 100,
+    p_line_total: Math.round(lineTotal * 100) / 100,
+  });
+  if (error) throw error;
 }
 
 export async function subtractInventoryStock(productId: string, quantity: number) {
-  const { data: existing } = await supabase
-    .from("inventory")
-    .select("stock, inventory_value, pending_return")
-    .eq("product_id", productId)
-    .single();
-
-  if (existing) {
-    const newStock = Math.max(0, existing.stock - quantity);
-    const shortfall = quantity - (existing.stock - newStock);
-    const newPending = (existing.pending_return || 0) + shortfall;
-    const { error } = await supabase
-      .from("inventory")
-      .update({
-        stock: newStock,
-        pending_return: newPending,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("product_id", productId);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("inventory")
-      .insert({ product_id: productId, stock: 0, pending_return: quantity, inventory_value: 0, minimum_stock: 3 });
-    if (error) throw error;
-  }
+  const { error } = await supabase.rpc("subtract_inventory_stock", {
+    p_product_id: productId,
+    p_quantity: quantity,
+  });
+  if (error) throw error;
 }
 
 export async function restoreInventoryStock(productId: string, quantity: number) {
-  const { data: existing } = await supabase
-    .from("inventory")
-    .select("stock, pending_return")
-    .eq("product_id", productId)
-    .single();
-
-  if (existing) {
-    const pending = existing.pending_return || 0;
-    const fulfillReturn = Math.min(pending, quantity);
-    const newPending = pending - fulfillReturn;
-    const newStock = existing.stock + (quantity - fulfillReturn);
-    await supabase
-      .from("inventory")
-      .update({ stock: newStock, pending_return: newPending, updated_at: new Date().toISOString() })
-      .eq("product_id", productId);
-  } else {
-    await supabase
-      .from("inventory")
-      .insert({ product_id: productId, stock: quantity, pending_return: 0, minimum_stock: 3, inventory_value: 0 });
-  }
+  const { error } = await supabase.rpc("restore_inventory_stock", {
+    p_product_id: productId,
+    p_quantity: quantity,
+  });
+  if (error) throw error;
 }
 
 export async function checkCanDeleteProduct(productId: string) {
@@ -197,10 +152,22 @@ export async function deleteProduct(productId: string) {
 }
 
 export async function forceDeleteProduct(productId: string) {
-  // Delete all related records, then the inventory record itself
+  // Only allow if no invoice or purchase references exist
+  const { count: invoiceCount } = await supabase
+    .from("invoice_items")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId);
+  if ((invoiceCount ?? 0) > 0) {
+    throw new Error("No se puede eliminar el producto porque está asociado a facturas");
+  }
+  const { count: purchaseCount } = await supabase
+    .from("purchase_items")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId);
+  if ((purchaseCount ?? 0) > 0) {
+    throw new Error("No se puede eliminar el producto porque está asociado a compras");
+  }
   await supabase.from("inventory_movements").delete().eq("product_id", productId);
-  await supabase.from("invoice_items").delete().eq("product_id", productId);
-  await supabase.from("purchase_items").delete().eq("product_id", productId);
   const { error } = await supabase.from("inventory").delete().eq("product_id", productId);
   if (error) throw error;
   return true;

@@ -102,6 +102,9 @@ function keywordFallback(
 }
 
 export async function POST(req: NextRequest) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   const limit = checkRateLimit(`ai-recommendations:${ip}`, 10, 60000);
   if (!limit.allowed) {
@@ -177,7 +180,9 @@ Instrucciones:
             recommendations = parsed;
           }
         }
-      } catch {}
+      } catch (e) {
+        console.error("[ai-recommendations] failed to parse Ollama JSON", e);
+      }
     }
 
     if (!recommendations.length) {

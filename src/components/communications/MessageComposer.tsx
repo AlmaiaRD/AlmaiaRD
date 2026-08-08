@@ -191,7 +191,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         setClients(c);
         setInvoices(i);
         setProducts(p);
-      } catch {}
+      } catch { toast.error("Error al cargar datos"); }
     })();
   }, [isOpen]);
 

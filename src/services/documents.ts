@@ -31,38 +31,46 @@ export async function getDocuments(): Promise<Document[]> {
 
   const docs: Document[] = [];
 
-  (invoices.data || []).forEach((inv: any) => {
+  (invoices.data || []).forEach((inv: unknown) => {
+    const i = inv as Record<string, unknown>;
+    const clients = i.clients as Record<string, unknown> | null;
     docs.push({
-      id: inv.id,
+      id: i.id as string,
       type: "Factura",
-      number: inv.invoice_number,
-      client: inv.clients?.full_name || "Sin cliente",
-      date: inv.invoice_date,
-      total: Number(inv.total),
-      status: inv.status === "PAID" ? "Pagada" : inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Parcial" : inv.status,
+      number: i.invoice_number as string,
+      client: (clients?.full_name as string) || "Sin cliente",
+      date: i.invoice_date as string,
+      total: Number(i.total),
+      status: i.status === "PAID" ? "Pagada" : i.status === "PENDING" ? "Pendiente" : i.status === "PARTIAL" ? "Parcial" : (i.status as string),
     });
   });
 
-  (receipts.data || []).forEach((rec: any) => {
+  (receipts.data || []).forEach((rec: unknown) => {
+    const r = rec as Record<string, unknown>;
+    const clients = r.clients as Record<string, unknown> | null;
+    const invoices = r.invoices as Record<string, unknown> | null;
+    const invClients = invoices?.clients as Record<string, unknown> | null;
     docs.push({
-      id: rec.id,
+      id: r.id as string,
       type: "Recibo",
-      number: rec.receipt_number,
-      client: rec.clients?.full_name || rec.invoices?.clients?.full_name || "Sin cliente",
-      date: rec.created_at?.split("T")[0] || "",
-      total: Number(rec.amount),
+      number: r.receipt_number as string,
+      client: (clients?.full_name as string) || (invClients?.full_name as string) || "Sin cliente",
+      date: (r.created_at as string)?.split("T")[0] || "",
+      total: Number(r.amount),
       status: "Emitido",
     });
   });
 
-  (purchases.data || []).forEach((pur: any) => {
+  (purchases.data || []).forEach((pur: unknown) => {
+    const p = pur as Record<string, unknown>;
+    const suppliers = p.suppliers as Record<string, unknown> | null;
     docs.push({
-      id: pur.id,
+      id: p.id as string,
       type: "Compra",
-      number: pur.purchase_number,
-      supplier: pur.suppliers?.name || "Sin proveedor",
-      date: pur.purchase_date,
-      total: Number(pur.total),
+      number: p.purchase_number as string,
+      supplier: (suppliers?.name as string) || "Sin proveedor",
+      date: p.purchase_date as string,
+      total: Number(p.total),
       status: "Registrada",
     });
   });

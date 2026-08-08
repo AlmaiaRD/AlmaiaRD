@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTransport } from "nodemailer";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/services/settings";
 
 export async function POST(req: NextRequest) {
+  const cookieStore = await cookies();
+  const authSupabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+  );
+  const { data: { session } } = await authSupabase.auth.getSession();
+  if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   const limit = checkRateLimit(`send-email:${ip}`, 5, 60000);
   if (!limit.allowed) {

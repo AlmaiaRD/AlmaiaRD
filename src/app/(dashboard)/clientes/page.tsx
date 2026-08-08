@@ -647,37 +647,36 @@ export default function ClientesPage() {
                 {detailFollowups.length === 0 ? (
                   <div className="text-center py-10 text-[#9C8A82] text-sm">Sin actividades de seguimiento</div>
                 ) : (
-                  <div className="space-y-2">
-                    {detailFollowups.map((f) => (
-                      <div key={f.id} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#E8E0D8]">
-                        <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center flex-shrink-0">
-                          <MessageSquare size={14} className="text-[#B8837E]" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-[#5C3E35]">Seguimiento</p>
-                            <button
-                              onClick={() => handleToggleFollowup(f.id, f.status)}
-                              className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
-                                f.status === "COMPLETED"
-                                  ? "bg-green-100 text-green-700 hover:bg-yellow-100 hover:text-yellow-700"
-                                  : "bg-yellow-100 text-yellow-700 hover:bg-green-100 hover:text-green-700"
-                              }`}
-                            >
-                              {f.status === "COMPLETED" ? "Completada" : "Pendiente"}
-                            </button>
+                  <>
+                    <div className="space-y-2">
+                      {detailFollowups.map((f) => (
+                        <div key={f.id} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                          <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center flex-shrink-0">
+                            <MessageSquare size={14} className="text-[#B8837E]" />
                           </div>
-                          <p className="text-sm text-[#5C3E35] mt-1">{f.comments}</p>
-                          <p className="text-xs text-[#9C8A82] mt-1">{formatDate(f.contact_date)}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-[#5C3E35]">Seguimiento</p>
+                              <button
+                                onClick={() => handleToggleFollowup(f.id, f.status)}
+                                className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
+                                  f.status === "COMPLETED"
+                                    ? "bg-green-100 text-green-700 hover:bg-yellow-100 hover:text-yellow-700"
+                                    : "bg-yellow-100 text-yellow-700 hover:bg-green-100 hover:text-green-700"
+                                }`}
+                              >
+                                {f.status === "COMPLETED" ? "Completada" : "Pendiente"}
+                              </button>
+                            </div>
+                            <p className="text-sm text-[#5C3E35] mt-1">{f.comments}</p>
+                            <p className="text-xs text-[#9C8A82] mt-1">{formatDate(f.contact_date)}</p>
+                          </div>
                         </div>
-                      </div>
-              ))}
-            </div>
-            <Pagination page={page} pageSize={pageSize} total={totalClients} onPageChange={handlePageChange} />
-            </>
-          ) : (
-            <div className="space-y-3">
-              {clients.map((client: any) => {
+                      ))}
+                    </div>
+                    <Pagination page={page} pageSize={pageSize} total={totalClients} onPageChange={handlePageChange} />
+                  </>
+                )}
               </div>
             )}
           </div>

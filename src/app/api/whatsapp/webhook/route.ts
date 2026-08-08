@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "almaia-verify-token";
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
 // GET - Webhook verification
 export async function GET(req: NextRequest) {

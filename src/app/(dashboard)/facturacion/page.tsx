@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts } from "@/services/invoices";
+import Pagination from "@/components/ui/Pagination";
+import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts, getInvoicesPaginated } from "@/services/invoices";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getClients, createClient } from "@/services/clients";
@@ -13,6 +14,7 @@ import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { ITBIS_RATE } from "@/lib/constants";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -64,13 +66,16 @@ export default function FacturacionPage() {
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [page, setPage] = useState(1);
+  const [totalInvoices, setTotalInvoices] = useState(0);
+  const pageSize = 50;
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch))));
 
   const load = useCallback(async (query: string) => {
     try {
       const [inv, cl, pr, ba, st] = await Promise.all([
-        query ? searchInvoices(query) : getInvoices(),
+        query ? searchInvoices(query) : getInvoicesPaginated(page, pageSize).then(r => { setTotalInvoices(r.total); return r.data || []; }),
         getClients(),
         getProducts(),
         getBankAccounts(),
@@ -86,30 +91,33 @@ export default function FacturacionPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const [inv, cl, pr, ba, st] = await Promise.all([
-          searchRef.current ? searchInvoices(searchRef.current) : getInvoices(),
+          searchRef.current ? searchInvoices(searchRef.current) : getInvoicesPaginated(page, pageSize).then(r => { if (!cancelled) setTotalInvoices(r.total); return r.data || []; }),
           getClients(),
           getProducts(),
           getBankAccounts(),
           getSettings().catch(() => null),
         ]);
+        if (cancelled) return;
         setInvoices(inv);
         setClients(cl);
         setProducts(pr);
         setBankAccounts(ba);
         setSettings(st);
       } catch {
-        toast.error("Error al cargar facturas");
+        if (!cancelled) toast.error("Error al cargar facturas");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, []);
+    return () => { cancelled = true; };
+  }, [page]);
 
   useEffect(() => {
     if (settings?.default_margin) Promise.resolve().then(() => setMargin(settings.default_margin));
@@ -140,7 +148,12 @@ export default function FacturacionPage() {
   function handleSearch(val: string) {
     searchRef.current = val;
     setSearchQuery(val);
+    setPage(1);
   }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   async function handleSaveNewClient() {
     if (!newClientForm.full_name.trim()) { toast.error("El nombre del cliente es requerido"); return; }
@@ -208,13 +221,14 @@ export default function FacturacionPage() {
   }
 
   const subtotal = items.reduce((s, i) => s + i.quantity * effectivePrice(i), 0);
-  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * effectivePrice(i) * 0.18 : 0), 0);
+  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * effectivePrice(i) * ITBIS_RATE : 0), 0);
   const discountValue = discountAmount > 0 ? discountAmount : (subtotal * discountPercent / 100);
   const total = subtotal + itbisTotal - discountValue;
 
   async function buildPreviewEl(data: any, settings: any) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
+    function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -222,7 +236,7 @@ export default function FacturacionPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${settings?.business_name || "ALMAIA"}</h2>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
             <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
@@ -231,17 +245,17 @@ export default function FacturacionPage() {
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${data.invoice_number}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${formatDate(data.invoice_date)}</p>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${esc(data.invoice_number)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${esc(formatDate(data.invoice_date))}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
       <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${data.clients?.full_name || ""}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${data.clients?.phone || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${data.clients?.email || "N/D"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${esc(data.clients?.full_name) || ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${esc(data.clients?.phone) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${esc(data.clients?.email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
@@ -257,69 +271,83 @@ export default function FacturacionPage() {
         <tbody>
           ${(data.invoice_items || []).map((item: any) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${item.products?.subbrands?.name || "\u2014"}</td>
-              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${item.products?.name || item.custom_name || "Producto"}</td>
+              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${esc(item.products?.subbrands?.name) || "\u2014"}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.products?.name || item.custom_name) || "Producto"}</td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${formatCurrency(Number(item.unit_price))}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${formatCurrency(Number(item.line_total))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${esc(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${esc(formatCurrency(Number(item.line_total)))}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
-      ${data.bank_accounts ? `
+      ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
         <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${data.bank_accounts.holder_name}</p>
-            ${data.bank_accounts.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${data.bank_accounts.id_number}</p>` : ""}
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${data.bank_accounts.bank_name}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${data.bank_accounts.account_type}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${data.bank_accounts.account_number}</p>
-            ${data.bank_accounts.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${data.bank_accounts.email}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc(bankAccounts[0].holder_name)}</p>
+            ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(bankAccounts[0].id_number)}</p>` : ""}
+            ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(bankAccounts[0].email)}</p>` : ""}
+          </div>
+          <div style="margin-top:10px;border-top:1px solid #E8E0D8;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+            ${bankAccounts.map((b) => `
+              <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">${esc(b.bank_name)} — ${esc(b.account_type)}:</span> No. ${esc(b.account_number)}</p>
+            `).join("")}
+          </div>
+        </div>
+      ` : "") : data.bank_accounts ? `
+        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc(data.bank_accounts.holder_name)}</p>
+            ${data.bank_accounts.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(data.bank_accounts.id_number)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${esc(data.bank_accounts.bank_name)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${esc(data.bank_accounts.account_type)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${esc(data.bank_accounts.account_number)}</p>
+            ${data.bank_accounts.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(data.bank_accounts.email)}</p>` : ""}
           </div>
         </div>
       ` : ""}
       <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
           <span>Subtotal</span>
-          <span>${formatCurrency(Number(data.subtotal))}</span>
+          <span>${esc(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
-            <span>${formatCurrency(Number(data.itbis_total))}</span>
+            <span>${esc(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
         ` : ""}
         ${Number(data.discount_amount) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#D4A0A0;margin-bottom:4px;">
             <span>Descuento</span>
-            <span>-${formatCurrency(Number(data.discount_amount))}</span>
+            <span>-${esc(formatCurrency(Number(data.discount_amount)))}</span>
           </div>
         ` : ""}
         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
           <span>Total General</span>
-          <span>${formatCurrency(Number(data.total))}</span>
+          <span>${esc(formatCurrency(Number(data.total)))}</span>
         </div>
         ${Number(data.amount_paid) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#86C7A3;margin-bottom:4px;">
             <span>Monto Cobrado</span>
-            <span>${formatCurrency(Number(data.amount_paid))}</span>
+            <span>${esc(formatCurrency(Number(data.amount_paid)))}</span>
           </div>
         ` : ""}
         ${(Number(data.total) - Number(data.amount_paid || 0)) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#B8837E;">
             <span>Saldo Pendiente</span>
-            <span>${formatCurrency(Number(data.total) - Number(data.amount_paid || 0))}</span>
+            <span>${esc(formatCurrency(Number(data.total) - Number(data.amount_paid || 0)))}</span>
           </div>
         ` : ""}
       </div>
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${esc(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:right;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${settings?.business_name || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:96px;margin-left:auto;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
@@ -397,7 +425,7 @@ export default function FacturacionPage() {
       setDiscountPercent(0);
       setDiscountAmount(Number(full.discount_amount));
       setNotes(full.notes || "");
-      setBankAccountId(full.bank_account_id || "");
+      setBankAccountId(full.show_all_bank_accounts ? "ALL" : (full.bank_account_id || ""));
       setMargin(full.margin || 30);
       setInvoiceDate(full.invoice_date || getLocalDateString());
       setShowModal(true);
@@ -418,7 +446,8 @@ export default function FacturacionPage() {
         status: "PENDING" as const,
         margin,
         notes: notes || undefined,
-        bank_account_id: bankAccountId || undefined,
+        bank_account_id: bankAccountId === "ALL" ? undefined : (bankAccountId || undefined),
+        show_all_bank_accounts: bankAccountId === "ALL",
         currency: (settings as any)?.currency || "DOP",
       };
       const invoiceItems = items.map((i) => ({
@@ -540,20 +569,21 @@ export default function FacturacionPage() {
           <p className="text-sm">No hay facturas registradas</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-y-2">
-            <thead>
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Factura</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Total</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-y-2">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Factura</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Total</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices
                 .filter((inv: any) => {
                   if (filterMonth || filterYear) {
                     const d = new Date(inv.invoice_date);
@@ -608,6 +638,8 @@ export default function FacturacionPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
+        </>
       )}
 
       <Modal isOpen={showDetail} onClose={() => { setShowDetail(false); setSelectedInvoice(null); }} title={selectedInvoice?.invoice_number || "Detalle"} wide>
@@ -682,17 +714,32 @@ export default function FacturacionPage() {
               </table>
 
               {/* D. PAYMENT DATA */}
-              {selectedInvoice.bank_accounts && (
+              {(selectedInvoice.show_all_bank_accounts ? bankAccounts.length > 0 : selectedInvoice.bank_accounts) && (
                 <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
                   <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedInvoice.bank_accounts.holder_name}</p>
-                    {selectedInvoice.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedInvoice.bank_accounts.id_number}</p>}
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedInvoice.bank_accounts.bank_name}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedInvoice.bank_accounts.account_type}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedInvoice.bank_accounts.account_number}</p>
-                    {selectedInvoice.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedInvoice.bank_accounts.email}</p>}
-                  </div>
+                  {selectedInvoice.show_all_bank_accounts ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                        <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                        {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                        {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm mt-2 pt-2 border-t border-[#E8E0D8]">
+                        {bankAccounts.map((b) => (
+                          <p key={b.id} className="text-[#5C3E35] text-xs"><span className="text-[#9C8A82]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedInvoice.bank_accounts.holder_name}</p>
+                      {selectedInvoice.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedInvoice.bank_accounts.id_number}</p>}
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedInvoice.bank_accounts.bank_name}</p>
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedInvoice.bank_accounts.account_type}</p>
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedInvoice.bank_accounts.account_number}</p>
+                      {selectedInvoice.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedInvoice.bank_accounts.email}</p>}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1080,11 +1127,28 @@ export default function FacturacionPage() {
               className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
             >
               <option value="">Seleccionar banco...</option>
+              <option value="ALL">Todas las cuentas</option>
               {bankAccounts.map((b) => (
                 <option key={b.id} value={b.id}>{b.bank_name} — {b.account_type} — No. {b.account_number}</option>
               ))}
             </select>
             {(() => {
+              if (bankAccountId === "ALL") {
+                const first = bankAccounts[0];
+                return (
+                  <div className="mt-2 bg-[#FAF6F0] rounded-lg p-3 text-sm space-y-1">
+                    {first && <>
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {first.holder_name}</p>
+                      {first.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {first.id_number}</p>}
+                    </>}
+                    {bankAccounts.length === 0 && <p className="text-[#9C8A82] text-xs">No hay cuentas registradas.</p>}
+                    {bankAccounts.map((b) => (
+                      <p key={b.id} className="text-[#5C3E35] text-xs"><span className="text-[#9C8A82]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
+                    ))}
+                    {first?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {first.email}</p>}
+                  </div>
+                );
+              }
               const selected = bankAccounts.find(b => b.id === bankAccountId);
               if (!selected) return null;
               return (
@@ -1212,17 +1276,32 @@ export default function FacturacionPage() {
                   ))}
               </tbody>
             </table>
-            {jpgData.bank_accounts && (
+            {(jpgData.show_all_bank_accounts ? bankAccounts.length > 0 : jpgData.bank_accounts) && (
               <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {jpgData.bank_accounts.holder_name}</p>
-                  {jpgData.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {jpgData.bank_accounts.id_number}</p>}
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {jpgData.bank_accounts.bank_name}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {jpgData.bank_accounts.account_type}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {jpgData.bank_accounts.account_number}</p>
-                  {jpgData.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {jpgData.bank_accounts.email}</p>}
-                </div>
+                {jpgData.show_all_bank_accounts ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                      {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                      {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm mt-2 pt-2 border-t border-[#E8E0D8]">
+                      {bankAccounts.map((b) => (
+                        <p key={b.id} className="text-[#5C3E35] text-xs"><span className="text-[#9C8A82]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {jpgData.bank_accounts.holder_name}</p>
+                    {jpgData.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {jpgData.bank_accounts.id_number}</p>}
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {jpgData.bank_accounts.bank_name}</p>
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {jpgData.bank_accounts.account_type}</p>
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {jpgData.bank_accounts.account_number}</p>
+                    {jpgData.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {jpgData.bank_accounts.email}</p>}
+                  </div>
+                )}
               </div>
             )}
             <div className="border-t border-[#E8E0D8] pt-3 mb-5">

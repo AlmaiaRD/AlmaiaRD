@@ -4,7 +4,9 @@ import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct } from "@/services/inventory";
+import Pagination from "@/components/ui/Pagination";
+import PurchasePdfImport from "@/components/purchases/PurchasePdfImport";
+import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct, getInventoryPaginated } from "@/services/inventory";
 import { getProducts } from "@/services/products";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
 import { normalize } from "@/lib/search";
@@ -12,8 +14,9 @@ import { getSuppliers } from "@/services/suppliers";
 import { getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import type { Supplier, BankAccount, Settings } from "@/types/database";
-import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye, EyeOff, Trash2, Printer, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye, EyeOff, Trash2, Printer, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown, Upload } from "lucide-react";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -59,6 +62,7 @@ function InventarioContent() {
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [showPdfImport, setShowPdfImport] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
   const [openDownloadId, setOpenDownloadId] = useState<string | null>(null);
   const [showDetailPurchase, setShowDetailPurchase] = useState(false);
@@ -89,6 +93,24 @@ function InventarioContent() {
   const [hiddenRotationIds, setHiddenRotationIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("hiddenRotationIds") || "[]"); } catch { return []; }
   });
+  const [page, setPage] = useState(1);
+  const [totalInventory, setTotalInventory] = useState(0);
+  const pageSize = 50;
+
+  // Sync hidden products with server preferences
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/preferences");
+        if (!res.ok) return;
+        const { preferences } = await res.json();
+        if (preferences) {
+          if (preferences.hidden_stock_ids) setHiddenStockIds(preferences.hidden_stock_ids);
+          if (preferences.hidden_rotation_ids) setHiddenRotationIds(preferences.hidden_rotation_ids);
+        }
+      } catch { /* fallback a localStorage */ }
+    })();
+  }, []);
 
   function generatePurchasePdfLocal(purchase: any) {
     const doc = new jsPDF({ unit: "mm", format: "letter" });
@@ -170,7 +192,7 @@ function InventarioContent() {
     (purchase.purchase_items || []).forEach((item: any) => {
       if (y > 250) { doc.addPage(); y = 30; }
       const hasItbis = item.itbis !== false;
-      const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * 0.18) : 0;
+      const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
       const lineTotal = item.line_total + lineItbis;
       doc.text(item.products?.name || "—", colX[0], y);
       doc.text(String(item.quantity), colX[1], y, { align: "center" });
@@ -234,29 +256,30 @@ function InventarioContent() {
       const html2canvas = (await import("html2canvas")).default;
       const tmpDiv = document.createElement("div");
       tmpDiv.style.cssText = "position:fixed;left:-9999px;top:0;background:white;padding:32px;font-family:system-ui;width:600px;";
+      function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
       tmpDiv.innerHTML = `
         <div style="color:#5C3E35;">
           <h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>
-          <p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ${purchase.purchase_number}</p>
+          <p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ${esc(purchase.purchase_number)}</p>
           <hr style="border-color:#E8E0D8;margin-bottom:8px;"/>
-          <p style="font-size:10px;"><b>Fecha:</b> ${formatDate(purchase.purchase_date)} &nbsp;&nbsp; <b>Proveedor:</b> ${purchase.supplier_name || "—"}</p>
+          <p style="font-size:10px;"><b>Fecha:</b> ${esc(formatDate(purchase.purchase_date))} &nbsp;&nbsp; <b>Proveedor:</b> ${esc(purchase.supplier_name) || "—"}</p>
           <hr style="border-color:#E8E0D8;margin:8px 0;"/>
           <table style="width:100%;font-size:9px;border-collapse:collapse;">
             <thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>
             <tbody>${(purchase.purchase_items || []).map((item: any) => {
               const hasItbis = item.itbis !== false;
-              const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * 0.18) : 0;
+              const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
               const lineTotal = item.line_total + lineItbis;
-              return `<tr><td style="padding:4px;">${item.products?.name || "—"}</td><td style="text-align:center;padding:4px;">${item.quantity}</td><td style="text-align:center;padding:4px;">${formatCurrency(item.unit_cost)}</td><td style="text-align:center;padding:4px;">${formatCurrency(lineItbis)}</td><td style="text-align:right;padding:4px;font-weight:bold;">${formatCurrency(lineTotal)}</td></tr>`;
+              return `<tr><td style="padding:4px;">${esc(item.products?.name) || "—"}</td><td style="text-align:center;padding:4px;">${esc(String(item.quantity))}</td><td style="text-align:center;padding:4px;">${esc(formatCurrency(item.unit_cost))}</td><td style="text-align:center;padding:4px;">${esc(formatCurrency(lineItbis))}</td><td style="text-align:right;padding:4px;font-weight:bold;">${esc(formatCurrency(lineTotal))}</td></tr>`;
             }).join("")}</tbody>
           </table>
           <hr style="border-color:#E8E0D8;margin:8px 0;"/>
           <div style="text-align:right;font-size:10px;">
-            <p>Subtotal: ${formatCurrency(purchase.subtotal)}</p>
-            <p>Impuesto Recogida: ${formatCurrency(purchase.impuesto_recogida || 0)}</p>
-            <p>Cargo Admin.: ${formatCurrency(purchase.cargo_administracion || 0)}</p>
-            <p>ITBIS (18%): ${formatCurrency(purchase.itbis || 0)}</p>
-            <p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ${formatCurrency(purchase.total)}</p>
+            <p>Subtotal: ${esc(formatCurrency(purchase.subtotal))}</p>
+            <p>Impuesto Recogida: ${esc(formatCurrency(purchase.impuesto_recogida || 0))}</p>
+            <p>Cargo Admin.: ${esc(formatCurrency(purchase.cargo_administracion || 0))}</p>
+            <p>ITBIS (18%): ${esc(formatCurrency(purchase.itbis || 0))}</p>
+            <p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ${esc(formatCurrency(purchase.total))}</p>
           </div>
         </div>`;
       document.body.appendChild(tmpDiv);
@@ -272,6 +295,10 @@ function InventarioContent() {
     }
     setOpenDownloadId(null);
   }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   async function handleViewPurchase(id: string) {
     try {
@@ -302,7 +329,7 @@ function InventarioContent() {
   );
 
   const purchaseSubtotal = purchaseForm.items.reduce((s, i) => s + i.quantity * i.unit_cost, 0);
-  const purchaseLineItbis = purchaseForm.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * 0.18), 0);
+  const purchaseLineItbis = purchaseForm.items.reduce((s, i) => s + ((i.itbis !== false ? 1 : 0) * i.quantity * i.unit_cost * ITBIS_RATE), 0);
   const purchaseItbis = Math.round(purchaseLineItbis * 100) / 100;
   const purchaseRecogida = Number(purchaseForm.impuesto_recogida) || 0;
   const purchaseAdmin = Number(purchaseForm.cargo_administracion) || 0;
@@ -343,10 +370,11 @@ function InventarioContent() {
   const router = useRouter();
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        const [inv, pro, sold, purchased, sup, ba, st] = await Promise.all([
-          getInventory(),
+        const [invResult, pro, sold, purchased, sup, ba, st] = await Promise.all([
+          getInventoryPaginated(page, pageSize),
           getProducts(),
           getSoldQuantities(),
           getPurchasedQuantities(),
@@ -354,7 +382,9 @@ function InventarioContent() {
           getBankAccounts(),
           getSettings().catch(() => null),
         ]);
-        setInventory(inv);
+        if (cancelled) return;
+        setInventory(invResult.data || []);
+        setTotalInventory(invResult.total);
         setProducts(pro);
         setSoldMap(sold);
         setPurchasedMap(purchased);
@@ -364,10 +394,11 @@ function InventarioContent() {
       } catch {
         toast.error("Error al cargar inventario");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, []);
+    return () => { cancelled = true; };
+  }, [page]);
 
   useEffect(() => {
     if (searchParams.get("nueva-compra") === "true") {
@@ -379,8 +410,8 @@ function InventarioContent() {
 
   async function load() {
     try {
-      const [inv, pro, sold, purchased, sup, ba, st] = await Promise.all([
-        getInventory(),
+      const [invResult, pro, sold, purchased, sup, ba, st] = await Promise.all([
+        getInventoryPaginated(page, pageSize),
         getProducts(),
         getSoldQuantities(),
         getPurchasedQuantities(),
@@ -388,7 +419,8 @@ function InventarioContent() {
         getBankAccounts(),
         getSettings().catch(() => null),
       ]);
-      setInventory(inv);
+      setInventory(invResult.data || []);
+      setTotalInventory(invResult.total);
       setProducts(pro);
       setSoldMap(sold);
       setPurchasedMap(purchased);
@@ -420,7 +452,7 @@ function InventarioContent() {
         const product = item.products;
         const itemSold = sold[item.product_id] || 0;
         const itemPurchased = purchased[item.product_id] || 0;
-        const stock = Math.max(0, itemPurchased - itemSold);
+        const stock = item.stock ?? Math.max(0, itemPurchased - itemSold);
         const cost = product?.cost || 0;
         const lastSale = lastSales[item.product_id];
         const lastPurchase = lastPurchases[item.product_id];
@@ -524,7 +556,7 @@ function InventarioContent() {
             const product = item.products;
             const itemSold = sold[item.product_id] || 0;
             const itemPurchased = purchased[item.product_id] || 0;
-            const stock = Math.max(0, itemPurchased - itemSold);
+            const stock = item.stock ?? Math.max(0, itemPurchased - itemSold);
             const cost = product?.cost || 0;
             const lastSale = lastSales[item.product_id];
             const lastPurchase = lastPurchases[item.product_id];
@@ -678,6 +710,11 @@ function InventarioContent() {
         ? prev.filter((id) => id !== productId)
         : [...prev, productId];
       localStorage.setItem("hiddenStockIds", JSON.stringify(updated));
+      fetch("/api/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hidden_stock_ids: updated }),
+      }).catch((e) => console.error("Error al sincronizar preferencias", e));
       return updated;
     });
     toast.success(wasHidden ? "Producto visible en Stock" : "Ocultado de Stock");
@@ -690,6 +727,11 @@ function InventarioContent() {
         ? prev.filter((id) => id !== productId)
         : [...prev, productId];
       localStorage.setItem("hiddenRotationIds", JSON.stringify(updated));
+      fetch("/api/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hidden_rotation_ids: updated }),
+      }).catch((e) => console.error("Error al sincronizar preferencias", e));
       return updated;
     });
     toast.success(wasHidden ? "Producto visible en Rotación" : "Ocultado de Rotación");
@@ -1020,6 +1062,7 @@ function InventarioContent() {
             </table>
             </div>
           )}
+          <Pagination page={page} pageSize={pageSize} total={totalInventory} onPageChange={handlePageChange} />
         </>
       )}
 
@@ -1897,14 +1940,47 @@ function InventarioContent() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm font-medium text-[#5C3E35]">Productos</label>
-              <button
-                onClick={() => setShowProductSearch(!showProductSearch)}
-                className="text-xs text-[#B8837E] hover:underline flex items-center gap-1"
-              >
-                <Plus size={14} />
-                Agregar producto
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowPdfImport(!showPdfImport)}
+                  className="text-xs text-[#B8837E] hover:underline flex items-center gap-1"
+                >
+                  <Upload size={14} />
+                  Subir PDF
+                </button>
+                <button
+                  onClick={() => setShowProductSearch(!showProductSearch)}
+                  className="text-xs text-[#B8837E] hover:underline flex items-center gap-1"
+                >
+                  <Plus size={14} />
+                  Agregar producto
+                </button>
+              </div>
             </div>
+
+            {showPdfImport && (
+              <div className="mb-4">
+                <PurchasePdfImport
+                  products={products}
+                  onApply={(purchase) => {
+                    setPurchaseForm({
+                      supplier_name: purchase.supplier_name,
+                      purchase_date: purchase.purchase_date,
+                      notes: purchase.notes,
+                      discount_amount: purchase.discount_amount,
+                      impuesto_recogida: 36,
+                      cargo_administracion: 200,
+                      payment_method: "Efectivo",
+                      bank_account_id: "",
+                      items: purchase.items,
+                    });
+                    setShowPdfImport(false);
+                    toast.success(`Compra interpretada: ${purchase.items.length} productos`);
+                  }}
+                  onClose={() => setShowPdfImport(false)}
+                />
+              </div>
+            )}
 
             {showProductSearch && (
               <div className="mb-4 bg-[#FAF6F0] rounded-xl overflow-hidden">
@@ -1943,7 +2019,7 @@ function InventarioContent() {
                 {purchaseForm.items.map((item, i) => {
                   const lineSubtotal = item.quantity * item.unit_cost;
                   const hasItbis = item.itbis !== false;
-                  const lineItbis = Math.round((hasItbis ? 1 : 0) * lineSubtotal * 0.18 * 100) / 100;
+                  const lineItbis = Math.round((hasItbis ? 1 : 0) * lineSubtotal * ITBIS_RATE * 100) / 100;
                   const lineTotal = lineSubtotal + lineItbis;
                   return (
                     <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">

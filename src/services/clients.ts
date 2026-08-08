@@ -284,17 +284,23 @@ export async function updateClientStage(
 export async function migrateStages() {
   const clients = await getClients();
   let migrated = 0;
-  for (const c of clients) {
-    const newStage = STAGE_MIGRATION_MAP[c.stage];
-    if (newStage && newStage !== c.stage) {
-      await supabase.from("clients").update({
+  const promises = clients
+    .filter(c => {
+      const newStage = STAGE_MIGRATION_MAP[c.stage];
+      return newStage && newStage !== c.stage;
+    })
+    .map(c => {
+      const newStage = STAGE_MIGRATION_MAP[c.stage];
+      migrated++;
+      return supabase.from("clients").update({
         stage: newStage,
         client_type: "comprador",
         stage_entered_at: c.created_at,
       }).eq("id", c.id);
-      migrated++;
-    }
-    // Si el stage no está en el mapa (ya es un stage nuevo), no hacer nada
+    });
+  const results = await Promise.all(promises);
+  for (const result of results) {
+    if (result.error) throw result.error;
   }
   return migrated;
 }

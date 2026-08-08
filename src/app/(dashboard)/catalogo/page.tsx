@@ -9,12 +9,14 @@ import { getProducts, createProduct, updateProduct, searchProducts, getCategorie
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
+import { ITBIS_RATE } from "@/lib/constants";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-const ITBIS_RATE = 0.18;
+const MARKUP_30 = 1.3;
+const MARKUP_35 = 1.35;
 
 export default function CatalogoPage() {
   const router = useRouter();
@@ -131,8 +133,8 @@ export default function CatalogoPage() {
     try {
       const cost = Number(form.cost);
       const totalBase = cost * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1);
-      const auto30 = roundToNearest50(totalBase * 1.3);
-      const auto35 = roundToNearest50(totalBase * 1.35);
+      const auto30 = roundToNearest50(totalBase * MARKUP_30);
+      const auto35 = roundToNearest50(totalBase * MARKUP_35);
       const productData: Record<string, any> = {
         code: form.code,
         name: form.name,
@@ -375,7 +377,7 @@ export default function CatalogoPage() {
                   )}
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">30% exacto</span>
-                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.3)}</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * MARKUP_30)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">30% redondeado</span>
@@ -395,7 +397,7 @@ export default function CatalogoPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">35% exacto</span>
-                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.35)}</span>
+                    <span className="font-medium text-[#9C8A82]">{formatCurrency(product.cost * (product.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * MARKUP_35)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#9C8A82]">35% redondeado</span>
@@ -478,7 +480,7 @@ export default function CatalogoPage() {
               <input type="number" step="0.01" value={form.cost} onChange={(e) => {
                 const c = Number(e.target.value);
                 const total = c * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1);
-                setForm({ ...form, cost: c, price_30: roundToNearest50(total * 1.3), price_35: roundToNearest50(total * 1.35) });
+                setForm({ ...form, cost: c, price_30: roundToNearest50(total * MARKUP_30), price_35: roundToNearest50(total * MARKUP_35) });
               }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
             <div>
@@ -488,12 +490,12 @@ export default function CatalogoPage() {
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 30%</label>
               <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.3)}</p>
+              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * MARKUP_30)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 35%</label>
               <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * 1.35)}</p>
+              <p className="text-[10px] text-[#9C8A82] mt-1">Exacto: {formatCurrency(Number(form.cost) * (form.apply_itbis !== false ? (1 + ITBIS_RATE) : 1) * MARKUP_35)}</p>
             </div>
           </div>
           <div className="flex items-center justify-between">

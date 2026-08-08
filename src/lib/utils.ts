@@ -82,6 +82,16 @@ export function numberToWords(amount: number): string {
     result = "un peso";
   } else if (entero === 0) {
     result = "cero pesos";
+  } else if (entero >= 1000000) {
+    const millones = Math.floor(entero / 1000000);
+    const resto = entero % 1000000;
+    const millonStr = millones === 1 ? "un millón" : convertir(millones) + " millones";
+    if (resto > 0) {
+      result = millonStr + " " + convertir(resto);
+    } else {
+      result = millonStr;
+    }
+    result += " pesos";
   } else {
     const miles = Math.floor(entero / 1000);
     const resto = entero % 1000;
@@ -115,6 +125,16 @@ export function getInitials(name: string): string {
 
 export function roundToNearest50(value: number): number {
   return Math.ceil(value / 50) * 50;
+}
+
+export function sanitizeHtml(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 export function getLocalDateString(date?: Date): string {

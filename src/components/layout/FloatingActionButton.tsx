@@ -20,7 +20,7 @@ function loadPosition() {
     const r = localStorage.getItem(STORAGE_KEY);
     const b = localStorage.getItem(STORAGE_KEY_BOTTOM);
     if (r || b) return { right: r ? Number(r) : 16, bottom: b ? Number(b) : 24 };
-  } catch {}
+  } catch { console.error("Error al leer posición del FAB"); }
   return null;
 }
 
@@ -35,7 +35,7 @@ export default function FloatingActionButton() {
     try {
       localStorage.setItem(STORAGE_KEY, String(r));
       localStorage.setItem(STORAGE_KEY_BOTTOM, String(b));
-    } catch {}
+    } catch { console.error("Error al guardar posición del FAB"); }
   }, []);
 
   const onStart = useCallback((clientX: number, clientY: number) => {
@@ -59,11 +59,12 @@ export default function FloatingActionButton() {
     savePos(pos.right, pos.bottom);
   }, [pos.right, pos.bottom, savePos]);
 
+  function handleMouse(e: MouseEvent) { e.preventDefault(); onMove(e.clientX, e.clientY); }
+  function handleTouch(e: TouchEvent) { onMove(e.touches[0].clientX, e.touches[0].clientY); }
+  function handleUp() { onEnd(); }
+
   useEffect(() => {
     if (!dragging) return;
-    const handleMouse = (e: MouseEvent) => { e.preventDefault(); onMove(e.clientX, e.clientY); };
-    const handleTouch = (e: TouchEvent) => { onMove(e.touches[0].clientX, e.touches[0].clientY); };
-    const handleUp = () => onEnd();
     window.addEventListener("mousemove", handleMouse);
     window.addEventListener("mouseup", handleUp);
     window.addEventListener("touchmove", handleTouch, { passive: false });

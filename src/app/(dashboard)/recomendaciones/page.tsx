@@ -66,7 +66,7 @@ export default function RecommendationsPage() {
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string; recommendations?: ProductRecommendation[] }[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("aiChatHistory");
-      if (saved) try { return JSON.parse(saved); } catch {}
+      if (saved) try { return JSON.parse(saved); } catch { toast.error("Error al cargar historial"); }
     }
     return [];
   });
@@ -100,7 +100,7 @@ export default function RecommendationsPage() {
         const data = await res.json();
         setProductRecs(data.recommendations || []);
       }
-    } catch {} finally {
+    } catch { toast.error("Error al cargar recomendaciones"); } finally {
       setProductRecsLoading(false);
     }
   }
@@ -117,7 +117,7 @@ export default function RecommendationsPage() {
         const data = await res.json();
         setSeasonalRecs(data.recommendations || []);
       }
-    } catch {} finally {
+    } catch { toast.error("Error al cargar temporada"); } finally {
       setSeasonalRecsLoading(false);
     }
   }
@@ -135,7 +135,7 @@ export default function RecommendationsPage() {
           const data = await res.json();
           setProductRecs(data.recommendations || []);
         }
-      } catch {} finally {
+      } catch { toast.error("Error al cargar recomendaciones"); } finally {
         setProductRecsLoading(false);
       }
     })();
@@ -151,7 +151,7 @@ export default function RecommendationsPage() {
           const data = await res.json();
           setSeasonalRecs(data.recommendations || []);
         }
-      } catch {} finally {
+      } catch { toast.error("Error al cargar temporada"); } finally {
         setSeasonalRecsLoading(false);
         setLoading(false);
       }

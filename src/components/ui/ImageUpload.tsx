@@ -26,7 +26,7 @@ export function ImageUpload({ currentUrl, onUploaded }: ImageUploadProps) {
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() || "jpg";
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const fileName = `${crypto.randomUUID()}.${ext}`;
 
       const { data, error } = await supabase.storage
         .from("product-images")

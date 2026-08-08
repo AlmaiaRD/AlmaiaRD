@@ -22,7 +22,7 @@ export default function ServiceWorkerRegistration() {
           }
         };
       })
-      .catch(() => {});
+      .catch((e) => console.error("Error al registrar Service Worker", e));
   }, []);
 
   return null;

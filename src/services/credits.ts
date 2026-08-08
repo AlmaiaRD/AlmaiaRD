@@ -44,8 +44,8 @@ export async function getCreditsSummary() {
   if (totalsError) throw totalsError;
 
   const totalAvailable = totals
-    .filter((c: any) => c.status === "AVAILABLE")
-    .reduce((s: number, c: any) => s + Number(c.amount), 0);
+    .filter((c: unknown) => (c as Record<string, unknown>).status === "AVAILABLE")
+    .reduce((s: number, c: unknown) => s + Number((c as Record<string, unknown>).amount), 0);
 
   return { active: active, totalAvailable };
 }

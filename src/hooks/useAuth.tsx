@@ -70,7 +70,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }).catch(() => {
       if (!cancelled) setLoading(false);
     });
-    return () => { cancelled = true; };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        ensureProfile(session).then((profile) => {
+          if (!cancelled) {
+            setUser(profile);
+            setLoading(false);
+          }
+        });
+      } else {
+        if (!cancelled) {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      cancelled = true;
+    };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -107,9 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOutRef = useRef(signOut);
-  signOutRef.current = signOut;
+  const lastActivity = useRef(0);
 
-  const lastActivity = useRef(Date.now());
+  useEffect(() => { signOutRef.current = signOut; });
 
   useEffect(() => {
     if (loading || !user) return;

@@ -10,13 +10,17 @@ export async function getVentasReport(from?: string, to?: string) {
   if (to) query = query.lte("invoice_date", to);
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).map((inv: any) => ({
-    factura: inv.invoice_number,
-    fecha: inv.invoice_date,
-    cliente: inv.clients?.full_name || "Sin cliente",
-    total: Number(inv.total),
-    estado: inv.status === "PAID" ? "Pagada" : inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Parcial" : inv.status,
-  }));
+  return (data || []).map((inv: unknown) => {
+    const i = inv as Record<string, unknown>;
+    const clients = i.clients as Record<string, unknown> | null;
+    return {
+      factura: i.invoice_number,
+      fecha: i.invoice_date,
+      cliente: clients?.full_name || "Sin cliente",
+      total: Number(i.total),
+      estado: i.status === "PAID" ? "Pagada" : i.status === "PENDING" ? "Pendiente" : i.status === "PARTIAL" ? "Parcial" : (i.status as string),
+    };
+  });
 }
 
 export async function getCobrosReport(from?: string, to?: string) {
@@ -29,44 +33,55 @@ export async function getCobrosReport(from?: string, to?: string) {
   const { data, error } = await query;
   if (error) throw error;
   const methodLabels: Record<string, string> = { CASH: "Efectivo", TRANSFER: "Transferencia", CARD: "Tarjeta" };
-  return (data || []).map((rec: any) => ({
-    recibo: rec.receipt_number,
-    fecha: rec.created_at?.split("T")[0] || "",
-    factura: rec.invoices?.invoice_number || "—",
-    cliente: rec.clients?.full_name || rec.invoices?.clients?.full_name || "Sin cliente",
-    monto: Number(rec.amount),
-    metodo: methodLabels[rec.payment_method] || rec.payment_method,
-  }));
+  return (data || []).map((rec: unknown) => {
+    const r = rec as Record<string, unknown>;
+    const clients = r.clients as Record<string, unknown> | null;
+    const invoices = r.invoices as Record<string, unknown> | null;
+    const invClients = invoices?.clients as Record<string, unknown> | null;
+    return {
+      recibo: r.receipt_number,
+      fecha: (r.created_at as string)?.split("T")[0] || "",
+      factura: (invoices?.invoice_number as string) || "—",
+      cliente: clients?.full_name as string || invClients?.full_name as string || "Sin cliente",
+      monto: Number(r.amount),
+      metodo: methodLabels[r.payment_method as string] || (r.payment_method as string),
+    };
+  });
 }
 
 export async function getInventarioReport() {
   const { data, error } = await supabase
     .from("vw_inventory_value")
-    .select("product_name, subbrand_name, stock, minimum_stock, stock_status")
+    .select("product_name, stock, minimum_stock, stock_status")
     .order("product_name");
   if (error) throw error;
-  return (data || []).map((item: any) => ({
-    producto: item.product_name,
-    submarca: item.subbrand_name || "Sin submarca",
-    stock: Number(item.stock),
-    minimo: Number(item.minimum_stock),
-    estado: item.stock_status === "AGOTADO" ? "Agotado" : item.stock_status === "BAJO" ? "Bajo" : "Óptimo",
-  }));
+  return (data || []).map((item: unknown) => {
+    const i = item as Record<string, unknown>;
+    return {
+      producto: i.product_name,
+      submarca: "—",
+      stock: Number(i.stock),
+      minimo: Number(i.minimum_stock),
+      estado: i.stock_status === "AGOTADO" ? "Agotado" : i.stock_status === "BAJO" ? "Bajo" : "Óptimo",
+    };
+  });
 }
 
 export async function getClientesReport() {
   const { data, error } = await supabase
-    .from("vw_top_clients")
-    .select("client_name, total_invoiced, total_paid, balance_due")
-    .order("total_invoiced", { ascending: false });
+    .from("vw_accounts_receivable")
+    .select("client_name, total_invoiced, total_paid, balance_due, credit_balance");
   if (error) throw error;
-  return (data || []).map((c: any) => ({
-    cliente: c.client_name,
-    total_comprado: Number(c.total_invoiced),
-    total_pagado: Number(c.total_paid),
-    saldo_pendiente: Number(c.balance_due),
-    estado: Number(c.balance_due) > 0 ? "Pendiente" : "Pagado",
-  }));
+  return (data || []).map((c: unknown) => {
+    const cc = c as Record<string, unknown>;
+    return {
+      cliente: cc.client_name,
+      total_comprado: Number(cc.total_invoiced),
+      total_pagado: Number(cc.total_paid),
+      saldo_pendiente: Number(cc.balance_due),
+      estado: Number(cc.balance_due) > 0 ? "Pendiente" : "Pagado",
+    };
+  });
 }
 
 export async function getPvReport(from?: string, to?: string) {
@@ -81,10 +96,12 @@ export async function getPvReport(from?: string, to?: string) {
   if (error) throw error;
 
   const byClient: Record<string, { name: string; pv: number }> = {};
-  (data || []).forEach((inv: any) => {
-    const id = inv.clients?.full_name || "Sin cliente";
-    if (!byClient[id]) byClient[id] = { name: id, pv: 0 };
-    byClient[id].pv += Number(inv.pv_total || 0);
+  (data || []).forEach((inv: unknown) => {
+    const i = inv as Record<string, unknown>;
+    const clients = i.clients as Record<string, unknown> | null;
+    const id = clients?.full_name || "Sin cliente";
+    if (!byClient[id as string]) byClient[id as string] = { name: id as string, pv: 0 };
+    byClient[id as string].pv += Number(i.pv_total || 0);
   });
 
   return Object.values(byClient).map((c) => ({
@@ -103,11 +120,14 @@ export async function getGastosReport(from?: string, to?: string) {
   if (to) query = query.lte("expense_date", to);
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).map((g: any) => ({
-    fecha: g.expense_date,
-    descripcion: g.concept,
-    categoria: g.category,
-    subcategoria: g.subcategory || "—",
-    monto: Number(g.amount),
-  }));
+  return (data || []).map((g: unknown) => {
+    const gg = g as Record<string, unknown>;
+    return {
+      fecha: gg.expense_date,
+      descripcion: gg.concept,
+      categoria: gg.category,
+      subcategoria: gg.subcategory || "—",
+      monto: Number(gg.amount),
+    };
+  });
 }
