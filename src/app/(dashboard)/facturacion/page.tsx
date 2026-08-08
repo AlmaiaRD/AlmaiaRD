@@ -288,15 +288,12 @@ export default function FacturacionPage() {
             ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(bankAccounts[0].id_number)}</p>` : ""}
             ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(bankAccounts[0].email)}</p>` : ""}
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="margin-top:10px;border-top:1px solid #E8E0D8;padding-top:10px;">
             ${bankAccounts.map((b) => `
-              <div style="border:1px solid #E8E0D8;background:#FFFFFF;border-radius:10px;padding:12px 14px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                  <span style="font-size:13px;font-weight:700;color:#5C3E35;">${esc(b.bank_name)}</span>
-                  <span style="font-size:10px;font-weight:600;color:#B8837E;background:#F5E9E6;border-radius:999px;padding:2px 10px;">${esc(b.account_type)}</span>
-                </div>
-                <p style="margin:0;font-size:11px;color:#9C8A82;">No. de cuenta</p>
-                <p style="margin:2px 0 0;font-size:14px;font-weight:600;color:#5C3E35;letter-spacing:1px;">${esc(b.account_number)}</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:7px 0;border-bottom:1px solid #F0EBE3;font-size:13px;">
+                <span style="color:#5C3E35;font-weight:600;">${esc(b.bank_name)}</span>
+                <span style="color:#5C3E35;">${esc(b.account_type)}</span>
+                <span style="color:#5C3E35;">No. ${esc(b.account_number)}</span>
               </div>
             `).join("")}
           </div>
@@ -731,15 +728,12 @@ export default function FacturacionPage() {
                         {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
                         {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
                       </div>
-                      <div className="grid grid-cols-2 gap-2.5">
+                      <div className="mt-2 pt-2 border-t border-[#E8E0D8]">
                         {bankAccounts.map((b) => (
-                          <div key={b.id} className="border border-[#E8E0D8] bg-white rounded-xl px-3.5 py-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-bold text-[#5C3E35]">{b.bank_name}</p>
-                              <span className="text-[10px] font-semibold text-[#B8837E] bg-[#F5E9E6] rounded-full px-2.5 py-0.5">{b.account_type}</span>
-                            </div>
-                            <p className="text-[11px] text-[#9C8A82]">No. de cuenta</p>
-                            <p className="text-sm font-semibold text-[#5C3E35] tracking-wider">{b.account_number}</p>
+                          <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
+                            <p className="text-[#5C3E35] font-semibold">{b.bank_name}</p>
+                            <p className="text-[#5C3E35]">{b.account_type}</p>
+                            <p className="text-[#5C3E35]">No. {b.account_number}</p>
                           </div>
                         ))}
                       </div>
@@ -1300,15 +1294,12 @@ export default function FacturacionPage() {
                       {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
                       {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="mt-2 pt-2 border-t border-[#E8E0D8]">
                       {bankAccounts.map((b) => (
-                        <div key={b.id} className="border border-[#E8E0D8] bg-white rounded-xl px-3.5 py-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-bold text-[#5C3E35]">{b.bank_name}</p>
-                            <span className="text-[10px] font-semibold text-[#B8837E] bg-[#F5E9E6] rounded-full px-2.5 py-0.5">{b.account_type}</span>
-                          </div>
-                          <p className="text-[11px] text-[#9C8A82]">No. de cuenta</p>
-                          <p className="text-sm font-semibold text-[#5C3E35] tracking-wider">{b.account_number}</p>
+                        <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
+                          <p className="text-[#5C3E35] font-semibold">{b.bank_name}</p>
+                          <p className="text-[#5C3E35]">{b.account_type}</p>
+                          <p className="text-[#5C3E35]">No. {b.account_number}</p>
                         </div>
                       ))}
                     </div>
