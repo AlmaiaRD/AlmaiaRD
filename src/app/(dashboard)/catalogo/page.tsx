@@ -5,7 +5,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
-import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory } from "@/services/products";
+import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Product, Category, Subbrand, Settings } from "@/types/database";
 import { formatCurrency, roundToNearest50 } from "@/lib/utils";
@@ -205,6 +205,15 @@ export default function CatalogoPage() {
     } catch { toast.error("Error al restaurar producto"); }
   }
 
+  async function handleDeleteProduct(product: any) {
+    if (!confirm(`¿Eliminar definitivamente "${product.name}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      await deleteProduct(product.id);
+      setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
+      toast.success("Producto eliminado");
+    } catch { toast.error("Error al eliminar producto"); }
+  }
+
   async function handleCreateSubbrand(name: string) {
     if (!name.trim()) { toast.error("Nombre requerido"); return; }
     try {
@@ -359,7 +368,10 @@ export default function CatalogoPage() {
                     <button onClick={() => setViewingProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Ver detalles"><Eye size={14} /></button>
                     <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors"><Edit2 size={14} /></button>
                     {!product.active ? (
-                      <button onClick={() => handleRestoreProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={14} /></button>
+                      <>
+                        <button onClick={() => handleRestoreProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={14} /></button>
+                        <button onClick={() => handleDeleteProduct(product)} className="p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
+                      </>
                     ) : (
                       <button onClick={() => handleArchiveProduct(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
                     )}

@@ -52,6 +52,12 @@ export async function deactivateProduct(id: string) {
   if (error) throw error;
 }
 
+export async function deleteProduct(id: string) {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw error;
+  invalidateCache("products");
+}
+
 export async function searchProducts(query: string) {
   const all = await getProducts();
   const q = normalize(query);
