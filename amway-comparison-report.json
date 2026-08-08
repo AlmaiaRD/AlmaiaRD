@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-08-08T03:28:08.389Z",
+  "logged_in": true,
+  "amway_total": 198,
+  "almaia_active": 181,
+  "found": 180,
+  "missing": 18,
+  "not_seen": 0,
+  "missing_list": [
+    {
+      "base": "127833",
+      "amwayCode": "127833D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Cashmere 102"
+    },
+    {
+      "base": "127835",
+      "amwayCode": "127835D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Beige 201"
+    },
+    {
+      "base": "127836",
+      "amwayCode": "127836D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Bamboo 202"
+    },
+    {
+      "base": "127837",
+      "amwayCode": "127837D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Honey 203"
+    },
+    {
+      "base": "127838",
+      "amwayCode": "127838D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Biscotti 301"
+    },
+    {
+      "base": "127839",
+      "amwayCode": "127839D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Almond 302"
+    },
+    {
+      "base": "127840",
+      "amwayCode": "127840D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Chestnut 303"
+    },
+    {
+      "base": "127841",
+      "amwayCode": "127841D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Mocha 401"
+    },
+    {
+      "base": "127842",
+      "amwayCode": "127842D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Nutmeg 402"
+    },
+    {
+      "base": "127843",
+      "amwayCode": "127843D",
+      "name": "Base en polvo Artistry Ever Perfect™ - recarga - Java 403"
+    },
+    {
+      "base": "A0244DR",
+      "amwayCode": "A0244DR",
+      "name": "Multivitamina Double X™ de Nutrilite™ – Reemplazo para 31 días"
+    },
+    {
+      "base": "A4042",
+      "amwayCode": "A4042",
+      "name": "Nutrilite™ Vitamina E masticable"
+    },
+    {
+      "base": "A5923",
+      "amwayCode": "A5923",
+      "name": "Nutrilite™ Ajo Concentrado"
+    },
+    {
+      "base": "A7553",
+      "amwayCode": "A7553",
+      "name": "Pelo, Piel y Uñas Nutrilite™"
+    },
+    {
+      "base": "A8600",
+      "amwayCode": "A8600",
+      "name": "Nutrilite™ Picolinato de Cromo"
+    },
+    {
+      "base": "AD5113",
+      "amwayCode": "AD5113",
+      "name": "Amway Home™ Tapa medidora de porción"
+    },
+    {
+      "base": "E0001",
+      "amwayCode": "E0001",
+      "name": "Amway Home™ Limpiador multiusos L.O.C.™"
+    },
+    {
+      "base": "E3878S",
+      "amwayCode": "E3878S",
+      "name": "Pursue™ Limpiador desinfectante concentrado"
+    }
+  ],
+  "not_seen_list": []
+}
