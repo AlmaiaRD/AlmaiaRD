@@ -24,30 +24,35 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPA
 const { error: ae } = await supabase.auth.signInWithPassword({ email: "admin@almaia.com", password: "Admin123!" });
 if (ae) { console.error(ae.message); process.exit(1); }
 
-// Detectar existencia de funciones intentando llamarlas con args "obvio no válidos"
-// Si la función NO existe: error "Could not find the function public.X(...) in the schema cache"
-// Si existe: error de permisos o de ejecución, pero no "could not find"
-const calls = [
-  ["add_inventory_stock", { p_product_id: "00000000-0000-0000-0000-000000000000", p_quantity: 0, p_unit_cost: 0, p_line_total: 0 }],
-  ["subtract_inventory_stock", { p_product_id: "00000000-0000-0000-0000-000000000000", p_quantity: 0 }],
-  ["restore_inventory_stock", { p_product_id: "00000000-0000-0000-0000-000000000000", p_quantity: 0 }],
-  ["adjust_invoice_payment", { p_invoice_id: "00000000-0000-0000-0000-000000000000", p_diff: 0 }],
+// Lista de funciones que se esperan en la BD (schema public)
+const expected = [
+  "add_inventory_stock",
+  "subtract_inventory_stock",
+  "restore_inventory_stock",
+  "adjust_invoice_payment",
+  "use_credit_balance",
+  "fn_generate_invoice_number",
+  "fn_calculate_product_prices",
+  "fn_public_functions",
 ];
 
-for (const [name, args] of calls) {
-  const { error } = await supabase.rpc(name, args);
-  const msg = error?.message || "OK (sin error)";
-  const notFound = /could not find the function/i.test(msg);
-  console.log(`${notFound ? "❌ NO EXISTE" : "✅ existe"}  ${name}: ${msg.substring(0, 120)}`);
+// Consultar el catálogo real de funciones vía helper (creado en fix-inventory-movements.sql).
+// Este método NO invoca las funciones, así que no produce falsos negativos por argumentos faltantes.
+const { data: catalog, error: catErr } = await supabase.rpc("fn_public_functions");
+
+if (catErr) {
+  console.warn("⚠️  fn_public_functions() no disponible. Ejecuta scripts/fix-inventory-movements.sql en el SQL Editor.\n");
+  console.warn("Fallo del helper:", catErr.message);
+  process.exit(1);
 }
 
-// Verificar también funciones del schema principal usadas por triggers
-const fnChecks = ["fn_calculate_invoice_totals", "fn_update_inventory_on_sale", "fn_update_inventory_on_purchase", "fn_restore_inventory_on_cancellation", "fn_generate_invoice_number", "fn_handle_excess_payment", "fn_update_invoice_on_receipt"];
-for (const f of fnChecks) {
-  // Estas funciones requieren args complejos; mejor probar con args vacíos para detectar su existencia
-  const { error } = await supabase.rpc(f, {});
-  const msg = error?.message || "OK";
-  const notFound = /could not find the function/i.test(msg);
-  const ambiguous = /is not defined|missing|was called with/;
-  console.log(`${notFound ? "❌ NO EXISTE" : "✅ existe"}  ${f}: ${msg.substring(0, 100)}`);
+const existing = new Set((catalog || []).map((r) => r.fn_name));
+
+console.log("=== Funciones en schema public (vía pg_proc) ===");
+for (const f of expected) {
+  console.log(`${existing.has(f) ? "✅ existe" : "❌ NO EXISTE"}  ${f}`);
 }
+
+console.log("\n=== Funciones extra encontradas ===");
+const extras = (catalog || []).filter((r) => !expected.includes(r.fn_name)).map((r) => r.fn_name);
+console.log(extras.length ? extras.join(", ") : "(ninguna)");

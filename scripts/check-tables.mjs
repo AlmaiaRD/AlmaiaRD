@@ -25,9 +25,12 @@ const { error: ae } = await supabase.auth.signInWithPassword({ email: "admin@alm
 if (ae) { console.error(ae.message); process.exit(1); }
 
 async function col(table, limit = 1) {
-  const { data, error } = await supabase.from(table).select("*").limit(limit);
+  // head=true con count exacto: distingue tabla inexistente (error) de tabla vacía (data=null sin error)
+  const { error, count } = await supabase.from(table).select("*", { count: "exact", head: true }).limit(limit);
   if (error) return { exists: false, error: error.message };
-  return { exists: true, columns: data.length ? Object.keys(data[0]).sort() : [] };
+  if ((count ?? 0) === 0) return { exists: true, columns: [], count: 0 };
+  const { data } = await supabase.from(table).select("*").limit(1);
+  return { exists: true, columns: data?.length ? Object.keys(data[0]).sort() : [], count: count ?? 0 };
 }
 
 for (const [label, table] of [
@@ -43,7 +46,8 @@ for (const [label, table] of [
 ]) {
   const r = await col(table);
   if (!r.exists) console.log(`❌ ${label}: NO EXISTE (${r.error?.substring(0, 80)})`);
-  else console.log(`✅ ${label}: ${r.columns.length} cols — ${r.columns.join(", ")}`);
+  else if (r.count === 0) console.log(`✅ ${label}: existe, 0 filas (vacía — columnas no detectables sin datos)`);
+  else console.log(`✅ ${label}: ${r.count} filas | ${r.columns.length} cols — ${r.columns.join(", ")}`);
 }
 
 // Verificar si whatsapp_configs.id tiene NOT NULL (migración performance)

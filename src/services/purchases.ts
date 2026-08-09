@@ -75,7 +75,7 @@ export async function createPurchase(data: {
 
   // Update inventory for each item
   for (const item of data.items) {
-    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost);
+    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost, "PURCHASE", "purchase", purchase.id);
   }
 
   return purchase;
@@ -149,7 +149,7 @@ export async function updatePurchase(
     .eq("purchase_id", id);
   if (oldItems) {
     for (const old of oldItems) {
-      await subtractInventoryStock(old.product_id, old.quantity);
+      await subtractInventoryStock(old.product_id, old.quantity, "ADJUSTMENT", "purchase", id);
     }
   }
 
@@ -177,7 +177,7 @@ export async function updatePurchase(
 
   // Add new stock to inventory
   for (const item of data.items) {
-    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost);
+    await addInventoryStock(item.product_id, item.quantity, item.unit_cost, item.quantity * item.unit_cost, "PURCHASE", "purchase", id);
   }
 }
 
@@ -189,7 +189,7 @@ export async function deletePurchase(id: string) {
     .eq("purchase_id", id);
   if (oldItems) {
     for (const old of oldItems) {
-      await subtractInventoryStock(old.product_id, old.quantity);
+      await subtractInventoryStock(old.product_id, old.quantity, "ADJUSTMENT", "purchase", id);
     }
   }
 

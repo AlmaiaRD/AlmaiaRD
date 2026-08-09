@@ -131,9 +131,10 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   if (itemsError) throw itemsError;
 
   // Subtract inventory for each item sold
+  const invId = (invData as Record<string, unknown>).id as string;
   for (const item of items) {
     if (item.product_id) {
-      await subtractInventoryStock(item.product_id, item.quantity || 0);
+      await subtractInventoryStock(item.product_id, item.quantity || 0, "SALE", "invoice", invId);
     }
   }
 
@@ -188,7 +189,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
   if (oldItems) {
     for (const old of oldItems) {
       if (old.product_id) {
-        await addInventoryStock(old.product_id, old.quantity, 0, old.line_total);
+        await addInventoryStock(old.product_id, old.quantity, 0, old.line_total, "RETURN", "invoice", id);
       }
     }
   }
@@ -231,7 +232,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>, items
     // Subtract inventory for new items
     for (const item of items) {
       if (item.product_id) {
-        await subtractInventoryStock(item.product_id, item.quantity || 0);
+        await subtractInventoryStock(item.product_id, item.quantity || 0, "SALE", "invoice", id);
       }
     }
   }
@@ -257,7 +258,7 @@ export async function updateInvoiceStatus(id: string, status: string) {
       if (items) {
         for (const item of items) {
           if (item.product_id) {
-            await restoreInventoryStock(item.product_id, item.quantity);
+            await restoreInventoryStock(item.product_id, item.quantity, "CANCELLATION", "invoice", id);
           }
         }
       }
@@ -284,7 +285,7 @@ export async function deleteInvoice(id: string) {
   if (items) {
     for (const item of items) {
       if (item.product_id) {
-        await restoreInventoryStock(item.product_id, item.quantity);
+        await restoreInventoryStock(item.product_id, item.quantity, "CANCELLATION", "invoice", id);
       }
     }
   }

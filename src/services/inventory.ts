@@ -52,28 +52,37 @@ export async function getLowStockProducts() {
   });
 }
 
-export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number) {
+export async function addInventoryStock(productId: string, quantity: number, unitCost: number, lineTotal: number, movementType?: string, referenceType?: string, referenceId?: string) {
   const { error } = await supabase.rpc("add_inventory_stock", {
     p_product_id: productId,
     p_quantity: quantity,
     p_unit_cost: Math.round(unitCost * 100) / 100,
     p_line_total: Math.round(lineTotal * 100) / 100,
+    p_movement_type: movementType || "PURCHASE",
+    p_reference_type: referenceType ?? null,
+    p_reference_id: referenceId ?? null,
   });
   if (error) throw error;
 }
 
-export async function subtractInventoryStock(productId: string, quantity: number) {
+export async function subtractInventoryStock(productId: string, quantity: number, movementType?: string, referenceType?: string, referenceId?: string) {
   const { error } = await supabase.rpc("subtract_inventory_stock", {
     p_product_id: productId,
     p_quantity: quantity,
+    p_movement_type: movementType || "SALE",
+    p_reference_type: referenceType ?? null,
+    p_reference_id: referenceId ?? null,
   });
   if (error) throw error;
 }
 
-export async function restoreInventoryStock(productId: string, quantity: number) {
+export async function restoreInventoryStock(productId: string, quantity: number, movementType?: string, referenceType?: string, referenceId?: string) {
   const { error } = await supabase.rpc("restore_inventory_stock", {
     p_product_id: productId,
     p_quantity: quantity,
+    p_movement_type: movementType || "CANCELLATION",
+    p_reference_type: referenceType ?? null,
+    p_reference_id: referenceId ?? null,
   });
   if (error) throw error;
 }
