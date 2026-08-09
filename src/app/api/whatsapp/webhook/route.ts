@@ -1,6 +1,23 @@
+import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
+const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
+
+function verifySignature(rawBody: string, signature: string | null): boolean {
+  if (!APP_SECRET) {
+    console.warn("WHATSAPP_APP_SECRET no configurado; webhook aceptado sin verificar");
+    return true;
+  }
+  if (!signature) return false;
+
+  const expected = createHmac("sha256", APP_SECRET).update(rawBody).digest("hex");
+  const received = signature.startsWith("sha256=") ? signature.slice(7) : signature;
+
+  const a = Buffer.from(expected, "hex");
+  const b = Buffer.from(received, "hex");
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 // GET - Webhook verification
 export async function GET(req: NextRequest) {
@@ -19,10 +36,15 @@ export async function GET(req: NextRequest) {
 // POST - Receive messages
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
 
-    // Verify the webhook signature (optional but recommended)
-    // const signature = req.headers.get("x-hub-signature-256");
+    // Verify the webhook signature (HMAC-SHA256 of the raw body using the App Secret)
+    const signature = req.headers.get("x-hub-signature-256");
+    if (!verifySignature(rawBody, signature)) {
+      return new NextResponse("Invalid signature", { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
 
     const entry = body.entry?.[0];
     const changes = entry?.changes?.[0];

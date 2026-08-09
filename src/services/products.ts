@@ -116,12 +116,3 @@ export async function deactivateCategory(id: string) {
   invalidateCache("categories");
 }
 
-export async function importProductsFromPdf(file: File) {
-  const formData = new FormData();
-  formData.append("file", file);
-  const { data, error } = await supabase.functions.invoke("import-pdf-catalog", {
-    body: formData,
-  });
-  if (error) throw error;
-  return data;
-}
