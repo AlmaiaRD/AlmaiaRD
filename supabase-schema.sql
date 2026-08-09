@@ -378,98 +378,113 @@ $$ LANGUAGE plpgsql;
 -- ============================================================
 
 -- Trigger: Calcular precios automáticos en productos
+-- Fórmula: roundToNearest50(cost × itbisMult × markup), consistente con la app.
+-- Solo recalcula si el precio NO viene dado (NULL o 0) para no pisar precios manuales.
 CREATE OR REPLACE FUNCTION fn_calculate_product_prices()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_itbis_mult NUMERIC;
 BEGIN
-  NEW.price_30 := ROUND(NEW.cost * 1.30, 2);
-  NEW.price_35 := ROUND(NEW.cost * 1.35, 2);
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_calculate_prices
-  BEFORE INSERT OR UPDATE OF cost ON products
-  FOR EACH ROW
-  EXECUTE FUNCTION fn_calculate_product_prices();
-
--- Trigger: Actualizar inventario al registrar compra
-CREATE OR REPLACE FUNCTION fn_update_inventory_on_purchase()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO inventory (product_id, stock, average_cost, inventory_value)
-  VALUES (NEW.product_id, NEW.quantity, NEW.unit_cost, NEW.quantity * NEW.unit_cost)
-  ON CONFLICT (product_id) DO UPDATE SET
-    stock = inventory.stock + NEW.quantity,
-    average_cost = (inventory.average_cost * inventory.stock + NEW.quantity * NEW.unit_cost) / (inventory.stock + NEW.quantity),
-    inventory_value = (inventory.inventory_value + NEW.line_total),
-    updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_purchase_inventory
-  AFTER INSERT ON purchase_items
-  FOR EACH ROW
-  EXECUTE FUNCTION fn_update_inventory_on_purchase();
-
--- Trigger: Descontar inventario al crear factura
-CREATE OR REPLACE FUNCTION fn_update_inventory_on_sale()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE inventory SET
-    stock = stock - NEW.quantity,
-    inventory_value = inventory_value - (NEW.unit_cost * NEW.quantity),
-    updated_at = now()
-  WHERE product_id = NEW.product_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_sale_inventory
-  AFTER INSERT ON invoice_items
-  FOR EACH ROW
-  EXECUTE FUNCTION fn_update_inventory_on_sale();
-
--- Trigger: Calcular totales de factura y balance
-CREATE OR REPLACE FUNCTION fn_calculate_invoice_totals()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.pv_total := COALESCE(
-    (SELECT SUM(ii.pv * ii.quantity) FROM invoice_items ii WHERE ii.invoice_id = NEW.id), 0
-  );
-  NEW.balance_due := NEW.total - NEW.amount_paid;
-  IF NEW.balance_due = 0 AND NEW.amount_paid > 0 THEN
-    NEW.status := 'PAID';
-  ELSIF NEW.amount_paid > 0 THEN
-    NEW.status := 'PARTIAL';
+  v_itbis_mult := CASE WHEN NEW.apply_itbis IS NOT FALSE THEN 1.18 ELSE 1 END;
+  IF NEW.price_30 IS NULL OR NEW.price_30 = 0 THEN
+    NEW.price_30 := CEIL(NEW.cost * v_itbis_mult * 1.30 / 50) * 50;
+  END IF;
+  IF NEW.price_35 IS NULL OR NEW.price_35 = 0 THEN
+    NEW.price_35 := CEIL(NEW.cost * v_itbis_mult * 1.35 / 50) * 50;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger: Actualizar factura al recibir pago
-CREATE OR REPLACE FUNCTION fn_update_invoice_on_receipt()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE invoices SET
-    amount_paid = amount_paid + NEW.amount,
-    balance_due = total - (amount_paid + NEW.amount),
-    status = CASE
-      WHEN total - (amount_paid + NEW.amount) <= 0 THEN 'PAID'
-      ELSE 'PARTIAL'
-    END,
-    updated_at = now()
-  WHERE id = NEW.invoice_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_receipt_invoice
-  AFTER INSERT ON receipts
+CREATE TRIGGER trg_calculate_prices
+  BEFORE INSERT OR UPDATE OF cost, apply_itbis ON products
   FOR EACH ROW
-  EXECUTE FUNCTION fn_update_invoice_on_receipt();
+  EXECUTE FUNCTION fn_calculate_product_prices();
 
--- Trigger: Manejo de excedentes (pago > saldo)
+-- NOTA: Los triggers de inventario (trg_purchase_inventory, trg_sale_inventory,
+-- trg_cancellation_restore) están DESACTIVADOS a propósito. La aplicación gestiona
+-- el inventario mediante las RPCs add_inventory_stock / subtract_inventory_stock /
+-- restore_inventory_stock (scripts/migrations/20250717_inventory_rpc.sql), que
+-- además manejan pending_return (devoluciones). Instalar estos triggers causaría
+-- DOBLE MOVIMIENTO de inventario. Mantenerlos comentados.
+
+-- ══ INVENTARIO ══
+-- Los triggers de inventario están DESACTIVADOS a propósito. La aplicación
+-- gestiona el inventario con las RPCs add_inventory_stock / subtract_inventory_stock /
+-- restore_inventory_stock (migrations/20250717_inventory_rpc.sql), que además manejan
+-- pending_return. Instalar los triggers causaría DOBLE MOVIMIENTO.
+
+-- -- Trigger: Actualizar inventario al registrar compra
+-- CREATE OR REPLACE FUNCTION fn_update_inventory_on_purchase()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--   INSERT INTO inventory (product_id, stock, average_cost, inventory_value)
+--   VALUES (NEW.product_id, NEW.quantity, NEW.unit_cost, NEW.quantity * NEW.unit_cost)
+--   ON CONFLICT (product_id) DO UPDATE SET
+--     stock = inventory.stock + NEW.quantity,
+--     average_cost = (inventory.average_cost * inventory.stock + NEW.quantity * NEW.unit_cost) / (inventory.stock + NEW.quantity),
+--     inventory_value = (inventory.inventory_value + NEW.line_total),
+--     updated_at = now();
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER trg_purchase_inventory
+--   AFTER INSERT ON purchase_items
+--   FOR EACH ROW
+--   EXECUTE FUNCTION fn_update_inventory_on_purchase();
+--
+-- -- Trigger: Descontar inventario al crear factura
+-- CREATE OR REPLACE FUNCTION fn_update_inventory_on_sale()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--   UPDATE inventory SET
+--     stock = stock - NEW.quantity,
+--     inventory_value = inventory_value - (NEW.unit_cost * NEW.quantity),
+--     updated_at = now()
+--   WHERE product_id = NEW.product_id;
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER trg_sale_inventory
+--   AFTER INSERT ON invoice_items
+--   FOR EACH ROW
+--   EXECUTE FUNCTION fn_update_inventory_on_sale();
+--
+-- -- Trigger: Reponer inventario al anular factura
+-- CREATE OR REPLACE FUNCTION fn_restore_inventory_on_cancellation()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--   IF NEW.status = 'CANCELLED' AND OLD.status != 'CANCELLED' THEN
+--     UPDATE inventory i
+--     SET stock = i.stock + ii.quantity,
+--         updated_at = now()
+--     FROM invoice_items ii
+--     WHERE ii.invoice_id = NEW.id AND i.product_id = ii.product_id;
+--   END IF;
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER trg_cancellation_restore
+--   AFTER UPDATE OF status ON invoices
+--   FOR EACH ROW
+--   WHEN (NEW.status = 'CANCELLED' AND OLD.status != 'CANCELLED')
+--   EXECUTE FUNCTION fn_restore_inventory_on_cancellation();
+
+-- ══ TOTALES DE FACTURA ══
+-- fn_calculate_invoice_totals: la app calcula pv_total/balance_due/status en
+-- createInvoice/updateInvoice; se mantiene la función como referencia pero sin
+-- trigger (evita duplicar el cálculo).
+
+-- ══ PAGOS EN RECIBOS ══
+-- fn_update_invoice_on_receipt + trg_receipt_invoice están ELIMINADOS a propósito:
+-- la app ajusta amount_paid vía RPC adjust_invoice_payment (createReceipt,
+-- updateReceiptWithInvoice, deleteReceipt). El trigger causaba DOBLE CONTEO
+-- de pagos al sumar amount_paid dos veces.
+
+-- Trigger: Manejo de excedentes (pago > total) → crea crédito a favor
 CREATE OR REPLACE FUNCTION fn_handle_excess_payment()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -492,27 +507,6 @@ CREATE TRIGGER trg_excess_payment
   AFTER INSERT ON receipts
   FOR EACH ROW
   EXECUTE FUNCTION fn_handle_excess_payment();
-
--- Trigger: Reponer inventario al anular factura
-CREATE OR REPLACE FUNCTION fn_restore_inventory_on_cancellation()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.status = 'CANCELLED' AND OLD.status != 'CANCELLED' THEN
-    UPDATE inventory i
-    SET stock = i.stock + ii.quantity,
-        updated_at = now()
-    FROM invoice_items ii
-    WHERE ii.invoice_id = NEW.id AND i.product_id = ii.product_id;
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_cancellation_restore
-  AFTER UPDATE OF status ON invoices
-  FOR EACH ROW
-  WHEN (NEW.status = 'CANCELLED' AND OLD.status != 'CANCELLED')
-  EXECUTE FUNCTION fn_restore_inventory_on_cancellation();
 
 -- ============================================================
 -- VISTAS SQL ESTRATÉGICAS
@@ -821,10 +815,14 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
--- Eliminar triggers que calculan/ajustan valores automáticamente
--- Ahora se gestionan desde TypeScript para mayor control
-DROP TRIGGER IF EXISTS trg_calculate_prices ON products;
-DROP FUNCTION IF EXISTS fn_calculate_product_prices();
+-- Eliminar triggers redundantes que duplican la lógica de TypeScript
+-- NOTA: trg_calculate_prices SE MANTIENE (red de seguridad para inserts sin
+-- precios, recalculando solo cuando vienen NULL/0). trg_excess_payment SE MANTIENE.
+-- trg_receipt_invoice SE ELIMINA: la app ajusta amount_paid vía RPC
+-- adjust_invoice_payment, el trigger causaba DOBLE CONTEO de pagos.
+
+DROP TRIGGER IF EXISTS trg_receipt_invoice ON receipts;
+DROP FUNCTION IF EXISTS fn_update_invoice_on_receipt();
 
 DROP TRIGGER IF EXISTS trg_sale_inventory ON invoice_items;
 DROP FUNCTION IF EXISTS fn_update_inventory_on_sale();

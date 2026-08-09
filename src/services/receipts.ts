@@ -96,8 +96,22 @@ export async function createReceipt(receipt: Partial<Receipt>) {
 }
 
 export async function deleteReceipt(id: string) {
+  const { data: receipt } = await supabase
+    .from("receipts")
+    .select("invoice_id, amount")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("receipts").delete().eq("id", id);
   if (error) throw error;
+
+  if (receipt?.invoice_id && receipt.amount) {
+    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
+      p_invoice_id: receipt.invoice_id,
+      p_diff: -Number(receipt.amount),
+    });
+    if (rpcError) throw rpcError;
+  }
 }
 
 export async function getClientInvoices(clientId: string) {
