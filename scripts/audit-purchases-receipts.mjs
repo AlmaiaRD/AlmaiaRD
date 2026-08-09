@@ -25,10 +25,11 @@ const { error: ae } = await supabase.auth.signInWithPassword({ email: "admin@alm
 if (ae) { console.error(ae.message); process.exit(1); }
 
 // Códigos eliminados en los cambios de catálogo
+// NOTA: 110170, 109741 y 127065 fueron reactivados y ya NO son códigos eliminados.
 const deletedCodes = [
   "116745", "123791", "125325", "116733", "116734", "116736", "116737", "116739",
   "120361", "120362", "124163", "120364", "120365", "120872", "102736", "124692",
-  "118761", "110170", "109741", "127065",
+  "118761",
 ];
 
 const { data: products } = await supabase.from("products").select("id, code, name");
@@ -48,7 +49,7 @@ for (const p of purchases || []) {
 console.log("\n=== RECIBOS ===");
 const { data: receipts } = await supabase.from("receipts").select("*").limit(1000);
 for (const r of receipts || []) {
-  console.log(`${r.receipt_number ?? r.id} total=${r.total} tipo=${r.receipt_type ?? r.payment_method ?? "?"} fecha=${r.receipt_date ?? r.created_at?.slice(0,10)}`);
+  console.log(`${r.receipt_number ?? r.id} amount=${r.amount} tipo=${r.payment_method ?? "?"} fecha=${r.receipt_date ?? r.created_at?.slice(0,10)}`);
 }
 
 console.log("\n=== ¿Los códigos eliminados aparecen en documentos? ===");
