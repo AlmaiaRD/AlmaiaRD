@@ -18,6 +18,14 @@ import { useRouter } from "next/navigation";
 const MARKUP_30 = 1.3;
 const MARKUP_35 = 1.35;
 
+// Excepciones Nutrilite que SÍ pagan ITBIS (confirmadas por la usuaria)
+const NUTRILITE_ITBIS_EXCEPTIONS = ["proteína vegetal", "cerocarb", "fibra en polvo"];
+
+function isNutriliteItbisException(name: string) {
+  const n = name.toLowerCase();
+  return NUTRILITE_ITBIS_EXCEPTIONS.some((e) => n.includes(e));
+}
+
 export default function CatalogoPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
@@ -53,6 +61,8 @@ export default function CatalogoPage() {
   const [deletingSubbrand, setDeletingSubbrand] = useState<string | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<any>(null);
+  const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<any>(null);
+  const [deletingProduct, setDeletingProduct] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -206,12 +216,17 @@ export default function CatalogoPage() {
   }
 
   async function handleDeleteProduct(product: any) {
-    if (!confirm(`¿Eliminar definitivamente "${product.name}"? Esta acción no se puede deshacer.`)) return;
+    setDeletingProduct(true);
     try {
       await deleteProduct(product.id);
       setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
       toast.success("Producto eliminado");
     } catch { toast.error("Error al eliminar producto"); }
+    finally { setDeletingProduct(false); setConfirmDeleteProduct(null); }
+  }
+
+  function requestDeleteProduct(product: any) {
+    setConfirmDeleteProduct(product);
   }
 
   async function handleCreateSubbrand(name: string) {
@@ -353,24 +368,27 @@ export default function CatalogoPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product: any) => {
             return (
-              <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200">
-                {product.image_url && (
-                  <div className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#FAF6F0]">
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                  </div>
+              <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200 flex flex-col">
+                {product.image_url ? (
+                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#FAF6F0] cursor-pointer group">
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl mb-3 bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] cursor-pointer">
+                    <BookOpen size={32} className="opacity-40" />
+                  </button>
                 )}
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-[#5C3E35]">{product.name}</h3>
+                  <button type="button" onClick={() => setViewingProduct(product)} className="flex-1 text-left cursor-pointer">
+                    <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors line-clamp-2">{product.name}</h3>
                     <p className="text-xs text-[#9C8A82] mt-0.5">{product.code}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => setViewingProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Ver detalles"><Eye size={14} /></button>
-                    <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors"><Edit2 size={14} /></button>
+                  </button>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => openEdit(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Editar"><Edit2 size={14} /></button>
                     {!product.active ? (
                       <>
                         <button onClick={() => handleRestoreProduct(product)} className="p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={14} /></button>
-                        <button onClick={() => handleDeleteProduct(product)} className="p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
+                        <button onClick={() => requestDeleteProduct(product)} className="p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
                       </>
                     ) : (
                       <button onClick={() => handleArchiveProduct(product)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
@@ -435,6 +453,9 @@ export default function CatalogoPage() {
                     </button>
                   </div>
                 </div>
+                <button type="button" onClick={() => setViewingProduct(product)} className="mt-4 w-full h-10 flex items-center justify-center gap-2 bg-[#FAF6F0] border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 hover:border-[#B8837E]/40 hover:text-[#B8837E] transition-all duration-200">
+                  <Eye size={16} /> Ver
+                </button>
               </div>
             );
           })}
@@ -453,8 +474,7 @@ export default function CatalogoPage() {
               <input type="text" value={form.name} onChange={(e) => {
                 const newName = e.target.value;
                 const isNutri = subbrands.find((s: any) => s.id === form.subbrand_id)?.name === "Nutrilite";
-                const isProteina = newName.toLowerCase().includes("proteína vegetal");
-                setForm({ ...form, name: newName, apply_itbis: isNutri ? isProteina : true });
+                setForm({ ...form, name: newName, apply_itbis: isNutri ? isNutriliteItbisException(newName) : true });
               }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
           </div>
@@ -466,8 +486,7 @@ export default function CatalogoPage() {
                 const sub = subbrands.find((s: any) => s.id === e.target.value);
                 const name = form.name.toLowerCase();
                 const isNutri = sub?.name === "Nutrilite";
-                const isProteina = name.includes("proteína vegetal");
-                setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isProteina) });
+                setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isNutriliteItbisException(form.name)) });
               }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
                 <option value="">Seleccionar...</option>
                 {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -648,61 +667,106 @@ export default function CatalogoPage() {
 
       <Modal isOpen={!!viewingProduct} onClose={() => setViewingProduct(null)} title={viewingProduct?.name || "Detalles del Producto"} wide>
         {viewingProduct && (
-          <div className="space-y-4">
-            {viewingProduct.image_url && (
-              <div className="w-full h-48 rounded-xl overflow-hidden bg-[#FAF6F0]">
-                <img src={viewingProduct.image_url} alt={viewingProduct.name} className="w-full h-full object-cover" />
+          <div className="space-y-5">
+            {viewingProduct.image_url ? (
+              <div className="w-full max-h-[360px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#FAF6F0] to-[#F3EAE3] flex items-center justify-center p-6">
+                <img src={viewingProduct.image_url} alt={viewingProduct.name} className="max-h-[320px] w-auto object-contain" />
+              </div>
+            ) : (
+              <div className="w-full h-40 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82]">
+                <BookOpen size={40} className="opacity-40" />
               </div>
             )}
+
+            <div className="flex flex-wrap gap-1.5">
+              {viewingProduct.subbrands && <Badge variant="info">{viewingProduct.subbrands.name}</Badge>}
+              {viewingProduct.categories && <Badge variant="neutral">{viewingProduct.categories.name}</Badge>}
+              {!viewingProduct.active && <Badge variant="danger">Inactivo</Badge>}
+              {viewingProduct.apply_itbis !== false && <Badge variant="warning">Incluye ITBIS</Badge>}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="p-4 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
                 <label className="block text-xs font-medium text-[#9C8A82] mb-1">Código</label>
-                <p className="text-sm text-[#5C3E35]">{viewingProduct.code || "N/A"}</p>
+                <p className="text-sm font-semibold text-[#5C3E35]">{viewingProduct.code || "N/A"}</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Submarca</label>
-                <p className="text-sm text-[#5C3E35]">{viewingProduct.subbrands?.name || "N/A"}</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Categoría</label>
-                <p className="text-sm text-[#5C3E35]">{viewingProduct.categories?.name || "N/A"}</p>
-              </div>
-              <div>
+              <div className="p-4 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
                 <label className="block text-xs font-medium text-[#9C8A82] mb-1">PV</label>
-                <p className="text-sm text-[#5C3E35]">{viewingProduct.pv || "N/A"}</p>
+                <p className="text-sm font-semibold text-[#5C3E35]">{viewingProduct.pv || "N/A"}</p>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Costo Amway</label>
-                <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(viewingProduct.cost)}</p>
+
+            <div className="grid grid-cols-4 gap-3">
+              <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
+                <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Costo Amway</label>
+                <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(viewingProduct.cost)}</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Costo + ITBIS</label>
+              <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
+                <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Costo + ITBIS</label>
                 <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(viewingProduct.cost * (viewingProduct.apply_itbis !== false ? (1 + ITBIS_RATE) : 1))}</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Precio 30%</label>
-                <p className="text-sm font-medium text-[#B8837E]">{formatCurrency(viewingProduct.price_30 || 0)}</p>
+              <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
+                <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Precio 30%</label>
+                <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(viewingProduct.price_30 || 0)}</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Precio 35%</label>
-                <p className="text-sm font-medium text-[#B8837E]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
+              <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
+                <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Precio 35%</label>
+                <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
               </div>
             </div>
+
             {(viewingProduct.description || viewingProduct.benefits) && (
               <div className="border-t border-[#E8E0D8] pt-4">
                 <label className="block text-xs font-medium text-[#9C8A82] mb-2">Descripción completa</label>
-                <div className="p-4 bg-[#FAF6F0] rounded-xl max-h-[60vh] overflow-y-auto">
+                <div className="p-4 bg-[#FAF6F0] rounded-xl max-h-[40vh] overflow-y-auto">
                   <p className="text-sm text-[#5C3E35] whitespace-pre-wrap leading-relaxed">{viewingProduct.description || viewingProduct.benefits}</p>
                 </div>
               </div>
             )}
-            <div className="flex justify-end pt-2">
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => openEdit(viewingProduct)} className="h-10 px-5 flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                <Edit2 size={15} /> Editar
+              </button>
+              {!viewingProduct.active ? (
+                <button onClick={() => requestDeleteProduct(viewingProduct)} className="h-10 px-5 flex items-center gap-2 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm">
+                  <Trash2 size={15} /> Eliminar
+                </button>
+              ) : (
+                <button onClick={() => { handleArchiveProduct(viewingProduct); setViewingProduct(null); }} className="h-10 px-5 flex items-center gap-2 border border-[#E8E0D8] text-[#9C8A82] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                  <Archive size={15} /> Archivar
+                </button>
+              )}
               <button onClick={() => setViewingProduct(null)} className="h-10 px-6 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cerrar</button>
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal isOpen={!!confirmDeleteProduct} onClose={() => setConfirmDeleteProduct(null)} title="Confirmar Eliminación">
+        <div className="space-y-5">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-sm text-red-700">
+              ¿Estás seguro de eliminar definitivamente <strong>&quot;{confirmDeleteProduct?.name}&quot;</strong>?
+            </p>
+            <p className="text-xs text-red-500 mt-2">Esta acción no se puede deshacer. El producto se borrará del catálogo junto con sus registros de inventario.</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setConfirmDeleteProduct(null)}
+              className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => handleDeleteProduct(confirmDeleteProduct)}
+              disabled={deletingProduct}
+              className="flex-1 h-12 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Trash2 size={16} /> {deletingProduct ? "Eliminando..." : "Eliminar"}
+            </button>
+          </div>
+        </div>
       </Modal>
     </PageContainer>
   );
