@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { Maximize2, Minimize2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
@@ -14,6 +15,8 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, subtitle, children, wide }: ModalProps) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -32,25 +35,36 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto max-h-[90vh] sm:max-h-none overflow-hidden",
-              wide ? "max-w-3xl" : "max-w-lg"
+              "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto overflow-hidden",
+              expanded
+                ? "max-w-[98vw] sm:max-w-[95vw] h-[96vh] sm:h-[94vh]"
+                : cn("max-h-[90vh] sm:max-h-none", wide ? "max-w-3xl" : "max-w-lg")
             )}
           >
             <div className="bg-foreground px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-              <div>
+              <div className="min-w-0 pr-2">
                 <h2 className="text-white text-base sm:text-lg font-semibold">{title}</h2>
                 {subtitle && (
                   <p className="text-[#D4C8C0] text-xs sm:text-sm mt-0.5">{subtitle}</p>
                 )}
               </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setExpanded((v) => !v)}
+                  title={expanded ? "Restaurar tamaño" : "Expandir espacio de trabajo"}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
-            <div className="p-4 sm:p-6 overflow-y-auto max-h-[75vh]">{children}</div>
+            <div className={cn("p-4 sm:p-6 overflow-y-auto", expanded ? "h-[calc(96vh-64px)] sm:h-[calc(94vh-68px)]" : "max-h-[75vh]")}>{children}</div>
           </motion.div>
         </div>
       )}
