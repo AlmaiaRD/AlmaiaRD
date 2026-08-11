@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { getSettings, updateSettings, getBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from "@/services/settings";
 import type { Settings, BankAccount } from "@/types/database";
-import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2, Cloud } from "lucide-react";
+import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { exportBackupToExcel } from "@/lib/excel";
 
 
 type Tab = "general" | "ai" | "banks" | "backup";
@@ -265,31 +266,36 @@ Responde en español en máximo 3 oraciones:`,
     }
   }
 
+  async function loadBackupData() {
+    const [clients, products, invoices, receipts, purchases, expenses, bonuses, followups] = await Promise.all([
+      supabase.from("clients").select("*"),
+      supabase.from("products").select("*"),
+      supabase.from("invoices").select("*"),
+      supabase.from("receipts").select("*"),
+      supabase.from("purchases").select("*"),
+      supabase.from("expenses").select("*"),
+      supabase.from("bonuses").select("*"),
+      supabase.from("followups").select("*"),
+    ]);
+    return {
+      clients: clients.data || [],
+      products: products.data || [],
+      invoices: invoices.data || [],
+      receipts: receipts.data || [],
+      purchases: purchases.data || [],
+      expenses: expenses.data || [],
+      bonuses: bonuses.data || [],
+      followups: followups.data || [],
+    };
+  }
+
   async function handleExportBackup() {
     try {
-      const [clients, products, invoices, receipts, purchases, expenses, bonuses, followups] = await Promise.all([
-        supabase.from("clients").select("*"),
-        supabase.from("products").select("*"),
-        supabase.from("invoices").select("*"),
-        supabase.from("receipts").select("*"),
-        supabase.from("purchases").select("*"),
-        supabase.from("expenses").select("*"),
-        supabase.from("bonuses").select("*"),
-        supabase.from("followups").select("*"),
-      ]);
+      const data = await loadBackupData();
       const backup = {
         version: "1.0",
         date: new Date().toISOString(),
-        data: {
-          clients: clients.data || [],
-          products: products.data || [],
-          invoices: invoices.data || [],
-          receipts: receipts.data || [],
-          purchases: purchases.data || [],
-          expenses: expenses.data || [],
-          bonuses: bonuses.data || [],
-          followups: followups.data || [],
-        },
+        data,
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -301,6 +307,16 @@ Responde en español en máximo 3 oraciones:`,
       toast.success("Backup exportado exitosamente");
     } catch {
       toast.error("Error al exportar backup");
+    }
+  }
+
+  async function handleExportBackupExcel() {
+    try {
+      const data = await loadBackupData();
+      exportBackupToExcel(data, `almaia-backup-${new Date().toISOString().split("T")[0]}`);
+      toast.success("Backup Excel exportado exitosamente");
+    } catch {
+      toast.error("Error al exportar backup Excel");
     }
   }
 
@@ -429,6 +445,9 @@ Responde en español en máximo 3 oraciones:`,
                     onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })}
                     placeholder="••••••••"
                     className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                  {(settings as any)?.has_smtp_password && !form.smtp_pass && (
+                    <p className="text-[11px] text-[#86C7A3] mt-1">Contraseña guardada. Déjala vacía para conservarla.</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 h-11">
                   <input type="checkbox" id="smtp_secure" checked={form.smtp_secure}
@@ -439,7 +458,7 @@ Responde en español en máximo 3 oraciones:`,
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-[#9C8A82] mb-1">Logo del Negocio</label>
                 <div className="flex items-center gap-3">
@@ -693,13 +712,19 @@ ACCIÓN: ..."
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-[#5C3E35]">Exportar Backup</h3>
-                <p className="text-xs text-[#9C8A82]">Descarga todos los datos del sistema en formato JSON</p>
+                <p className="text-xs text-[#9C8A82]">Descarga todos los datos del sistema en formato JSON o Excel</p>
               </div>
             </div>
-            <button onClick={handleExportBackup}
-              className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
-              <Download size={18} /> Descargar Backup
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button onClick={handleExportBackup}
+                className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+                <Download size={18} /> Backup JSON
+              </button>
+              <button onClick={handleExportBackupExcel}
+                className="flex items-center gap-2 bg-[#86C7A3] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm">
+                <FileSpreadsheet size={18} /> Backup Excel
+              </button>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">

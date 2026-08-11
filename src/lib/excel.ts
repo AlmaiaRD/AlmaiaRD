@@ -41,3 +41,35 @@ export function exportTableToExcel(
   XLSX.utils.book_append_sheet(wb, ws, "Datos");
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }
+
+function computeColWidths(rows: Record<string, any>[]): { wch: number }[] {
+  const widths: number[] = [];
+  rows.forEach((row) => {
+    Object.entries(row).forEach(([key, value]) => {
+      const len = Math.max(String(key).length, value == null ? 0 : String(value).length);
+      widths[Object.keys(row).indexOf(key)] = Math.max(widths[Object.keys(row).indexOf(key)] || 0, len);
+    });
+  });
+  return widths.map((w) => ({ wch: Math.min(Math.max(w, 12), 60) }));
+}
+
+export function exportBackupToExcel(
+  tables: Record<string, Record<string, any>[]>,
+  filename: string
+): void {
+  const wb = XLSX.utils.book_new();
+  Object.entries(tables).forEach(([name, rows]) => {
+    const sheetRows = rows.map((row) => {
+      const flat: Record<string, any> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        flat[key] = value && typeof value === "object" && !Array.isArray(value) ? JSON.stringify(value) : value ?? "";
+      });
+      return flat;
+    });
+    const ws = XLSX.utils.json_to_sheet(sheetRows);
+    ws["!cols"] = computeColWidths(sheetRows);
+    const sheetName = (name.charAt(0).toUpperCase() + name.slice(1)).slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || "Datos");
+  });
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+}
