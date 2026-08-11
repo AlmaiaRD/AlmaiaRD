@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function POST(req: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+    );
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
@@ -132,9 +139,10 @@ Si no hay productos relevantes, responde con un array vacío: []`;
     } catch {
       return NextResponse.json({ recommendations: [], error: "No se pudo procesar la respuesta de la IA" });
     }
-  } catch (error) {
+  } catch {
+    console.error("[recommendations] error");
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error interno" },
+      { error: "Error interno al generar recomendaciones" },
       { status: 500 }
     );
   }

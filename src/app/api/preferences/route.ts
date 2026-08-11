@@ -25,7 +25,7 @@ export async function GET() {
       .eq("id", user.id)
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: "Error al cargar preferencias" }, { status: 500 });
 
     return NextResponse.json({ preferences: data?.preferences || {} });
   } catch {
@@ -70,7 +70,7 @@ export async function PATCH(req: Request) {
     .update({ preferences: merged })
     .eq("id", user.id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Error al guardar preferencias" }, { status: 500 });
 
   return NextResponse.json({ preferences: merged });
 }

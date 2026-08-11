@@ -23,10 +23,14 @@ KPIs del día/mes: ventas, cobros, ganancias, valor inventario, cuentas por cobr
 
 ### Facturación (`/facturacion`)
 - **Nueva factura:** seleccionar cliente → agregar items del catálogo → método de pago (efectivo/tarjeta/transferencia/crédito) → generar
+- **Totales:** cada línea se redondea al múltiplo de 50 superior; el ITBIS (18%) se calcula sobre el **costo**, no sobre el precio. El total de la factura siempre es múltiplo de 50.
+- **Bundles:** los combos muestran la etiqueta **BUNDLE**, se pueden expandir con el chevron para ver sus componentes, y descuentan inventario de los **componentes** (con validación de stock previa). El PDF incluye la lista de componentes.
 - **Acciones:** imprimir PDF, enviar por WhatsApp o email, ver detalle
 
 ### Catálogo (`/catalogo`)
 Productos con submarca, código, precio, costo. Cada producto tiene `duración_días` para calcular fecha de recompra. Vista en cuadrícula con búsqueda y filtro por submarca.
+
+**Bundles:** botón para crear/editar combos con productos del catálogo. Incluye precio sugerido 30%/35% con ITBIS, botones "Poner 30%/35%", botón "Recalcular sugeridos", vista previa en vivo, duplicar bundle, imagen (máx. 5MB) y filtro "Solo bundles".
 
 ### Inventario (`/inventario`)
 Dos pestañas principales:

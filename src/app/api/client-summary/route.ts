@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 async function callOllama(prompt: string): Promise<string | null> {
@@ -64,6 +65,12 @@ function generarResumen(client: any, stats: any): string {
 }
 
 export async function POST(req: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+  );
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
@@ -135,8 +142,8 @@ ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`;
     }
 
     return NextResponse.json({ ai_summary: aiSummary, approach });
-  } catch (err: any) {
-    console.error("[client-summary]", err);
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+  } catch {
+    console.error("[client-summary] error");
+    return NextResponse.json({ error: "Error al generar el resumen" }, { status: 500 });
   }
 }

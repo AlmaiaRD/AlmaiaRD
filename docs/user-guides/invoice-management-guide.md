@@ -58,10 +58,12 @@ Antes de crear facturas, asegúrate de:
 2. **Seleccionar:** Haz clic en el producto de la lista
 3. **Ingresar cantidad:** Escribe la cantidad deseada
 4. El sistema calcula automáticamente:
-   - **Subtotal:** Cantidad × Precio unitario
+   - **Subtotal:** Cantidad × Precio unitario (cada línea se redondea al múltiplo de 50 superior; la diferencia se absorbe ajustando el precio cobrado)
+   - **ITBIS:** 18% del **COSTO** del producto (nunca del precio de venta), intacto en la línea
    - **Descuento:** Si aplica (basado en márgenes)
-   - **ITBIS:** Subtotal × 18%
-   - **Total:** Subtotal + ITBIS - Descuento
+   - **Total:** Suma de líneas (cada una múltiplo de 50) + ITBIS - Descuento. Resultado: el total de la factura siempre es múltiplo de 50.
+
+**Ejemplo:** costo 360, precio 486 (margen 35%), cantidad 1 → ITBIS = 360 × 0.18 = 64.80; 486 + 64.80 = 550.80 → el total de la línea se redondea a **600.00** (ajuste +49.20 absorbido por el precio cobrado).
 
 #### Agregar Múltiples Items
 1. Repite el proceso de "Agregar Item" para cada producto
@@ -70,6 +72,13 @@ Antes de crear facturas, asegúrate de:
 #### Eliminar Items
 1. Haz clic en el **ícono de basura** (") junto a cada item
 2. Confirma la eliminación
+
+#### Facturar Bundles (combos)
+1. Al agregar un producto que sea un **bundle**, la fila muestra la etiqueta **BUNDLE**.
+2. Usa el **chevron (▾/▸)** a la izquierda de la fila para **expandir el bundle** y ver sus productos componentes (nombre, cantidad y precio de cada uno).
+3. El bundle se factura a su **precio especial**; el inventario se descuenta de los **componentes** (no del bundle como unidad).
+4. Si algún componente no tiene stock suficiente, el sistema te lo advierte antes de generar la factura.
+5. El **PDF/impresión** también incluye la lista de componentes del bundle.
 
 ### Paso 4: Configurar Pago
 

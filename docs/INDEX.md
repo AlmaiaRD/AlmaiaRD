@@ -34,6 +34,7 @@ El menú se organiza en dos filas:
 ### 1. Guías de Usuario
 - **Guía de Inicio Rápido** — Introducción completa al sistema
 - **Guía de Facturación** — Gestión de facturas
+- **Guía de Catálogo y Bundles** — Productos, precios 30/35, combos
 - **Guía de Gestión de Clientes** — CRUD y perfiles de clientes
 - **Guía de Gestión de Inventario** — Stock, rotación, movimientos
 - **Guía de Gestión de Gastos** — Registro y categorización
@@ -81,4 +82,4 @@ Cada guía sigue: Visión General → Requisitos Previos → Flujo de Trabajo �
 
 ---
 
-*Última actualización: 29 junio 2026*
+*Última actualización: 10 agosto 2026*

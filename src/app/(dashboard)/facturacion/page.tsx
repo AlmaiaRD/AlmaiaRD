@@ -10,11 +10,11 @@ import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, 
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getClients, createClient } from "@/services/clients";
-import { getProducts } from "@/services/products";
+import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
-import { ITBIS_RATE } from "@/lib/constants";
+import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -45,10 +45,12 @@ export default function FacturacionPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingStatus, setEditingStatus] = useState<"PENDING" | "PARTIAL" | "PAID" | "CANCELLED">("PENDING");
   const [selectedClient, setSelectedClient] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(getLocalDateString());
   const [margin, setMargin] = useState(30);
-  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; price_30?: number; price_35?: number; pv: number; itbis: boolean }>>([]);
+  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; price_30?: number; price_35?: number; cost: number; pv: number; itbis: boolean; bundle_items?: any[] }>>([]);
+  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [notes, setNotes] = useState("");
@@ -184,21 +186,36 @@ export default function FacturacionPage() {
     setNotes("");
     setBankAccountId("");
     setEditingId(null);
+    setEditingStatus("PENDING");
   }
 
-  function addProduct(product: any) {
+  async function addProduct(product: any) {
     const price_30_ = product.price_30 ?? 0;
     const price_35_ = product.price_35 ?? 0;
-    setItems([...items, {
+    const base: any = {
       product_id: product.id,
       name: product.name,
       quantity: 1,
       unit_price: margin === 30 ? price_30_ : price_35_,
       price_30: price_30_,
       price_35: price_35_,
+      cost: product.cost ?? 0,
       pv: product.pv,
       itbis: product.apply_itbis !== false,
-    }]);
+      bundle_items: undefined,
+    };
+    if (product.is_bundle) {
+      try {
+        base.bundle_items = await getBundleItemsBatch([product.id]);
+      } catch {
+        base.bundle_items = [];
+      }
+    }
+    setItems([...items, base]);
+  }
+
+  function toggleExpandRow(index: number) {
+    setExpandedRows((prev) => ({ ...prev, [index]: !prev[index] }));
   }
 
   function addManualProduct() {
@@ -209,6 +226,7 @@ export default function FacturacionPage() {
       name: manualProduct.name,
       quantity: manualProduct.quantity,
       unit_price: manualProduct.unit_price,
+      cost: 0,
       pv: 0,
       itbis: manualProduct.itbis,
     }]);
@@ -220,10 +238,12 @@ export default function FacturacionPage() {
     setItems(items.filter((_, i) => i !== index));
   }
 
-  const subtotal = items.reduce((s, i) => s + i.quantity * effectivePrice(i), 0);
-  const itbisTotal = items.reduce((s, i) => s + (i.itbis ? i.quantity * effectivePrice(i) * ITBIS_RATE : 0), 0);
-  const discountValue = discountAmount > 0 ? discountAmount : (subtotal * discountPercent / 100);
-  const total = subtotal + itbisTotal - discountValue;
+  const mathBase = computeInvoiceMath(items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })));
+  const subtotal = mathBase.subtotal;
+  const itbisTotal = mathBase.itbis_total;
+  const discountValue = Math.round((discountAmount > 0 ? discountAmount : subtotal * discountPercent / 100) * 100) / 100;
+  const math = computeInvoiceMath(items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })), discountValue);
+  const total = math.total;
 
   async function buildPreviewEl(data: any, settings: any) {
     const el = document.createElement("div");
@@ -272,7 +292,12 @@ export default function FacturacionPage() {
           ${(data.invoice_items || []).map((item: any) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
               <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${esc(item.products?.subbrands?.name) || "\u2014"}</td>
-              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.products?.name || item.custom_name) || "Producto"}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">
+                ${esc(item.products?.name || item.custom_name) || "Producto"}
+                ${(item.bundle_items || []).map((bi: any) => `
+                  <div style="font-size:10px;color:#9C8A82;margin-top:2px;">\u2014 ${esc(bi.products?.name || "Producto")} x${bi.quantity}</div>
+                `).join("")}
+              </td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${esc(formatCurrency(Number(item.unit_price)))}</td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${esc(formatCurrency(Number(item.line_total)))}</td>
@@ -361,6 +386,24 @@ export default function FacturacionPage() {
 
   async function captureInvoice(inv: any) {
     const full = await getInvoice(inv.id);
+    const bundleIds = (full.invoice_items || [])
+      .filter((it: any) => it.products?.is_bundle)
+      .map((it: any) => it.product_id);
+    if (bundleIds.length > 0) {
+      try {
+        const bitems = await getBundleItemsBatch(bundleIds);
+        const byBundle = new Map<string, any[]>();
+        for (const bi of bitems) {
+          const arr = byBundle.get(bi.bundle_id) || [];
+          arr.push(bi);
+          byBundle.set(bi.bundle_id, arr);
+        }
+        full.invoice_items = (full.invoice_items || []).map((it: any) => ({
+          ...it,
+          bundle_items: it.products?.is_bundle ? (byBundle.get(it.product_id) || []) : undefined,
+        }));
+      } catch { /* PDF sin detalle de componentes */ }
+    }
     const el = await buildPreviewEl(full, settings);
     document.body.appendChild(el);
     await new Promise(r => setTimeout(r, 500));
@@ -416,16 +459,37 @@ export default function FacturacionPage() {
   async function handleEdit(inv: any) {
     try {
       const full = await getInvoice(inv.id);
-      setEditingId(full.id);
-      setSelectedClient(full.client_id);
-      setItems(full.invoice_items?.map((item: any) => ({
+      const mappedItems: any[] = full.invoice_items?.map((item: any) => ({
         product_id: item.product_id,
         name: item.products?.name || "Producto",
         quantity: item.quantity,
         unit_price: Number(item.unit_price),
+        cost: Number(item.unit_cost || 0),
         pv: Number(item.pv || 0),
         itbis: item.itbis ?? false,
-      })) || []);
+        bundle_items: undefined,
+      })) || [];
+      const bundleIds = (full.invoice_items || [])
+        .filter((it: any) => it.products?.is_bundle)
+        .map((it: any) => it.product_id);
+      if (bundleIds.length > 0) {
+        try {
+          const bitems = await getBundleItemsBatch(bundleIds);
+          const byBundle = new Map<string, any[]>();
+          for (const bi of bitems) {
+            const arr = byBundle.get(bi.bundle_id) || [];
+            arr.push(bi);
+            byBundle.set(bi.bundle_id, arr);
+          }
+          mappedItems.forEach((it) => {
+            if (it.product_id && byBundle.has(it.product_id)) it.bundle_items = byBundle.get(it.product_id);
+          });
+        } catch { /* sin componentes */ }
+      }
+      setEditingId(full.id);
+      setEditingStatus(full.status || "PENDING");
+      setSelectedClient(full.client_id);
+      setItems(mappedItems);
       setDiscountPercent(0);
       setDiscountAmount(Number(full.discount_amount));
       setNotes(full.notes || "");
@@ -447,23 +511,26 @@ export default function FacturacionPage() {
         client_id: selectedClient,
         invoice_date: invoiceDate,
         discount_amount: discountValue,
-        status: "PENDING" as const,
+        status: editingId ? editingStatus : "PENDING",
         margin,
         notes: notes || undefined,
         bank_account_id: bankAccountId === "ALL" ? undefined : (bankAccountId || undefined),
         show_all_bank_accounts: bankAccountId === "ALL",
         currency: (settings as any)?.currency || "DOP",
       };
-      const invoiceItems = items.map((i) => ({
-        product_id: i.product_id || undefined,
-        quantity: i.quantity,
-        unit_price: effectivePrice(i),
-        line_total: i.quantity * effectivePrice(i),
-        pv: i.pv * i.quantity,
-        unit_cost: 0,
-        itbis: i.itbis,
-        custom_name: i.product_id ? undefined : i.name,
-      }));
+      const invoiceItems = items.map((i, idx) => {
+        const line = math.lines[idx] || { unit_price: effectivePrice(i), line_total: i.quantity * effectivePrice(i) };
+        return {
+          product_id: i.product_id || undefined,
+          quantity: i.quantity,
+          unit_price: line.unit_price,
+          line_total: line.line_total,
+          pv: i.pv * i.quantity,
+          unit_cost: 0,
+          itbis: i.itbis,
+          custom_name: i.product_id ? undefined : i.name,
+        };
+      });
 
       if (editingId) {
         await updateInvoice(editingId, payload, invoiceItems);
@@ -868,7 +935,7 @@ export default function FacturacionPage() {
             host: (settings as any).smtp_host,
             port: (settings as any).smtp_port || 587,
             user: (settings as any).smtp_user,
-            pass: (settings as any).smtp_pass,
+            configured: !!(settings as any).has_smtp_password,
             secure: (settings as any).smtp_secure || false,
             senderName: (settings as any).sender_name || undefined,
           } : undefined}
@@ -968,10 +1035,13 @@ export default function FacturacionPage() {
                     <button
                       key={p.id}
                       onClick={() => { addProduct(p); setShowProducts(false); setProductSearch(""); }}
-                      className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between"
+                      className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2"
                     >
-                      <span>{p.name}</span>
-                      <span className="text-[#9C8A82] text-xs">
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="truncate">{p.name}</span>
+                        {p.is_bundle && <Badge variant="warning">BUNDLE</Badge>}
+                      </span>
+                      <span className="text-[#9C8A82] text-xs flex-shrink-0">
                         <span className={margin === 30 ? "font-semibold text-[#5C3E35]" : ""}>30%: {formatCurrency(p.price_30)}</span>
                         {" | "}
                         <span className={margin === 35 ? "font-semibold text-[#5C3E35]" : ""}>35%: {formatCurrency(p.price_35)}</span>
@@ -1047,52 +1117,83 @@ export default function FacturacionPage() {
               <p className="text-sm text-[#9C8A82] py-3">No hay productos agregados</p>
             ) : (
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                {items.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3 flex-wrap sm:flex-nowrap">
-                    <div className="flex-1 text-sm text-[#5C3E35] min-w-[120px] sm:min-w-0">{item.name}</div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number" min={1} value={item.quantity}
-                        onChange={(e) => {
-                          const newItems = [...items];
-                          newItems[i].quantity = Number(e.target.value);
-                          setItems(newItems);
-                        }}
-                        className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                      />
-                      <input
-                        type="number" step="0.01" value={effectivePrice(item)}
-                        onChange={(e) => {
-                          const newItems = [...items];
-                          newItems[i].unit_price = Number(e.target.value);
-                          delete newItems[i].price_30;
-                          delete newItems[i].price_35;
-                          setItems(newItems);
-                        }}
-                        className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                      />
+                {items.map((item, i) => {
+                  const isBundle = !!item.bundle_items && item.bundle_items.length > 0;
+                  return (
+                    <div key={i} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
+                      <div className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3 flex-wrap sm:flex-nowrap">
+                        {isBundle && (
+                          <button
+                            type="button"
+                            onClick={() => toggleExpandRow(i)}
+                            className="p-1 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg transition-colors flex-shrink-0"
+                            title={expandedRows[i] ? "Ocultar componentes" : "Ver componentes del bundle"}
+                          >
+                            <ChevronDown size={16} className={`transition-transform ${expandedRows[i] ? "rotate-180" : ""}`} />
+                          </button>
+                        )}
+                        <div className="flex-1 text-sm text-[#5C3E35] min-w-[120px] sm:min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>{item.name}</span>
+                            {isBundle && <Badge variant="warning">BUNDLE</Badge>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number" min={1} value={item.quantity}
+                            onChange={(e) => {
+                              const newItems = [...items];
+                              newItems[i].quantity = Number(e.target.value);
+                              setItems(newItems);
+                            }}
+                            className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                          />
+                          <input
+                            type="number" step="0.01" value={math.lines[i]?.unit_price ?? effectivePrice(item)}
+                            onChange={(e) => {
+                              const newItems = [...items];
+                              newItems[i].unit_price = Number(e.target.value);
+                              delete newItems[i].price_30;
+                              delete newItems[i].price_35;
+                              setItems(newItems);
+                            }}
+                            className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newItems = [...items];
+                              newItems[i].itbis = !newItems[i].itbis;
+                              setItems(newItems);
+                            }}
+                            className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                          >
+                            <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
+                          </button>
+                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
+                            {formatCurrency(math.lines[i]?.line_total ?? item.quantity * effectivePrice(item))}
+                          </span>
+                          <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                      {expandedRows[i] && isBundle && (
+                        <div className="px-4 py-3 bg-white border-t border-[#E8E0D8] space-y-1.5">
+                          <p className="text-[10px] font-bold text-[#B8837E] uppercase tracking-wide">Componentes del bundle</p>
+                          {item.bundle_items?.map((bi: any) => (
+                            <div key={bi.id} className="flex items-center justify-between text-xs">
+                              <span className="text-[#5C3E35] truncate pr-3">{bi.products?.name || "Producto"}</span>
+                              <span className="text-[#9C8A82] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newItems = [...items];
-                          newItems[i].itbis = !newItems[i].itbis;
-                          setItems(newItems);
-                        }}
-                        className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
-                      >
-                        <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
-                      </button>
-                      <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
-                        {formatCurrency(item.quantity * effectivePrice(item))}
-                      </span>
-                      <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
-                        <X size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

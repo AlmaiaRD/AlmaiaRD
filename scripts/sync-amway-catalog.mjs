@@ -63,6 +63,17 @@ async function authedSupabase() {
 
 // ── Estado del sync ─────────────────────────────────────────
 const stats = { updated: 0, inserted: 0, archived: 0, errors: 0, skipped: 0 };
+
+// Dedupe global de URLs de producto entre categorías (evita re-scrapear el mismo producto)
+const seenProductUrls = new Set();
+
+// Seguridad: --no-archive evita archivar productos que no se scrapeen (evita borrados masivos al sincronizar solo algunas marcas)
+const NO_ARCHIVE = process.argv.includes("--no-archive");
+if (NO_ARCHIVE) console.log("🛡️  MODO SEGURO: --no-archive activo. No se archivarán productos no encontrados.");
+
+// Seguridad: --dry-run previsualiza updates/inserts/archives sin escribir en Supabase
+const DRY_RUN = process.argv.includes("--dry-run");
+if (DRY_RUN) console.log("👁️  MODO PREVIEW: --dry-run activo. NO se escribirá nada en Supabase.");
 let debugDumped = false;
 
 // ── Limpiar texto ───────────────────────────────────────────
@@ -204,51 +215,66 @@ async function getProductsFromCategory(page, category) {
   const products = [];
 
   try {
-    await page.goto(category.url, { waitUntil: "networkidle", timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page.goto(category.url, { waitUntil: "domcontentloaded", timeout: 45000 });
+    await page.waitForTimeout(3500);
 
-    // Scroll down to load more products (infinite scroll / lazy load)
-    let prevHeight = 0;
-    for (let i = 0; i < 5; i++) {
-      prevHeight = await page.evaluate(() => document.body.scrollHeight);
+    // Verificar que no redirigió al login
+    if (/sso|login|authorize/i.test(page.url())) {
+      console.log("   ⚠️  Redirigió al login, omitiendo categoría.");
+      return products;
+    }
+
+    // Cambiar "Artículos por página" a TODOS para capturar el catálogo completo
+    try {
+      const select = page.locator("select[name='itemsPerPage']").first();
+      if (await select.count()) {
+        await select.selectOption("all");
+        await page.waitForTimeout(4000);
+      }
+    } catch { /* el selector puede no existir */ }
+
+    if (/sso|login|authorize/i.test(page.url())) {
+      console.log("   ⚠️  Redirigió al login tras cambiar paginación, omitiendo categoría.");
+      return products;
+    }
+
+    // Scroll para cargar todos los productos (infinite scroll / lazy load)
+    for (let i = 0; i < 10; i++) {
+      const prevHeight = await page.evaluate(() => document.body.scrollHeight);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(1500);
       const newHeight = await page.evaluate(() => document.body.scrollHeight);
       if (newHeight === prevHeight) break;
     }
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(1000);
 
-    // Buscar enlaces de productos en la página
-    const productLinkSelectors = [
-      "a[href*='-p-']",
-      "a[href*='/product/']",
-      "a[href*='/p/']",
-      "a[href*='/item/']",
-      "a[class*='product']",
-      "[class*='product'] a",
-      "[class*='ProductCard'] a",
-      ".product-item a",
-      ".grid a[href]",
-    ];
-
-    let productLinks = [];
-    for (const sel of productLinkSelectors) {
-      productLinks = await page.$$(sel);
-      if (productLinks.length > 0) break;
-    }
-
-    // Extraer URLs únicas
+    // Extraer URLs de productos con el patrón confiable: /es_DO/p/CODIGO, /p/CODIGO, -p-CODIGO
     const urls = new Set();
-    for (const link of productLinks) {
-      const href = await link.getAttribute("href");
-      if (href && !href.startsWith("#") && !href.startsWith("javascript")) {
-        const fullUrl = href.startsWith("http") ? href : `https://www.amway.com.do${href.startsWith("/") ? "" : "/"}${href}`;
-        urls.add(fullUrl);
+    const items = await page.evaluate(() => {
+      const result = [];
+      const links = document.querySelectorAll("a[href]");
+      for (const a of links) {
+        const href = a.getAttribute("href");
+        if (!href) continue;
+        const m = href.match(/\/es_DO\/p\/([0-9A-Za-z]+)$/) || href.match(/\/p\/([0-9A-Za-z]+)$/) || href.match(/-p-([0-9A-Za-z]+)$/);
+        if (!m) continue;
+        const code = m[1];
+        if (!/^(?:[A-Za-z]{1,2}\d{2,6}[A-Za-z]{0,4}|\d{4,6}[A-Za-z]{0,3})$/.test(code)) continue;
+        result.push(href);
       }
+      return result;
+    });
+    for (const href of items) {
+      const fullUrl = href.startsWith("http") ? href : `https://www.amway.com.do${href.startsWith("/") ? "" : "/"}${href}`;
+      urls.add(fullUrl);
     }
 
     console.log(`   ${urls.size} productos encontrados`);
 
     for (const url of urls) {
+      if (seenProductUrls.has(url)) continue;
+      seenProductUrls.add(url);
       try {
         const product = await scrapeProduct(page, url);
         if (product) products.push(product);
@@ -314,9 +340,12 @@ async function scrapeProduct(page, url, retries = 2) {
       }
 
       let costLine = "";
+      let costFromIbo = false;
       const costIdx = lines.findIndex(l => /Costo\s*al?\s*IBO|Precio\s*IBO/i.test(l));
-      if (costIdx >= 0) costLine = lines[costIdx] + " " + (lines[costIdx + 1] || "");
-      else costLine = lines.find(l => /\$\s*[\d,.]+/.test(l)) || "";
+      if (costIdx >= 0) {
+        costLine = lines[costIdx] + " " + (lines[costIdx + 1] || "");
+        costFromIbo = true;
+      } else costLine = lines.find(l => /\$\s*[\d,.]+/.test(l)) || "";
 
       let pvLine = "";
       // Buscar "PV/BV" y tomar la siguiente línea (multi-line)
@@ -383,7 +412,7 @@ async function scrapeProduct(page, url, retries = 2) {
 
       const longParagraphs = lines.filter(l => l.length > 40 && !/^\$|RD\$|carrito|comprar|envío|impuesto|Costo\s*al?\s*IBO|PV\/BV|Artículo/i.test(l)).slice(0, 15);
 
-      return { name, code, quantity, costLine, pvLine, brand, subbrand, certText, tabContent, longParagraphs, bodyText };
+      return { name, code, quantity, costLine, costFromIbo, pvLine, brand, subbrand, certText, tabContent, longParagraphs, bodyText };
     });
 
     if (!data.name && !data.code) return null;
@@ -424,6 +453,7 @@ async function scrapeProduct(page, url, retries = 2) {
       price_35: cost > 0 ? Math.round(cost * 1.35 * 100) / 100 : 0,
       description: description.trim(), benefits: description.trim(),
       image_url: imageUrl, active: true, apply_itbis: true,
+      costFromIbo: data.costFromIbo,
       subbrand: data.subbrand || data.brand || "",
     };
   } catch (err) {
@@ -440,7 +470,17 @@ async function scrapeProduct(page, url, retries = 2) {
 }
 
 // ── Extraer código de producto ──────────────────────────────
+
+// Normaliza a código base sin sufijo regional (CO, MX, D, DR, SP, V, Z, TR, S, PH, CN...)
+function baseCode(code) {
+  const c = (code || "").trim();
+  if (!c) return "";
+  const m = c.match(/^([A-Z]{1,3}\d{2,6})/) || c.match(/^(\d{4,6})/);
+  return m ? m[1] : c;
+}
+
 // ── Sincronizar con Supabase ────────────────────────────────
+
 async function syncToSupabase(scrapedProducts) {
   console.log("\n📡 Sincronizando con Supabase...");
 
@@ -456,7 +496,7 @@ async function syncToSupabase(scrapedProducts) {
   // Obtener productos existentes
   const { data: existing, error } = await db
     .from("products")
-    .select("id, code, name, active");
+    .select("id, code, name, active, cost, pv");
 
   if (error) {
     console.error("ERROR al leer productos existentes:", error.message);
@@ -464,8 +504,16 @@ async function syncToSupabase(scrapedProducts) {
   }
 
   const existingByCode = {};
+  const existingByBase = {};
   for (const p of existing || []) {
-    if (p.code) existingByCode[p.code] = p;
+    if (p.code) {
+      existingByCode[p.code] = p;
+      const base = baseCode(p.code);
+      if (base) {
+        if (!existingByBase[base]) existingByBase[base] = [];
+        existingByBase[base].push(p);
+      }
+    }
   }
 
   const scrapedCodes = new Set();
@@ -480,8 +528,8 @@ async function syncToSupabase(scrapedProducts) {
         const sbName = product.subbrand.toLowerCase().trim();
         if (subbrandsByName[sbName]) {
           subbrand_id = subbrandsByName[sbName];
-        } else {
-          // Crear subbrand nueva
+        } else if (!DRY_RUN) {
+          // Crear subbrand nueva (solo en modo real)
           const { data: newSb } = await db.from("subbrands").insert({ name: product.subbrand }).select().single();
           if (newSb) {
             subbrandsByName[sbName] = newSb.id;
@@ -491,22 +539,67 @@ async function syncToSupabase(scrapedProducts) {
         }
       }
 
-      const existingProduct = existingByCode[product.code];
+      // 1) Match exacto por código
+      let existingProduct = existingByCode[product.code];
+      let matchMethod = "exacto";
+
+      // 2) Fallback: match por código base (sin sufijo regional) si hay un único candidato
+      if (!existingProduct) {
+        const base = baseCode(product.code);
+        const candidates = existingByBase[base];
+        if (candidates && candidates.length === 1) {
+          existingProduct = candidates[0];
+          matchMethod = "base";
+        } else if (candidates && candidates.length > 1) {
+          console.log(`   ⚠️  [BASE] Ambigüedad en código base ${base} (${candidates.length} candidatos). Se omite ${product.code}.`);
+        }
+      }
 
       if (existingProduct) {
         // Actualizar
         const updateData = {
           name: product.name,
-          cost: product.cost,
-          pv: product.pv,
-          price_30: product.price_30,
-          price_35: product.price_35,
           description: product.description,
           benefits: product.benefits,
           image_url: product.image_url || existingProduct.image_url,
           active: true,
         };
+
+        // PV: solo actualizar si el scrapeo trae un PV real (>0) o el actual ya es 0
+        const newPv = Number(product.pv) || 0;
+        const existingPv = Number(existingProduct.pv) || 0;
+        if (newPv > 0 || existingPv === 0) {
+          updateData.pv = newPv;
+        } else if (existingPv > 0 && newPv === 0) {
+          stats.warnings = (stats.warnings || 0) + 1;
+          console.log(`   ⚠️  [GUARD] PV no extraído (0) en ${product.code}. Se conserva PV actual ${existingPv}.`);
+        }
+
+        // Guard de plausibilidad de costo: evita precios corruptos (p. ej. líneas de promo o fallback $)
+        const existingCost = Number(existingProduct.cost) || 0;
+        const newCost = Number(product.cost) || 0;
+        if (existingCost === 0 && newCost > 0 && product.costFromIbo) {
+          updateData.cost = newCost;
+          updateData.price_30 = product.price_30;
+          updateData.price_35 = product.price_35;
+        } else if (existingCost > 0 && newCost > 0 && Math.abs(newCost - existingCost) / existingCost <= 0.5) {
+          updateData.cost = newCost;
+          updateData.price_30 = product.price_30;
+          updateData.price_35 = product.price_35;
+        } else if (existingCost > 0 && newCost > 0) {
+          stats.warnings = (stats.warnings || 0) + 1;
+          console.log(`   ⚠️  [GUARD] Costo dudoso en ${product.code}: scrape=${newCost} vs actual=${existingCost}. Se conserva el actual.`);
+        } else if (existingCost === 0 && newCost > 0 && !product.costFromIbo) {
+          stats.warnings = (stats.warnings || 0) + 1;
+          console.log(`   ⚠️  [GUARD] Costo no fiable (fallback $) en ${product.code}: ${newCost}. Se conserva 0.`);
+        }
         if (subbrand_id) updateData.subbrand_id = subbrand_id;
+
+        if (DRY_RUN) {
+          stats.updated++;
+          console.log(`   🔎 [PREVIEW] ${matchMethod === "base" ? "[match por base] " : ""}Actualizaría: ${product.name || product.code} (cost=${newCost || existingCost}, pv=${product.pv})`);
+          continue;
+        }
 
         const { error: updErr } = await db
           .from("products")
@@ -533,6 +626,12 @@ async function syncToSupabase(scrapedProducts) {
         };
         if (subbrand_id) insertData.subbrand_id = subbrand_id;
 
+        if (DRY_RUN) {
+          stats.inserted++;
+          console.log(`   🔎 [PREVIEW] Insertaría NUEVO: ${product.name || product.code} (code=${product.code})`);
+          continue;
+        }
+
         const { error: insErr } = await db.from("products").insert(insertData);
 
         if (insErr) throw insErr;
@@ -548,6 +647,15 @@ async function syncToSupabase(scrapedProducts) {
   // Archivar productos que ya no están en Amway RD
   for (const p of existing || []) {
     if (p.code && !scrapedCodes.has(p.code) && p.active) {
+      if (NO_ARCHIVE) {
+        stats.skipped++;
+        continue;
+      }
+      if (DRY_RUN) {
+        stats.archived++;
+        console.log(`   🔎 [PREVIEW] Archivaría: ${p.name || p.code}`);
+        continue;
+      }
       try {
         const { error: archErr } = await supabase
           .from("products")
@@ -563,7 +671,12 @@ async function syncToSupabase(scrapedProducts) {
       }
     } else if (p.code && scrapedCodes.has(p.code) && !p.active) {
       // Reactivar si estaba archivado pero vuelve a estar disponible
-      await db.from("products").update({ active: true }).eq("id", p.id);
+      if (DRY_RUN) {
+        stats.reactivated = (stats.reactivated || 0) + 1;
+        console.log(`   🔎 [PREVIEW] Reactivaría: ${p.name || p.code}`);
+      } else {
+        await db.from("products").update({ active: true }).eq("id", p.id);
+      }
     }
   }
 }
@@ -642,23 +755,89 @@ async function main() {
 
   await page.waitForTimeout(2000);
 
-  // Esperar login manual
-  await waitForLogin(page);
+  // Argumentos de automatización (marcas y/o URLs de categorías)
+  const brandsArgIdx = process.argv.indexOf("--brands");
+  const brands = brandsArgIdx !== -1
+    ? process.argv[brandsArgIdx + 1].split(",").map((b) => b.trim()).filter(Boolean)
+    : [];
 
-  // Preguntar marcas/categorías a scrapear
-  console.log("\n🔍 ¿Qué marcas/categorías quieres sincronizar?");
-  console.log("   Ej: Nutrilite, Artistry, XS, Glister, iCook, SATINIQUE, etc.");
-  console.log("   (Sepáralas por coma. Ej: Nutrilite, Artistry, XS)");
-  process.stdout.write("👉 Marcas: ");
+  // Categorías vía argumento --cats (URLs separadas por coma) — método más confiable
+  const catsArgIdx = process.argv.indexOf("--cats");
+  const catUrls = catsArgIdx !== -1
+    ? process.argv[catsArgIdx + 1].split(",").map((u) => u.trim()).filter(Boolean)
+    : [];
 
-  const brandsInput = await new Promise((resolve) => {
-    process.stdin.once("data", (data) => resolve(data.toString().trim()));
-  });
-  const brands = brandsInput ? brandsInput.split(",").map((b) => b.trim()).filter(Boolean) : [];
+  // Alternativa: --cats-file <ruta> (una URL por línea, admite comentarios #)
+  const catsFileIdx = process.argv.indexOf("--cats-file");
+  if (catsFileIdx !== -1 && catUrls.length === 0) {
+    const fsMod = await import("fs");
+    const lines = fsMod.readFileSync(process.argv[catsFileIdx + 1], "utf8")
+      .split("\n").map((l) => l.trim())
+      .filter((l) => l && !l.startsWith("#"));
+    catUrls.push(...lines);
+  }
+
+  const autoMode = brands.length > 0 || catUrls.length > 0;
+
+  if (autoMode) {
+    if (brands.length > 0) console.log(`🔍 Marcas recibidas por argumento: ${brands.join(", ")}`);
+    if (catUrls.length > 0) console.log(`📂 Categorías recibidas por argumento: ${catUrls.length} URLs`);
+    // Verificar si la sesión guardada sigue activa
+    try {
+      const txt = await page.evaluate(() => document.body ? document.body.innerText : "");
+      if (/Hola,|Cerrar sesi[oó]n|Mi cuenta|Sign out|Salir|Logout/i.test(txt)) {
+        console.log("✅ Sesión IBO activa (perfil guardado).");
+      } else {
+        console.log("⚠️  La sesión de Amway NO está activa. Inicia sesión manualmente");
+        console.log("   (clic en 'Iniciar Sesión' en la página de Amway que se abrió).");
+        console.log("⏳ Esperando login real...");
+        const start = Date.now();
+        while (Date.now() - start < 900000) {
+          try {
+            const t2 = await page.evaluate(() => document.body ? document.body.innerText : "");
+            if (/Hola,|Cerrar sesi[oó]n|Mi cuenta|Sign out|Salir|Logout/i.test(t2)) {
+              console.log("✅ Login detectado. Continuando...");
+              break;
+            }
+          } catch { /* transición */ }
+          await page.waitForTimeout(3000);
+        }
+      }
+    } catch (err) {
+      console.log(`⚠️  No se pudo verificar sesión: ${err.message}. Continuando...`);
+    }
+  } else {
+    // Esperar login manual
+    await waitForLogin(page);
+
+    // Preguntar marcas/categorías a scrapear
+    console.log("\n🔍 ¿Qué marcas/categorías quieres sincronizar?");
+    console.log("   Ej: Nutrilite, Artistry, XS, Glister, iCook, SATINIQUE, etc.");
+    console.log("   (Sepáralas por coma. Ej: Nutrilite, Artistry, XS)");
+    process.stdout.write("👉 Marcas: ");
+
+    const brandsInput = await new Promise((resolve) => {
+      process.stdin.once("data", (data) => resolve(data.toString().trim()));
+    });
+    const brands2 = brandsInput ? brandsInput.split(",").map((b) => b.trim()).filter(Boolean) : [];
+    if (brands2.length > 0) brands.push(...brands2);
+  }
 
   const allProducts = [];
 
-  if (brands.length === 0) {
+  if (catUrls.length > 0) {
+    console.log(`\n📂 Sincronizando ${catUrls.length} categorías por URL...`);
+    for (const url of catUrls) {
+      const products = await getProductsFromCategory(page, { name: url, url });
+      allProducts.push(...products);
+    }
+    if (allProducts.length > 0) {
+      console.log(`\n📊 Total de productos scrapeados: ${allProducts.length}`);
+      await syncToSupabase(allProducts);
+    } else {
+      console.log("\n⚠️  No se encontraron productos en las categorías.");
+    }
+  } else if (brands.length === 0) {
     console.log("⚠️  No ingresaste marcas. Usando la URL actual como página de productos.");
     console.log("📌 Presiona Enter cuando estés en la página con la lista de productos.");
     await new Promise((resolve) => { process.stdin.once("data", resolve); });
@@ -728,6 +907,7 @@ async function main() {
   console.log(`║  Actualizados:  ${stats.updated.toString().padStart(4)} productos`);
   console.log(`║  Insertados:    ${stats.inserted.toString().padStart(4)} productos`);
   console.log(`║  Archivados:    ${stats.archived.toString().padStart(4)} productos`);
+  console.log(`║  Warnings:      ${(stats.warnings || 0).toString().padStart(4)}`);
   console.log(`║  Errores:       ${stats.errors.toString().padStart(4)}`);
   console.log("╚══════════════════════════════════════════╝\n");
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 async function callOllama(prompt: string): Promise<string | null> {
@@ -24,6 +25,12 @@ async function callOllama(prompt: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+  );
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
@@ -85,7 +92,8 @@ Asesor:`;
     }
 
     return NextResponse.json({ response, offline: false });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "Error interno" }, { status: 500 });
+  } catch {
+    console.error("[ai-chat] error");
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

@@ -24,7 +24,6 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPA
 const { error: ae } = await supabase.auth.signInWithPassword({ email: "admin@almaia.com", password: "Admin123!" });
 if (ae) { console.error(ae.message); process.exit(1); }
 
-const ITBIS_RATE = 0.18;
 const roundToNearest50 = (v) => Math.ceil(v / 50) * 50;
 
 const { data: prods } = await supabase
@@ -34,12 +33,12 @@ const { data: prods } = await supabase
 
 let ok30 = 0, bad30 = 0, ok35 = 0, bad35 = 0, noCost = 0;
 
-console.log("=== Precios redondeados vs fórmula (cost × itbisMult × markup, redondeado a 50) ===\n");
+console.log("=== Precios vs fórmula SIN ITBIS embebido (cost × markup, redondeado a 50) ===");
+console.log("Nota: el precio base NO incluye ITBIS; la app lo aplica al total (roundUpTo50(line×1.18)).\n");
 for (const p of prods || []) {
-  const itbisMult = p.apply_itbis !== false ? 1.18 : 1;
   const base = Number(p.cost || 0);
-  const exact30 = base * itbisMult * 1.3;
-  const exact35 = base * itbisMult * 1.35;
+  const exact30 = base * 1.3;
+  const exact35 = base * 1.35;
   const expected30 = roundToNearest50(exact30);
   const expected35 = roundToNearest50(exact35);
   const cur30 = Number(p.price_30 || 0);

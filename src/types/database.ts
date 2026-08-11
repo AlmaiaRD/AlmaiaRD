@@ -100,8 +100,18 @@ export interface Product {
   active: boolean;
   apply_itbis: boolean;
   duracion_dias: number | null;
+  is_bundle: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface BundleItem {
+  id: string;
+  bundle_id: string;
+  product_id: string;
+  quantity: number;
+  created_at?: string;
+  products?: Product;
 }
 
 export interface Inventory {
@@ -237,6 +247,7 @@ export interface CreditBalance {
   client_id: string;
   receipt_id: string;
   amount: number;
+  balance?: number;
   status: CreditStatus;
   created_at: string;
 }
@@ -317,6 +328,7 @@ export interface Settings {
   smtp_user: string;
   smtp_pass: string;
   smtp_secure: boolean;
+  has_smtp_password?: boolean;
   nutrilite_itbis_enabled?: boolean;
   ai_client_prompt: string;
   ai_learning_prompt: string;

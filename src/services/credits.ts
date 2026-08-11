@@ -22,6 +22,8 @@ export async function createCreditBalance(credit: Partial<CreditBalance>) {
 }
 
 export async function applyCreditBalance(creditId: string, amount: number) {
+  if (!creditId) throw new Error("Crédito requerido");
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error("Monto inválido");
   const { data, error } = await supabase.rpc("use_credit_balance", {
     p_credit_id: creditId,
     p_amount: amount,
@@ -40,12 +42,12 @@ export async function getCreditsSummary() {
 
   const { data: totals, error: totalsError } = await supabase
     .from("credit_balances")
-    .select("amount, status");
+    .select("balance, amount, status");
   if (totalsError) throw totalsError;
 
   const totalAvailable = totals
     .filter((c: unknown) => (c as Record<string, unknown>).status === "AVAILABLE")
-    .reduce((s: number, c: unknown) => s + Number((c as Record<string, unknown>).amount), 0);
+    .reduce((s: number, c: unknown) => s + Number((c as Record<string, unknown>).balance ?? (c as Record<string, unknown>).amount), 0);
 
   return { active: active, totalAvailable };
 }

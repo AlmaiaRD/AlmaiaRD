@@ -569,7 +569,7 @@ export default function RecibosPage() {
             host: (settings as any).smtp_host,
             port: (settings as any).smtp_port || 587,
             user: (settings as any).smtp_user,
-            pass: (settings as any).smtp_pass,
+            configured: !!(settings as any).has_smtp_password,
             secure: (settings as any).smtp_secure || false,
             senderName: (settings as any).sender_name || undefined,
           } : undefined}

@@ -26,7 +26,6 @@ if (ae) { console.error(ae.message); process.exit(1); }
 
 const EXECUTE = process.argv.includes("--execute");
 
-const ITBIS_RATE = 0.18;
 const roundToNearest50 = (v) => Math.ceil(v / 50) * 50;
 
 const { data: prods } = await supabase
@@ -36,15 +35,15 @@ const { data: prods } = await supabase
 
 let toUpdate = 0, unchanged = 0, skipped = 0, zeroCost = 0;
 
-console.log(`${EXECUTE ? "=== APLICANDO CORRECCIONES ===" : "=== DRY-RUN (usa --execute para aplicar) ==="}\n`);
+console.log(`${EXECUTE ? "=== APLICANDO CORRECCIONES ===" : "=== DRY-RUN (usa --execute para aplicar) ==="}`);
+console.log("Fórmula: precio base = roundUp50(cost × markup). El ITBIS lo aplica la app al total.\n");
 
 for (const p of prods || []) {
   if (!p.active) { skipped++; continue; }
   const base = Number(p.cost || 0);
   if (base <= 0) { zeroCost++; skipped++; continue; }
-  const itbisMult = p.apply_itbis !== false ? 1 + ITBIS_RATE : 1;
-  const new30 = roundToNearest50(base * itbisMult * 1.3);
-  const new35 = roundToNearest50(base * itbisMult * 1.35);
+  const new30 = roundToNearest50(base * 1.3);
+  const new35 = roundToNearest50(base * 1.35);
 
   const same = new30 === Number(p.price_30) && new35 === Number(p.price_35);
   if (same) { unchanged++; continue; }

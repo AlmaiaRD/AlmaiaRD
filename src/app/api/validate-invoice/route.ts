@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { ITBIS_RATE } from "@/lib/constants";
+import { computeInvoiceMath } from "@/lib/invoiceMath";
 
 export async function POST(req: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,35 +33,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const subtotal = items.reduce(
-      (s: number, i: any) => s + (i.quantity || 0) * Number(i.unit_price || 0),
-      0
-    );
-
     const discount = Number(discount_amount || 0);
-    if (discount < 0 || discount > subtotal) {
+    if (discount < 0 || discount > 5000000) {
       return NextResponse.json({ error: "Descuento inválido" }, { status: 400 });
     }
 
-    const discountRatio = subtotal > 0 ? discount / subtotal : 0;
-    const itbisTotal = items.reduce(
-      (s: number, i: any) => {
-        const lineTotal = (i.quantity || 0) * Number(i.unit_price || 0);
-        const discountedLineTotal = lineTotal * (1 - discountRatio);
-        return s + (i.itbis ? 1 : 0) * discountedLineTotal * ITBIS_RATE;
-      },
-      0
-    );
+    const math = computeInvoiceMath(items.map((i: any) => ({ quantity: i.quantity || 0, unit_price: Number(i.unit_price || 0), cost: Number(i.cost || 0), itbis: !!i.itbis })), discount);
 
-    const total = subtotal + itbisTotal - discount;
+    if (discount > math.subtotal) {
+      return NextResponse.json({ error: "Descuento inválido" }, { status: 400 });
+    }
+
     const pvTotal = items.reduce((s: number, i: any) => s + (i.pv || 0) * (i.quantity || 0), 0);
 
     return NextResponse.json({
       valid: true,
-      subtotal: Math.round(subtotal * 100) / 100,
-      itbis_total: Math.round(itbisTotal * 100) / 100,
-      discount_amount: discount,
-      total: Math.round(total * 100) / 100,
+      subtotal: math.subtotal,
+      itbis_total: math.itbis_total,
+      discount_amount: math.discount,
+      rounding: math.rounding,
+      total: math.total,
       pv_total: pvTotal,
     });
   } catch {

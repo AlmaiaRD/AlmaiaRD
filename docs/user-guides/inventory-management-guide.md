@@ -101,6 +101,16 @@ Cuando un producto tiene movimientos asociados y no se puede eliminar normalment
 
 Los productos ocultos usan `localStorage` con claves separadas: `hiddenStockIds` para Stock, `hiddenRotationIds` para Rotación.
 
+## Bundles y Stock
+
+Los **bundles** (combos creados en Catálogo) **no tienen stock propio**: el inventario se gestiona por sus **productos componentes**.
+
+- Al **facturar** un bundle se descuenta automáticamente la cantidad de cada componente (cantidad vendida × cantidad del componente en el bundle).
+- Antes de guardar la factura, el sistema **valida el stock de todos los componentes**; si alguno no tiene suficiente, muestra el detalle y no permite generar la factura.
+- Al **editar** una factura con bundles se restaura el stock de los componentes originales y se descuenta el de los nuevos.
+- Al **cancelar/eliminar** una factura con bundles se devuelve el stock de los componentes.
+- El stock de los componentes aparece en la pestaña **Stock** normalmente; el bundle no aparece como producto de inventario.
+
 ---
 
 *© 2024-2026 Almaia RD*

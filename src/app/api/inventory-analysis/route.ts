@@ -104,8 +104,8 @@ Da recomendaciones accionables sobre qué productos liquidar, cuáles reponer, y
     }
 
     return NextResponse.json({ analysis });
-  } catch (err: any) {
-    console.error("[inventory-analysis]", err);
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+  } catch {
+    console.error("[inventory-analysis] error");
+    return NextResponse.json({ error: "Error al generar el análisis" }, { status: 500 });
   }
 }

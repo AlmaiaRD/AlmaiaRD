@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       rows: manifest.total_rows,
       size_mb: (payload.length / 1024 / 1024).toFixed(2),
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Error al crear el respaldo" }, { status: 500 });
   }
 }

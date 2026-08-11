@@ -27,7 +27,14 @@ export async function POST(req: NextRequest) {
   try {
     const { to, subject, body, attachment } = await req.json();
 
-    const settings = await getSettings();
+    const settings = await getSettings(false, { includeSecrets: true, client: authSupabase });
+
+    if (!settings) {
+      return NextResponse.json(
+        { error: "No autorizado para leer la configuración SMTP. Solo el administrador puede enviar correos." },
+        { status: 403 }
+      );
+    }
 
     if (!settings.smtp_host || !settings.smtp_user || !settings.smtp_pass) {
       return NextResponse.json(
@@ -63,8 +70,8 @@ export async function POST(req: NextRequest) {
     const info = await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ success: true, messageId: info.messageId });
-  } catch (err: any) {
-    console.error("[send-email]", err);
-    return NextResponse.json({ error: err?.message || "Error al enviar" }, { status: 500 });
+  } catch {
+    console.error("[send-email] error");
+    return NextResponse.json({ error: "Error al enviar el correo. Verifica la configuración SMTP." }, { status: 500 });
   }
 }

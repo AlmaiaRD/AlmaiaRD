@@ -135,10 +135,10 @@ Extrae la compra completa en el JSON según el formato indicado.`;
         { status: 500 }
       );
     }
-  } catch (e) {
-    console.error("[parse-purchase]", e);
+  } catch {
+    console.error("[parse-purchase] error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Error interno" },
+      { error: "Error al procesar la factura. Intenta de nuevo." },
       { status: 500 }
     );
   }

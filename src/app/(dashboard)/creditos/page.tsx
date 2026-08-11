@@ -14,6 +14,7 @@ interface CreditRecord {
   client_id: string;
   receipt_id: string;
   amount: number;
+  balance?: number;
   status: string;
   created_at: string;
   clients?: { full_name: string; phone: string } | null;
@@ -64,7 +65,8 @@ export default function CreditosPage() {
 
   async function handleApply(credit: CreditRecord) {
     if (applyAmount <= 0) { toast.error("Monto inválido"); return; }
-    if (applyAmount > Number(credit.amount)) { toast.error("Excede el saldo disponible"); return; }
+    const available = Number(credit.balance ?? credit.amount);
+    if (applyAmount > available) { toast.error("Excede el saldo disponible"); return; }
     setSaving(true);
     try {
       await applyCreditBalance(credit.id, applyAmount);
@@ -120,10 +122,10 @@ export default function CreditosPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-[#9C8A82]">Monto:</span>
-                  <span className="text-sm text-[#5C3E35] ml-1">{formatCurrency(Number(c.amount))}</span>
+                  <span className="text-xs text-[#9C8A82]">Disponible:</span>
+                  <span className="text-sm text-[#5C3E35] ml-1">{formatCurrency(Number(c.balance ?? c.amount))}</span>
                 </div>
-                <button onClick={() => { setSelectedId(c.id); setApplyAmount(Number(c.amount)); }}
+                <button onClick={() => { setSelectedId(c.id); setApplyAmount(Number(c.balance ?? c.amount)); }}
                   className="flex items-center gap-1 text-xs text-[#86C7A3] hover:underline">
                   Aplicar <ArrowRight size={12} />
                 </button>
@@ -131,8 +133,8 @@ export default function CreditosPage() {
 
               {selectedId === c.id && (
                 <div className="mt-3 pt-3 border-t border-[#F0EBE3] flex items-center gap-3">
-                  <input type="number" value={applyAmount} max={Number(c.amount)}
-                    onChange={(e) => setApplyAmount(Math.min(Number(e.target.value), Number(c.amount)))}
+                  <input type="number" value={applyAmount} max={Number(c.balance ?? c.amount)}
+                    onChange={(e) => setApplyAmount(Math.min(Number(e.target.value), Number(c.balance ?? c.amount)))}
                     className="flex-1 h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3]" />
                   <button onClick={() => handleApply(c)} disabled={saving}
                     className="h-10 px-4 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50">

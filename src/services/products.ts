@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { normalize } from "@/lib/search";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
-import type { Product, Category, Subbrand } from "@/types/database";
+import type { Product, Category, Subbrand, BundleItem } from "@/types/database";
 
 export async function getProducts(includeInactive = false) {
   let query = supabase
@@ -56,6 +56,118 @@ export async function deleteProduct(id: string) {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
   invalidateCache("products");
+}
+
+export async function getBundleItems(bundleId: string): Promise<BundleItem[]> {
+  const { data, error } = await supabase
+    .from("bundle_items")
+    .select("*, products(*, categories(*), subbrands(*))")
+    .eq("bundle_id", bundleId)
+    .order("created_at");
+  if (error) throw error;
+  return (data || []) as BundleItem[];
+}
+
+export async function getBundleItemsBatch(bundleIds: string[]): Promise<BundleItem[]> {
+  const ids = bundleIds.filter(Boolean);
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase
+    .from("bundle_items")
+    .select("*, products(*, categories(*), subbrands(*))")
+    .in("bundle_id", ids);
+  if (error) throw error;
+  return (data || []) as BundleItem[];
+}
+
+export interface BundleComponentInfo {
+  product_id: string;
+  quantity: number;
+  name?: string | null;
+}
+
+export async function getBundleComponentMap(bundleIds: string[]): Promise<Map<string, BundleComponentInfo[]>> {
+  const ids = bundleIds.filter(Boolean);
+  const map = new Map<string, BundleComponentInfo[]>();
+  if (ids.length === 0) return map;
+  const { data, error } = await supabase
+    .from("bundle_items")
+    .select("bundle_id, product_id, quantity, products(name)")
+    .in("bundle_id", ids);
+  if (error) throw error;
+  for (const row of data || []) {
+    const bundleId = row.bundle_id;
+    const arr = map.get(bundleId) || [];
+    arr.push({ product_id: row.product_id, quantity: Number(row.quantity || 1), name: (row as any).products?.name });
+    map.set(bundleId, arr);
+  }
+  return map;
+}
+
+export async function removeProductImage(url: string | null | undefined) {
+  if (!url) return;
+  const marker = "/object/public/product-images/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return;
+  const path = url.slice(idx + marker.length).split("?")[0];
+  if (!path) return;
+  try {
+    await supabase.storage.from("product-images").remove([path]);
+  } catch {
+    // No debe bloquear la eliminación del producto
+  }
+}
+
+export interface BundleComponent {
+  product_id: string;
+  quantity: number;
+}
+
+export async function createBundle(
+  product: Partial<Product>,
+  components: BundleComponent[]
+): Promise<Product> {
+  const { data, error } = await supabase
+    .from("products")
+    .insert({ ...product, is_bundle: true })
+    .select()
+    .single();
+  if (error) throw error;
+  const bundleId = (data as Product).id;
+  if (components.length > 0) {
+    const { error: itemsError } = await supabase.from("bundle_items").insert(
+      components.map((c) => ({ bundle_id: bundleId, ...c }))
+    );
+    if (itemsError) throw itemsError;
+  }
+  invalidateCache("products");
+  return data as Product;
+}
+
+export async function updateBundle(
+  bundleId: string,
+  product: Partial<Product>,
+  components: BundleComponent[]
+): Promise<Product> {
+  const { data, error } = await supabase
+    .from("products")
+    .update({ ...product, is_bundle: true })
+    .eq("id", bundleId)
+    .select()
+    .single();
+  if (error) throw error;
+  const { error: delError } = await supabase
+    .from("bundle_items")
+    .delete()
+    .eq("bundle_id", bundleId);
+  if (delError) throw delError;
+  if (components.length > 0) {
+    const { error: itemsError } = await supabase.from("bundle_items").insert(
+      components.map((c) => ({ bundle_id: bundleId, ...c }))
+    );
+    if (itemsError) throw itemsError;
+  }
+  invalidateCache("products");
+  return data as Product;
 }
 
 export async function searchProducts(query: string) {

@@ -246,7 +246,7 @@ export async function logWhatsAppMessage(
   messageId?: string,
   error?: string
 ): Promise<void> {
-  await supabase.from("whatsapp_logs").insert({
+  const { error: insertError } = await supabase.from("whatsapp_logs").insert({
     config_id: configId,
     to,
     message_type: messageType,
@@ -255,6 +255,7 @@ export async function logWhatsAppMessage(
     message_id: messageId,
     error,
   });
+  if (insertError) throw insertError;
 }
 
 // Get message logs

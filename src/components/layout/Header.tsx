@@ -34,7 +34,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <Link
             href="/facturacion?nueva=true"
             className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-dark transition-all duration-200 shadow-sm"
@@ -80,7 +80,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Actions */}
-        <div className="md:hidden relative">
+        <div className="lg:hidden relative">
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="flex items-center gap-1 bg-primary text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-primary-dark transition-all shadow-sm"

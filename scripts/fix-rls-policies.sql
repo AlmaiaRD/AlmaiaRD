@@ -1,4 +1,11 @@
 -- ============================================================
+-- ⚠️ OBSOLETO / NO EJECUTAR ⚠️
+-- Este script degrada la seguridad: reemplaza las políticas por rol
+-- (get_user_role) por políticas de acceso total a cualquier
+-- 'authenticated'. La BD viva YA está protegida con RLS por roles
+-- (migración 20250713_rls_role_based_policies.sql). Ejecutar esto
+-- reintroduciría acceso total a usuarios no-admin.
+--
 -- CORRECCIÓN DE POLÍTICAS RLS
 -- Reemplaza FOR ALL por políticas explícitas
 -- ============================================================

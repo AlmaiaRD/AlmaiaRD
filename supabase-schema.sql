@@ -85,8 +85,21 @@ CREATE TABLE products (
   price_35 NUMERIC(12,2) DEFAULT 0,
   active BOOLEAN DEFAULT true,
   apply_itbis BOOLEAN DEFAULT true,
+  is_bundle BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 4b. COMPONENTES DE BUNDLES (combos)
+-- ============================================================
+
+CREATE TABLE bundle_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  bundle_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (bundle_id, product_id)
 );
 
 -- 5. INVENTARIO
@@ -737,6 +750,7 @@ WHERE i.status != 'CANCELLED'
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bundle_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
@@ -770,6 +784,10 @@ CREATE POLICY "products_select" ON products FOR SELECT USING (auth.role() = 'aut
 CREATE POLICY "products_insert" ON products FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "products_update" ON products FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "products_delete" ON products FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "bundle_items_select" ON bundle_items FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "bundle_items_insert" ON bundle_items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "bundle_items_update" ON bundle_items FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "bundle_items_delete" ON bundle_items FOR DELETE USING (auth.role() = 'authenticated');
 
 -- Demás tablas: políticas explícitas
 DROP POLICY IF EXISTS "authenticated_access" ON inventory;

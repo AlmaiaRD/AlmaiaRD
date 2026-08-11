@@ -1,16 +1,58 @@
 import { supabase } from "@/lib/supabase";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Settings, BankAccount } from "@/types/database";
 
-export async function getSettings(useCache = true) {
-  const cached = useCache ? getCached<Settings>("settings") : undefined;
-  if (cached) return cached;
-  const { data, error } = await supabase.from("settings").select("*").limit(1).maybeSingle();
+export type SettingsResult = Settings & { has_smtp_password?: boolean };
 
-  if (data) {
-    setCache("settings", data as Settings, 120_000);
-    return data as Settings;
+function isMigrationPending(error: { code?: string; message?: string } | null): boolean {
+  return Boolean(
+    error?.code === "PGRST202" || /could not find the function/i.test(error?.message || "")
+  );
+}
+
+function normalizeSettings(row: Record<string, any>, includeSecrets: boolean): SettingsResult {
+  const result = { ...row } as SettingsResult;
+  if (!includeSecrets) {
+    result.has_smtp_password = Boolean(row?.has_smtp_password ?? row?.smtp_pass);
+    result.smtp_pass = "";
   }
+  return result;
+}
+
+async function loadSettingsRow(
+  includeSecrets: boolean,
+  client: SupabaseClient<any> = supabase
+): Promise<Record<string, any> | null> {
+  const rpcName = includeSecrets ? "get_settings_with_secrets" : "get_settings_public";
+  let result = await client.rpc(rpcName);
+  if (isMigrationPending(result.error)) {
+    // Migración aún no aplicada: los RPCs no existen todavía.
+    result = await client.from("settings").select("*").limit(1).maybeSingle();
+  }
+  if (result.error) throw result.error;
+  return Array.isArray(result.data) && result.data.length > 0 ? result.data[0] : null;
+}
+
+export async function getSettings(
+  useCache = true,
+  options?: { includeSecrets?: boolean; client?: SupabaseClient<any> }
+): Promise<SettingsResult | null> {
+  const includeSecrets = options?.includeSecrets ?? false;
+  if (!includeSecrets && useCache) {
+    const cached = getCached<SettingsResult>("settings");
+    if (cached) return cached;
+  }
+
+  const row = await loadSettingsRow(includeSecrets, options?.client);
+
+  if (row) {
+    const result = normalizeSettings(row, includeSecrets);
+    if (!includeSecrets) setCache("settings", result, 120_000);
+    return result;
+  }
+
+  if (includeSecrets) return null;
 
   // No row exists — create one
   const { data: created, error: createError } = await supabase
@@ -45,41 +87,49 @@ Responde en español en máximo 3 oraciones:`,
     .single();
 
   if (createError) throw createError;
-  setCache("settings", created as Settings, 120_000);
-  return created as Settings;
+  const result = normalizeSettings(created as Record<string, any>, false);
+  setCache("settings", result, 120_000);
+  return result;
 }
 
-export async function updateSettings(settings: Partial<Settings>) {
+export async function updateSettings(
+  settings: Partial<Settings>,
+  options?: { client?: SupabaseClient<any> }
+) {
   if (!settings.id) throw new Error("Settings ID is required");
-  const { data, error } = await supabase
-    .from("settings")
-    .update({
-      business_name: settings.business_name,
-      logo_url: settings.logo_url,
-      signature_url: settings.signature_url,
-      email: settings.email,
-      phone: settings.phone,
-      sender_name: settings.sender_name,
-      email_template: settings.email_template,
-      whatsapp_template: settings.whatsapp_template,
-      smtp_host: settings.smtp_host,
-      smtp_port: settings.smtp_port,
-      smtp_user: settings.smtp_user,
-      smtp_pass: settings.smtp_pass,
-      smtp_secure: settings.smtp_secure,
-      ai_client_prompt: settings.ai_client_prompt,
-      ai_learning_prompt: settings.ai_learning_prompt,
-      default_margin: settings.default_margin,
-      invoice_prefix: settings.invoice_prefix,
-      receipt_prefix: settings.receipt_prefix,
-      purchase_prefix: settings.purchase_prefix,
-    })
-    .eq("id", settings.id)
-    .select()
-    .single();
+  const patch: Partial<Settings> = {
+    business_name: settings.business_name,
+    logo_url: settings.logo_url,
+    signature_url: settings.signature_url,
+    email: settings.email,
+    phone: settings.phone,
+    sender_name: settings.sender_name,
+    email_template: settings.email_template,
+    whatsapp_template: settings.whatsapp_template,
+    smtp_host: settings.smtp_host,
+    smtp_port: settings.smtp_port,
+    smtp_user: settings.smtp_user,
+    smtp_secure: settings.smtp_secure,
+    ai_client_prompt: settings.ai_client_prompt,
+    ai_learning_prompt: settings.ai_learning_prompt,
+    default_margin: settings.default_margin,
+    invoice_prefix: settings.invoice_prefix,
+    receipt_prefix: settings.receipt_prefix,
+    purchase_prefix: settings.purchase_prefix,
+    currency: settings.currency,
+    nutrilite_itbis_enabled: settings.nutrilite_itbis_enabled,
+  };
+  // No sobrescribir la contraseña SMTP cuando el cliente la envía vacía (enmascarada).
+  if (settings.smtp_pass) {
+    patch.smtp_pass = settings.smtp_pass;
+  }
+  const client = options?.client ?? supabase;
+  // Sin .select(): tras la migración, smtp_pass no es seleccionable ni por admin.
+  const { error } = await client.from("settings").update(patch).eq("id", settings.id);
   if (error) throw error;
   invalidateCache("settings");
-  return data as Settings;
+  const fresh = await getSettings(false, { client });
+  return fresh as Settings;
 }
 
 export async function getBankAccounts() {

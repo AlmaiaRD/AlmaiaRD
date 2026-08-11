@@ -44,3 +44,6 @@ next-env.d.ts
 .amway-profile/
 debug-*
 docs/CREDENCIALES.md
+/backups/
+/.amway-profile/
+*.tsbuildinfo

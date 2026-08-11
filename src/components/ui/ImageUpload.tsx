@@ -7,9 +7,10 @@ import { Upload, X, Loader2 } from "lucide-react";
 interface ImageUploadProps {
   currentUrl?: string | null;
   onUploaded: (url: string | null) => void;
+  maxSizeMB?: number;
 }
 
-export function ImageUpload({ currentUrl, onUploaded }: ImageUploadProps) {
+export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -18,8 +19,8 @@ export function ImageUpload({ currentUrl, onUploaded }: ImageUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("La imagen no puede superar 2MB");
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      alert(`La imagen no puede superar ${maxSizeMB}MB`);
       return;
     }
 
@@ -92,7 +93,7 @@ export function ImageUpload({ currentUrl, onUploaded }: ImageUploadProps) {
               <><Upload size={16} /> {preview ? "Cambiar imagen" : "Seleccionar imagen"}</>
             )}
           </label>
-          <p className="text-xs text-[#9C8A82] mt-2">PNG, JPG o WEBP. Máximo 2MB.</p>
+          <p className="text-xs text-[#9C8A82] mt-2">PNG, JPG o WEBP. Máximo {maxSizeMB}MB.</p>
         </div>
       </div>
     </div>

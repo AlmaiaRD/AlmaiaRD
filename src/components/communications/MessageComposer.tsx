@@ -8,6 +8,7 @@ import { createCommunication } from "@/services/communications";
 import { getClients } from "@/services/clients";
 import { getInvoices } from "@/services/invoices";
 import { getProducts } from "@/services/products";
+import { getWhatsAppConfigs, sendTextMessage, logWhatsAppMessage } from "@/services/whatsapp";
 import toast from "react-hot-toast";
 import type { Client, Product } from "@/types/database";
 
@@ -300,6 +301,29 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
     setSaving(true);
     try {
       const clientId = selectedClientId || defaultClient?.id;
+      const client = clients.find(c => c.id === clientId) || defaultClient || undefined;
+
+      if (status === "sent" && channel === "email") {
+        if (!client?.email) throw new Error("El cliente no tiene email configurado");
+        const res = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ to: client.email, subject, body }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || "Error al enviar el email");
+      }
+
+      if (status === "sent" && channel === "whatsapp") {
+        if (!client?.phone) throw new Error("El cliente no tiene teléfono configurado");
+        const configs = await getWhatsAppConfigs();
+        const config = configs.find(c => c.is_active) || configs[0];
+        if (!config) throw new Error("No hay una configuración de WhatsApp activa. Configúrala en el módulo WhatsApp.");
+        const result = await sendTextMessage(config.phone_number_id, config.access_token, client.phone, body);
+        if (!result.success) throw new Error(result.error || "Error al enviar el mensaje de WhatsApp");
+        logWhatsAppMessage(config.id, client.phone, "text", undefined, "sent", result.messageId).catch(() => {});
+      }
+
       const commStatus = status;
       const comm = await createCommunication({
         client_id: clientId || undefined,

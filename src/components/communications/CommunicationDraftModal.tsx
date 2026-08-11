@@ -10,7 +10,7 @@ interface SmtpConfig {
   host: string;
   port: number;
   user: string;
-  pass: string;
+  configured: boolean;
   secure: boolean;
   senderName?: string;
 }
@@ -67,7 +67,7 @@ export default function CommunicationDraftModal({
     }).text;
   });
   const [saving, setSaving] = useState(false);
-  const smtpOk = isEmail && smtp?.host && smtp?.user && smtp?.pass;
+  const smtpOk = isEmail && smtp?.host && smtp?.user && smtp?.configured;
 
   async function handleSave(status: "draft" | "sent" = "draft") {
     setSaving(true);

@@ -37,6 +37,7 @@ export default function InventarioPage() {
 
 function InventarioContent() {
   const [inventory, setInventory] = useState<any[]>([]);
+  const [kpiStats, setKpiStats] = useState({ totalValue: 0, totalStock: 0, totalPending: 0 });
   const [products, setProducts] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [soldMap, setSoldMap] = useState<Record<string, number>>({});
@@ -391,6 +392,7 @@ function InventarioContent() {
         setSuppliers(sup);
         setBankAccounts(ba);
         setSettings(st);
+        loadKpis(sold, purchased);
       } catch {
         toast.error("Error al cargar inventario");
       } finally {
@@ -427,6 +429,7 @@ function InventarioContent() {
       setSuppliers(sup);
       setBankAccounts(ba);
       setSettings(st);
+      loadKpis(sold, purchased);
     } catch {
       toast.error("Error al cargar inventario");
     } finally {
@@ -654,9 +657,19 @@ function InventarioContent() {
     );
   });
 
-  const totalValue = inventory.reduce((s, i) => s + Number(i.inventory_value || 0), 0);
-  const totalStock = inventory.reduce((s, i) => { const p = purchasedMap[i.product_id]||0; const sd = soldMap[i.product_id]||0; return s + Math.max(0, p - sd); }, 0);
-  const totalPending = inventory.reduce((s, i) => { const p = purchasedMap[i.product_id]||0; const sd = soldMap[i.product_id]||0; return s + Math.max(0, sd - p); }, 0);
+  async function loadKpis(sold: Record<string, number>, purchased: Record<string, number>) {
+    try {
+      const inv = await getInventory();
+      setKpiStats({
+        totalValue: inv.reduce((s, i) => s + Number(i.inventory_value || 0), 0),
+        totalStock: inv.reduce((s, i) => { const p = purchased[i.product_id] || 0; const sd = sold[i.product_id] || 0; return s + Math.max(0, p - sd); }, 0),
+        totalPending: inv.reduce((s, i) => { const p = purchased[i.product_id] || 0; const sd = sold[i.product_id] || 0; return s + Math.max(0, sd - p); }, 0),
+      });
+    } catch {
+      // silent
+    }
+  }
+
 
   async function openDetail(item: any) {
     setDetailItem(item);
@@ -860,19 +873,19 @@ function InventarioContent() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Total Productos</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{inventory.length}</p>
+          <p className="text-xl font-bold text-[#5C3E35]">{totalInventory}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Valor Inventario</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(totalValue)}</p>
+          <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(kpiStats.totalValue)}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Stock Total</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{totalStock}</p>
+          <p className="text-xl font-bold text-[#5C3E35]">{kpiStats.totalStock}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Pend. Devolución</p>
-          <p className="text-xl font-bold text-[#D4A0A0]">{totalPending}</p>
+          <p className="text-xl font-bold text-[#D4A0A0]">{kpiStats.totalPending}</p>
         </div>
       </div>
 

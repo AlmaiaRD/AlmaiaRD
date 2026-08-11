@@ -314,8 +314,8 @@ export default function ClientesPage() {
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
                 return (
                   <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between">
-                      <button onClick={() => openDetail(client)} className="flex-1 text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <button onClick={() => openDetail(client)} className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
                           {stage && (
@@ -350,7 +350,7 @@ export default function ClientesPage() {
                           )}
                         </div>
                       </button>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 sm:ml-4 flex-wrap">
                         <select
                           value={client.stage || ""}
                           onChange={async e => {
@@ -361,13 +361,13 @@ export default function ClientesPage() {
                               toast.success("Etapa actualizada");
                             } catch { toast.error("Error al actualizar"); }
                           }}
-                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 max-w-[150px]"
                         >
                           <option value="">Sin etapa</option>
                           {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
-                        <button onClick={() => openEdit(client)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
+                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   </div>
@@ -384,8 +384,8 @@ export default function ClientesPage() {
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
                 return (
                   <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between">
-                      <button onClick={() => openDetail(client)} className="flex-1 text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <button onClick={() => openDetail(client)} className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
                           {stage && (
@@ -420,7 +420,7 @@ export default function ClientesPage() {
                           )}
                         </div>
                       </button>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 sm:ml-4 flex-wrap">
                         <select
                           value={client.stage || ""}
                           onChange={async e => {
@@ -431,13 +431,13 @@ export default function ClientesPage() {
                               toast.success("Etapa actualizada");
                             } catch { toast.error("Error al actualizar"); }
                           }}
-                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 max-w-[150px]"
                         >
                           <option value="">Sin etapa</option>
                           {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
-                        <button onClick={() => openEdit(client)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
+                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   </div>

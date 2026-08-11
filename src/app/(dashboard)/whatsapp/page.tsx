@@ -11,6 +11,7 @@ import {
   deleteWhatsAppConfig,
   sendTextMessage,
   sendTemplateMessage,
+  logWhatsAppMessage,
   getWhatsAppLogs,
   getMessageTemplates,
   type WhatsAppConfig,
@@ -442,9 +443,11 @@ export default function WhatsAppPage() {
         toast.success("Mensaje enviado correctamente");
         setMessageText("");
         setSelectedLocalTemplate("");
+        logWhatsAppMessage(selectedConfig.id, recipientPhone, "text", undefined, "sent", result.messageId).catch(() => {});
         loadData();
       } else {
         toast.error(result.error || "Error al enviar mensaje");
+        logWhatsAppMessage(selectedConfig.id, recipientPhone, "text", undefined, "failed", undefined, result.error).catch(() => {});
       }
     } catch {
       toast.error("Error al enviar mensaje");
