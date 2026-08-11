@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
 import Footer from "@/components/layout/Footer";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
+import BackToTop from "@/components/layout/BackToTop";
 
 export default function DashboardLayout({
   children,
@@ -18,7 +19,7 @@ export default function DashboardLayout({
   if (loading) return null;
 
   if (!user) {
-    router.push("/auth/login");
+    router.push("/login");
     return null;
   }
 
@@ -33,6 +34,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col">{children}</div>
       <Footer />
       <FloatingActionButton />
+      <BackToTop />
     </div>
   );
 }

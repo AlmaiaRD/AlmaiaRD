@@ -30,6 +30,7 @@ export default function FloatingActionButton() {
   const [pos, setPos] = useState(() => loadPosition() || { right: 16, bottom: 24 });
   const startRef = useRef({ x: 0, y: 0, r: 0, b: 0 });
   const didDrag = useRef(false);
+  const posRef = useRef(pos);
 
   const savePos = useCallback((r: number, b: number) => {
     try {
@@ -51,13 +52,15 @@ export default function FloatingActionButton() {
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
     const newR = Math.max(8, Math.min(window.innerWidth - 72, startRef.current.r + dx));
     const newB = Math.max(8, Math.min(window.innerHeight - 72, startRef.current.b + dy));
-    setPos({ right: newR, bottom: newB });
+    const next = { right: newR, bottom: newB };
+    posRef.current = next;
+    setPos(next);
   }, [dragging]);
 
   const onEnd = useCallback(() => {
     setDragging(false);
-    savePos(pos.right, pos.bottom);
-  }, [pos.right, pos.bottom, savePos]);
+    savePos(posRef.current.right, posRef.current.bottom);
+  }, [savePos]);
 
   function handleMouse(e: MouseEvent) { e.preventDefault(); onMove(e.clientX, e.clientY); }
   function handleTouch(e: TouchEvent) { onMove(e.touches[0].clientX, e.touches[0].clientY); }

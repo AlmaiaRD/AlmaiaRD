@@ -48,7 +48,7 @@ export default function NavMenu() {
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="md:hidden flex items-center gap-2 text-text-muted hover:text-foreground px-2 py-2"
+        className="lg:hidden flex items-center gap-2 text-text-muted hover:text-foreground px-2 py-2"
         aria-label="Menú de navegación"
       >
         {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -56,7 +56,7 @@ export default function NavMenu() {
       </button>
 
       {mobileOpen && (
-        <div className="md:hidden flex flex-col gap-1 pb-3 pt-1">
+        <div className="lg:hidden flex flex-col gap-1 pb-3 pt-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -80,49 +80,30 @@ export default function NavMenu() {
         </div>
       )}
 
-      <nav className="hidden md:flex flex-col items-center gap-1 py-1">
-        <div className="flex items-center justify-center gap-2">
-          {navItems.slice(0, 6).map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                  isActive
-                    ? "bg-primary/10 text-primary border-b-2 border-primary"
-                    : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
-                )}
-              >
-                <Icon size={24} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-        <div className="flex items-center justify-center gap-2">
-          {navItems.slice(6).map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                  isActive
-                    ? "bg-primary/10 text-primary border-b-2 border-primary"
-                    : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
-                )}
-              >
-                <Icon size={24} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
+      <nav className="hidden lg:flex flex-col items-center gap-1 py-1">
+        {[navItems.slice(0, 6), navItems.slice(6)].map((row, rowIndex) => (
+          <div key={rowIndex} className="flex items-center justify-center gap-2 flex-wrap">
+            {row.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
+                    isActive
+                      ? "bg-primary/10 text-primary border-b-2 border-primary"
+                      : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
+                  )}
+                >
+                  <Icon size={24} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
     </>
   );

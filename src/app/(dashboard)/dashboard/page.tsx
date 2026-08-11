@@ -192,13 +192,6 @@ export default function DashboardPage() {
             value: Math.round((val / totalPm) * 100),
           }))
         );
-        if (Object.keys(pm).length === 0) {
-          setPaymentMethodData([
-            { name: "Efectivo", value: 45 },
-            { name: "Transferencia", value: 30 },
-            { name: "Tarjeta", value: 25 },
-          ]);
-        }
 
         setLowStock((invVal || []).map((i: any) => ({
           name: i.product_name,
@@ -214,7 +207,7 @@ export default function DashboardPage() {
   }, [user]);
 
   if (!user) {
-    router.push("/auth/login");
+    router.push("/login");
     return null;
   }
 
@@ -238,7 +231,7 @@ export default function DashboardPage() {
         <p className="text-sm text-[#9C8A82] mt-1">Resumen de tu negocio</p>
       </div>
 
-      {loading ? (
+      {loading || loadingData ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -404,36 +397,42 @@ export default function DashboardPage() {
                 <span className="text-xs text-[#9C8A82]">Este mes</span>
               </div>
               <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={paymentMethodData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {paymentMethodData.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
-                      formatter={(value: any) => `${value}%`}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                {paymentMethodData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-sm text-[#9C8A82]">Sin pagos este mes</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={paymentMethodData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {paymentMethodData.map((_, i) => (
+                          <Cell key={i} fill={PIE_COLORS[i]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
+                        formatter={(value: any) => `${value}%`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-              <div className="flex justify-center gap-4 mt-2">
-                {paymentMethodData.map((d, i) => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#9C8A82]">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
-                    {d.name}
-                  </div>
-                ))}
-              </div>
+              {paymentMethodData.length > 0 && (
+                <div className="flex justify-center gap-4 mt-2">
+                  {paymentMethodData.map((d, i) => (
+                    <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#9C8A82]">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
+                      {d.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
