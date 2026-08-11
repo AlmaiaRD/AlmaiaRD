@@ -73,6 +73,7 @@ export default function CatalogoPage() {
   const [editingBundle, setEditingBundle] = useState<any>(null);
   const [bundleForm, setBundleForm] = useState({ code: "", name: "", price: 0, image_url: null as string | null });
   const [bundleSearch, setBundleSearch] = useState("");
+  const [bundleFilterBrand, setBundleFilterBrand] = useState("");
   const [bundleComponents, setBundleComponents] = useState<Array<{ product: any; quantity: number }>>([]);
   const [savingBundle, setSavingBundle] = useState(false);
 
@@ -289,6 +290,7 @@ export default function CatalogoPage() {
     setBundleForm({ code: "", name: "", price: 0, image_url: null });
     setBundleComponents([]);
     setBundleSearch("");
+    setBundleFilterBrand("");
     setShowBundleModal(true);
   }
 
@@ -308,6 +310,7 @@ export default function CatalogoPage() {
       image_url: product.image_url || null,
     });
     setBundleSearch("");
+    setBundleFilterBrand("");
     setShowBundleModal(true);
   }
 
@@ -327,6 +330,7 @@ export default function CatalogoPage() {
       image_url: null,
     });
     setBundleSearch("");
+    setBundleFilterBrand("");
     setShowBundleModal(true);
   }
 
@@ -415,14 +419,13 @@ export default function CatalogoPage() {
     }
   }
 
-  const bundlePickerResults = bundleSearch.trim()
-    ? products.filter((p: any) => {
-        const q = bundleSearch.trim().toLowerCase();
-        return p.active && !p.is_bundle && (
-          (p.name || "").toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q)
-        );
-      })
-    : [];
+  const bundlePickerResults = products.filter((p: any) => {
+    if (!p.active || p.is_bundle) return false;
+    if (bundleFilterBrand && p.subbrand_id !== bundleFilterBrand) return false;
+    const q = bundleSearch.trim().toLowerCase();
+    if (q && !((p.name || "").toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q))) return false;
+    return true;
+  });
 
   async function handleCreateSubbrand(name: string) {
     if (!name.trim()) { toast.error("Nombre requerido"); return; }
@@ -1010,41 +1013,53 @@ export default function CatalogoPage() {
 
           <div className="border-t border-[#E8E0D8] pt-4">
             <label className="block text-sm font-medium text-[#5C3E35] mb-2">1. Buscar productos del catálogo</label>
-            <div className="relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-              <input
-                type="text"
-                value={bundleSearch}
-                onChange={(e) => setBundleSearch(e.target.value)}
-                placeholder="Buscar por nombre o código..."
-                className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              />
-            </div>
-            {bundleSearch.trim() && (
-              <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-[#E8E0D8] bg-white divide-y divide-[#E8E0D8]/60">
-                {bundlePickerResults.length === 0 ? (
-                  <p className="text-sm text-[#9C8A82] p-4 text-center">Sin resultados</p>
-                ) : (
-                  bundlePickerResults.slice(0, 20).map((p: any) => (
-                    <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#FAF6F0] transition-colors">
-                      <div className="w-9 h-9 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
-                        {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-contain" /> : <BookOpen size={16} className="opacity-40" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-[#5C3E35] truncate">{p.name}</p>
-                        <p className="text-xs text-[#9C8A82]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}</p>
-                      </div>
-                      <button
-                        onClick={() => addBundleComponent(p)}
-                        className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-[#B8837E] text-white text-xs font-medium hover:bg-[#9A6B66] transition-all flex-shrink-0"
-                      >
-                        <Plus size={14} /> Agregar
-                      </button>
-                    </div>
-                  ))
-                )}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                <input
+                  type="text"
+                  value={bundleSearch}
+                  onChange={(e) => setBundleSearch(e.target.value)}
+                  placeholder="Buscar por nombre o código..."
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                />
               </div>
-            )}
+              <select
+                value={bundleFilterBrand}
+                onChange={(e) => setBundleFilterBrand(e.target.value)}
+                className="sm:w-56 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+              >
+                <option value="">Todas las marcas</option>
+                {subbrands.filter((s) => s.active).map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-[#E8E0D8] bg-white divide-y divide-[#E8E0D8]/60">
+              {bundlePickerResults.length === 0 ? (
+                <p className="text-sm text-[#9C8A82] p-4 text-center">
+                  {bundleSearch.trim() || bundleFilterBrand ? "Sin resultados" : "No hay productos disponibles"}
+                </p>
+              ) : (
+                bundlePickerResults.slice(0, 20).map((p: any) => (
+                  <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#FAF6F0] transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
+                      {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-contain" /> : <BookOpen size={16} className="opacity-40" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-[#5C3E35] truncate">{p.name}</p>
+                      <p className="text-xs text-[#9C8A82]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}{p.subbrands?.name ? ` · ${p.subbrands.name}` : ""}</p>
+                    </div>
+                    <button
+                      onClick={() => addBundleComponent(p)}
+                      className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-[#B8837E] text-white text-xs font-medium hover:bg-[#9A6B66] transition-all flex-shrink-0"
+                    >
+                      <Plus size={14} /> Agregar
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="border-t border-[#E8E0D8] pt-4">
