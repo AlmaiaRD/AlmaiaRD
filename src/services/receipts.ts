@@ -29,20 +29,60 @@ export async function updateReceipt(id: string, data: Partial<Receipt>) {
   if (error) throw error;
 }
 
+async function adjustPayment(invoiceId: string | null | undefined, diff: number) {
+  if (!invoiceId || !diff) return;
+  const { error } = await supabase.rpc("adjust_invoice_payment", {
+    p_invoice_id: invoiceId,
+    p_diff: Math.round(diff * 100) / 100,
+  });
+  if (error) throw error;
+}
+
 export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt> & { _old_amount?: number }) {
-  const oldAmount = data._old_amount;
+  // El monto original se lee de la BD, nunca se confía en _old_amount del
+  // cliente (evita manipular el diff del pago).
   delete data._old_amount;
 
-  const { error } = await supabase.from("receipts").update(data).eq("id", id);
-  if (error) throw error;
+  const { data: current } = await supabase
+    .from("receipts")
+    .select("amount, invoice_id")
+    .eq("id", id)
+    .single();
+  const oldAmount = Number(current?.amount ?? 0);
+  const oldInvoiceId = current?.invoice_id ?? null;
+  const newAmount = Number(data.amount ?? oldAmount);
+  const newInvoiceId = data.invoice_id ?? oldInvoiceId;
 
-  if (data.amount !== undefined && oldAmount !== undefined && data.amount !== oldAmount && data.invoice_id) {
-    const diff = data.amount - oldAmount;
-    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
-      p_invoice_id: data.invoice_id,
-      p_diff: diff,
-    });
-    if (rpcError) throw rpcError;
+  const applied: Array<{ invoice_id: string; diff: number }> = [];
+  const apply = async (invoiceId: string, diff: number) => {
+    if (!invoiceId || !diff) return;
+    await adjustPayment(invoiceId, diff);
+    applied.push({ invoice_id: invoiceId, diff });
+  };
+  const rollback = async () => {
+    for (const a of applied.reverse()) {
+      try { await adjustPayment(a.invoice_id, -a.diff); } catch { /* intento de reversión */ }
+    }
+  };
+
+  try {
+    if (newInvoiceId && oldInvoiceId && newInvoiceId !== oldInvoiceId) {
+      await apply(oldInvoiceId, -oldAmount);
+      await apply(newInvoiceId, newAmount);
+    } else if (newInvoiceId && newAmount !== oldAmount) {
+      await apply(newInvoiceId, newAmount - oldAmount);
+    } else if (!newInvoiceId && oldInvoiceId) {
+      await apply(oldInvoiceId, -oldAmount);
+    }
+  } catch (e) {
+    await rollback();
+    throw e;
+  }
+
+  const { error } = await supabase.from("receipts").update(data).eq("id", id);
+  if (error) {
+    await rollback();
+    throw error;
   }
 }
 
@@ -57,6 +97,10 @@ export async function getReceipt(id: string) {
 }
 
 export async function createReceipt(receipt: Partial<Receipt>) {
+  if (Number(receipt.amount) > 0 && !receipt.invoice_id) {
+    throw new Error("Un pago mayor a cero requiere una factura asociada.");
+  }
+
   const { data: lastRec } = await supabase
     .from("receipts")
     .select("receipt_number")
@@ -72,24 +116,29 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   const { data: sessData } = await supabase.auth.getSession();
   const userId = sessData.session?.user?.id;
 
+  // Ajusta el pago en la factura ANTES de crear el recibo: si el RPC falla no
+  // queda un recibo sin su pago aplicado. Si luego falla el insert, se revierte.
+  const appliedToInvoice = !!receipt.invoice_id && Number(receipt.amount) > 0;
+  if (appliedToInvoice) {
+    await adjustPayment(receipt.invoice_id, Number(receipt.amount));
+  }
+
   const { data, error } = await supabase.from("receipts").insert({
     ...receipt,
     receipt_number: receiptNumber,
     created_by: userId,
   }).select().single();
-  if (error) throw error;
+
+  if (error) {
+    if (appliedToInvoice) {
+      try { await adjustPayment(receipt.invoice_id, -Number(receipt.amount)); } catch { /* reversión */ }
+    }
+    throw error;
+  }
 
   // Pipeline automation: move to cierre (ganado)
   if (receipt.client_id) {
     await updateStageOnPayment(receipt.client_id);
-  }
-
-  if (receipt.invoice_id && receipt.amount) {
-    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
-      p_invoice_id: receipt.invoice_id,
-      p_diff: receipt.amount,
-    });
-    if (rpcError) throw rpcError;
   }
 
   return data as Receipt;
@@ -102,15 +151,20 @@ export async function deleteReceipt(id: string) {
     .eq("id", id)
     .single();
 
-  const { error } = await supabase.from("receipts").delete().eq("id", id);
-  if (error) throw error;
+  const invoiceId = receipt?.invoice_id ?? null;
+  const amount = Number(receipt?.amount ?? 0);
 
-  if (receipt?.invoice_id && receipt.amount) {
-    const { error: rpcError } = await supabase.rpc("adjust_invoice_payment", {
-      p_invoice_id: receipt.invoice_id,
-      p_diff: -Number(receipt.amount),
-    });
-    if (rpcError) throw rpcError;
+  // Ajusta la factura antes de borrar el recibo; si el borrado falla se revierte.
+  if (invoiceId && amount > 0) {
+    await adjustPayment(invoiceId, -amount);
+  }
+
+  const { error } = await supabase.from("receipts").delete().eq("id", id);
+  if (error) {
+    if (invoiceId && amount > 0) {
+      try { await adjustPayment(invoiceId, amount); } catch { /* reversión */ }
+    }
+    throw error;
   }
 }
 
