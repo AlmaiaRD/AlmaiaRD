@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeInvoiceMath, roundToNearest50, invoiceLineTotalForUnit } from "@/lib/invoiceMath";
+import { computeInvoiceMath, roundToNearest50, invoiceLineTotalForUnit, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -143,5 +143,48 @@ describe("invoiceLineTotalForUnit", () => {
     expect(invoiceLineTotalForUnit(1930.5, 1485, true)).toBe(2200);
     expect(invoiceLineTotalForUnit(1650, 1000, false)).toBe(1650);
     expect(invoiceLineTotalForUnit(486, 0, true)).toBe(500);
+  });
+});
+
+describe("computeLineProfit", () => {
+  it("ganancia = monto cobrado (sin ITBIS) − costo × cantidad", () => {
+    expect(computeLineProfit(485.2, 360, 1)).toBe(125.2);
+    expect(computeLineProfit(970.4, 360, 2)).toBe(250.4);
+    expect(computeLineProfit(3300, 1000, 2)).toBe(1300);
+  });
+
+  it("pérdida cuando el costo supera el monto cobrado", () => {
+    expect(computeLineProfit(350, 400, 1)).toBe(-50);
+  });
+
+  it("con costo 0 devuelve el monto como referencia (no es ganancia real)", () => {
+    expect(computeLineProfit(500, 0, 1)).toBe(500);
+    expect(computeLineProfit(0, 0, 0)).toBe(0);
+  });
+
+  it("redondea a 2 decimales", () => {
+    expect(computeLineProfit(485.2, 360.33, 1)).toBe(124.87);
+  });
+});
+
+describe("computeNetProfit", () => {
+  it("suma la ganancia solo de líneas con costo conocido y resta el descuento", () => {
+    const net = computeNetProfit([
+      { line_total: 485.2, cost: 360, quantity: 1 },
+      { line_total: 500, cost: 0, quantity: 1 },
+    ], 100);
+    expect(net).toBe(25.2);
+  });
+
+  it("sin descuento la ganancia neta es la suma de las líneas con costo", () => {
+    expect(computeNetProfit([{ line_total: 485.2, cost: 360, quantity: 1 }])).toBe(125.2);
+  });
+
+  it("el descuento puede superar la ganancia (resultado negativo)", () => {
+    expect(computeNetProfit([{ line_total: 485.2, cost: 360, quantity: 1 }], 200)).toBe(-74.8);
+  });
+
+  it("lista vacía devuelve 0", () => {
+    expect(computeNetProfit([], 0)).toBe(0);
   });
 });

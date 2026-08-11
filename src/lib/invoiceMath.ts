@@ -44,6 +44,30 @@ export function invoiceLineTotalForUnit(unitPrice: number, cost: number, itbis: 
 }
 
 /**
+ * Ganancia bruta de una línea de factura: monto cobrado (sin ITBIS) − costo.
+ * Con costo 0 o desconocido la ganancia no es calculable; se devuelve el monto
+ * total como referencia y quien la consume decide si mostrarla.
+ */
+export function computeLineProfit(lineTotal: number, cost: number, quantity: number): number {
+  return round2((Number(lineTotal) || 0) - round2((Number(cost) || 0) * (Number(quantity) || 0)));
+}
+
+/**
+ * Ganancia neta de la factura: suma de las ganancias de las líneas con costo
+ * conocido, menos el descuento aplicado.
+ */
+export function computeNetProfit(
+  lines: Array<{ line_total: number; cost: number; quantity: number }>,
+  discount = 0,
+): number {
+  const gross = lines.reduce(
+    (sum, line) => sum + (line.cost > 0 ? computeLineProfit(line.line_total, line.cost, line.quantity) : 0),
+    0,
+  );
+  return round2(gross - (Number(discount) || 0));
+}
+
+/**
  * Calcula los totales de una factura con el esquema de precios de Almaia:
  *  - El ITBIS SIEMPRE se calcula sobre el COSTO del producto (18% exacto) y
  *    queda fijo: nunca se altera por el margen ni por el redondeo.

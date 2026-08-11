@@ -14,7 +14,7 @@ import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
-import { computeInvoiceMath } from "@/lib/invoiceMath";
+import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -63,7 +63,7 @@ export default function FacturacionPage() {
   const [newClientForm, setNewClientForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
   const [showManualProduct, setShowManualProduct] = useState(false);
-  const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, itbis: false });
+  const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
@@ -226,11 +226,11 @@ export default function FacturacionPage() {
       name: manualProduct.name,
       quantity: manualProduct.quantity,
       unit_price: manualProduct.unit_price,
-      cost: 0,
+      cost: manualProduct.cost || 0,
       pv: 0,
       itbis: manualProduct.itbis,
     }]);
-    setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: false });
+    setManualProduct({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
     setShowManualProduct(false);
   }
 
@@ -244,6 +244,14 @@ export default function FacturacionPage() {
   const discountValue = Math.round((discountAmount > 0 ? discountAmount : subtotal * discountPercent / 100) * 100) / 100;
   const math = computeInvoiceMath(items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })), discountValue);
   const total = math.total;
+  const netProfit = computeNetProfit(
+    items.map((item, idx) => ({
+      line_total: math.lines[idx]?.line_total ?? item.quantity * effectivePrice(item),
+      cost: item.cost ?? 0,
+      quantity: item.quantity,
+    })),
+    discountValue,
+  );
 
   async function buildPreviewEl(data: any, settings: any) {
     const el = document.createElement("div");
@@ -1065,7 +1073,7 @@ export default function FacturacionPage() {
                     autoFocus
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#5C3E35] mb-1">Cantidad</label>
                     <input
@@ -1079,6 +1087,15 @@ export default function FacturacionPage() {
                     <input
                       type="number" step="0.01" min={0} value={manualProduct.unit_price}
                       onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
+                      placeholder="0.00"
+                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Costo (opcional)</label>
+                    <input
+                      type="number" step="0.01" min={0} value={manualProduct.cost}
+                      onChange={(e) => setManualProduct({ ...manualProduct, cost: Number(e.target.value) })}
                       placeholder="0.00"
                       className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
                     />
@@ -1098,7 +1115,7 @@ export default function FacturacionPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, itbis: false }); }}
+                    onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false }); }}
                     className="flex-1 h-9 border border-[#E8E0D8] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-white transition-all"
                   >
                     Cancelar
@@ -1119,6 +1136,10 @@ export default function FacturacionPage() {
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {items.map((item, i) => {
                   const isBundle = !!item.bundle_items && item.bundle_items.length > 0;
+                  const lineAmount = math.lines[i]?.line_total ?? item.quantity * effectivePrice(item);
+                  const itemCost = item.cost ?? 0;
+                  const lineProfit = computeLineProfit(lineAmount, itemCost, item.quantity);
+                  const hasKnownCost = itemCost > 0;
                   return (
                     <div key={i} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
                       <div className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3 flex-wrap sm:flex-nowrap">
@@ -1161,6 +1182,12 @@ export default function FacturacionPage() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
+                          <span
+                            title="Ganancia según margen seleccionado"
+                            className={`text-xs font-semibold w-14 sm:w-16 text-right whitespace-nowrap ${!hasKnownCost ? "text-[#BFB0A8]" : lineProfit >= 0 ? "text-green-600" : "text-red-500"}`}
+                          >
+                            {hasKnownCost ? `${lineProfit >= 0 ? "+" : ""}${formatCurrency(lineProfit)}` : "—"}
+                          </span>
                           <button
                             type="button"
                             onClick={() => {
@@ -1173,7 +1200,7 @@ export default function FacturacionPage() {
                             <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
                           </button>
                           <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
-                            {formatCurrency(math.lines[i]?.line_total ?? item.quantity * effectivePrice(item))}
+                            {formatCurrency(lineAmount)}
                           </span>
                           <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
                             <X size={16} />
@@ -1279,6 +1306,9 @@ export default function FacturacionPage() {
               <div className="flex justify-between"><span className="text-[#9C8A82]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
             )}
             <div className="flex justify-between"><span className="text-[#9C8A82]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
+            {items.length > 0 && (
+              <div className="flex justify-between"><span className="text-[#9C8A82]">Ganancia neta</span><span className={`font-medium ${netProfit >= 0 ? "text-green-600" : "text-red-500"}`}>{formatCurrency(netProfit)}</span></div>
+            )}
             <div className="flex justify-between text-base font-bold pt-1 border-t border-[#E8E0D8]"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
 
