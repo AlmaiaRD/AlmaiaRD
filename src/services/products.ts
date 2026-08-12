@@ -61,7 +61,7 @@ export async function deleteProduct(id: string) {
 export async function getBundleItems(bundleId: string): Promise<BundleItem[]> {
   const { data, error } = await supabase
     .from("bundle_items")
-    .select("*, products(*, categories(*), subbrands(*))")
+    .select("*, products!bundle_items_product_id_fkey(*, categories(*), subbrands(*))")
     .eq("bundle_id", bundleId)
     .order("created_at");
   if (error) throw error;
@@ -73,7 +73,7 @@ export async function getBundleItemsBatch(bundleIds: string[]): Promise<BundleIt
   if (ids.length === 0) return [];
   const { data, error } = await supabase
     .from("bundle_items")
-    .select("*, products(*, categories(*), subbrands(*))")
+    .select("*, products!bundle_items_product_id_fkey(*, categories(*), subbrands(*))")
     .in("bundle_id", ids);
   if (error) throw error;
   return (data || []) as BundleItem[];
@@ -91,7 +91,7 @@ export async function getBundleComponentMap(bundleIds: string[]): Promise<Map<st
   if (ids.length === 0) return map;
   const { data, error } = await supabase
     .from("bundle_items")
-    .select("bundle_id, product_id, quantity, products(name)")
+    .select("bundle_id, product_id, quantity, products!bundle_items_product_id_fkey(name)")
     .in("bundle_id", ids);
   if (error) throw error;
   for (const row of data || []) {
