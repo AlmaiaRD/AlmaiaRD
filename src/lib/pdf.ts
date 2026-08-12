@@ -505,34 +505,40 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
   const subbrands = "Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home";
   doc.text(subbrands, M, y);
 
-  // Right: Signature area
+  // Firma centrada sobre "FIRMA AUTORIZADA" (ratio real, sin deformar)
   if (signatureBase64) {
     try {
-      doc.addImage(signatureBase64, "PNG", PW - M - 471, Math.max(M, y - 236), 471, 236);
+      const props = doc.getImageProperties(signatureBase64);
+      const ratio = props.width && props.height ? props.width / props.height : 1;
+      const maxW = PW - 2 * M;
+      const targetH = Math.max(120, Math.min(354, y - M));
+      const sigW = Math.min(targetH * ratio, maxW);
+      const sigH = sigW / ratio;
+      doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW - M, y + 4, { align: "right" });
+      doc.text("FIRMA AUTORIZADA", PW / 2, y + 4, { align: "center" });
     } catch {
       // Fallback to text signature
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "italic");
       doc.setFontSize(11);
-      doc.text(bizName, PW - M, y - 6, { align: "right" });
+      doc.text(bizName, PW / 2, y - 6, { align: "center" });
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW - M, y, { align: "right" });
+      doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
     }
   } else {
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(11);
-    doc.text(bizName, PW - M, y - 6, { align: "right" });
+    doc.text(bizName, PW / 2, y - 6, { align: "center" });
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", PW - M, y, { align: "right" });
+    doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
   }
 
   // Save
@@ -634,12 +640,20 @@ export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
 
   y = doc.internal.pageSize.getHeight() - 30;
   
-  // Footer with signature
+  // Footer with signature (centrada sobre "FIRMA AUTORIZADA")
   if (signatureBase64) {
     try {
-      doc.addImage(signatureBase64, "PNG", pageWidth - margin - 471, y - 177, 471, 177);
+      const props = doc.getImageProperties(signatureBase64);
+      const ratio = props.width && props.height ? props.width / props.height : 1;
+      const maxW = pageWidth - 2 * margin;
+      const targetH = Math.min(220, y - margin);
+      const sigW = Math.min(targetH * ratio, maxW);
+      const sigH = sigW / ratio;
+      doc.addImage(signatureBase64, "PNG", (pageWidth - sigW) / 2, y - sigH, sigW, sigH);
       setColor(gray);
       doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 4, { align: "center" });
       doc.setFontSize(8);
       doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
     } catch {

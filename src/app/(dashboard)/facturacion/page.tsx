@@ -383,8 +383,8 @@ export default function FacturacionPage() {
           <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${esc(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
-        <div style="text-align:right;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:156px;margin-left:auto;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
+        <div style="text-align:center;">
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:234px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
@@ -876,9 +876,9 @@ export default function FacturacionPage() {
                   <p className="text-xs italic text-[#B8837E]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
                   <p className="text-xs text-[#9C8A82] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
                 </div>
-                <div className="text-right">
+                <div className="text-center">
                   {settings?.signature_url ? (
-                    <img src={settings.signature_url} alt="Firma" className="ml-auto" style={{ height: 156 }} />
+                    <img src={settings.signature_url} alt="Firma" style={{ height: 234 }} />
                   ) : (
                     <p className="text-base italic text-[#5C3E35] font-light" style={{ fontFamily: "Georgia, serif" }}>{settings?.business_name || "ALMAIA"}</p>
                   )}
@@ -1486,9 +1486,9 @@ export default function FacturacionPage() {
                 <p className="text-xs italic text-[#B8837E]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
                 <p className="text-xs text-[#9C8A82] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
               </div>
-              <div className="text-right">
+              <div className="text-center">
                 {settings?.signature_url ? (
-                  <img src={settings.signature_url} alt="Firma" className="ml-auto" style={{ height: 156 }} />
+                  <img src={settings.signature_url} alt="Firma" style={{ height: 234 }} />
                 ) : (
                   <p className="text-base italic text-[#5C3E35] font-light" style={{ fontFamily: "Georgia, serif" }}>{settings?.business_name || "ALMAIA"}</p>
                 )}
