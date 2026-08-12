@@ -26,8 +26,13 @@ async function loadSettingsRow(
 ): Promise<Record<string, any> | null> {
   const rpcName = includeSecrets ? "get_settings_with_secrets" : "get_settings_public";
   let result = await client.rpc(rpcName);
-  if (isMigrationPending(result.error)) {
-    // Migración aún no aplicada: los RPCs no existen todavía.
+
+  // Si el RPC falla o devuelve algo inesperado (p. ej. no existe en la BD),
+  // caer a lectura directa en lugar de asumir "no hay configuración".
+  // Sin esto, getSettings insertaría filas de settings duplicadas en cascada.
+  const rpcOk = !result.error && Array.isArray(result.data);
+  if (!rpcOk) {
+    if (result.error && !isMigrationPending(result.error)) throw result.error;
     result = await client.from("settings").select("*").limit(1).maybeSingle();
   }
   if (result.error) throw result.error;
