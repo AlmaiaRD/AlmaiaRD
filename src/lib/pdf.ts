@@ -508,7 +508,7 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
   // Right: Signature area
   if (signatureBase64) {
     try {
-      doc.addImage(signatureBase64, "PNG", PW - M - 277, y - 139, 277, 139);
+      doc.addImage(signatureBase64, "PNG", PW - M - 471, Math.max(M, y - 236), 471, 236);
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
@@ -637,7 +637,7 @@ export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
   // Footer with signature
   if (signatureBase64) {
     try {
-      doc.addImage(signatureBase64, "PNG", pageWidth - margin - 277, y - 104, 277, 104);
+      doc.addImage(signatureBase64, "PNG", pageWidth - margin - 471, y - 177, 471, 177);
       setColor(gray);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
