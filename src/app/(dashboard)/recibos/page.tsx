@@ -212,7 +212,7 @@ export default function RecibosPage() {
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu pago!</p>
         <div style="text-align:right;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:54px;margin-left:auto;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:92px;margin-left:auto;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
