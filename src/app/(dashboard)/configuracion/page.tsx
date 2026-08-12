@@ -12,6 +12,49 @@ import { exportBackupToExcel } from "@/lib/excel";
 
 type Tab = "general" | "ai" | "banks" | "backup";
 
+function cropSignatureImage(src: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("Canvas no disponible"));
+      ctx.drawImage(img, 0, 0);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const w = canvas.width;
+      const h = canvas.height;
+      let minX = w, minY = h, maxX = -1, maxY = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+          const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          if (data[i + 3] > 30 && lum < 225) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (maxX < 0) return resolve(src);
+      const pad = Math.max(1, Math.round(Math.max(w, h) * 0.02));
+      const sx = Math.max(0, minX - pad);
+      const sy = Math.max(0, minY - pad);
+      const sw = Math.min(w - sx, maxX - minX + pad * 2);
+      const sh = Math.min(h - sy, maxY - minY + pad * 2);
+      const out = document.createElement("canvas");
+      out.width = sw;
+      out.height = sh;
+      out.getContext("2d")!.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+      resolve(out.toDataURL("image/png"));
+    };
+    img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
+    img.src = src;
+  });
+}
+
 export default function ConfiguracionPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [banks, setBanks] = useState<BankAccount[]>([]);
@@ -491,7 +534,15 @@ Responde en español en máximo 3 oraciones:`,
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const reader = new FileReader();
-                      reader.onload = (ev) => setForm({ ...form, signature_url: ev.target?.result as string });
+                      reader.onload = async (ev) => {
+                        const src = ev.target?.result as string;
+                        try {
+                          const cropped = await cropSignatureImage(src);
+                          setForm({ ...form, signature_url: cropped });
+                        } catch {
+                          setForm({ ...form, signature_url: src });
+                        }
+                      };
                       reader.readAsDataURL(file);
                     }} />
                   </label>

@@ -384,7 +384,7 @@ export default function FacturacionPage() {
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:234px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
@@ -864,21 +864,21 @@ export default function FacturacionPage() {
 
               {/* Notes */}
               {selectedInvoice.notes && (
-                <div className="bg-[#FFF8F0] border border-[#E8E0D8] rounded-xl p-3 mb-5">
+                <div className="bg-[#FFF8F0] border border-[#E8E0D8] rounded-xl p-3 mb-2">
                   <p className="text-xs text-[#9C8A82] mb-1">Notas:</p>
                   <p className="text-sm text-[#5C3E35]">{selectedInvoice.notes}</p>
                 </div>
               )}
 
               {/* F. FOOTER */}
-              <div className="border-t border-[#E8E0D8] pt-4 flex justify-between items-end">
+              <div className="border-t border-[#E8E0D8] pt-2 flex justify-between items-end">
                 <div>
                   <p className="text-xs italic text-[#B8837E]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
                   <p className="text-xs text-[#9C8A82] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
                 </div>
                 <div className="text-center">
                   {settings?.signature_url ? (
-                    <img src={settings.signature_url} alt="Firma" style={{ height: 234 }} />
+                    <img src={settings.signature_url} alt="Firma" style={{ height: 120 }} />
                   ) : (
                     <p className="text-base italic text-[#5C3E35] font-light" style={{ fontFamily: "Georgia, serif" }}>{settings?.business_name || "ALMAIA"}</p>
                   )}
@@ -1488,7 +1488,7 @@ export default function FacturacionPage() {
               </div>
               <div className="text-center">
                 {settings?.signature_url ? (
-                  <img src={settings.signature_url} alt="Firma" style={{ height: 234 }} />
+                  <img src={settings.signature_url} alt="Firma" style={{ height: 120 }} />
                 ) : (
                   <p className="text-base italic text-[#5C3E35] font-light" style={{ fontFamily: "Georgia, serif" }}>{settings?.business_name || "ALMAIA"}</p>
                 )}
