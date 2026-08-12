@@ -61,9 +61,34 @@ END $$;
 
 -- users: cada usuario ve y edita su propio registro (la app crea el perfil
 -- propio al registrar/entrar y guarda preferencias).
+--
+-- IMPORTANTE: el UPDATE propio NO permite cambiar la columna role. Sin esta
+-- protección, cualquier usuario podía auto-elevarse a 'admin' (escalada de
+-- privilegios a backup, migrate, get_settings_with_secrets y
+-- whatsapp_configs). El rol solo se cambia vía RPC SECURITY DEFINER de admin
+-- (aún no existe en la app; se añadirá cuando se necesite administrar roles).
 CREATE POLICY "users_select_own" ON users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "users_insert_own" ON users FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "users_update_own" ON users FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+CREATE OR REPLACE FUNCTION public.fn_users_prevent_role_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.role IS DISTINCT FROM OLD.role THEN
+    RAISE EXCEPTION 'El rol no puede modificarse directamente. Contacta al administrador.';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_users_prevent_role_change ON users;
+CREATE TRIGGER trg_users_prevent_role_change
+  BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION public.fn_users_prevent_role_change();
 
 -- clients
 CREATE POLICY "clients_select" ON clients FOR SELECT USING (get_user_role() IN ('admin','seller','assistant'));

@@ -541,6 +541,8 @@ CREATE OR REPLACE VIEW public.vw_inventory_value AS SELECT p.id AS product_id,
   WHERE (p.active = true);;
 
 CREATE OR REPLACE VIEW public.vw_profitability AS SELECT COALESCE(sum(i.total), (0)::numeric) AS total_sales,
+    COALESCE(sum((i.total - COALESCE(i.itbis_total, (0)::numeric))), (0)::numeric) AS total_revenue,
+    COALESCE(sum(COALESCE(i.itbis_total, (0)::numeric)), (0)::numeric) AS total_itbis,
     COALESCE(sum((ii.unit_cost * (ii.quantity)::numeric)), (0)::numeric) AS total_costs,
     COALESCE(( SELECT sum(expenses.amount) AS sum
            FROM expenses
@@ -548,8 +550,8 @@ CREATE OR REPLACE VIEW public.vw_profitability AS SELECT COALESCE(sum(i.total), 
     COALESCE(( SELECT sum(bonuses.amount) AS sum
            FROM bonuses
           WHERE (bonuses.bonus_date >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone))), (0)::numeric) AS total_bonuses,
-    (COALESCE(sum(i.total), (0)::numeric) - COALESCE(sum((ii.unit_cost * (ii.quantity)::numeric)), (0)::numeric)) AS gross_profit,
-    (((COALESCE(sum(i.total), (0)::numeric) - COALESCE(sum((ii.unit_cost * (ii.quantity)::numeric)), (0)::numeric)) - COALESCE(( SELECT sum(expenses.amount) AS sum
+    (COALESCE(sum((i.total - COALESCE(i.itbis_total, (0)::numeric))), (0)::numeric) - COALESCE(sum((ii.unit_cost * (ii.quantity)::numeric)), (0)::numeric)) AS gross_profit,
+    (((COALESCE(sum((i.total - COALESCE(i.itbis_total, (0)::numeric))), (0)::numeric) - COALESCE(sum((ii.unit_cost * (ii.quantity)::numeric)), (0)::numeric)) - COALESCE(( SELECT sum(expenses.amount) AS sum
            FROM expenses
           WHERE (expenses.expense_date >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone))), (0)::numeric)) - COALESCE(( SELECT sum(bonuses.amount) AS sum
            FROM bonuses
@@ -670,10 +672,12 @@ DECLARE
 BEGIN
   SELECT total, amount_paid INTO v_invoice
   FROM invoices WHERE id = p_invoice_id;
-  
-  v_new_paid := COALESCE(v_invoice.amount_paid, 0) + p_diff;
+  IF NOT FOUND THEN RETURN; END IF;
+
+  v_new_paid := GREATEST(COALESCE(v_invoice.amount_paid, 0) + COALESCE(p_diff, 0), 0);
+  v_new_paid := LEAST(v_new_paid, v_invoice.total);
   v_new_balance := v_invoice.total - v_new_paid;
-  
+
   UPDATE invoices SET
     amount_paid = v_new_paid,
     balance_due = GREATEST(v_new_balance, 0),

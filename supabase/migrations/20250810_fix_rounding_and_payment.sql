@@ -48,15 +48,19 @@ CREATE TRIGGER trg_calculate_prices
   EXECUTE FUNCTION fn_calculate_product_prices();
 
 -- ─────────────────────────────────────────────
--- Fix 3: adjust_invoice_payment con tope + crédito
--- ─────────────────────────────────────────────
+-- Fix 3: adjust_invoice_payment con tope
+-- ─────────────────────────────────────
 -- PROBLEMA: El RPC sumaba el pago sin tope; si un recibo excedía el
 -- total de la factura, amount_paid quedaba mayor que total y el
 -- excedente se perdía (caso real FAC-000004: RD$50 sobrepagados).
 --
--- SOLUCIÓN: Si el nuevo amount_paid excede el total, se topa en total,
--- se marca la factura como PAID y el excedente se registra
--- automáticamente como crédito AVAILABLE para el cliente.
+-- SOLUCIÓN: Si el nuevo amount_paid excede el total, se topa en total
+-- y se marca la factura como PAID. Si una reversión lo deja por debajo
+-- de cero, se topa en cero.
+--
+-- IMPORTANTE: el crédito por sobrepago lo crea SOLO el trigger
+-- trg_sync_receipt_credit (ver 20260811_financial_security_fixes); crear
+-- crédito aquí Y en el trigger duplicaba el crédito por cada sobrepago.
 
 CREATE OR REPLACE FUNCTION adjust_invoice_payment(p_invoice_id UUID, p_diff NUMERIC)
 RETURNS void AS $$
@@ -64,17 +68,15 @@ DECLARE
   v_invoice RECORD;
   v_new_paid NUMERIC;
   v_new_balance NUMERIC;
-  v_excess NUMERIC;
 BEGIN
-  SELECT total, amount_paid, client_id INTO v_invoice
+  SELECT total, amount_paid INTO v_invoice
   FROM invoices WHERE id = p_invoice_id;
 
   IF NOT FOUND THEN
     RETURN;
   END IF;
 
-  v_new_paid := COALESCE(v_invoice.amount_paid, 0) + p_diff;
-  v_excess := GREATEST(v_new_paid - v_invoice.total, 0);
+  v_new_paid := GREATEST(COALESCE(v_invoice.amount_paid, 0) + COALESCE(p_diff, 0), 0);
   v_new_paid := LEAST(v_new_paid, v_invoice.total);
   v_new_balance := v_invoice.total - v_new_paid;
 
@@ -87,12 +89,6 @@ BEGIN
       ELSE 'PENDING'
     END
   WHERE id = p_invoice_id;
-
-  -- Registrar el excedente como crédito disponible del cliente
-  IF v_excess > 0 AND v_invoice.client_id IS NOT NULL THEN
-    INSERT INTO credit_balances (client_id, amount, status)
-    VALUES (v_invoice.client_id, v_excess, 'AVAILABLE');
-  END IF;
 END;
 $$ LANGUAGE plpgsql;
 

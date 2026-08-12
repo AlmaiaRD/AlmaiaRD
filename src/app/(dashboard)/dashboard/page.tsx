@@ -247,7 +247,7 @@ export default function DashboardPage() {
             <KpiCard title="Ventas del Día" value={formatCurrency(Number(stats.salesToday))} icon={DollarSign} color="primary" />
             <KpiCard title="Ventas del Mes" value={formatCurrency(Number(stats.salesMonth))} icon={TrendingUp} color="primary" />
             <KpiCard title="Cobros Recibidos" value={formatCurrency(Number(stats.totalPaid))} icon={PiggyBank} color="green" />
-            <KpiCard title="Ganancias" value={formatCurrency(Number(stats.grossProfit))} icon={BarChart3} color="primary" />
+            <KpiCard title="Ganancia del Mes" value={formatCurrency(Number(stats.grossProfit))} icon={BarChart3} color="primary" />
             <KpiCard title="Valor Inventario" value={formatCurrency(Number(stats.inventoryValue))} icon={Package} color="amber" />
             <KpiCard title="Stock Disponible" value={String(Number(stats.totalStock))} icon={Package} color="amber" />
             <KpiCard title="Cuentas por Cobrar" value={formatCurrency(Number(stats.totalPending))} icon={Users} color="rose" />

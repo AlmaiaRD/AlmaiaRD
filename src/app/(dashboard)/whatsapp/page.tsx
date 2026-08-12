@@ -9,8 +9,7 @@ import {
   getWhatsAppConfigs,
   createWhatsAppConfig,
   deleteWhatsAppConfig,
-  sendTextMessage,
-  sendTemplateMessage,
+  sendViaApi,
   logWhatsAppMessage,
   getWhatsAppLogs,
   getMessageTemplates,
@@ -269,7 +268,8 @@ export default function WhatsAppPage() {
     try {
       const templatesData = await getMessageTemplates(
         selectedConfig.business_account_id,
-        selectedConfig.access_token
+        "",
+        selectedConfig.id
       );
       setApiTemplates(templatesData);
     } catch {
@@ -432,11 +432,11 @@ export default function WhatsAppPage() {
 
     setSending(true);
     try {
-      const result = await sendTextMessage(
-        selectedConfig.phone_number_id,
-        selectedConfig.access_token,
+      const result = await sendViaApi(
+        selectedConfig.id,
         recipientPhone,
-        messageText
+        "text",
+        { text: messageText }
       );
 
       if (result.success) {

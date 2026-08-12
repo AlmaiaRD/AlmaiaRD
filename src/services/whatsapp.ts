@@ -10,6 +10,7 @@ export interface WhatsAppConfig {
   business_account_id: string;
   is_active: boolean;
   label: string;
+  has_token?: boolean;
 }
 
 export interface WhatsAppMessage {
@@ -41,15 +42,22 @@ export interface MessageTemplate {
   }>;
 }
 
-// Get WhatsApp configurations
+// Get WhatsApp configurations (sin secretos: el access_token nunca viaja al
+// navegador; solo se expone has_token vía RPC get_whatsapp_configs_public).
 export async function getWhatsAppConfigs(): Promise<WhatsAppConfig[]> {
-  const { data, error } = await supabase
-    .from("whatsapp_configs")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc("get_whatsapp_configs_public");
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    label: row.label,
+    phone_number_id: row.phone_number_id,
+    business_account_id: row.business_account_id,
+    is_active: row.is_active,
+    access_token: "",
+    verify_token: "",
+    has_token: Boolean(row.has_token),
+  }));
 }
 
 // Create WhatsApp configuration
@@ -57,11 +65,11 @@ export async function createWhatsAppConfig(config: Omit<WhatsAppConfig, "id">): 
   const { data, error } = await supabase
     .from("whatsapp_configs")
     .insert(config)
-    .select()
+    .select("id, label, phone_number_id, business_account_id, is_active, created_at")
     .single();
 
   if (error) throw error;
-  return data;
+  return { ...data, access_token: "", verify_token: "" };
 }
 
 // Update WhatsApp configuration
@@ -82,6 +90,30 @@ export async function deleteWhatsAppConfig(id: string): Promise<void> {
     .eq("id", id);
 
   if (error) throw error;
+}
+
+// Send WhatsApp message through the server API route. El access_token se
+// resuelve en el servidor (RLS admin-only) y nunca llega al navegador.
+export async function sendViaApi(
+  configId: string,
+  to: string,
+  type: "text" | "template",
+  payload: { text?: string; template?: WhatsAppMessage["template"] }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const res = await fetch("/api/whatsapp/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ configId, to, type, ...payload }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || "Error al enviar el mensaje" };
+    }
+    return { success: true, messageId: data.messageId };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Network error" };
+  }
 }
 
 // Send WhatsApp message using Cloud API
@@ -135,26 +167,14 @@ export async function sendTemplateMessage(
   variables?: string[]
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const components = variables
-    ? [
-        {
-          type: "body",
-          parameters: variables.map((v) => ({
-            type: "text",
-            text: v,
-          })),
-        },
-      ]
+    ? [{ type: "body", parameters: variables.map((v) => ({ type: "text", text: v })) }]
     : undefined;
 
   return sendWhatsAppMessage(phoneNumberId, accessToken, to, {
     messaging_product: "whatsapp",
     to,
     type: "template",
-    template: {
-      name: templateName,
-      language: { code: languageCode },
-      components,
-    },
+    template: { name: templateName, language: { code: languageCode }, components },
   });
 }
 
@@ -214,12 +234,19 @@ export async function sendPaymentReminder(
   );
 }
 
-// Get message templates from WhatsApp Business Account
+// Get message templates from WhatsApp Business Account (server-side, admin).
 export async function getMessageTemplates(
   businessAccountId: string,
-  accessToken: string
+  accessToken: string,
+  configId?: string
 ): Promise<MessageTemplate[]> {
   try {
+    if (configId) {
+      const res = await fetch(`/api/whatsapp/templates?configId=${configId}`);
+      if (!res.ok) return [];
+      const data = await res.json().catch(() => []);
+      return Array.isArray(data) ? data : [];
+    }
     const response = await fetch(
       `${WHATSAPP_API_URL}/${businessAccountId}/message_templates`,
       {
@@ -248,7 +275,7 @@ export async function logWhatsAppMessage(
 ): Promise<void> {
   const { error: insertError } = await supabase.from("whatsapp_logs").insert({
     config_id: configId,
-    to,
+    recipient: to,
     message_type: messageType,
     template_name: templateName,
     status,
