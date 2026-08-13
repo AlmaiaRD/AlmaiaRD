@@ -1,8 +1,21 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+type AdminClient = any;
+
+// El webhook no tiene sesión de usuario: se persiste con service role
+// cuando está configurado; si no, se omite la escritura a BD sin fallar.
+function getAdminClient(): AdminClient | null {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return null;
+  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+}
 
 function verifySignature(rawBody: string, signature: string | null): boolean {
   if (!APP_SECRET) {
@@ -19,6 +32,45 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+// Actualiza el estado (sent/delivered/read) de un mensaje enviado.
+async function processStatus(supabase: AdminClient | null, status: any) {
+  const messageId = status?.id;
+  const state = status?.status; // sent | delivered | read | failed
+  if (!messageId || !state || !supabase) return;
+
+  const { error } = await supabase
+    .from("whatsapp_logs")
+    .update({ status: state, status_updated_at: new Date().toISOString() })
+    .eq("message_id", messageId)
+    .eq("direction", "outgoing");
+
+  if (error) console.error(`[whatsapp-webhook] error actualizando estado ${messageId}:`, error.message);
+}
+
+// Persiste un mensaje entrante del cliente.
+async function processIncomingMessage(supabase: AdminClient | null, message: any) {
+  const from = message?.from;
+  const type = message?.type;
+  const text = message?.text?.body;
+
+  if (!supabase) {
+    console.log(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${text || "(media)"}`);
+    return;
+  }
+
+  const { error } = await supabase.from("whatsapp_logs").insert({
+    config_id: null,
+    recipient: from,
+    message_type: type || "unknown",
+    status: "received",
+    message_id: message?.id,
+    direction: "incoming",
+    message_body: text,
+  });
+
+  if (error) console.error(`[whatsapp-webhook] error guardando mensaje entrante de ${from}:`, error.message);
+}
+
 // GET - Webhook verification
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -33,7 +85,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse("Forbidden", { status: 403 });
 }
 
-// POST - Receive messages
+// POST - Receive messages and status updates
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
@@ -45,29 +97,24 @@ export async function POST(req: NextRequest) {
     }
 
     const body = JSON.parse(rawBody);
+    const supabase = getAdminClient();
 
     const entry = body.entry?.[0];
     const changes = entry?.changes?.[0];
-    const messages = changes?.value?.messages;
+    const value = changes?.value;
+    const messages = value?.messages;
+    const statuses = value?.statuses;
 
-    if (!messages || messages.length === 0) {
-      return NextResponse.json({ status: "ok" });
+    if (statuses && statuses.length > 0) {
+      for (const status of statuses) {
+        await processStatus(supabase, status);
+      }
     }
 
-    // Process each message
-    for (const message of messages) {
-      const from = message.from;
-      const type = message.type;
-      const text = message.text?.body;
-
-      // Log the incoming message
-      console.log(`WhatsApp message from ${from}: [${type}] ${text || "(media)"}`);
-
-      // Here you can add custom logic:
-      // - Store in database
-      // - Trigger automations
-      // - Send auto-replies
-      // - Forward to CRM
+    if (messages && messages.length > 0) {
+      for (const message of messages) {
+        await processIncomingMessage(supabase, message);
+      }
     }
 
     // Always return 200 quickly

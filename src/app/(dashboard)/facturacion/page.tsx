@@ -15,6 +15,7 @@ import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { buildInvoicePdfDoc } from "@/lib/pdf";
 import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
@@ -452,13 +453,46 @@ export default function FacturacionPage() {
 
   async function handlePrintPdf(inv: any) {
     try {
-      const { canvas, invoice_number } = await captureInvoice(inv);
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const jspdfModule = await import("jspdf");
-      const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
-      const clientName = inv.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      pdf.save(`factura-${invoice_number}-${clientName}.pdf`);
+      const full = await getInvoice(inv.id);
+      const bankAccount = full.show_all_bank_accounts
+        ? (bankAccounts[0] || undefined)
+        : (full.bank_accounts || undefined);
+      const doc = await buildInvoicePdfDoc({
+        invoice_number: full.invoice_number,
+        invoice_date: formatDate(full.invoice_date),
+        client_name: full.clients?.full_name || "",
+        client_phone: full.clients?.phone || undefined,
+        client_email: full.clients?.email || undefined,
+        items: (full.invoice_items || []).map((it: any) => ({
+          subbrand: it.products?.subbrands?.name || undefined,
+          name: it.products?.name || it.custom_name || "Producto",
+          quantity: Number(it.quantity) || 0,
+          unit_price: Number(it.unit_price) || 0,
+          line_total: Number(it.line_total) || 0,
+          itbis: it.itbis ?? false,
+        })),
+        subtotal: Number(full.subtotal) || 0,
+        itbis_total: Number(full.itbis_total) || 0,
+        discount_amount: Number(full.discount_amount) || 0,
+        total: Number(full.total) || 0,
+        paid_amount: Number(full.amount_paid) || 0,
+        balance_due: Math.max(0, (Number(full.total) || 0) - (Number(full.amount_paid) || 0)),
+        bank_account: bankAccount ? {
+          holder_name: bankAccount.holder_name,
+          id_number: bankAccount.id_number || undefined,
+          bank_name: bankAccount.bank_name,
+          account_type: bankAccount.account_type,
+          account_number: bankAccount.account_number,
+          email: bankAccount.email || undefined,
+        } : undefined,
+        logo_url: settings?.logo_url || undefined,
+        signature_url: settings?.signature_url || undefined,
+        business_name: settings?.business_name || "Almaia RD",
+        email: settings?.email || undefined,
+        phone: settings?.phone || undefined,
+      });
+      const clientName = full.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      doc.save(`factura-${full.invoice_number}-${clientName}.pdf`);
       toast.success("PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
@@ -593,11 +627,14 @@ export default function FacturacionPage() {
 
   async function handleDelete(id: string) {
     if (!window.confirm("¿Estás segura de eliminar esta factura?")) return;
+    const previous = invoices;
+    setInvoices((prev) => prev.filter((inv) => inv.id !== id));
+    toast.success("Factura eliminada");
     try {
       await deleteInvoice(id);
-      toast.success("Factura eliminada");
       await load(searchRef.current);
     } catch {
+      setInvoices(previous);
       toast.error("Error al eliminar factura");
     }
   }
@@ -982,13 +1019,45 @@ export default function FacturacionPage() {
             senderName: (settings as any).sender_name || undefined,
           } : undefined}
           getAttachment={async () => {
-            const { canvas, invoice_number } = await captureInvoice(selectedInvoice);
-            const jspdfModule = await import("jspdf");
-            const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
-            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
-            const base64 = pdf.output("datauristring").split(",")[1];
-            const clientName = selectedInvoice?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-            return { filename: `factura-${invoice_number}-${clientName}.pdf`, base64 };
+            const full = await getInvoice(selectedInvoice.id);
+            const bankAccount = full.show_all_bank_accounts
+              ? (bankAccounts[0] || undefined)
+              : (full.bank_accounts || undefined);
+            const doc = await buildInvoicePdfDoc({
+              invoice_number: full.invoice_number,
+              invoice_date: formatDate(full.invoice_date),
+              client_name: full.clients?.full_name || "",
+              client_phone: full.clients?.phone || undefined,
+              client_email: full.clients?.email || undefined,
+              items: (full.invoice_items || []).map((it: any) => ({
+                subbrand: it.products?.subbrands?.name || undefined,
+                name: it.products?.name || it.custom_name || "Producto",
+                quantity: Number(it.quantity) || 0,
+                unit_price: Number(it.unit_price) || 0,
+                line_total: Number(it.line_total) || 0,
+                itbis: it.itbis ?? false,
+              })),
+              subtotal: Number(full.subtotal) || 0,
+              itbis_total: Number(full.itbis_total) || 0,
+              discount_amount: Number(full.discount_amount) || 0,
+              total: Number(full.total) || 0,
+              paid_amount: Number(full.amount_paid) || 0,
+              balance_due: Math.max(0, (Number(full.total) || 0) - (Number(full.amount_paid) || 0)),
+              bank_account: bankAccount ? {
+                holder_name: bankAccount.holder_name,
+                id_number: bankAccount.id_number || undefined,
+                bank_name: bankAccount.bank_name,
+                account_type: bankAccount.account_type,
+                account_number: bankAccount.account_number,
+                email: bankAccount.email || undefined,
+              } : undefined,
+              logo_url: settings?.logo_url || undefined,
+              signature_url: settings?.signature_url || undefined,
+              business_name: settings?.business_name || "Almaia RD",
+              email: settings?.email || undefined,
+              phone: settings?.phone || undefined,
+            });
+            return { filename: `factura-${full.invoice_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}
         />
       )}

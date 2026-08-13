@@ -186,23 +186,28 @@ export default function ClientesPage() {
 
   async function handleDelete(id: string, name: string) {
     if (!window.confirm(`¿Archivar a ${name}?`)) return;
+    const previous = clients;
+    setClients((prev) => prev.filter((c) => c.id !== id));
+    toast.success("Cliente archivado. Puedes restaurarlo desde Archivos.", { duration: 4000 });
     try {
       await deleteClient(id);
-      toast.success("Cliente archivado. Puedes restaurarlo desde Archivos.", { duration: 4000 });
       load();
     } catch {
+      setClients(previous);
       toast.error("Error al archivar cliente");
     }
   }
 
   async function handleRestore(id: string, name: string) {
     if (!window.confirm(`¿Restaurar a ${name}?`)) return;
+    const previous = archivedClients;
+    setArchivedClients((prev) => prev.filter((c) => c.id !== id));
+    toast.success("Cliente restaurado exitosamente");
     try {
       await restoreClient(id);
-      toast.success("Cliente restaurado exitosamente");
-      setArchivedClients((prev) => prev.filter((c) => c.id !== id));
       load();
     } catch {
+      setArchivedClients(previous);
       toast.error("Error al restaurar cliente");
     }
   }

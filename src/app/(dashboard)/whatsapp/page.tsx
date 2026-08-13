@@ -28,9 +28,12 @@ import {
   Phone,
   Search,
   CheckCircle,
+  CheckCheck,
   AlertCircle,
   Clock,
   ArrowLeft,
+  ArrowDownLeft,
+  ArrowUpRight,
   FileText,
   Bookmark,
   Edit3,
@@ -875,27 +878,41 @@ export default function WhatsAppPage() {
           {logs.length === 0 ? (
             <div className="text-center py-16 text-[#9C8A82]">
               <History size={40} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No hay mensajes enviados</p>
+              <p className="text-sm">No hay mensajes en el historial</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#E8E0D8]">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Dirección</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Teléfono</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Tipo</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Mensaje</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => (
                   <tr key={log.id} className="border-b border-[#E8E0D8] last:border-0 hover:bg-[#FAF6F0]">
-                    <td className="px-4 py-3 text-sm text-[#5C3E35]">{formatDate(log.created_at)}</td>
-                    <td className="px-4 py-3 text-sm text-[#5C3E35]">{log.to}</td>
-                    <td className="px-4 py-3 text-sm text-[#9C8A82]">{log.message_type}</td>
+                    <td className="px-4 py-3 text-sm text-[#5C3E35] whitespace-nowrap">{formatDate(log.created_at)}</td>
+                    <td className="px-4 py-3">
+                      {log.direction === "incoming" ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#B8837E]">
+                          <ArrowDownLeft size={14} /> Entrante
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#6B8E6B]">
+                          <ArrowUpRight size={14} /> Saliente
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#5C3E35]">{log.recipient || log.to}</td>
+                    <td className="px-4 py-3 text-sm text-[#9C8A82] max-w-[320px] truncate" title={log.message_body || log.template_name || ""}>
+                      {log.message_body || (log.direction === "incoming" ? "(adjunto o media)" : log.message_type)}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        {log.status === "sent" ? <CheckCircle size={14} className="text-green-500" /> : log.status === "failed" ? <AlertCircle size={14} className="text-red-500" /> : <Clock size={14} className="text-gray-400" />}
+                        {log.status === "sent" ? <CheckCircle size={14} className="text-green-500" /> : log.status === "delivered" ? <CheckCheck size={14} className="text-[#B8837E]" /> : log.status === "read" ? <CheckCircle size={14} className="text-blue-500" /> : log.status === "failed" ? <AlertCircle size={14} className="text-red-500" /> : log.status === "received" ? <ArrowDownLeft size={14} className="text-[#6B8E6B]" /> : <Clock size={14} className="text-gray-400" />}
                         <span className="text-sm text-[#5C3E35] capitalize">{log.status}</span>
                       </div>
                     </td>

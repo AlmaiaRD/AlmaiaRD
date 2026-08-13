@@ -5,7 +5,8 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import PurchasePdfImport from "@/components/purchases/PurchasePdfImport";
+import RotationTab from "@/components/inventory/RotationTab";
+import PurchaseModal from "@/components/inventory/PurchaseModal";
 import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct, getInventoryPaginated } from "@/services/inventory";
 import { getProducts } from "@/services/products";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
@@ -14,7 +15,7 @@ import { getSuppliers } from "@/services/suppliers";
 import { getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import type { Supplier, BankAccount, Settings } from "@/types/database";
-import { Package, Plus, Search, X, Save, Edit2, Minus, History, ChevronDown, Eye, EyeOff, Trash2, Printer, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown, Upload } from "lucide-react";
+import { Package, Plus, Search, Save, Edit2, Minus, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
@@ -1080,569 +1081,34 @@ function InventarioContent() {
       )}
 
       {activeTab === "rotation" && (
-        <div className="space-y-6">
-          {rotationLoading ? (
-            <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
-          ) : rotationData.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
-              <Package size={40} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No hay datos de rotación</p>
-            </div>
-          ) : (
-            <>
-              {/* KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">Total Productos</p>
-                  <p className="text-xl font-bold text-[#5C3E35]">{rotationData.length}</p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">Rotación Alta (&lt; 15d)</p>
-                  <p className="text-xl font-bold text-[#86C7A3]">
-                    {rotationData.filter((d: any) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length}
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">Rotación Media (15-60d)</p>
-                  <p className="text-xl font-bold text-[#E8C87A]">
-                    {rotationData.filter((d: any) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length}
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">{'Rotación Baja (> 60d)'}</p>
-                  <p className="text-xl font-bold text-[#D4A0A0]">
-                    {rotationData.filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length}
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">Próximos a agotarse</p>
-                  <p className="text-xl font-bold text-red-500">
-                    {rotationData.filter((d: any) => {
-                      if (d.sold <= 0 || d.stock <= 0) return false;
-                      return d.velocidadDias > 0 && Math.round(d.velocidadDias * d.stock) < 30;
-                    }).length}
-                  </p>
-                </div>
-              </div>
-
-              {/* Capital Inmovilizado Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 30 días'}</p>
-                  <p className="text-lg font-bold text-[#E8C87A]">
-                    {rotationData
-                      .filter((d: any) => d.diasEnInventario > 30 && d.diasEnInventario < 999)
-                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
-                      .toLocaleString()} RD$
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 60 días'}</p>
-                  <p className="text-lg font-bold text-[#D4A0A0]">
-                    {rotationData
-                      .filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999)
-                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
-                      .toLocaleString()} RD$
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 90 días'}</p>
-                  <p className="text-lg font-bold text-red-600">
-                    {rotationData
-                      .filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
-                      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
-                      .toLocaleString()} RD$
-                  </p>
-                </div>
-              </div>
-
-              {/* Recommendations Card */}
-              {(() => {
-                const staleProducts = rotationData.filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999);
-                const nearStockout = rotationData.filter((d: any) => {
-                  if (d.sold <= 0 || d.stock <= 0 || !d.velocidadDias) return false;
-                  return Math.round(d.velocidadDias * d.stock) < 30;
-                });
-                if (staleProducts.length === 0 && nearStockout.length === 0) return null;
-                return (
-                  <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
-                    <div className="flex items-center gap-2 mb-4">
-                      <AlertTriangle size={18} className="text-[#E8C87A]" />
-                      <h3 className="text-sm font-bold text-[#5C3E35]">Recomendaciones Automáticas</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {staleProducts.map((d: any) => (
-                        <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <TrendingDown size={16} className="text-[#D4A0A0]" />
-                            <span className="text-sm text-[#5C3E35]">{d.name}</span>
-                            <span className="text-xs text-[#9C8A82]">{d.code}</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant="danger">{d.diasEnInventario} días sin vender</Badge>
-                            <span className="text-xs text-[#E8C87A] font-medium">Sugerir oferta / liquidar</span>
-                          </div>
-                        </div>
-                      ))}
-                      {nearStockout.map((d: any) => (
-                        <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <TrendingUp size={16} className="text-[#86C7A3]" />
-                            <span className="text-sm text-[#5C3E35]">{d.name}</span>
-                            <span className="text-xs text-[#9C8A82]">{d.code}</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant="danger">Stock bajo</Badge>
-                            <span className="text-xs text-[#86C7A3] font-medium">Reponer inventario pronto</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* AI Analysis Button & Result */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 size={18} className="text-[#B8837E]" />
-                    <h3 className="text-sm font-bold text-[#5C3E35]">Análisis de Rotación con IA</h3>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      setRotationAiLoading(true);
-                      setRotationAiAnalysis(null);
-                      try {
-                        const res = await fetch("/api/inventory-analysis", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ rotationData }),
-                        });
-                        const data = await res.json();
-                        setRotationAiAnalysis(data.analysis || "Sin respuesta");
-                      } catch {
-                        toast.error("Error al analizar con IA");
-                      } finally {
-                        setRotationAiLoading(false);
-                      }
-                    }}
-                    disabled={rotationAiLoading}
-                    className="flex items-center gap-2 h-9 px-4 bg-[#B8837E] text-white rounded-xl text-xs font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
-                  >
-                    {rotationAiLoading ? <Loader size={14} className="animate-spin" /> : <BarChart3 size={14} />}
-                    {rotationAiLoading ? "Analizando..." : "Analizar con IA"}
-                  </button>
-                </div>
-                {rotationAiAnalysis && (
-                  <div className="bg-[#FAF6F0] rounded-xl p-4 text-sm text-[#5C3E35] whitespace-pre-line leading-relaxed">
-                    {rotationAiAnalysis}
-                  </div>
-                )}
-                {!rotationAiAnalysis && !rotationAiLoading && (
-                  <p className="text-xs text-[#9C8A82]">Haz clic en &quot;Analizar con IA&quot; para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
-                )}
-              </div>
-
-              {/* Filters & Export */}
-              <div className="flex flex-wrap items-center gap-3">
-                <select
-                  value={rotationFilterSubbrand}
-                  onChange={(e) => setRotationFilterSubbrand(e.target.value)}
-                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
-                >
-                  <option value="">Todas las submarcas</option>
-                  {[...new Set(rotationData.map((d: any) => d.subbrand).filter(Boolean))].map((s) => (
-                    <option key={s as string} value={s as string}>{s as string}</option>
-                  ))}
-                </select>
-                <select
-                  value={rotationFilterDays}
-                  onChange={(e) => setRotationFilterDays(e.target.value)}
-                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
-                >
-                  <option value="">Todos los días</option>
-                  <option value="0-15">Rotación alta (0-15 días)</option>
-                  <option value="15-60">Rotación media (15-60 días)</option>
-                  <option value="60-999">Rotación baja (60+ días)</option>
-                  <option value="90-999">Crítico (90+ días)</option>
-                </select>
-                <select
-                  value={rotationFilterStatus}
-                  onChange={(e) => setRotationFilterStatus(e.target.value)}
-                  className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
-                >
-                  <option value="">Estado</option>
-                  <option value="success">Rotación alta</option>
-                  <option value="warning">Rotación media</option>
-                  <option value="danger">Rotación baja / Sin mov.</option>
-                </select>
-                {(rotationFilterSubbrand || rotationFilterDays || rotationFilterStatus) && (
-                  <button
-                    onClick={() => { setRotationFilterSubbrand(""); setRotationFilterDays(""); setRotationFilterStatus(""); }}
-                    className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3"
-                  >
-                    Limpiar filtros
-                  </button>
-                )}
-                <div className="ml-auto relative">
-                  <button
-                    onClick={() => setRotationExportOpen(!rotationExportOpen)}
-                    className="flex items-center gap-2 h-10 px-4 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
-                  >
-                    <Download size={16} /> Exportar
-                  </button>
-                  {rotationExportOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setRotationExportOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-lg border border-[#E8E0D8] py-1 z-20">
-                        <button
-                          onClick={() => {
-                            setRotationExportOpen(false);
-                            const doc = new jsPDF({ unit: "mm", format: "letter" });
-                            const pageW = 216;
-                            let y = 20;
-                            const margin = 15;
-                            doc.setFontSize(16);
-                            doc.setFont("helvetica", "bold");
-                            doc.text("Reporte de Rotación de Inventario", margin, y);
-                            y += 8;
-                            doc.setFontSize(8);
-                            doc.setFont("helvetica", "normal");
-                            doc.text(`Generado: ${new Date().toLocaleDateString()}`, margin, y);
-                            y += 8;
-                            const cols = ["Producto", "Código", "Submarca", "Stock", "Días", "Velocidad", "Proy.Agot.", "Estado", "Capital"];
-                            const widths = [40, 18, 22, 12, 12, 18, 18, 22, 22];
-                            const startX = margin;
-                            doc.setFontSize(7);
-                            doc.setFont("helvetica", "bold");
-                            let cx = startX;
-                            cols.forEach((c, i) => {
-                              doc.text(c, cx + (i > 0 ? widths[i] / 2 : 0), y, i > 0 ? { align: "center" } : undefined);
-                              cx += widths[i];
-                            });
-                            y += 5;
-                            doc.setFont("helvetica", "normal");
-                            rotationData.forEach((item: any) => {
-                              if (y > 270) { doc.addPage(); y = 20; }
-                              const proy = item.velocidadDias > 0 && item.stock > 0 ? Math.round(item.velocidadDias * item.stock) : null;
-                              const el = item.diasEnInventario >= 999 ? "Sin mov." :
-                                item.diasEnInventario <= 15 ? "Alta" :
-                                item.diasEnInventario <= 60 ? "Media" : "Baja";
-                              const cap = ((item.costoPromedio || 0) * (item.stock || 0)).toLocaleString();
-                              const vals = [
-                                item.name?.substring(0, 20) || "—",
-                                item.code || "",
-                                item.subbrand?.substring(0, 15) || "—",
-                                String(item.stock || 0),
-                                item.diasEnInventario >= 999 ? "—" : String(item.diasEnInventario),
-                                item.velocidadDias > 0 ? `${item.velocidadDias}d/v` : "Sin vtas",
-                                proy ? `${proy}d` : "—",
-                                el,
-                                `${cap} RD$`,
-                              ];
-                              cx = startX;
-                              vals.forEach((v, i) => {
-                                doc.text(v, cx + (i > 0 ? widths[i] / 2 : 0), y, i > 0 ? { align: "center" } : undefined);
-                                cx += widths[i];
-                              });
-                              y += 4;
-                            });
-                            doc.save("Reporte-Rotacion-Inventario.pdf");
-                            toast.success("PDF descargado");
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
-                        >
-                          <FileText size={14} /> Exportar PDF
-                        </button>
-                        <button
-                          onClick={() => {
-                            setRotationExportOpen(false);
-                            const headers = ["Producto", "Código", "Submarca", "Stock", "Días en Inv.", "Velocidad", "Proy. Agot.", "Estado", "Capital"];
-                            const rows = rotationData.map((item: any) => {
-                              const proy = item.velocidadDias > 0 && item.stock > 0 ? `${Math.round(item.velocidadDias * item.stock)} días` : "—";
-                              const el = item.diasEnInventario >= 999 ? "Sin movimientos" :
-                                item.diasEnInventario <= 15 ? "Rotación alta" :
-                                item.diasEnInventario <= 60 ? "Rotación media" : "Rotación baja";
-                              const cap = ((item.costoPromedio || 0) * (item.stock || 0)).toLocaleString();
-                              return [
-                                item.name || "—",
-                                item.code || "",
-                                item.subbrand || "—",
-                                String(item.stock || 0),
-                                item.diasEnInventario >= 999 ? "—" : String(item.diasEnInventario),
-                                item.velocidadDias > 0 ? `${item.velocidadDias} días/venta` : "Sin ventas",
-                                proy,
-                                el,
-                                `${cap} RD$`,
-                              ];
-                            });
-                            const csv = [headers.join(","), ...rows.map((r: string[]) => r.map(v => `"${v}"`).join(","))].join("\n");
-                            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-                            const link = document.createElement("a");
-                            link.href = URL.createObjectURL(blob);
-                            link.download = "Reporte-Rotacion-Inventario.csv";
-                            link.click();
-                            toast.success("CSV descargado");
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
-                        >
-                          <FileText size={14} /> Exportar CSV
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Rotation Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border-separate border-spacing-y-2">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Submarca</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Producto</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Stock</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Días en Inv.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Velocidad</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Proy. Agot.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Última Ref.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Recom.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Capital</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Ocultar</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      let filtered = rotationData.filter((d: any) => showHiddenRotation || !hiddenRotationIds.includes(d.product_id));
-                      if (rotationFilterSubbrand) filtered = filtered.filter((d: any) => d.subbrand === rotationFilterSubbrand);
-                      if (rotationFilterDays) {
-                        const [min, max] = rotationFilterDays.split("-").map(Number);
-                        filtered = filtered.filter((d: any) => d.diasEnInventario >= min && d.diasEnInventario <= max);
-                      }
-                      if (rotationFilterStatus) {
-                        filtered = filtered.filter((d: any) => {
-                          if (rotationFilterStatus === "success") return d.diasEnInventario <= 15;
-                          if (rotationFilterStatus === "warning") return d.diasEnInventario > 15 && d.diasEnInventario <= 60;
-                          if (rotationFilterStatus === "danger") return d.diasEnInventario > 60 || d.diasEnInventario >= 999;
-                          return true;
-                        });
-                      }
-                      return filtered
-                        .sort((a: any, b: any) => b.diasEnInventario - a.diasEnInventario)
-                        .map((item: any) => {
-                          const velocidad = item.velocidadDias > 0
-                            ? `${item.velocidadDias} días/venta`
-                            : "Sin ventas";
-                          const proyAgot = item.velocidadDias > 0 && item.stock > 0
-                            ? Math.round(item.velocidadDias * item.stock)
-                            : null;
-                          const proyColor = proyAgot === null ? "text-[#9C8A82]" :
-                            proyAgot < 30 ? "text-red-500" :
-                            proyAgot < 60 ? "text-[#E8C87A]" : "text-[#86C7A3]";
-                          const capital = ((item.costoPromedio || 0) * (item.stock || 0));
-                          const estadoLabel = item.diasEnInventario >= 999 ? "Sin movimientos" :
-                            item.diasEnInventario <= 15 ? "Rotación alta" :
-                            item.diasEnInventario <= 60 ? "Rotación media" : "Rotación baja";
-                          const estadoVariant = item.diasEnInventario >= 999 ? "danger" :
-                            item.diasEnInventario <= 15 ? "success" :
-                            item.diasEnInventario <= 60 ? "warning" : "danger";
-
-                          // Auto-recommendations per row
-                          const recoms: { label: string; variant: "success" | "warning" | "danger" }[] = [];
-                          if (item.diasEnInventario > 90 && item.diasEnInventario < 999) recoms.push({ label: "Liquidar", variant: "danger" });
-                          if (proyAgot !== null && proyAgot < 30) recoms.push({ label: "Reponer", variant: "warning" });
-                          if (item.diasEnInventario >= 999) recoms.push({ label: "Sin mov.", variant: "danger" });
-
-                          return (
-                            <tr
-                              key={item.id}
-                              className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow cursor-pointer"
-                              onClick={async () => {
-                                setRotationDetailProductId(item.product_id);
-                                setRotationDetailItem(item);
-                                setRotationDetailLoading(true);
-                                try {
-                                  const movs = await getInventoryMovements(item.product_id);
-                                  setRotationDetailMovements(movs);
-                                } catch {
-                                  setRotationDetailMovements([]);
-                                } finally {
-                                  setRotationDetailLoading(false);
-                                }
-                              }}
-                            >
-                              <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] font-medium">
-                                {item.products?.name || "—"}
-                                <span className="ml-2 text-xs text-[#9C8A82]">{item.products?.code}</span>
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-center">{item.stock || 0}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-center font-medium">
-                                {item.diasEnInventario >= 999 ? "—" : item.diasEnInventario}
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#9C8A82] text-center">{velocidad}</td>
-                              <td className={`px-4 py-3.5 text-sm text-center font-medium ${proyColor}`}>
-                                {proyAgot === null ? "—" : `${proyAgot} días`}
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#9C8A82] text-center">{item.ultimaReferencia}</td>
-                              <td className="px-4 py-3.5 text-center">
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                  {recoms.length === 0 ? (
-                                    <span className="text-xs text-[#9C8A82]">—</span>
-                                  ) : recoms.map((r, i) => (
-                                    <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                                      r.variant === "danger" ? "bg-red-50 text-red-600" :
-                                      r.variant === "warning" ? "bg-yellow-50 text-yellow-700" :
-                                      "bg-green-50 text-green-600"
-                                    }`}>{r.label}</span>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3.5 text-center">
-                                <Badge variant={estadoVariant}>{estadoLabel}</Badge>
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{capital.toLocaleString()} RD$</td>
-                              <td className="px-4 py-3.5 text-center">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleHideRotationProduct(item.product_id);
-                                  }}
-                                  className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
-                                    hiddenRotationIds.includes(item.product_id)
-                                      ? "bg-[#B8837E]/10 text-[#B8837E]"
-                                      : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
-                                  }`}
-                                >
-                                  <EyeOff size={12} className="inline mr-1" />
-                                  {hiddenRotationIds.includes(item.product_id) ? "Mostrar" : "Ocultar"}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        });
-                    })()}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </div>
+        <RotationTab
+          rotationData={rotationData}
+          rotationLoading={rotationLoading}
+          rotationFilterSubbrand={rotationFilterSubbrand}
+          rotationFilterDays={rotationFilterDays}
+          rotationFilterStatus={rotationFilterStatus}
+          rotationExportOpen={rotationExportOpen}
+          rotationDetailProductId={rotationDetailProductId}
+          rotationDetailMovements={rotationDetailMovements}
+          rotationDetailLoading={rotationDetailLoading}
+          rotationDetailItem={rotationDetailItem}
+          rotationAiAnalysis={rotationAiAnalysis}
+          rotationAiLoading={rotationAiLoading}
+          hiddenRotationIds={hiddenRotationIds}
+          showHiddenRotation={showHiddenRotation}
+          setRotationFilterSubbrand={setRotationFilterSubbrand}
+          setRotationFilterDays={setRotationFilterDays}
+          setRotationFilterStatus={setRotationFilterStatus}
+          setRotationExportOpen={setRotationExportOpen}
+          setRotationDetailProductId={setRotationDetailProductId}
+          setRotationDetailMovements={setRotationDetailMovements}
+          setRotationDetailLoading={setRotationDetailLoading}
+          setRotationDetailItem={setRotationDetailItem}
+          setRotationAiAnalysis={setRotationAiAnalysis}
+          setRotationAiLoading={setRotationAiLoading}
+          toggleHideRotationProduct={toggleHideRotationProduct}
+        />
       )}
-
-      {/* Rotation detail modal */}
-      <Modal isOpen={!!rotationDetailProductId} onClose={() => { setRotationDetailProductId(null); setRotationDetailItem(null); }} title={rotationDetailItem?.name || "Detalle del Producto"} wide>
-        {rotationDetailLoading ? (
-          <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
-        ) : (
-          <div className="space-y-5">
-            {rotationDetailItem && (
-              <>
-                {/* Summary cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#9C8A82]">Stock actual</p>
-                    <p className="text-xl font-bold text-[#5C3E35]">{rotationDetailItem.stock || 0}</p>
-                  </div>
-                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#9C8A82]">Días en inventario</p>
-                    <p className="text-xl font-bold text-[#5C3E35]">
-                      {rotationDetailItem.diasEnInventario >= 999 ? "—" : rotationDetailItem.diasEnInventario}
-                    </p>
-                  </div>
-                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#9C8A82]">Velocidad de venta</p>
-                    <p className="text-xl font-bold text-[#5C3E35]">
-                      {rotationDetailItem.velocidadDias > 0 ? `${rotationDetailItem.velocidadDias} días` : "—"}
-                    </p>
-                  </div>
-                  <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#9C8A82]">Proy. agotamiento</p>
-                    <p className={`text-xl font-bold ${
-                      rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
-                        ? Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock) < 30
-                          ? "text-red-500" : "text-[#86C7A3]"
-                        : "text-[#9C8A82]"
-                    }`}>
-                      {rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
-                        ? `${Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock)} días`
-                        : "—"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Timeline info */}
-                <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-[#9C8A82]">Última referencia</span>
-                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.ultimaReferencia}</span>
-                  </div>
-                  {rotationDetailItem.firstPurchase && (
-                    <div className="flex justify-between">
-                      <span className="text-[#9C8A82]">Primera compra</span>
-                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.firstPurchase)}</span>
-                    </div>
-                  )}
-                  {rotationDetailItem.last_purchase && (
-                    <div className="flex justify-between">
-                      <span className="text-[#9C8A82]">Última compra</span>
-                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.last_purchase)}</span>
-                    </div>
-                  )}
-                  {rotationDetailItem.last_sale && (
-                    <div className="flex justify-between">
-                      <span className="text-[#9C8A82]">Última venta</span>
-                      <span className="text-[#5C3E35] font-medium">{formatDate(rotationDetailItem.last_sale)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-[#9C8A82]">Total vendido</span>
-                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.sold || 0} unidades</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#9C8A82]">Total comprado</span>
-                    <span className="text-[#5C3E35] font-medium">{rotationDetailItem.purchased || 0} unidades</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#9C8A82]">Capital inmovilizado</span>
-                    <span className="text-[#5C3E35] font-medium">{((rotationDetailItem.costoPromedio || 0) * (rotationDetailItem.stock || 0)).toLocaleString()} RD$</span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Movements */}
-            <div>
-              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Movimientos de inventario</h4>
-              {rotationDetailMovements.length === 0 ? (
-                <p className="text-sm text-[#9C8A82] py-4 text-center">Sin movimientos registrados</p>
-              ) : (
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {rotationDetailMovements.map((m: any) => (
-                    <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
-                      <div>
-                        <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
-                          {movementLabel[m.movement_type] || m.movement_type}
-                        </p>
-                        {m.notes && <p className="text-xs text-[#9C8A82]">{m.notes}</p>}
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">
-                          {m.movement_type === "PURCHASE" ? "+" : m.movement_type === "SALE" ? "-" : ""}
-                          {m.quantity}
-                        </p>
-                        <p className="text-xs text-[#9C8A82]">{formatDate(m.created_at)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Modal>
 
       {activeTab === "history" && (
         <div className="space-y-3">
@@ -1850,263 +1316,50 @@ function InventarioContent() {
       </Modal>
 
       {/* Purchase modal */}
-      <Modal isOpen={showPurchase} onClose={() => { setShowPurchase(false); resetPurchaseForm(); }} title={editingId ? "Editar Compra" : "Registrar Compra"} wide>
-        <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de la compra</label>
-              <input
-                type="date" value={purchaseForm.purchase_date}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, purchase_date: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              />
-            </div>
-            <div className="relative">
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Proveedor</label>
-              <div className="relative">
-                <input
-                  type="text" value={purchaseForm.supplier_name}
-                  onChange={(e) => { setPurchaseForm({ ...purchaseForm, supplier_name: e.target.value }); setSupplierSearch(e.target.value); setShowSupplierDropdown(true); }}
-                  onFocus={() => setShowSupplierDropdown(true)}
-                  placeholder="Buscar o escribir proveedor..."
-                  className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-                />
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9C8A82] pointer-events-none" />
-              </div>
-              {showSupplierDropdown && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowSupplierDropdown(false)} />
-                  <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white rounded-xl border border-[#E8E0D8] shadow-lg max-h-48 overflow-y-auto">
-                    {suppliers.filter(s => !supplierSearch || normalize(s.name).includes(normalize(supplierSearch))).map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => { setPurchaseForm({ ...purchaseForm, supplier_name: s.name }); setShowSupplierDropdown(false); setSupplierSearch(""); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#5C3E35] hover:bg-[#FAF6F0] transition-colors flex justify-between"
-                      >
-                        <span>{s.name}</span>
-                        {s.city && <span className="text-[#9C8A82] text-xs">{s.city}</span>}
-                      </button>
-                    ))}
-                    {suppliers.filter(s => !supplierSearch || normalize(s.name).includes(normalize(supplierSearch))).length === 0 && (
-                      <p className="px-4 py-3 text-sm text-[#9C8A82]">Sin resultados. Escribe para agregar uno nuevo.</p>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas (opcional)</label>
-            <textarea
-              value={purchaseForm.notes}
-              onChange={(e) => setPurchaseForm({ ...purchaseForm, notes: e.target.value })}
-              placeholder="Notas adicionales..."
-              rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descuento (RD$)</label>
-              <input
-                type="number" step="0.01" min={0} value={purchaseForm.discount_amount}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, discount_amount: Number(e.target.value) })}
-                placeholder="0"
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Forma de Pago</label>
-              <select
-                value={purchaseForm.payment_method}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, payment_method: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              >
-                <option>Efectivo</option>
-                <option>Transferencia</option>
-                <option>Tarjeta</option>
-                <option>Cheque</option>
-                <option>Otro</option>
-              </select>
-            </div>
-          </div>
-
-          {purchaseForm.payment_method === "Transferencia" && (
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cuenta Bancaria</label>
-              <select
-                value={purchaseForm.bank_account_id}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, bank_account_id: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              >
-                <option value="">Seleccionar banco...</option>
-                {bankAccounts.map((b) => (
-                  <option key={b.id} value={b.id}>{b.bank_name} — {b.account_type} — No. {b.account_number}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#5C3E35]">Productos</label>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowPdfImport(!showPdfImport)}
-                  className="text-xs text-[#B8837E] hover:underline flex items-center gap-1"
-                >
-                  <Upload size={14} />
-                  Subir PDF
-                </button>
-                <button
-                  onClick={() => setShowProductSearch(!showProductSearch)}
-                  className="text-xs text-[#B8837E] hover:underline flex items-center gap-1"
-                >
-                  <Plus size={14} />
-                  Agregar producto
-                </button>
-              </div>
-            </div>
-
-            {showPdfImport && (
-              <div className="mb-4">
-                <PurchasePdfImport
-                  products={products}
-                  onApply={(purchase) => {
-                    setPurchaseForm({
-                      supplier_name: purchase.supplier_name,
-                      purchase_date: purchase.purchase_date,
-                      notes: purchase.notes,
-                      discount_amount: purchase.discount_amount,
-                      impuesto_recogida: 36,
-                      cargo_administracion: 200,
-                      payment_method: "Efectivo",
-                      bank_account_id: "",
-                      items: purchase.items,
-                    });
-                    setShowPdfImport(false);
-                    toast.success(`Compra interpretada: ${purchase.items.length} productos`);
-                  }}
-                  onClose={() => setShowPdfImport(false)}
-                />
-              </div>
-            )}
-
-            {showProductSearch && (
-              <div className="mb-4 bg-[#FAF6F0] rounded-xl overflow-hidden">
-                <div className="p-2">
-                  <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-                    <input
-                      type="text" value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                      placeholder="Buscar producto por nombre o código..."
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-                    />
-                  </div>
-                </div>
-                <div className="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
-                  {productFiltered.length === 0 ? (
-                    <p className="text-sm text-[#9C8A82] py-3 text-center">Sin resultados</p>
-                  ) : productFiltered.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => addProductToPurchase(p)}
-                      className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between"
-                    >
-                      <span className="truncate">{p.name}</span>
-                      <span className="text-[#9C8A82] shrink-0 ml-2">{formatCurrency(p.cost || 0)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {purchaseForm.items.length === 0 ? (
-              <p className="text-sm text-[#9C8A82] py-3">No hay productos agregados</p>
-            ) : (
-              <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                {purchaseForm.items.map((item, i) => {
-                  const lineSubtotal = item.quantity * item.unit_cost;
-                  const hasItbis = item.itbis !== false;
-                  const lineItbis = Math.round((hasItbis ? 1 : 0) * lineSubtotal * ITBIS_RATE * 100) / 100;
-                  const lineTotal = lineSubtotal + lineItbis;
-                  return (
-                    <div key={i} className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3">
-                      <div className="flex-1 text-sm text-[#5C3E35] truncate">{item.name}</div>
-                      <button
-                        type="button"
-                        onClick={() => updatePurchaseItem(i, "itbis", !hasItbis)}
-                        className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${hasItbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
-                      >
-                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${hasItbis ? "translate-x-5" : "translate-x-0.5"}`} />
-                      </button>
-                      <input
-                        type="number" min={1} value={item.quantity}
-                        onChange={(e) => updatePurchaseItem(i, "quantity", Math.max(1, Number(e.target.value)))}
-                        className="w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                      />
-                      <input
-                        type="number" step="0.01" min={0} value={item.unit_cost}
-                        onChange={(e) => updatePurchaseItem(i, "unit_cost", Number(e.target.value))}
-                        className="w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
-                      />
-                      <span className="text-xs text-[#9C8A82] w-20 text-center">{formatCurrency(lineItbis)}</span>
-                      <span className="text-sm font-medium text-[#5C3E35] w-24 text-right">{formatCurrency(lineTotal)}</span>
-                      <button onClick={() => removePurchaseItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
-                        <X size={16} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-1.5">
-            <div className="flex justify-between text-sm">
-              <span className="text-[#9C8A82]">Subtotal</span>
-              <span className="text-[#5C3E35]">{formatCurrency(purchaseSubtotal)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-[#9C8A82]">Impuesto de Recogida</span>
-              <input type="number" step="0.01" value={purchaseForm.impuesto_recogida}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, impuesto_recogida: Number(e.target.value) })}
-                className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-[#9C8A82]">Cargo de Administración (Detalle)</span>
-              <input type="number" step="0.01" value={purchaseForm.cargo_administracion}
-                onChange={(e) => setPurchaseForm({ ...purchaseForm, cargo_administracion: Number(e.target.value) })}
-                className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-[#9C8A82]">ITBIS (18%)</span>
-              <span className="text-[#5C3E35]">{formatCurrency(purchaseItbis)}</span>
-            </div>
-            {purchaseForm.discount_amount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-[#D4A0A0]">Descuento</span>
-                <span className="text-[#D4A0A0]">-{formatCurrency(purchaseForm.discount_amount)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-sm font-bold border-t border-[#E8E0D8] pt-1.5 mt-1.5">
-              <span>Total</span>
-              <span className="text-[#B8837E]">{formatCurrency(purchaseTotal)}</span>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button onClick={() => { setShowPurchase(false); resetPurchaseForm(); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handlePurchase} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
-              <Save size={18} /> {saving ? "Guardando..." : "Registrar Compra"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <PurchaseModal
+        isOpen={showPurchase}
+        editing={!!editingId}
+        saving={saving}
+        form={purchaseForm}
+        suppliers={suppliers}
+        bankAccounts={bankAccounts}
+        products={products}
+        showSupplierDropdown={showSupplierDropdown}
+        supplierSearch={supplierSearch}
+        showPdfImport={showPdfImport}
+        showProductSearch={showProductSearch}
+        productSearch={productSearch}
+        productFiltered={productFiltered}
+        subtotal={purchaseSubtotal}
+        itbis={purchaseItbis}
+        total={purchaseTotal}
+        setForm={setPurchaseForm}
+        setSupplierSearch={setSupplierSearch}
+        setShowSupplierDropdown={setShowSupplierDropdown}
+        setShowPdfImport={setShowPdfImport}
+        setShowProductSearch={setShowProductSearch}
+        setProductSearch={setProductSearch}
+        onApplyPdf={(purchase) => {
+          setPurchaseForm({
+            supplier_name: purchase.supplier_name,
+            purchase_date: purchase.purchase_date,
+            notes: purchase.notes,
+            discount_amount: purchase.discount_amount,
+            impuesto_recogida: 36,
+            cargo_administracion: 200,
+            payment_method: "Efectivo",
+            bank_account_id: "",
+            items: purchase.items,
+          });
+          setShowPdfImport(false);
+          toast.success(`Compra interpretada: ${purchase.items.length} productos`);
+        }}
+        addProduct={addProductToPurchase}
+        updateItem={updatePurchaseItem}
+        removeItem={removePurchaseItem}
+        onClose={() => { setShowPurchase(false); resetPurchaseForm(); }}
+        onSubmit={handlePurchase}
+      />
 
       {/* Detail purchase modal */}
       <Modal isOpen={showDetailPurchase} onClose={() => { setShowDetailPurchase(false); setDetailPurchase(null); }} title={detailPurchase?.purchase_number || "Detalle"} wide>

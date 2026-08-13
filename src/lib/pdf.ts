@@ -156,7 +156,7 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
   return null;
 }
 
-export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
+export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const PW = doc.internal.pageSize.getWidth();
   let y = M;
@@ -542,11 +542,15 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
     doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
   }
 
-  // Save
+  return doc;
+}
+
+export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
+  const doc = await buildInvoicePdfDoc(invoice);
   doc.save(`factura-${invoice.invoice_number}.pdf`);
 }
 
-export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
+export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
@@ -676,6 +680,11 @@ export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
     }
   }
 
+  return doc;
+}
+
+export async function generateReceiptPdf(receipt: ReceiptData): Promise<void> {
+  const doc = await buildReceiptPdfDoc(receipt);
   doc.save(`recibo-${receipt.receipt_number}.pdf`);
 }
 

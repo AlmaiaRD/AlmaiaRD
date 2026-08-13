@@ -1,8 +1,8 @@
-name: Backup Semanal BD
+name: Backup Diario BD
 
 on:
   schedule:
-    - cron: '0 6 * * 5'
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:

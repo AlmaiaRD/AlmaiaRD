@@ -3,22 +3,33 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-async function callOllama(prompt: string): Promise<string | null> {
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+
+async function callOpenAI(prompt: string): Promise<string | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
   try {
-    const res = await fetch("http://localhost:11434/api/generate", {
+    const res = await fetch(OPENAI_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        model: "llama3.2:1b",
-        prompt,
-        stream: false,
-        options: { temperature: 0.4, num_predict: 600 },
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "Eres un asesor de ventas experto y amable." },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.4,
+        max_tokens: 600,
       }),
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.response || null;
+    return data.choices?.[0]?.message?.content || null;
   } catch {
     return null;
   }
@@ -81,7 +92,7 @@ Cliente: "${query}"
 
 Asesor:`;
 
-    const response = await callOllama(prompt);
+    const response = await callOpenAI(prompt);
 
     if (!response) {
       return NextResponse.json({

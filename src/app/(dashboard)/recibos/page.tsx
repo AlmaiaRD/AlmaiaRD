@@ -11,6 +11,7 @@ import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings } from "@/services/settings";
 import { getLocalDateString } from "@/lib/utils";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
+import { buildReceiptPdfDoc } from "@/lib/pdf";
 import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2, Mail, MessageCircle } from "lucide-react";
 import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
@@ -233,13 +234,23 @@ export default function RecibosPage() {
 
   async function handlePrintPdf(rec: any) {
     try {
-      const { canvas, receipt_number } = await captureReceipt(rec);
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const jspdfModule = await import("jspdf");
-      const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
-      const clientName = rec.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      pdf.save(`recibo-${receipt_number}-${clientName}.pdf`);
+      const full = await getReceipt(rec.id);
+      const doc = await buildReceiptPdfDoc({
+        receipt_number: full.receipt_number,
+        receipt_date: formatDate(full.receipt_date),
+        client_name: full.invoices?.clients?.full_name || full.clients?.full_name || "",
+        invoice_number: full.invoices?.invoice_number || "",
+        amount: Number(full.amount) || 0,
+        amount_in_words: full.amount_in_words || "",
+        payment_method: full.payment_method || "",
+        logo_url: settings?.logo_url || undefined,
+        signature_url: settings?.signature_url || undefined,
+        business_name: settings?.business_name || "Almaia RD",
+        email: settings?.email || undefined,
+        phone: settings?.phone || undefined,
+      });
+      const clientName = (full.invoices?.clients?.full_name || full.clients?.full_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      doc.save(`recibo-${full.receipt_number}-${clientName}.pdf`);
       toast.success("PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
@@ -323,11 +334,16 @@ export default function RecibosPage() {
 
   async function handleDelete(id: string) {
     if (!window.confirm("¿Estás segura de eliminar este recibo?")) return;
+    const previous = receipts;
+    setReceipts((prev) => prev.filter((rec) => rec.id !== id));
+    toast.success("Recibo eliminado");
     try {
       await deleteReceipt(id);
-      toast.success("Recibo eliminado");
       load();
-    } catch { toast.error("Error al eliminar recibo"); }
+    } catch {
+      setReceipts(previous);
+      toast.error("Error al eliminar recibo");
+    }
   }
 
   function openEdit(rec: any) {
@@ -574,13 +590,22 @@ export default function RecibosPage() {
             senderName: (settings as any).sender_name || undefined,
           } : undefined}
           getAttachment={async () => {
-            const { canvas, receipt_number } = await captureReceipt(selectedReceipt);
-            const jspdfModule = await import("jspdf");
-            const pdf = new jspdfModule.default({ unit: "px", format: [canvas.width, canvas.height] });
-            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
-            const base64 = pdf.output("datauristring").split(",")[1];
-            const clientName = selectedReceipt?.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-            return { filename: `recibo-${receipt_number}-${clientName}.pdf`, base64 };
+            const full = await getReceipt(selectedReceipt.id);
+            const doc = await buildReceiptPdfDoc({
+              receipt_number: full.receipt_number,
+              receipt_date: formatDate(full.receipt_date),
+              client_name: full.invoices?.clients?.full_name || full.clients?.full_name || "",
+              invoice_number: full.invoices?.invoice_number || "",
+              amount: Number(full.amount) || 0,
+              amount_in_words: full.amount_in_words || "",
+              payment_method: full.payment_method || "",
+              logo_url: settings?.logo_url || undefined,
+              signature_url: settings?.signature_url || undefined,
+              business_name: settings?.business_name || "Almaia RD",
+              email: settings?.email || undefined,
+              phone: settings?.phone || undefined,
+            });
+            return { filename: `recibo-${full.receipt_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}
         />
       )}
