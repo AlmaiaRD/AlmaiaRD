@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuoteStatus, type QuoteWithClient, type QuoteItemWithProduct } from "@/services/quotes";
 import { getClients } from "@/services/clients";
+import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import { getClientFollowups } from "@/services/followups";
@@ -60,6 +61,7 @@ export default function CotizacionesPage() {
   const [detailItems, setDetailItems] = useState<QuoteItemWithProduct[]>([]);
   const [detailFollowups, setDetailFollowups] = useState<Followup[]>([]);
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
+  const [showNewClient, setShowNewClient] = useState(false);
 
   const [clientId, setClientId] = useState("");
   const [quoteDate, setQuoteDate] = useState(getLocalDateString());
@@ -75,6 +77,19 @@ export default function CotizacionesPage() {
   const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch)) || (p.code && normalize(p.code).includes(normalize(productSearch)))));
+
+  async function handleSavedNewClient(client: any) {
+    try {
+      const fresh = await getClients();
+      setClients(fresh);
+      setClientId(client.id);
+      setShowNewClient(false);
+      toast.success("Cliente agregado");
+    } catch (e) {
+      console.error("Error refreshing clients:", e);
+      toast.error("Cliente creado, pero no se pudo actualizar la lista");
+    }
+  }
 
   const load = useCallback(async () => {
     try {
@@ -474,16 +489,26 @@ export default function CotizacionesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cliente *</label>
-              <select
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
-              >
-                <option value="">Seleccionar cliente...</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.full_name}</option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                >
+                  <option value="">Seleccionar cliente...</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowNewClient(true)}
+                  className="shrink-0 h-12 px-4 rounded-xl bg-[#B8837E]/10 text-[#B8837E] text-sm font-medium hover:bg-[#B8837E]/20 transition-all flex items-center gap-1.5"
+                  title="Nuevo Cliente"
+                >
+                  <Plus size={16} /> Nuevo
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha</label>
@@ -864,6 +889,15 @@ export default function CotizacionesPage() {
           }}
         />
       )}
+
+      <ClientFormModal
+        isOpen={showNewClient}
+        onClose={() => setShowNewClient(false)}
+        onSaved={handleSavedNewClient}
+        title="Nuevo Cliente"
+        subtitle="Registra la información del cliente"
+        saveLabel="Agregar Cliente"
+      />
     </PageContainer>
   );
 }

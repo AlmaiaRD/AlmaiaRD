@@ -195,15 +195,23 @@ export async function getClient(id: string, includeDeleted = false) {
   return data[0] as Client;
 }
 
+function normalizeClientPayload(client: Partial<Client>): Partial<Client> {
+  const normalized = { ...client };
+  (["birthday", "first_contact_date", "next_followup_date", "last_contact_date"] as const).forEach((key) => {
+    if (normalized[key] === "") normalized[key] = null;
+  });
+  return normalized;
+}
+
 export async function createClient(client: Partial<Client>) {
-  const { data, error } = await supabase.from("clients").insert(client).select();
+  const { data, error } = await supabase.from("clients").insert(normalizeClientPayload(client)).select();
   if (error) throw error;
   if (!data || data.length === 0) throw new Error("No se pudo crear el cliente");
   return data[0] as Client;
 }
 
 export async function updateClient(id: string, client: Partial<Client>) {
-  const { data, error } = await supabase.from("clients").update(client).eq("id", id).select();
+  const { data, error } = await supabase.from("clients").update(normalizeClientPayload(client)).eq("id", id).select();
   if (error) throw error;
   if (!data || data.length === 0) throw new Error("No tienes permiso para editar clientes. Ejecuta el SQL de migración de RLS en Supabase.");
   return data[0] as Client;

@@ -10,7 +10,8 @@ import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, 
 import { getQuote, markQuoteConverted } from "@/services/quotes";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
-import { getClients, createClient } from "@/services/clients";
+import { getClients } from "@/services/clients";
+import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
@@ -62,7 +63,6 @@ export default function FacturacionPage() {
   const [openPrintId, setOpenPrintId] = useState<string | null>(null);
   const [jpgData, setJpgData] = useState<any>(null);
   const [showNewClient, setShowNewClient] = useState(false);
-  const [newClientForm, setNewClientForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
   const [showManualProduct, setShowManualProduct] = useState(false);
   const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
@@ -187,22 +187,16 @@ export default function FacturacionPage() {
     setPage(newPage);
   };
 
-  async function handleSaveNewClient() {
-    if (!newClientForm.full_name.trim()) { toast.error("El nombre del cliente es requerido"); return; }
-    setSaving(true);
+  async function handleSavedNewClient(client: any) {
     try {
-      const created = await createClient(newClientForm);
       const fresh = await getClients();
       setClients(fresh);
-      setSelectedClient(created.id);
+      setSelectedClient(client.id);
       setShowNewClient(false);
-      setNewClientForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" });
       toast.success("Cliente agregado");
     } catch (e) {
-      console.error("Error creating client:", e);
-      toast.error(`Error: ${(e as any)?.message || "Error al crear cliente"}`);
-    } finally {
-      setSaving(false);
+      console.error("Error refreshing clients:", e);
+      toast.error("Cliente creado, pero no se pudo actualizar la lista");
     }
   }
 
@@ -1435,34 +1429,14 @@ export default function FacturacionPage() {
       </Modal>
 
       {/* Quick-create client modal */}
-      <Modal isOpen={showNewClient} onClose={() => { setShowNewClient(false); setNewClientForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" }); }} title="Nuevo Cliente" subtitle="Registra un cliente rápido">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre completo *</label>
-            <input type="text" value={newClientForm.full_name} onChange={(e) => setNewClientForm({ ...newClientForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Teléfono</label>
-              <input type="text" value={newClientForm.phone} onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Correo electrónico</label>
-              <input type="email" value={newClientForm.email} onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Número IBO (opcional)</label>
-            <input type="text" value={newClientForm.ibo_number} onChange={(e) => setNewClientForm({ ...newClientForm, ibo_number: e.target.value })} placeholder="IBO" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button onClick={() => { setShowNewClient(false); setNewClientForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "" }); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleSaveNewClient} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
-              <Save size={18} /> {saving ? "Guardando..." : "Agregar Cliente"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ClientFormModal
+        isOpen={showNewClient}
+        onClose={() => setShowNewClient(false)}
+        onSaved={handleSavedNewClient}
+        title="Nuevo Cliente"
+        subtitle="Registra la información del cliente"
+        saveLabel="Agregar Cliente"
+      />
 
       {/* Hidden preview for JPG capture */}
        <div ref={jpgRef} style={{ display: jpgData ? "block" : "none", position: "fixed", top: 0, left: 0, zIndex: 9999, background: "#ffffff", width: "800px" }}>

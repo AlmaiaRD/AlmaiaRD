@@ -6,7 +6,8 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import { getClients, getClientsWithBalances, createClient, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
+import { getClients, getClientsWithBalances, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
+import ClientFormModal, { type ClientFormValues } from "@/components/clients/ClientFormModal";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
@@ -15,7 +16,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { Client } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
-  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,
+  Users, Plus, Search, Edit2, Trash2, X, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -44,8 +45,7 @@ export default function ClientesPage() {
   const [detailTab, setDetailTab] = useState<DetailTab>("info");
   const [detailLoading, setDetailLoading] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [form, setForm] = useState({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador" as ClientType, birthday: "" });
-  const [saving, setSaving] = useState(false);
+  const [clientFormInitial, setClientFormInitial] = useState<Partial<ClientFormValues> | undefined>(undefined);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [detailInvoices, setDetailInvoices] = useState<any[]>([]);
@@ -105,15 +105,15 @@ export default function ClientesPage() {
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
-      setForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador", birthday: "" });
       setEditingClient(null);
+      setClientFormInitial(undefined);
       setShowModal(true);
     }
   }, [searchParams]);
 
   function resetForm() {
-    setForm({ full_name: "", phone: "", email: "", ibo_number: "", notes: "", client_type: "comprador", birthday: "" });
     setEditingClient(null);
+    setClientFormInitial(undefined);
   }
 
   function openNew() {
@@ -123,7 +123,7 @@ export default function ClientesPage() {
 
   function openEdit(client: Client) {
     setEditingClient(client);
-    setForm({
+    setClientFormInitial({
       full_name: client.full_name,
       phone: client.phone || "",
       email: client.email || "",
@@ -133,6 +133,13 @@ export default function ClientesPage() {
       birthday: client.birthday || "",
     });
     setShowModal(true);
+  }
+
+  function handleClientSaved() {
+    toast.success(editingClient ? "Cliente actualizado exitosamente" : "Cliente creado exitosamente");
+    setShowModal(false);
+    resetForm();
+    load();
   }
 
   async function openDetail(client: Client) {
@@ -157,30 +164,6 @@ export default function ClientesPage() {
       toast.error("Error al cargar detalle del cliente");
     } finally {
       setDetailLoading(false);
-    }
-  }
-
-  async function handleSave() {
-    if (!form.full_name.trim()) { toast.error("El nombre del cliente es requerido"); return; }
-    setSaving(true);
-    try {
-      if (editingClient) {
-        await updateClient(editingClient.id, form);
-        toast.success("Cliente actualizado exitosamente");
-      } else {
-        await createClient(form);
-        toast.success("Cliente creado exitosamente");
-      }
-      setShowModal(false);
-      resetForm();
-      load();
-    } catch (e: any) {
-      const clientId = editingClient?.id || "N/A";
-      const msg = e?.message || e?.error?.message || e?.error_description || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-      toast.error(`Error (${clientId}): ${msg}`);
-      console.error("[handleSave]", e);
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -725,54 +708,15 @@ export default function ClientesPage() {
         )}
       </Modal>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingClient ? "Editar Cliente" : "Nuevo Cliente"} subtitle="Registra la información del cliente">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Tipo de cliente *</label>
-            <div className="flex gap-3">
-              {([["comprador", "Cliente Comprador", "Compra productos"], ["negocio", "Prospecto de Negocio", "Posible IBO / Demo"]] as const).map(([value, label, desc]) => (
-                <button key={value} type="button" onClick={() => setForm({ ...form, client_type: value as ClientType })}
-                  className={`flex-1 p-3 rounded-xl border text-left transition-all ${form.client_type === value ? "border-[#B8837E] bg-[#B8837E]/5" : "border-[#E8E0D8] bg-white hover:bg-[#FAF6F0]"}`}>
-                  <p className="text-sm font-medium text-[#5C3E35]">{label}</p>
-                  <p className="text-xs text-[#9C8A82] mt-0.5">{desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre completo *</label>
-            <input type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Teléfono</label>
-              <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Correo electrónico</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de cumpleaños</label>
-            <input type="date" value={form.birthday} onChange={(e) => setForm({ ...form, birthday: e.target.value })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Número IBO (opcional)</label>
-            <input type="text" value={form.ibo_number} onChange={(e) => setForm({ ...form, ibo_number: e.target.value })} placeholder="IBO" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas</label>
-            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
-              <Save size={18} /> {saving ? "Guardando..." : "Guardar"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ClientFormModal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); resetForm(); }}
+        onSaved={handleClientSaved}
+        initial={clientFormInitial}
+        clientId={editingClient?.id}
+        title={editingClient ? "Editar Cliente" : "Nuevo Cliente"}
+        subtitle="Registra la información del cliente"
+      />
       <Modal isOpen={showArchived} onClose={() => setShowArchived(false)} title="Clientes Archivados" subtitle="Restaura clientes previamente archivados">
         {archivedClients.length === 0 ? (
           <div className="text-center py-10 text-[#9C8A82] text-sm">No hay clientes archivados</div>
