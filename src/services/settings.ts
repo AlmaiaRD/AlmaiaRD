@@ -68,6 +68,7 @@ export async function getSettings(
       invoice_prefix: "FAC-",
       receipt_prefix: "REC-",
       purchase_prefix: "COM-",
+      quote_prefix: "COT-",
       ai_client_prompt: `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
 
 Cliente: {{clientName}}
@@ -121,6 +122,7 @@ export async function updateSettings(
     invoice_prefix: settings.invoice_prefix,
     receipt_prefix: settings.receipt_prefix,
     purchase_prefix: settings.purchase_prefix,
+    quote_prefix: settings.quote_prefix,
     currency: settings.currency,
     nutrilite_itbis_enabled: settings.nutrilite_itbis_enabled,
   };

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useDarkMode } from "@/hooks/useDarkMode";
-import { Flower2, Plus, LogOut, UserPlus, FileText, Receipt, ShoppingCart, ChevronDown, Sun, Moon } from "lucide-react";
+import { Flower2, Plus, LogOut, UserPlus, FileText, Receipt, ShoppingCart, ChevronDown, Sun, Moon, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,13 @@ export default function Header() {
           >
             <Plus size={18} />
             Nueva Factura
+          </Link>
+          <Link
+            href="/cotizaciones?nueva=true"
+            className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
+          >
+            <Plus size={18} />
+            Crear Cotización
           </Link>
           <Link
             href="/recibos?nuevo=true"
@@ -102,6 +109,16 @@ export default function Header() {
                     <FileText size={16} className="text-primary" />
                   </div>
                   <span className="text-sm text-foreground font-medium">Nueva Factura</span>
+                </Link>
+                <Link
+                  href="/cotizaciones?nueva=true"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-secondary-bg transition-colors border-b border-border"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#C9A89C]/10 flex items-center justify-center">
+                    <ClipboardList size={16} className="text-[#C9A89C]" />
+                  </div>
+                  <span className="text-sm text-foreground font-medium">Crear Cotización</span>
                 </Link>
                 <Link
                   href="/recibos?nuevo=true"

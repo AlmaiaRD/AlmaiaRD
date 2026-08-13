@@ -1,6 +1,6 @@
 import { ITBIS_RATE } from "@/lib/constants";
 
-const round2 = (n: number) => {
+export const round2 = (n: number) => {
   const r = Math.round(n * 100) / 100;
   return r === 0 ? 0 : r;
 };

@@ -10,18 +10,20 @@ import { getClients, getClientsWithBalances, createClient, updateClient, deleteC
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
+import { getClientQuotes } from "@/services/quotes";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { Client } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
-  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw,
+  Users, Plus, Search, Edit2, Trash2, X, Save, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,
 } from "lucide-react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { SALES_STAGES, RECRUITMENT_STAGES, getStagesForType } from "@/lib/pipeline-constants";
 import { updateClientStage } from "@/services/clients";
 import type { ClientType } from "@/types/database";
 
-type DetailTab = "info" | "facturas" | "pagos" | "creditos" | "seguimiento";
+type DetailTab = "info" | "facturas" | "pagos" | "creditos" | "seguimiento" | "cotizaciones";
 
 const statusLabel: Record<string, string> = {
   PENDING: "Pendiente", PARTIAL: "Parcial", PAID: "Pagada", CANCELLED: "Anulada",
@@ -50,6 +52,7 @@ export default function ClientesPage() {
   const [detailReceipts, setDetailReceipts] = useState<any[]>([]);
   const [detailCredits, setDetailCredits] = useState<any[]>([]);
   const [detailFollowups, setDetailFollowups] = useState<any[]>([]);
+  const [detailQuotes, setDetailQuotes] = useState<any[]>([]);
   const [newFollowup, setNewFollowup] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [archivedClients, setArchivedClients] = useState<Client[]>([]);
@@ -138,16 +141,18 @@ export default function ClientesPage() {
     setShowDetail(true);
     setDetailLoading(true);
     try {
-      const [inv, rec, crd, fol] = await Promise.all([
+      const [inv, rec, crd, fol, qts] = await Promise.all([
         getClientAllInvoices(client.id),
         getClientReceipts(client.id),
         getClientCredits(client.id),
         getClientFollowups(client.id),
+        getClientQuotes(client.id),
       ]);
       setDetailInvoices(inv);
       setDetailReceipts(rec);
       setDetailCredits(crd);
       setDetailFollowups(fol);
+      setDetailQuotes(qts);
     } catch {
       toast.error("Error al cargar detalle del cliente");
     } finally {
@@ -284,6 +289,9 @@ export default function ClientesPage() {
               <p className="text-sm text-[#9C8A82] mt-1">Directorio de clientes</p>
             </div>
             <div className="flex items-center gap-2">
+              <Link href="/cotizaciones?nueva=true" className="flex items-center gap-2 bg-[#C9A89C] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all">
+                <ClipboardList size={16} /> Cotizar
+              </Link>
               <button onClick={openArchived} className="flex items-center gap-2 bg-white text-[#9C8A82] px-4 py-2.5 rounded-xl text-sm font-medium border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
                 <Archive size={16} /> Archivados
               </button>
@@ -528,7 +536,7 @@ export default function ClientesPage() {
             )}
 
             <div className="flex gap-1 border-b border-[#E8E0D8] overflow-x-auto">
-              {(["info", "facturas", "pagos", "creditos", "seguimiento"] as DetailTab[]).map((tab) => (
+              {(["info", "facturas", "pagos", "creditos", "seguimiento", "cotizaciones"] as DetailTab[]).map((tab) => (
                 <button key={tab} onClick={() => setDetailTab(tab)}
                   className={`pb-2.5 px-3 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${
                     detailTab === tab ? "text-[#B8837E] border-[#B8837E]" : "text-[#9C8A82] border-transparent hover:text-[#5C3E35]"
@@ -539,6 +547,7 @@ export default function ClientesPage() {
                   {tab === "pagos" && `Pagos (${detailReceipts.length})`}
                   {tab === "creditos" && `Créditos (${detailCredits.length})`}
                   {tab === "seguimiento" && `Seguimiento (${detailFollowups.length})`}
+                  {tab === "cotizaciones" && `Cotizaciones (${detailQuotes.length})`}
                 </button>
               ))}
             </div>
@@ -630,7 +639,7 @@ export default function ClientesPage() {
                   ))
                 )}
               </div>
-            ) : (
+            ) : detailTab === "seguimiento" ? (
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <input
@@ -678,6 +687,34 @@ export default function ClientesPage() {
                   </>
                 )}
               </div>
+            ) : detailTab === "cotizaciones" ? (
+              <div className="space-y-2">
+                {detailQuotes.length === 0 ? (
+                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin cotizaciones registradas</div>
+                ) : (
+                  detailQuotes.map((q) => (
+                    <div key={q.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                      <div>
+                        <p className="text-sm font-medium text-[#5C3E35]">{q.quote_number}</p>
+                        <p className="text-xs text-[#9C8A82]">{formatDate(q.quote_date)} · Válida hasta {formatDate(q.valid_until)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(q.total)}</p>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          q.status === "DRAFT" ? "bg-gray-100 text-gray-600" :
+                          q.status === "SENT" ? "bg-[#B8837E]/10 text-[#B8837E]" :
+                          q.status === "ACCEPTED" || q.status === "CONVERTED" ? "bg-green-100 text-green-700" :
+                          "bg-red-100 text-red-600"
+                        }`}>
+                          {q.status === "DRAFT" ? "Borrador" : q.status === "SENT" ? "Enviada" : q.status === "ACCEPTED" ? "Aceptada" : q.status === "CONVERTED" ? "Convertida" : q.status === "REJECTED" ? "Rechazada" : "Cancelada"}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-10 text-[#9C8A82] text-sm">Selecciona una pestaña</div>
             )}
           </div>
         )}

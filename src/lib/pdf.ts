@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
+export type PDFDoc = InstanceType<typeof jsPDF>;
 
 interface InvoiceItemData {
   subbrand?: string;
@@ -830,4 +831,268 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
   }
 
   doc.save(`gasto-${expense.expense_date}.pdf`);
+}
+
+interface QuoteItemData {
+  name: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  pv?: number;
+}
+
+interface QuoteData {
+  quote_number: string;
+  quote_date: string;
+  valid_until: string;
+  status: string;
+  client_name: string;
+  client_phone?: string;
+  client_email?: string;
+  items: QuoteItemData[];
+  subtotal: number;
+  itbis_total?: number;
+  discount_amount: number;
+  total: number;
+  pv_total?: number;
+  notes?: string;
+  logo_url?: string;
+  business_name?: string;
+  email?: string;
+  phone?: string;
+}
+
+export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
+  const doc = new jsPDF({ unit: "mm", format: "letter" });
+  const PW = doc.internal.pageSize.getWidth();
+  let y = M;
+  const lineH = 4.5;
+  const bizName = quote.business_name || "Almaia RD";
+  const bizEmail = quote.email || "";
+  const bizPhone = quote.phone || "";
+
+  let logoBase64: string | null = null;
+  if (quote.logo_url) {
+    logoBase64 = await loadImageAsBase64WithRetry(quote.logo_url);
+  }
+
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, "PNG", M, y, 25, 25);
+    } catch {
+      drawFlowerIcon(doc, M + 10, y + 10, 20);
+      setTextColor(doc, DARK);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text(bizName, M + 22, y + 6);
+    }
+  } else {
+    drawFlowerIcon(doc, M + 10, y + 10, 20);
+    setTextColor(doc, DARK);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text(bizName, M + 22, y + 6);
+  }
+
+  setTextColor(doc, PRIMARY);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("BIENESTAR & SALUD", M + 22, y + (logoBase64 ? 28 : 11));
+
+  setTextColor(doc, DARK);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Distribuidor Independiente Amway", M, y + (logoBase64 ? 33 : 17));
+
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + (logoBase64 ? 37.5 : 21.5));
+  doc.text("República Dominicana", M, y + (logoBase64 ? 41 : 25));
+
+  const badgeW = 42;
+  const badgeH = 16;
+  const badgeX = PW - M - badgeW;
+
+  drawBadge(doc, badgeX, y, badgeW, badgeH, "COTIZACIÓN", "#F0EBE3", PRIMARY);
+
+  setTextColor(doc, DARK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  const numberY = y + badgeH + 7;
+  doc.text(quote.quote_number, PW - M, numberY, { align: "right" });
+
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
+  doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
+
+  y += logoBase64 ? 48 : 32;
+
+  doc.setDrawColor(232, 224, 216);
+  doc.setLineWidth(0.3);
+  doc.line(M, y, PW - M, y);
+  y += 8;
+
+  const clientSectionH = 30;
+  drawCreamRoundedRect(doc, M, y, CW, clientSectionH, 5);
+
+  setTextColor(doc, PRIMARY);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("CLIENTE", M + 6, y + 6);
+
+  setTextColor(doc, DARK);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Nombre: ${quote.client_name}`, M + 6, y + 14);
+  if (quote.client_phone) {
+    doc.text(`Teléfono: ${quote.client_phone}`, M + CW / 2, y + 14);
+  }
+  doc.text(`Email: ${quote.client_email || "N/D"}`, M + 6, y + 21);
+
+  y += clientSectionH + 8;
+
+  const colDefs = [
+    { label: "Descripción / Producto", x: M, w: 85, align: "left" as const },
+    { label: "Cant.", x: M + 85, w: 12, align: "right" as const },
+    { label: "Precio Unit.", x: M + 97, w: 24, align: "right" as const },
+    { label: "Total", x: M + 121, w: 30, align: "right" as const },
+  ];
+
+  const tableStartY = y;
+  doc.setFillColor(240, 235, 227);
+  doc.rect(M, y, CW, 8, "F");
+
+  setTextColor(doc, DARK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  colDefs.forEach((c) => {
+    doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
+  });
+  y += 10;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  setTextColor(doc, DARK);
+
+  quote.items.forEach((item) => {
+    if (y > 255) {
+      doc.addPage();
+      y = M;
+      doc.setFillColor(240, 235, 227);
+      doc.rect(M, y, CW, 8, "F");
+      setTextColor(doc, DARK);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      colDefs.forEach((c) => {
+        doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
+      });
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      setTextColor(doc, DARK);
+    }
+
+    const values = [item.name, String(item.quantity), formatCurrency(item.unit_price), formatCurrency(item.line_total)];
+    colDefs.forEach((c, i) => {
+      doc.text(values[i], c.x + (c.align === "right" ? c.w : 0), y + 3, { align: c.align });
+    });
+
+    doc.setDrawColor(240, 235, 227);
+    doc.setLineWidth(0.2);
+    doc.line(M, y + 5.5, M + CW, y + 5.5);
+    y += 7;
+  });
+
+  y += 4;
+
+  const summaryX = M + CW - 75;
+  const summaryW = 75;
+
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Subtotal:", summaryX, y);
+  setTextColor(doc, DARK);
+  doc.text(formatCurrency(quote.subtotal), summaryX + summaryW, y, { align: "right" });
+  y += 6;
+
+  if (quote.itbis_total) {
+    setTextColor(doc, GRAY);
+    doc.text("ITBIS (18%):", summaryX, y);
+    setTextColor(doc, DARK);
+    doc.text(formatCurrency(quote.itbis_total), summaryX + summaryW, y, { align: "right" });
+    y += 6;
+  }
+
+  if (quote.discount_amount > 0) {
+    setTextColor(doc, GRAY);
+    doc.text("Descuento:", summaryX, y);
+    setTextColor(doc, "#D4A0A0");
+    doc.text(`-${formatCurrency(quote.discount_amount)}`, summaryX + summaryW, y, { align: "right" });
+    y += 6;
+  }
+
+  if (quote.pv_total) {
+    setTextColor(doc, GRAY);
+    doc.text("Puntos PV:", summaryX, y);
+    setTextColor(doc, DARK);
+    doc.text(String(quote.pv_total), summaryX + summaryW, y, { align: "right" });
+    y += 6;
+  }
+
+  doc.setDrawColor(232, 224, 216);
+  doc.setLineWidth(0.3);
+  doc.line(summaryX, y, summaryX + summaryW, y);
+  y += 4;
+
+  setTextColor(doc, DARK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Total General:", summaryX, y);
+  doc.text(formatCurrency(quote.total), summaryX + summaryW, y, { align: "right" });
+  y += 10;
+
+  if (quote.notes) {
+    setTextColor(doc, GRAY);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    const noteLines = doc.splitTextToSize(`Notas: ${quote.notes}`, CW);
+    doc.text(noteLines, M, y);
+    y += noteLines.length * 4 + 6;
+  }
+
+  if (y > 250) {
+    doc.addPage();
+    y = M;
+  }
+
+  doc.setDrawColor(232, 224, 216);
+  doc.setLineWidth(0.5);
+  doc.line(M, y, PW - M, y);
+  y += 6;
+
+  setTextColor(doc, PRIMARY);
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text(`¡Gracias por confiar en ${bizName}, aliados a tu bienestar!`, M, y);
+  y += 5;
+
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", M, y);
+  y += 5;
+  if (bizPhone || bizEmail) {
+    doc.text(`Tel: ${bizPhone || "N/D"} | Email: ${bizEmail || "N/D"}`, M, y);
+  }
+
+  return doc;
+}
+
+export async function generateQuotePdf(quote: QuoteData): Promise<void> {
+  const doc = await buildQuotePdfDoc(quote);
+  doc.save(`cotizacion-${quote.quote_number}.pdf`);
 }

@@ -73,6 +73,7 @@ export default function ConfiguracionPage() {
     invoice_prefix: "FAC-",
     receipt_prefix: "REC-",
     purchase_prefix: "COM-",
+    quote_prefix: "COT-",
     email_template: `Hola, {{clientName}}.
 
 Espero que te encuentres muy bien.
@@ -176,6 +177,7 @@ Responde en español en máximo 3 oraciones:`,
             invoice_prefix: settingsData.invoice_prefix || "FAC-",
             receipt_prefix: settingsData.receipt_prefix || "REC-",
             purchase_prefix: settingsData.purchase_prefix || "COM-",
+            quote_prefix: (settingsData as any).quote_prefix || "COT-",
             currency: (settingsData as any).currency || "DOP",
           });
         }
@@ -216,6 +218,7 @@ Responde en español en máximo 3 oraciones:`,
         invoice_prefix: form.invoice_prefix,
         receipt_prefix: form.receipt_prefix,
         purchase_prefix: form.purchase_prefix,
+        quote_prefix: form.quote_prefix,
         currency: form.currency,
       };
       const result = await updateSettings(payload);
@@ -569,6 +572,12 @@ Responde en español en máximo 3 oraciones:`,
                   <label className="block text-xs font-medium text-[#9C8A82] mb-1">Compras</label>
                   <input type="text" value={form.purchase_prefix}
                     onChange={(e) => setForm({ ...form, purchase_prefix: e.target.value })}
+                    className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cotizaciones</label>
+                  <input type="text" value={form.quote_prefix || "COT-"}
+                    onChange={(e) => setForm({ ...form, quote_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
                 </div>
               </div>

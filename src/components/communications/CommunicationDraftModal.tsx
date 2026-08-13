@@ -20,7 +20,7 @@ interface Props {
   onClose: () => void;
   type: "email" | "whatsapp";
   client: { id: string; full_name: string; email?: string; phone?: string };
-  documentType: "invoice" | "receipt";
+  documentType: "invoice" | "receipt" | "quote";
   documentNumber: string;
   documentId: string;
   total: string;
@@ -119,7 +119,7 @@ export default function CommunicationDraftModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}
       title={`Preparar ${isEmail ? "Email" : "WhatsApp"}`}
-      subtitle={`${documentType === "invoice" ? "Factura" : "Recibo"} ${documentNumber} — ${client.full_name}`}
+      subtitle={`${documentType === "invoice" ? "Factura" : documentType === "quote" ? "Cotización" : "Recibo"} ${documentNumber} — ${client.full_name}`}
       wide
     >
       <div className="space-y-4">

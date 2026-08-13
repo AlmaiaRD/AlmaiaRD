@@ -56,7 +56,7 @@ Gracias por tu confianza.
 export function generateEmailDraft(params: {
   clientName: string;
   clientEmail: string;
-  documentType: "invoice" | "receipt";
+  documentType: "invoice" | "receipt" | "quote";
   documentNumber: string;
   businessName: string;
   senderEmail?: string;
@@ -64,7 +64,7 @@ export function generateEmailDraft(params: {
   template?: string;
 }) {
   const { clientName, clientEmail, documentType, documentNumber, businessName, senderEmail, senderName, template } = params;
-  const label = documentType === "invoice" ? "Factura" : "Recibo";
+  const label = documentType === "invoice" ? "Factura" : documentType === "quote" ? "Cotización" : "Recibo";
   const from = senderEmail || "noreply@almaia-rd.com";
   const fromName = senderName || businessName;
 
@@ -87,14 +87,14 @@ export function generateEmailDraft(params: {
 
 export function generateWhatsAppDraft(params: {
   clientName: string;
-  documentType: "invoice" | "receipt";
+  documentType: "invoice" | "receipt" | "quote";
   documentNumber: string;
   total: string;
   businessName: string;
   template?: string;
 }) {
   const { clientName, documentType, documentNumber, total, businessName, template } = params;
-  const label = documentType === "invoice" ? "Factura" : "Recibo";
+  const label = documentType === "invoice" ? "Factura" : documentType === "quote" ? "Cotización" : "Recibo";
 
   const text = fillTemplate(template || DEFAULT_WHATSAPP_TEMPLATE, {
     clientName,

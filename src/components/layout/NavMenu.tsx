@@ -20,12 +20,14 @@ import {
   Notebook,
   Sparkles,
   RotateCcw,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Estadísticas", icon: BarChart3 },
   { href: "/facturacion", label: "Facturas", icon: FileText },
+  { href: "/cotizaciones", label: "Cotizaciones", icon: ClipboardList },
   { href: "/recibos", label: "Recibos", icon: Receipt },
   { href: "/devoluciones", label: "Devoluciones", icon: RotateCcw },
   { href: "/gastos", label: "Gastos", icon: DollarSign },

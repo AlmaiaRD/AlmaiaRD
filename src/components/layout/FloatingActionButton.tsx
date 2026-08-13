@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, X, FileText, Receipt, ShoppingCart, UserPlus } from "lucide-react";
+import { Plus, X, FileText, Receipt, ShoppingCart, UserPlus, ClipboardList } from "lucide-react";
 import Link from "next/link";
 
 const actions = [
   { href: "/facturacion?nueva=true", label: "Nueva Factura", icon: FileText, color: "bg-[#B8837E]", bgLight: "bg-[#B8837E]/10", textColor: "text-[#B8837E]" },
+  { href: "/cotizaciones?nueva=true", label: "Crear Cotización", icon: ClipboardList, color: "bg-[#C9A89C]", bgLight: "bg-[#C9A89C]/10", textColor: "text-[#C9A89C]" },
   { href: "/recibos?nuevo=true", label: "Registrar Pago", icon: Receipt, color: "bg-[#86C7A3]", bgLight: "bg-[#86C7A3]/10", textColor: "text-[#86C7A3]" },
   { href: "/inventario?nueva-compra=true", label: "Registrar Compra", icon: ShoppingCart, color: "bg-[#C9A89C]", bgLight: "bg-[#C9A89C]/10", textColor: "text-[#C9A89C]" },
   { href: "/clientes?nuevo=true", label: "Añadir Cliente", icon: UserPlus, color: "bg-[#B8837E]", bgLight: "bg-[#B8837E]/10", textColor: "text-[#B8837E]" },

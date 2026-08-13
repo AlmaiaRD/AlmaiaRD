@@ -261,6 +261,45 @@ export interface Followup {
   next_followup: string;
   comments: string;
   status: FollowupStatus;
+  quote_id?: string;
+}
+
+export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED";
+
+export interface Quote {
+  id: string;
+  quote_number: string;
+  client_id: string;
+  quote_date: string;
+  valid_until: string;
+  status: QuoteStatus;
+  subtotal: number;
+  discount_amount: number;
+  itbis_total: number;
+  total: number;
+  pv_total: number;
+  notes?: string;
+  margin?: number;
+  sent_at?: string;
+  converted_invoice_id?: string;
+  created_by?: string;
+  updated_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuoteItem {
+  id: string;
+  quote_id: string;
+  product_id?: string;
+  quantity: number;
+  unit_price: number;
+  unit_cost: number;
+  pv: number;
+  line_total: number;
+  itbis: boolean;
+  itbis_amount: number;
+  custom_name?: string;
 }
 
 export interface Expense {
@@ -317,6 +356,7 @@ export interface Settings {
   invoice_prefix: string;
   receipt_prefix: string;
   purchase_prefix: string;
+  quote_prefix?: string;
   currency?: string;
   email: string;
   phone: string;
@@ -370,7 +410,7 @@ export interface Communication {
   direction: CommunicationDirection;
   subject: string;
   body: string;
-  document_type: "invoice" | "receipt" | null;
+  document_type: "invoice" | "receipt" | "quote" | null;
   document_id: string;
   status: CommunicationStatus;
   created_at: string;

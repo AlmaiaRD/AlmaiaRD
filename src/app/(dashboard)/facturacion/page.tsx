@@ -7,6 +7,7 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts, getInvoicesPaginated } from "@/services/invoices";
+import { getQuote, markQuoteConverted } from "@/services/quotes";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getClients, createClient } from "@/services/clients";
@@ -65,6 +66,7 @@ export default function FacturacionPage() {
   const [showManualProduct, setShowManualProduct] = useState(false);
   const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const pendingQuoteId = useRef<string | null>(null);
   const jpgRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +130,34 @@ export default function FacturacionPage() {
   useEffect(() => {
     if (searchParams.get("nueva") === "true") {
       resetForm();
+      const quoteId = searchParams.get("quote");
+      if (quoteId) {
+        pendingQuoteId.current = quoteId;
+        (async () => {
+          try {
+            const { quote, items: quoteItems } = await getQuote(quoteId);
+            setSelectedClient(quote.client_id);
+            setInvoiceDate(quote.quote_date || getLocalDateString());
+            setMargin(quote.margin ?? settings?.default_margin ?? 30);
+            setNotes(quote.notes || "");
+            setDiscountAmount(Number(quote.discount_amount) || 0);
+            setItems(quoteItems.map((i) => ({
+              product_id: i.product_id || "",
+              name: i.products?.name || i.custom_name || "Producto",
+              quantity: Number(i.quantity) || 0,
+              unit_price: Number(i.unit_price) || 0,
+              cost: Number(i.unit_cost) || 0,
+              pv: Number(i.pv) || 0,
+              itbis: Boolean(i.itbis),
+            })));
+          } catch {
+            toast.error("Error al cargar la cotización");
+          }
+        })();
+      }
       Promise.resolve().then(() => setShowModal(true));
+    } else {
+      pendingQuoteId.current = null;
     }
   }, [searchParams]);
 
@@ -544,8 +573,13 @@ export default function FacturacionPage() {
         await updateInvoice(editingId, payload, invoiceItems);
         toast.success("Factura actualizada");
       } else {
-        await createInvoice(payload, invoiceItems);
+        const created = (await createInvoice(payload, invoiceItems)) as { id: string };
         toast.success("Factura creada exitosamente");
+        if (pendingQuoteId.current) {
+          await markQuoteConverted(pendingQuoteId.current, created.id);
+          pendingQuoteId.current = null;
+          toast.success("Cotización marcada como convertida");
+        }
       }
       setShowModal(false);
       resetForm();
