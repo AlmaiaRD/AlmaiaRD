@@ -46,19 +46,34 @@ export async function getQuotes() {
 export async function getQuote(id: string) {
   const { data: quote, error } = await supabase
     .from("quotes")
-    .select("*, clients(id, full_name, phone, email)")
+    .select("*")
     .eq("id", id)
     .single();
   if (error) throw error;
 
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
-    .select("*, products(id, name, code)")
+    .select("*")
     .eq("quote_id", id)
     .order("created_at", { ascending: true });
   if (itemsError) throw itemsError;
 
-  return { quote: quote as QuoteWithClient, items: items as QuoteItemWithProduct[] };
+  const mappedItems = (items || []).map((i: any) => ({
+    id: i.id,
+    quote_id: i.quote_id,
+    product_id: i.product_id,
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+    unit_cost: i.unit_cost,
+    pv: i.pv,
+    line_total: i.line_total,
+    itbis: i.itbis,
+    itbis_amount: i.itbis_amount,
+    custom_name: i.custom_name,
+    products: i.products ? { id: i.products.id, name: i.products.name, code: i.products.code } : { id: "", name: "", code: "" }
+  }));
+
+  return { quote: quote as QuoteWithClient, items: mappedItems as QuoteItemWithProduct[] };
 }
 
 export async function getClientQuotes(clientId: string) {
