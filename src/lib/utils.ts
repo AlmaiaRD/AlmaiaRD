@@ -15,8 +15,10 @@ export function formatCurrency(amount: number, currency = "DOP"): string {
   }).format(amount);
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (d instanceof Date && isNaN(d.getTime())) return "";
   return d.toLocaleDateString("es-DO", {
     year: "numeric",
     month: "2-digit",
@@ -24,8 +26,10 @@ export function formatDate(date: string | Date): string {
   });
 }
 
-export function formatDateShort(date: string | Date): string {
+export function formatDateShort(date: string | Date | null | undefined): string {
+  if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (d instanceof Date && isNaN(d.getTime())) return "";
   return d.toLocaleDateString("es-DO", {
     day: "2-digit",
     month: "2-digit",
