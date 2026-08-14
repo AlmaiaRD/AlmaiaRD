@@ -4,7 +4,7 @@ import type { Quote, QuoteItem, QuoteStatus } from "@/types/database";
 import { round2 } from "@/lib/invoiceMath";
 
 export type QuoteWithClient = Quote & { clients?: { id: string; full_name: string; phone?: string; email?: string } };
-export type QuoteItemWithProduct = QuoteItem & { products?: { id: string; name: string; sku?: string } };
+export type QuoteItemWithProduct = QuoteItem & { products?: { id: string; name: string; code?: string } };
 
 export interface QuoteInputItem {
   product_id?: string;
@@ -51,7 +51,7 @@ export async function getQuote(id: string) {
 
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
-    .select("*, products(id, name, sku)")
+    .select("*, products(id, name, code)")
     .eq("quote_id", id)
     .order("created_at", { ascending: true });
   if (itemsError) throw itemsError;
