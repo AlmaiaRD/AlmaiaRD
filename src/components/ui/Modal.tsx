@@ -38,7 +38,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
               "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto overflow-hidden",
               expanded
                 ? "max-w-[98vw] sm:max-w-[95vw] h-[96vh] sm:h-[94vh]"
-                : cn("max-h-[90vh] sm:max-h-none", wide ? "max-w-3xl" : "max-w-lg")
+                : cn("max-h-[90vh] sm:max-h-[90vh] max-h-[calc(100vh-2rem)]", wide ? "max-w-3xl" : "max-w-lg")
             )}
           >
             <div className="bg-foreground px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">

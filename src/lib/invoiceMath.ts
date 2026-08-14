@@ -34,12 +34,12 @@ export interface InvoiceMathResult {
 }
 
 /**
- * Total por línea de una sola unidad: precio + ITBIS (18% del costo),
- * redondeado al múltiplo de 50 MÁS CERCANO. El ITBIS es fijo (sobre el
- * costo), nunca se altera por el margen ni por el redondeo.
+ * Total por línea de una sola unidad: precio + ITBIS (18% del precio),
+ * redondeado al múltiplo de 50 MÁS CERCANO. El ITBIS se calcula sobre
+ * el precio de venta (unit_price * quantity), según normativa DGII.
  */
 export function invoiceLineTotalForUnit(unitPrice: number, cost: number, itbis: boolean): number {
-  const itbisAmount = itbis ? round2(round2(Number(cost) || 0) * ITBIS_RATE) : 0;
+  const itbisAmount = itbis ? round2(round2(Number(unitPrice) || 0) * ITBIS_RATE) : 0;
   return roundToNearest50(round2(round2(Number(unitPrice) || 0) + itbisAmount));
 }
 
@@ -69,30 +69,31 @@ export function computeNetProfit(
 
 /**
  * Calcula los totales de una factura con el esquema de precios de Almaia:
- *  - El ITBIS SIEMPRE se calcula sobre el COSTO del producto (18% exacto) y
- *    queda fijo: nunca se altera por el margen ni por el redondeo.
+ *  - El ITBIS SIEMPRE se calcula sobre el PRECIO DE VENTA (unit_price * quantity)
+ *    (18% exacto), según normativa DGII. El ITBIS se calcula sobre el precio
+ *    de catálogo original y queda FIJO durante el redondeo (no cambia al ajustar
+ *    el precio de cobro para llegar a múltiplo de 50).
  *  - El total de CADA línea se redondea al múltiplo de 50 MÁS CERCANO; la
- *    diferencia se absorbe ajustando el precio cobrado (el ITBIS queda
- *    intacto, sin tocar el precio del catálogo). Esto equivale a manejar el
- *    costo efectivo de la línea para que el total quede redondo.
+ *    diferencia se absorbe ajustando el precio de cobro (el ITBIS queda
+ *    intacto, sin tocar el precio del catálogo).
  *
  * Ejemplo: costo 360, precio 486 (margen 35%), qty 1:
- *   ITBIS = 360 × 0.18 = 64.80 (fijo); 486 + 64.80 = 550.80 → total 550
- *   (múltiplo de 50 más cercano); ajuste −0.80 → precio cobrado 485.20.
+ *   ITBIS = 486 × 0.18 = 87.48 (fijo sobre precio catálogo); 486 + 87.48 = 573.48 → total 550
+ *   (múltiplo de 50 más cercano); ajuste −23.48 → precio de cobro 462.52.
  */
 export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): InvoiceMathResult {
   const lines = items.map((item) => {
     const quantity = item.quantity || 0;
-    const unitPrice = round2(Number(item.unit_price || 0));
+    const catalogPrice = round2(Number(item.unit_price || 0));
     const cost = round2(Number(item.cost) || 0);
-    const rawPrice = round2(quantity * unitPrice);
-    const itbisAmount = item.itbis && cost > 0 && quantity > 0 ? round2(cost * quantity * ITBIS_RATE) : 0;
+    const rawPrice = round2(quantity * catalogPrice);
+    // ITBIS sobre precio de catálogo ORIGINAL (fijo, no cambia en el guard loop)
+    const itbisAmount = item.itbis && catalogPrice > 0 && quantity > 0 ? round2(catalogPrice * quantity * ITBIS_RATE) : 0;
     const rawTotal = round2(rawPrice + itbisAmount);
 
     // El total de la línea SIEMPRE se redondea al múltiplo de 50 más cercano.
     // Con ITBIS: line_total = target − itbis (el ITBIS queda intacto).
     // Sin ITBIS: line_total = target.
-    // Se evita que el total baje por debajo del ITBIS en casos extremos.
     const target = quantity > 0 ? Math.max(roundToNearest50(rawTotal), itbisAmount) : 0;
     const lineTotal = quantity > 0 ? round2(target - itbisAmount) : 0;
     let displayPrice = quantity > 0 ? round2(lineTotal / quantity) : 0;
@@ -100,7 +101,9 @@ export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): Invo
     // Estabilidad al re-calcular una factura guardada: el precio unitario se
     // guarda con 2 decimales, y precio × qty debe volver al MISMO múltiplo de
     // 50 (no cruzar la frontera por el redondeo del precio).
-    const checkTotal = (lt: number) => (itbisAmount > 0 ? lt + itbisAmount : lt);
+    // IMPORTANTE: usamos el ITBIS FIJO (sobre catálogo), no recalculamos ITBIS
+    // sobre displayPrice, para evitar dependencia circular.
+    const checkTotal = (lt: number) => lt + itbisAmount;
     let guard = 0;
     while (guard < 500) {
       const recomputed = roundToNearest50(checkTotal(round2(displayPrice * quantity)));

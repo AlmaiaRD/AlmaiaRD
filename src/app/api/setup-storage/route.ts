@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       {
         method: "POST",
         headers,
-        body: JSON.stringify({ id: "product-images", name: "product-images", public: true }),
+        body: JSON.stringify({ id: "product-images", name: "product-images", public: false }),
       }
     );
 
@@ -53,13 +53,13 @@ export async function POST(req: NextRequest) {
         headers,
         body: JSON.stringify({
           query: `
+            -- Private bucket: solo authenticated pueden insertar (subir)
             CREATE POLICY IF NOT EXISTS "product_images_insert" ON storage.objects
               FOR INSERT TO authenticated
               WITH CHECK (bucket_id = 'product-images');
 
-            CREATE POLICY IF NOT EXISTS "product_images_select" ON storage.objects
-              FOR SELECT TO authenticated
-              USING (bucket_id = 'product-images');
+            -- SELECT directo denegado para private bucket; acceso via signed URLs
+            -- (no hay policy SELECT para authenticated en bucket privado)
 
             CREATE POLICY IF NOT EXISTS "product_images_delete" ON storage.objects
               FOR DELETE TO authenticated
@@ -69,6 +69,23 @@ export async function POST(req: NextRequest) {
               FOR UPDATE TO authenticated
               USING (bucket_id = 'product-images' AND auth.uid() = owner)
               WITH CHECK (bucket_id = 'product-images' AND auth.uid() = owner);
+
+            -- Función para generar signed URL (admin/seller/assistant)
+            CREATE OR REPLACE FUNCTION public.get_product_image_signed_url(p_path TEXT, p_expires_in INTEGER DEFAULT 3600)
+            RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+            AS $$
+            DECLARE
+              v_role TEXT;
+              v_url TEXT;
+            BEGIN
+              v_role := public.get_user_role();
+              IF v_role NOT IN ('admin','seller','assistant') THEN
+                RAISE EXCEPTION 'Permiso denegado';
+              END IF;
+              SELECT storage.create_signed_url('product-images', p_path, p_expires_in) INTO v_url;
+              RETURN v_url;
+            END $$;
+            GRANT EXECUTE ON FUNCTION public.get_product_image_signed_url(TEXT, INTEGER) TO authenticated;
           `,
         }),
       }

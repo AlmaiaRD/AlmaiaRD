@@ -33,12 +33,21 @@ export async function updateStageOnFirstPurchase(clientId: string) {
     .neq("status", "CANCELLED");
 
   if (count === 1) {
-    await supabase.from("clients").update({
+    const updates: Record<string, unknown> = {
       stage: "cierre",
       closure_result: "ganado",
       stage_entered_at: new Date().toISOString(),
-      first_contact_date: getLocalDateString(),
-    }).eq("id", clientId);
+    };
+    // Solo establecer first_contact_date si aún no está definida (no sobreescribir la fecha real)
+    const { data: existing } = await supabase
+      .from("clients")
+      .select("first_contact_date")
+      .eq("id", clientId)
+      .single();
+    if (!existing?.first_contact_date) {
+      updates.first_contact_date = getLocalDateString();
+    }
+    await supabase.from("clients").update(updates).eq("id", clientId);
   }
 }
 

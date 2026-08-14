@@ -118,7 +118,7 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   if (!invoice.client_id) throw new Error("La factura requiere un cliente.");
 
   // Fetch product costs: el ITBIS de la factura se calcula SIEMPRE sobre el
-  // costo base del producto (no sobre el margen), y unit_cost guarda ese costo.
+  // precio de venta (unit_price * quantity), según normativa DGII.
   const productIds = items.map(i => i.product_id).filter(Boolean) as string[];
   const { data: costData } = await supabase
     .from("products")

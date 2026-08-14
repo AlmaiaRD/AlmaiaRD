@@ -13,6 +13,7 @@ import { getClientCredits } from "@/services/credits";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
 import { getClientQuotes } from "@/services/quotes";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useDebounce } from "@/hooks/useDebounce";
 import type { Client } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
@@ -60,11 +61,13 @@ export default function ClientesPage() {
   const [totalClients, setTotalClients] = useState(0);
   const pageSize = 50;
 
+const debouncedSearch = useDebounce(searchQuery, 500);
+
   const load = useCallback(async (p?: number) => {
     const currentPage = p ?? page;
     try {
-      if (searchQuery) {
-        const data = await searchClients(searchQuery);
+      if (debouncedSearch) {
+        const data = await searchClients(debouncedSearch);
         setClients(data);
         setTotalClients(data.length);
       } else {
@@ -78,24 +81,13 @@ export default function ClientesPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, page]);
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     setPage(1);
     setLoading(true);
-    (async () => {
-      try {
-        const data = searchQuery ? await searchClients(searchQuery) : await getClientsWithBalances();
-        setClients(data);
-        setTotalClients(data.length);
-      } catch (e: any) {
-        console.error("Error al cargar clientes:", e);
-        toast.error("Error al cargar clientes");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [searchQuery]);
+    load();
+  }, [debouncedSearch]);
 
   function handlePageChange(newPage: number) {
     setPage(newPage);

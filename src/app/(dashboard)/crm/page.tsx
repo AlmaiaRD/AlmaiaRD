@@ -5,7 +5,7 @@ import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import { getAllFollowups, createFollowup, updateFollowup, updateFollowupStatus, deleteFollowup } from "@/services/followups";
-import { getClients, getClientCardData } from "@/services/clients";
+import { getClientCardData } from "@/services/clients";
 import {
   Search, Plus, MessageSquare, Users,
   MoreVertical, Trash2, Edit3, ChevronLeft, ChevronRight,
@@ -116,9 +116,9 @@ export default function CrmPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const [fol, cli, cardData] = await Promise.all([getAllFollowups(), getClients(), getClientCardData()]);
+      const [fol, cardData] = await Promise.all([getAllFollowups(), getClientCardData()]);
       setFollowups(fol);
-      setClients(cli.map((c) => ({ id: c.id, full_name: c.full_name })));
+      setClients(cardData.map((c) => ({ id: c.id, full_name: c.full_name })));
       const map: Record<string, string> = {};
       for (const c of cardData) {
         if (c.repurchase_date) map[c.id] = c.repurchase_date;
@@ -135,9 +135,9 @@ export default function CrmPage() {
     (async () => {
       setLoading(true);
       try {
-        const [fol, cli, cardData] = await Promise.all([getAllFollowups(), getClients(), getClientCardData()]);
+        const [fol, cardData] = await Promise.all([getAllFollowups(), getClientCardData()]);
         setFollowups(fol);
-        setClients(cli.map((c) => ({ id: c.id, full_name: c.full_name })));
+        setClients(cardData.map((c) => ({ id: c.id, full_name: c.full_name })));
         const map: Record<string, string> = {};
         for (const c of cardData) {
           if (c.repurchase_date) map[c.id] = c.repurchase_date;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Upload, X, Loader2 } from "lucide-react";
 
@@ -14,6 +14,11 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sincronizar currentUrl (prop) con preview cuando cambia el producto editado
+  useEffect(() => {
+    setPreview(currentUrl || null);
+  }, [currentUrl]);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
