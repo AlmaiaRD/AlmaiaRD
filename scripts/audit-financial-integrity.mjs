@@ -6,6 +6,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import ws from "ws";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const env = {};
 for (const line of readFileSync(resolve(__dirname, "..", ".env.local"), "utf-8").split("\n")) {
@@ -21,7 +23,7 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPA
   auth: { persistSession: false },
 });
 
-const { error: ae } = await supabase.auth.signInWithPassword({ email: "admin@almaia.com", password: "Admin123!" });
+const { error: ae } = await supabase.auth.signInWithPassword({ email: creds.email, password: creds.password });
 if (ae) { console.error(ae.message); process.exit(1); }
 console.log("✅ Autenticado como admin\n");
 

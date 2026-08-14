@@ -51,18 +51,22 @@ export async function getCobrosReport(from?: string, to?: string) {
 
 export async function getInventarioReport() {
   const { data, error } = await supabase
-    .from("vw_inventory_value")
-    .select("product_name, stock, minimum_stock, stock_status")
-    .order("product_name");
+    .from("inventory")
+    .select("product_id, stock, minimum_stock, products(name)")
+    .order("products(name)");
   if (error) throw error;
   return (data || []).map((item: unknown) => {
     const i = item as Record<string, unknown>;
+    const products = i.products as Record<string, unknown> | null;
+    const stock = Number(i.stock);
+    const minimum = Number(i.minimum_stock) || 0;
+    const estado = stock <= 0 ? "AGOTADO" : stock <= minimum ? "BAJO" : "OPTIMO";
     return {
-      producto: i.product_name,
+      producto: products?.name || "Sin nombre",
       submarca: "—",
-      stock: Number(i.stock),
-      minimo: Number(i.minimum_stock),
-      estado: i.stock_status === "AGOTADO" ? "Agotado" : i.stock_status === "BAJO" ? "Bajo" : "Óptimo",
+      stock,
+      minimo: minimum,
+      estado: estado === "AGOTADO" ? "Agotado" : estado === "BAJO" ? "Bajo" : "Óptimo",
     };
   });
 }
@@ -70,7 +74,7 @@ export async function getInventarioReport() {
 export async function getClientesReport() {
   const { data, error } = await supabase
     .from("vw_accounts_receivable")
-    .select("client_name, total_invoiced, total_paid, balance_due, credit_balance");
+    .select("client_name, total_invoiced, total_paid, total_pending, credit_balance");
   if (error) throw error;
   return (data || []).map((c: unknown) => {
     const cc = c as Record<string, unknown>;
@@ -78,8 +82,8 @@ export async function getClientesReport() {
       cliente: cc.client_name,
       total_comprado: Number(cc.total_invoiced),
       total_pagado: Number(cc.total_paid),
-      saldo_pendiente: Number(cc.balance_due),
-      estado: Number(cc.balance_due) > 0 ? "Pendiente" : "Pagado",
+      saldo_pendiente: Number(cc.total_pending),
+      estado: Number(cc.total_pending) > 0 ? "Pendiente" : "Pagado",
     };
   });
 }

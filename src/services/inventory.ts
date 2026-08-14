@@ -156,7 +156,7 @@ export async function deleteProduct(productId: string) {
   if (usage.purchases > 0) throw new Error("No se puede eliminar el producto porque está asociado a compras");
 
   const { count: bundleCount, error: bundleError } = await supabase
-    .from("bundle_components")
+    .from("bundle_items")
     .select("*", { count: "exact", head: true })
     .eq("product_id", productId);
   if (bundleError) throw bundleError;

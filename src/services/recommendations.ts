@@ -197,20 +197,29 @@ export async function getClientRecommendations(): Promise<ClientRecommendation[]
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  const { data: recentBuyers } = await supabase
+    .from("invoices")
+    .select("client_id")
+    .gte("created_at", thirtyDaysAgo.toISOString())
+    .not("status", "eq", "CANCELLED");
+
+  const recentClientIds = new Set((recentBuyers || []).map((inv: unknown) => (inv as Record<string, unknown>).client_id as string));
+
   const { data: inactiveClients } = await supabase
     .from("clients")
     .select("id, full_name")
-    .not("id", "in", supabase
-      .from("invoices")
-      .select("client_id")
-      .gte("created_at", thirtyDaysAgo.toISOString())
-    );
+    .is("deleted_at", null)
+    .limit(100);
 
-  if (inactiveClients) {
-    for (const client of inactiveClients) {
+  const filteredInactive = (inactiveClients || []).filter(
+    (c: unknown) => !recentClientIds.has((c as Record<string, unknown>).id as string)
+  );
+
+  if (filteredInactive.length > 0) {
+    for (const client of filteredInactive) {
       recommendations.push({
-        client_id: client.id,
-        client_name: client.full_name,
+        client_id: (client as Record<string, unknown>).id as string,
+        client_name: (client as Record<string, unknown>).full_name as string,
         action: "Enviar catálogo actualizado",
         reason: "Sin compras en los últimos 30 días",
         priority: "medium",

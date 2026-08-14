@@ -19,8 +19,8 @@ function getAdminClient(): AdminClient | null {
 
 function verifySignature(rawBody: string, signature: string | null): boolean {
   if (!APP_SECRET) {
-    console.warn("WHATSAPP_APP_SECRET no configurado; webhook aceptado sin verificar");
-    return true;
+    console.error("WHATSAPP_APP_SECRET no configurado; webhook rechazado");
+    return false;
   }
   if (!signature) return false;
 

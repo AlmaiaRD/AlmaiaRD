@@ -29,7 +29,7 @@ export async function updateReceipt(id: string, data: Partial<Receipt>) {
   if (error) throw error;
 }
 
-async function adjustPayment(invoiceId: string | null | undefined, diff: number) {
+export async function adjustPayment(invoiceId: string | null | undefined, diff: number) {
   if (!invoiceId || !diff) return;
   const { error } = await supabase.rpc("adjust_invoice_payment", {
     p_invoice_id: invoiceId,
@@ -52,6 +52,19 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
   const oldInvoiceId = current?.invoice_id ?? null;
   const newAmount = Number(data.amount ?? oldAmount);
   const newInvoiceId = data.invoice_id ?? oldInvoiceId;
+
+  // Calcular credit_excess ANTES de aplicar pagos: lee balance_due de la factura
+  // destino (nueva o misma) y calcula excedente = newAmount - balance_due.
+  let creditExcess = 0;
+  if (newInvoiceId && newAmount > 0) {
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("balance_due")
+      .eq("id", newInvoiceId)
+      .single();
+    const balanceDue = Number(inv?.balance_due ?? 0);
+    creditExcess = Math.max(0, Math.round((newAmount - balanceDue) * 100) / 100);
+  }
 
   const applied: Array<{ invoice_id: string; diff: number }> = [];
   const apply = async (invoiceId: string, diff: number) => {
@@ -79,7 +92,10 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
     throw e;
   }
 
-  const { error } = await supabase.from("receipts").update(data).eq("id", id);
+  const { error } = await supabase.from("receipts").update({
+    ...data,
+    credit_excess: creditExcess,
+  }).eq("id", id);
   if (error) {
     await rollback();
     throw error;
@@ -116,6 +132,20 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   const { data: sessData } = await supabase.auth.getSession();
   const userId = sessData.session?.user?.id;
 
+  // Calcular credit_excess ANTES de aplicar el pago: lee balance_due actual
+  // (que es el saldo pendiente previo) y calcula excedente = amount - balance_due
+  let creditExcess = 0;
+  if (receipt.invoice_id && Number(receipt.amount) > 0) {
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("balance_due")
+      .eq("id", receipt.invoice_id)
+      .single();
+    const balanceDue = Number(inv?.balance_due ?? 0);
+    const amount = Number(receipt.amount);
+    creditExcess = Math.max(0, Math.round((amount - balanceDue) * 100) / 100);
+  }
+
   // Ajusta el pago en la factura ANTES de crear el recibo: si el RPC falla no
   // queda un recibo sin su pago aplicado. Si luego falla el insert, se revierte.
   const appliedToInvoice = !!receipt.invoice_id && Number(receipt.amount) > 0;
@@ -127,6 +157,7 @@ export async function createReceipt(receipt: Partial<Receipt>) {
     ...receipt,
     receipt_number: receiptNumber,
     created_by: userId,
+    credit_excess: creditExcess,
   }).select().single();
 
   if (error) {

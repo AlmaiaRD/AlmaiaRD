@@ -6,6 +6,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import ws from "ws";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function loadEnv() {
@@ -38,8 +40,8 @@ const reportFile = resolve(__dirname, "..", "amway-comparison-report.json");
 const report = JSON.parse(readFileSync(reportFile, "utf-8"));
 
 const { error: authError } = await supabase.auth.signInWithPassword({
-  email: "admin@almaia.com",
-  password: "Admin123!",
+  email: creds.email,
+  password: creds.password,
 });
 if (authError) {
   console.error("ERROR auth:", authError.message);

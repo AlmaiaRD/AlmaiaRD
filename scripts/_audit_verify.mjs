@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const BASE = "http://localhost:3000";
 const CHECKS = ["/facturacion", "/catalogo", "/inventario", "/recibos", "/comunicaciones", "/configuracion"];
 
@@ -12,8 +14,8 @@ page.on("response", (res) => {
 });
 
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
-await page.fill('input[type="email"]', "admin@almaia.com");
-await page.fill('input[type="password"]', "Admin123!");
+await page.fill('input[type="email"]', creds.email);
+await page.fill('input[type="password"]', creds.password);
 await page.click('button[type="submit"]');
 await page.waitForTimeout(2500);
 

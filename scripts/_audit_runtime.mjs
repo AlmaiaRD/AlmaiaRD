@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const BASE = "http://localhost:3000";
 const PAGES = [
   "/dashboard", "/catalogo", "/clientes", "/crm", "/pipeline", "/cuentas-por-cobrar",
@@ -29,8 +31,8 @@ page.on("pageerror", (err) => globalErrors.push(`pageerror: ${String(err).slice(
 
 try {
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded", timeout: 30000 });
-  await page.fill('input[type="email"]', "admin@almaia.com");
-  await page.fill('input[type="password"]', "Admin123!");
+  await page.fill('input[type="email"]', creds.email);
+  await page.fill('input[type="password"]', creds.password);
   await page.click('button[type="submit"]');
   await page.waitForURL(/dashboard|login/, { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(2500);

@@ -17,10 +17,10 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPA
 });
 
 const { data: session, error: ae } = await supabase.auth.signInWithPassword({
-  email: "admin@almaia.com", password: "Admin123!",
+  email: creds.email, password: creds.password,
 });
 if (ae) { console.error("AUTH ERROR:", ae.message); process.exit(1); }
-console.log("Autenticado como admin@almaia.com");
+console.log("Autenticado como " + creds.email);
 
 const STAMP = new Date().toISOString().replace(/[:.]/g, "-");
 const DIR = join("backups", `almaia-backup-${STAMP}`);
@@ -62,7 +62,7 @@ writeFileSync(
   join(DIR, "dump-summary.json"),
   JSON.stringify({
     exported_at: new Date().toISOString(),
-    by: "admin@almaia.com",
+    by: creds.email,
     environment: env.NEXT_PUBLIC_SUPABASE_URL,
     tables_total: TABLES.length,
     tables_ok: ok,

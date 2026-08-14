@@ -6,6 +6,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import ws from "ws";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXECUTE = process.argv.includes("--execute");
 
@@ -40,8 +42,8 @@ const supabase = createClient(
 );
 
 const { error: authError } = await supabase.auth.signInWithPassword({
-  email: "admin@almaia.com",
-  password: "Admin123!",
+  email: creds.email,
+  password: creds.password,
 });
 if (authError) {
   console.error("ERROR autenticación:", authError.message);

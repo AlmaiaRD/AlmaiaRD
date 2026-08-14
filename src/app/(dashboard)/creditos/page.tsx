@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
-import { getCreditsSummary, applyCreditBalance } from "@/services/credits";
+import { getCreditsSummary, getClientPendingInvoices, applyCreditToInvoice } from "@/services/credits";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Wallet, Search, ArrowRight, ArrowLeft } from "lucide-react";
+import { Wallet, Search, ArrowRight, ArrowLeft, ChevronDown, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -21,6 +21,15 @@ interface CreditRecord {
   receipts?: { receipt_number: string; receipt_date: string } | null;
 }
 
+interface InvoiceRecord {
+  id: string;
+  invoice_number: string;
+  total: number;
+  balance_due: number;
+  status: string;
+  invoice_date: string;
+}
+
 export default function CreditosPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,6 +38,9 @@ export default function CreditosPage() {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [applyAmount, setApplyAmount] = useState(0);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function loadData() {
@@ -40,6 +52,18 @@ export default function CreditosPage() {
       toast.error("Error al cargar créditos");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadInvoices(clientId: string) {
+    setLoadingInvoices(true);
+    try {
+      const data = await getClientPendingInvoices(clientId);
+      setInvoices(data as InvoiceRecord[]);
+    } catch {
+      toast.error("Error al cargar facturas");
+    } finally {
+      setLoadingInvoices(false);
     }
   }
 
@@ -65,17 +89,32 @@ export default function CreditosPage() {
 
   async function handleApply(credit: CreditRecord) {
     if (applyAmount <= 0) { toast.error("Monto inválido"); return; }
+    if (!selectedInvoiceId) { toast.error("Selecciona una factura"); return; }
     const available = Number(credit.balance ?? credit.amount);
     if (applyAmount > available) { toast.error("Excede el saldo disponible"); return; }
+    const invoice = invoices.find(inv => inv.id === selectedInvoiceId);
+    if (invoice && applyAmount > Number(invoice.balance_due)) {
+      toast.error("El monto excede el saldo pendiente de la factura");
+      return;
+    }
     setSaving(true);
     try {
-      await applyCreditBalance(credit.id, applyAmount);
-      toast.success("Crédito aplicado");
+      await applyCreditToInvoice(credit.id, selectedInvoiceId, applyAmount);
+      toast.success("Crédito aplicado a la factura");
       setSelectedId(null);
+      setSelectedInvoiceId(null);
+      setApplyAmount(0);
       await loadData();
     } catch {
       toast.error("Error al aplicar crédito");
     } finally { setSaving(false); }
+  }
+
+  function openApply(credit: CreditRecord) {
+    setSelectedId(credit.id);
+    setApplyAmount(Number(credit.balance ?? credit.amount));
+    setSelectedInvoiceId(null);
+    loadInvoices(credit.client_id);
   }
 
   return (
@@ -125,22 +164,48 @@ export default function CreditosPage() {
                   <span className="text-xs text-[#9C8A82]">Disponible:</span>
                   <span className="text-sm text-[#5C3E35] ml-1">{formatCurrency(Number(c.balance ?? c.amount))}</span>
                 </div>
-                <button onClick={() => { setSelectedId(c.id); setApplyAmount(Number(c.balance ?? c.amount)); }}
-                  className="flex items-center gap-1 text-xs text-[#86C7A3] hover:underline">
+                <button onClick={() => openApply(c)} className="flex items-center gap-1 text-xs text-[#86C7A3] hover:underline">
                   Aplicar <ArrowRight size={12} />
                 </button>
               </div>
 
               {selectedId === c.id && (
-                <div className="mt-3 pt-3 border-t border-[#F0EBE3] flex items-center gap-3">
-                  <input type="number" value={applyAmount} max={Number(c.balance ?? c.amount)}
-                    onChange={(e) => setApplyAmount(Math.min(Number(e.target.value), Number(c.balance ?? c.amount)))}
-                    className="flex-1 h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3]" />
-                  <button onClick={() => handleApply(c)} disabled={saving}
-                    className="h-10 px-4 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50">
-                    {saving ? "Aplicando..." : "Aplicar a Factura"}
-                  </button>
-                  <button onClick={() => setSelectedId(null)} className="text-xs text-[#9C8A82] hover:text-[#5C3E35]">Cancelar</button>
+                <div className="mt-3 pt-3 border-t border-[#F0EBE3] space-y-3">
+                  {loadingInvoices ? (
+                    <div className="flex justify-center py-4">
+                      <div className="w-6 h-6 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : invoices.length === 0 ? (
+                    <p className="text-sm text-[#9C8A82]">No hay facturas pendientes para este cliente</p>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <select
+                          value={selectedInvoiceId || ""}
+                          onChange={(e) => setSelectedInvoiceId(e.target.value || null)}
+                          className="w-full h-10 pl-3 pr-10 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3]"
+                        >
+                          <option value="">Seleccionar factura...</option>
+                          {invoices.map((inv) => (
+                            <option key={inv.id} value={inv.id}>
+                              {inv.invoice_number} · Pendiente: {formatCurrency(Number(inv.balance_due))} · {formatDate(inv.invoice_date)}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9C8A82] pointer-events-none" size={18} />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input type="number" value={applyAmount} max={Number(c.balance ?? c.amount)}
+                          onChange={(e) => setApplyAmount(Math.min(Number(e.target.value) || 0, Number(c.balance ?? c.amount)))}
+                          className="flex-1 h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3]" />
+                        <button onClick={() => handleApply(c)} disabled={saving}
+                          className="h-10 px-4 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50">
+                          {saving ? "Aplicando..." : "Aplicar a Factura"}
+                        </button>
+                        <button onClick={() => { setSelectedId(null); setSelectedInvoiceId(null); setApplyAmount(0); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35]">Cancelar</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

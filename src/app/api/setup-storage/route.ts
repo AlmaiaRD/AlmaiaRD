@@ -12,8 +12,12 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
     );
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+    const { data: userData } = await supabase.from("users").select("role").eq("id", user.id).single();
+    if (userData?.role !== "admin") {
+      return NextResponse.json({ error: "Solo administradores" }, { status: 403 });
+    }
 
     const mgmtToken = process.env.SUPABASE_ACCESS_TOKEN;
     if (!mgmtToken) {

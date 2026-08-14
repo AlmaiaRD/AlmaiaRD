@@ -5,6 +5,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Badge from "@/components/ui/Badge";
 import { normalize } from "@/lib/search";
 import { getInvoices, getInvoicesPaginated } from "@/services/invoices";
+import { getCreditsSummary } from "@/services/credits";
 import Pagination from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Search, Phone, Wallet, ArrowUpRight } from "lucide-react";
@@ -15,15 +16,20 @@ export default function CuentasPorCobrarPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalInvoices, setTotalInvoices] = useState(0);
+  const [totalCredits, setTotalCredits] = useState(0);
   const pageSize = 50;
 
   useEffect(() => {
     (async () => {
       try {
-        const result = await getInvoicesPaginated(page, pageSize);
+        const [result, credits] = await Promise.all([
+          getInvoicesPaginated(page, pageSize),
+          getCreditsSummary(),
+        ]);
         const unpaid = (result.data || []).filter((inv: any) => inv.status !== "PAID" && inv.status !== "CANCELLED");
         setInvoices(unpaid);
         setTotalInvoices(result.total);
+        setTotalCredits(credits.totalAvailable || 0);
       }
       catch { console.error("Error al cargar facturas"); }
       finally { setLoading(false); }
@@ -39,7 +45,7 @@ export default function CuentasPorCobrarPage() {
     normalize(i.clients?.full_name || "").includes(normalize(searchQuery)) ||
     normalize(i.invoice_number || "").includes(normalize(searchQuery))
   );
-  const totalPending = filtered.reduce((s, i) => s + Number(i.total) - Number(i.paid_amount || 0), 0);
+  const totalPending = filtered.reduce((s, i) => s + Number(i.total) - Number(i.amount_paid || 0), 0);
 
   return (
     <PageContainer>
@@ -59,7 +65,7 @@ export default function CuentasPorCobrarPage() {
             <Wallet size={16} className="text-[#86C7A3]" />
             <p className="text-xs text-[#9C8A82]">Saldos a Favor</p>
           </div>
-          <p className="text-lg font-bold text-[#86C7A3]">RD$ 0.00</p>
+          <p className="text-lg font-bold text-[#86C7A3]">{formatCurrency(totalCredits)}</p>
           <p className="text-xs text-[#86C7A3] mt-1 flex items-center gap-1">Ver créditos <ArrowUpRight size={12} /></p>
         </a>
       </div>
@@ -83,7 +89,7 @@ export default function CuentasPorCobrarPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((inv: any) => {
-            const due = Number(inv.total) - Number(inv.paid_amount || 0);
+            const due = Number(inv.total) - Number(inv.amount_paid || 0);
             const statusLabel = inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Pago Parcial" : inv.status;
             return (
               <div key={inv.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">

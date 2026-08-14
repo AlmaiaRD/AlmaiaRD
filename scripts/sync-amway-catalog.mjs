@@ -7,6 +7,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import ws from "ws";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ── Cargar env ──────────────────────────────────────────────
@@ -50,8 +52,8 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 async function authedSupabase() {
   // Sign in with admin credentials to bypass RLS
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: "admin@almaia.com",
-    password: "Admin123!",
+    email: creds.email,
+    password: creds.password,
   });
   if (error) {
     console.warn("⚠️  No se pudo autenticar en Supabase. Intentando con anon key...");

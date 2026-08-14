@@ -14,6 +14,7 @@ export async function getDashboardStats() {
     lowStockResult,
     profitResult,
     pvResult,
+    pvSummaryResult,
   ] = await Promise.all([
     supabase.from("vw_sales_summary").select("*").single(),
     supabase.from("vw_accounts_receivable").select("*"),
@@ -23,6 +24,7 @@ export async function getDashboardStats() {
     supabase.from("vw_inventory_value").select("*"),
     supabase.from("vw_profitability").select("*").single(),
     supabase.from("invoice_items").select("pv, invoices!inner(status, invoice_date)").gte("invoices.invoice_date", localMonthStart).neq("invoices.status", "CANCELLED"),
+    supabase.from("vw_pv_summary").select("*").single(),
   ]);
 
   if (salesResult.error) throw salesResult.error;
@@ -37,6 +39,7 @@ export async function getDashboardStats() {
   const lowStockData = lowStockResult.data || [];
   const profitability = profitResult.data;
   const pvData = pvResult.data || [];
+  const pvSummary = pvSummaryResult.data;
 
   const totalPaidReceipts = receipts.reduce((s: number, r: any) => s + Number(r.amount), 0);
   const salesMonthLocal = monthInvoices.reduce((s: number, inv: any) => s + Number(inv.total), 0);
@@ -55,7 +58,7 @@ export async function getDashboardStats() {
   const outOfStock = lowStockData.filter((i: any) => i.stock_status === "AGOTADO").length;
   const pvMonth = pvData.reduce((s: number, ii: any) => s + Number(ii.pv || 0), 0);
   const totalPending = ar.reduce((sum: number, r: any) => sum + Number(r.total_pending), 0);
-  const pvYearData = Number(sales?.pv_total || 0);
+  const pvYearData = Number(pvSummary?.pv_year || 0);
 
   return {
     salesToday: sales?.sales_today ?? 0,

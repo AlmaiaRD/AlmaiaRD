@@ -222,7 +222,7 @@ export interface InvoiceItem {
   itbis_amount: number;
 }
 
-export type PaymentMethod = "CASH" | "TRANSFER" | "CARD";
+export type PaymentMethod = "CASH" | "TRANSFER" | "CARD" | "CREDIT";
 
 export interface Receipt {
   id: string;
