@@ -83,21 +83,29 @@ export async function getNextQuoteNumber() {
 }
 
 export async function createQuote(data: QuoteInput) {
+  // Validación defensiva: asegurar valores numéricos
+  const safeSubtotal = Number(data.subtotal) || 0;
+  const safeDiscount = Number(data.discount_amount) || 0;
+  const safeItbis = Number(data.itbis_total) || 0;
+  const safeTotal = Number(data.total) || 0;
+  const safePvTotal = Number(data.pv_total) || 0;
+  const safeMargin = Number(data.margin) || 0;
+
   const { data: quote, error: quoteError } = await supabase
     .from("quotes")
     .insert({
       quote_number: null,
-      client_id: data.client_id,
-      quote_date: data.quote_date,
-      valid_until: data.valid_until,
+      client_id: String(data.client_id),
+      quote_date: String(data.quote_date),
+      valid_until: String(data.valid_until),
       status: data.status,
-      subtotal: data.subtotal,
-      discount_amount: data.discount_amount,
-      itbis_total: data.itbis_total,
-      total: data.total,
-      pv_total: data.pv_total,
+      subtotal: safeSubtotal,
+      discount_amount: safeDiscount,
+      itbis_total: safeItbis,
+      total: safeTotal,
+      pv_total: safePvTotal,
       notes: data.notes || null,
-      margin: data.margin ?? null,
+      margin: safeMargin,
       sent_at: data.status === "SENT" ? new Date().toISOString() : null,
       created_by: data.created_by || null,
     })
@@ -107,7 +115,7 @@ export async function createQuote(data: QuoteInput) {
 
   const items = data.items.map((item) => ({
     quote_id: quote.id,
-    product_id: item.product_id || null,
+    product_id: String(item.product_id) || null,
     quantity: Number(item.quantity) || 0,
     unit_price: round2(Number(item.unit_price) || 0),
     unit_cost: round2(Number(item.unit_cost) || 0),
