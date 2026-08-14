@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -11,7 +11,7 @@ import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings } from "@/services/settings";
-import { getClientFollowups } from "@/services/followups";
+import { getFollowupsByQuote } from "@/services/followups";
 import { getBankAccounts } from "@/services/invoices";
 import type { Client, Followup, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
@@ -226,11 +226,15 @@ export default function CotizacionesPage() {
     setItems(items.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   }
 
-  const mathBase = computeInvoiceMath(items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })));
-  const subtotal = mathBase.subtotal;
-  const itbisTotal = mathBase.itbis_total;
-  const discountValue = Math.round((discountAmount > 0 ? discountAmount : subtotal * discountPercent / 100) * 100) / 100;
-  const math = computeInvoiceMath(items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })), discountValue);
+  // Cálculo único de invoice math (con descuento aplicado)
+  const rawSubtotal = items.reduce((s, i) => s + (Number(i.quantity) || 0) * effectivePrice(i), 0);
+  const discountValue = Math.round((discountAmount > 0 ? discountAmount : rawSubtotal * discountPercent / 100) * 100) / 100;
+  const math = useMemo(() => computeInvoiceMath(
+    items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })),
+    discountValue
+  ), [items, margin, discountPercent, discountAmount]);
+  const subtotal = math.subtotal;
+  const itbisTotal = math.itbis_total;
   const pvTotal = Math.round(items.reduce((s, i) => s + (Number(i.pv) || 0) * (Number(i.quantity) || 0), 0) * 100) / 100;
 
   async function handleSave() {
@@ -250,14 +254,14 @@ export default function CotizacionesPage() {
         pv_total: pvTotal,
         notes: notes || undefined,
         margin,
-        items: items.map((i) => ({
+        items: items.map((i, idx) => ({
           product_id: i.product_id || undefined,
           quantity: i.quantity,
           unit_price: effectivePrice(i),
           unit_cost: i.cost || 0,
           pv: i.pv || 0,
           itbis: i.itbis,
-          itbis_amount: mathBase.lines[items.indexOf(i)]?.itbis_amount ?? 0,
+          itbis_amount: math.lines[idx]?.itbis_amount ?? 0,
         })),
       };
       if (editingId) {
@@ -303,8 +307,8 @@ export default function CotizacionesPage() {
       const { quote: full, items: qItems } = await getQuote(quote.id);
       setSelectedQuote(full);
       setDetailItems(qItems);
-      const fl = await getClientFollowups(quote.client_id).catch(() => []);
-      setDetailFollowups(fl.filter((f) => f.quote_id === quote.id));
+       const fl = await getFollowupsByQuote(quote.id).catch(() => []);
+       setDetailFollowups(fl);
     } catch {
       toast.error("Error al cargar el detalle");
     }
@@ -662,7 +666,7 @@ export default function CotizacionesPage() {
                               className="w-full h-9 px-2 rounded-lg border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-right text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
                           </td>
                           <td className="px-3 py-2 text-right font-semibold text-[#5C3E35]">
-                            {formatCurrency((item.quantity || 0) * effectivePrice(item) + (mathBase.lines[i]?.itbis_amount ?? 0))}
+                            {formatCurrency((item.quantity || 0) * effectivePrice(item) + (math.lines[i]?.itbis_amount ?? 0))}
                           </td>
                           <td className="px-3 py-2">
                             <button onClick={() => removeItem(i)} className="p-1.5 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><X size={15} /></button>

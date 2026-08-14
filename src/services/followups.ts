@@ -11,6 +11,16 @@ export async function getClientFollowups(clientId: string) {
   return data as Followup[];
 }
 
+export async function getFollowupsByQuote(quoteId: string) {
+  const { data, error } = await supabase
+    .from("followups")
+    .select("*")
+    .eq("quote_id", quoteId)
+    .order("contact_date", { ascending: false });
+  if (error) throw error;
+  return data as Followup[];
+}
+
 export async function getAllFollowups() {
   const { data, error } = await supabase
     .from("followups")

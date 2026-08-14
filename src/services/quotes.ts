@@ -29,6 +29,8 @@ export interface QuoteInput {
   pv_total: number;
   notes?: string;
   margin?: number;
+  created_by?: string | null;
+  updated_by?: string | null;
   items: QuoteInputItem[];
 }
 
@@ -62,39 +64,29 @@ export async function getQuote(id: string) {
 export async function getClientQuotes(clientId: string) {
   const { data, error } = await supabase
     .from("quotes")
-    .select("*")
+    .select("*, clients(id, full_name, phone, email)")
     .eq("client_id", clientId)
     .order("quote_date", { ascending: false });
   if (error) throw error;
-  return data as Quote[];
+  return data as QuoteWithClient[];
 }
 
 export async function getNextQuoteNumber() {
   const settings = await getSettings().catch(() => null);
   const prefix = settings?.quote_prefix || "COT-";
 
-  const { data: lastQuote } = await supabase
-    .from("quotes")
-    .select("quote_number")
-    .order("created_at", { ascending: false })
-    .limit(1);
+  const { data: num, error } = await supabase
+    .rpc("get_next_quote_number", { p_prefix: prefix });
 
-  const lastNum = lastQuote?.[0]?.quote_number || `${prefix}000000`;
-  const numPart = parseInt(lastNum.replace(prefix, ""), 10);
-  const nextNum = isNaN(numPart) ? 1 : numPart + 1;
-  return `${prefix}${String(nextNum).padStart(6, "0")}`;
+  if (error) throw error;
+  return num as string;
 }
 
 export async function createQuote(data: QuoteInput) {
-  const { data: sessData } = await supabase.auth.getSession();
-  const userId = sessData.session?.user?.id;
-
-  const quoteNumber = await getNextQuoteNumber();
-
   const { data: quote, error: quoteError } = await supabase
     .from("quotes")
     .insert({
-      quote_number: quoteNumber,
+      quote_number: null,
       client_id: data.client_id,
       quote_date: data.quote_date,
       valid_until: data.valid_until,
@@ -107,7 +99,7 @@ export async function createQuote(data: QuoteInput) {
       notes: data.notes || null,
       margin: data.margin ?? null,
       sent_at: data.status === "SENT" ? new Date().toISOString() : null,
-      created_by: userId,
+      created_by: data.created_by || null,
     })
     .select()
     .single();
@@ -136,9 +128,6 @@ export async function createQuote(data: QuoteInput) {
 }
 
 export async function updateQuote(id: string, data: QuoteInput) {
-  const { data: sessData } = await supabase.auth.getSession();
-  const userId = sessData.session?.user?.id;
-
   const patch: Record<string, unknown> = {
     client_id: data.client_id,
     quote_date: data.quote_date,
@@ -151,8 +140,8 @@ export async function updateQuote(id: string, data: QuoteInput) {
     pv_total: data.pv_total,
     notes: data.notes || null,
     margin: data.margin ?? null,
-    updated_by: userId,
-  };
+    updated_by: data.updated_by || null,
+  } as Record<string, unknown>;
   if (data.status === "SENT") patch.sent_at = new Date().toISOString();
 
   const { data: quote, error: quoteError } = await supabase
@@ -186,11 +175,12 @@ export async function updateQuote(id: string, data: QuoteInput) {
 }
 
 export async function updateQuoteStatus(id: string, status: QuoteStatus) {
-  const { data: sessData } = await supabase.auth.getSession();
-  const userId = sessData.session?.user?.id;
-
-  const patch: Record<string, unknown> = { status, updated_by: userId };
-  if (status === "SENT") patch.sent_at = new Date().toISOString();
+  const patch: Record<string, unknown> = { status };
+  if (status === "SENT") {
+    patch.sent_at = new Date().toISOString();
+  } else if (status === "DRAFT") {
+    patch.sent_at = null;
+  }
 
   const { data, error } = await supabase
     .from("quotes")
@@ -208,12 +198,9 @@ export async function deleteQuote(id: string) {
 }
 
 export async function markQuoteConverted(id: string, invoiceId: string) {
-  const { data: sessData } = await supabase.auth.getSession();
-  const userId = sessData.session?.user?.id;
-
   const { data, error } = await supabase
     .from("quotes")
-    .update({ status: "CONVERTED", converted_invoice_id: invoiceId, updated_by: userId })
+    .update({ status: "CONVERTED", converted_invoice_id: invoiceId })
     .eq("id", id)
     .select()
     .single();
