@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
 export type PDFDoc = InstanceType<typeof jsPDF>;
 
