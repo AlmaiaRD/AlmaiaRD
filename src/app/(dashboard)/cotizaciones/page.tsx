@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -9,7 +9,7 @@ import CommunicationDraftModal from "@/components/communications/CommunicationDr
 import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuoteStatus, type QuoteWithClient, type QuoteItemWithProduct } from "@/services/quotes";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
-import { getProducts, getBundleItemsBatch } from "@/services/products";
+import { getProducts } from "@/services/products";
 import { getSettings } from "@/services/settings";
 import { getFollowupsByQuote } from "@/services/followups";
 import { getBankAccounts } from "@/services/invoices";
@@ -18,7 +18,8 @@ import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
-import { Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -45,6 +46,7 @@ interface FormItem {
 export default function CotizacionesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [quotes, setQuotes] = useState<QuoteWithClient[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -56,6 +58,7 @@ export default function CotizacionesPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingStatus, setEditingStatus] = useState<string>("DRAFT");
   const [saving, setSaving] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<QuoteWithClient | null>(null);
   const [detailItems, setDetailItems] = useState<QuoteItemWithProduct[]>([]);
@@ -140,6 +143,7 @@ export default function CotizacionesPage() {
     setDiscountAmount(0);
     setNotes("");
     setEditingId(null);
+    setEditingStatus("DRAFT");
   }
 
   function openNew() {
@@ -158,8 +162,10 @@ export default function CotizacionesPage() {
       setMargin(quote.margin ?? settings?.default_margin ?? 30);
       setNotes(quote.notes || "");
       setDiscountAmount(Number(quote.discount_amount) || 0);
-      const pct = Number(quote.total) > 0 && Number(quote.subtotal) > 0 ? Math.round((Number(quote.discount_amount) / (Number(quote.subtotal) + Number(quote.itbis_total))) * 100) : 0;
-      setDiscountPercent(0);
+      const subPlusItbis = Number(quote.subtotal) + Number(quote.itbis_total);
+      const pct = subPlusItbis > 0 ? Math.round((Number(quote.discount_amount) / subPlusItbis) * 100) : 0;
+      setDiscountPercent(pct > 0 && pct < 100 ? pct : 0);
+      setEditingStatus(quote.status);
       setItems(quoteItems.map((i) => ({
         product_id: i.product_id || "",
         name: i.products?.name || i.custom_name || "Producto",
@@ -246,7 +252,7 @@ export default function CotizacionesPage() {
         client_id: clientId,
         quote_date: quoteDate,
         valid_until: validUntil,
-        status: "DRAFT" as const,
+        status: (editingId ? editingStatus : "DRAFT") as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED",
         subtotal,
         discount_amount: discountValue,
         itbis_total: itbisTotal,
@@ -469,8 +475,12 @@ export default function CotizacionesPage() {
                         {q.status === "ACCEPTED" && (
                           <button onClick={() => convertToInvoice(q)} className="p-2 text-[#86C7A3] hover:bg-[#86C7A3]/10 rounded-lg" title="Convertir en factura"><ArrowRightLeft size={15} /></button>
                         )}
-                        <button onClick={() => openEdit(q.id)} className="p-2 text-[#5C3E35] hover:bg-[#5C3E35]/10 rounded-lg" title="Editar"><Edit2 size={15} /></button>
-                        <button onClick={() => handleDelete(q.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
+                        {q.status !== "CONVERTED" && (
+                          <button onClick={() => openEdit(q.id)} className="p-2 text-[#5C3E35] hover:bg-[#5C3E35]/10 rounded-lg" title="Editar"><Edit2 size={15} /></button>
+                        )}
+                        {user?.role === "admin" && q.status !== "CONVERTED" && (
+                          <button onClick={() => handleDelete(q.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
