@@ -67,8 +67,7 @@ export async function getQuote(id: string) {
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
     .select("*")
-    .eq("quote_id", id)
-    .order("created_at", { ascending: true });
+    .eq("quote_id", id);
   if (itemsError) throw itemsError;
 
   const [hydratedQuote] = await hydrateQuotes([quote]);
