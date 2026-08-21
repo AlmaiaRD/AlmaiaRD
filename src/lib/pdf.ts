@@ -1027,7 +1027,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
       const maxW = PW - 2 * M;
-      const targetH = Math.max(120, Math.min(354, y - M));
+      const targetH = Math.max(24, Math.min(70, (y - M) * 0.2));
       const sigW = Math.min(targetH * ratio, maxW);
       const sigH = sigW / ratio;
       doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
