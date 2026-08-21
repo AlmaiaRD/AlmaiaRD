@@ -53,10 +53,22 @@ export async function getQuote(id: string) {
 
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
-    .select("*, products(id, name, code)")
+    .select("*")
     .eq("quote_id", id)
     .order("created_at", { ascending: true });
   if (itemsError) throw itemsError;
+
+  const productIds = [...new Set((items || []).map((i: any) => i.product_id).filter(Boolean))];
+  let productMap: Record<string, { id: string; name: string; code?: string }> = {};
+  if (productIds.length > 0) {
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, name, code")
+      .in("id", productIds);
+    if (products) {
+      productMap = Object.fromEntries(products.map((p: any) => [p.id, { id: p.id, name: p.name, code: p.code }]));
+    }
+  }
 
   const mappedItems = (items || []).map((i: any) => ({
     id: i.id,
@@ -70,7 +82,7 @@ export async function getQuote(id: string) {
     itbis: i.itbis,
     itbis_amount: i.itbis_amount,
     custom_name: i.custom_name,
-    products: i.products ? { id: i.products.id, name: i.products.name, code: i.products.code } : { id: "", name: "", code: "" }
+    products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "" }
   }));
 
   return { quote: quote as QuoteWithClient, items: mappedItems as QuoteItemWithProduct[] };
