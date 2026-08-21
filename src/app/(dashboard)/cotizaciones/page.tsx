@@ -17,9 +17,9 @@ import type { Client, Followup, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
+import { buildQuotePdfDoc, generateQuotePdf, generateQuoteJpg } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send } from "lucide-react";
+import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -355,6 +355,7 @@ function CotizacionesContent() {
         pv_total: Number(full.pv_total) || 0,
         notes: full.notes || undefined,
         logo_url: settings?.logo_url || undefined,
+        signature_url: settings?.signature_url || undefined,
         business_name: settings?.business_name || "Almaia RD",
         email: settings?.email || undefined,
         phone: settings?.phone || undefined,
@@ -362,6 +363,43 @@ function CotizacionesContent() {
     } catch (e: any) {
       console.error("[handlePdf] error:", e);
       toast.error(e?.message || "Error al generar el PDF");
+    }
+  }
+
+  async function handleJpg(quote: QuoteWithClient) {
+    try {
+      const { quote: full, items: qItems } = await getQuote(quote.id);
+      await generateQuoteJpg({
+        quote_number: full.quote_number,
+        quote_date: full.quote_date,
+        valid_until: full.valid_until,
+        status: full.status,
+        client_name: full.clients?.full_name || "",
+        client_phone: full.clients?.phone || undefined,
+        client_email: full.clients?.email || undefined,
+        items: qItems.map((i) => ({
+          name: i.products?.name || i.custom_name || "Producto",
+          quantity: Number(i.quantity) || 0,
+          unit_price: Number(i.unit_price) || 0,
+          line_total: Number(i.line_total) || 0,
+          pv: Number(i.pv) || 0,
+        })),
+        subtotal: Number(full.subtotal) || 0,
+        itbis_total: Number(full.itbis_total) || 0,
+        discount_amount: Number(full.discount_amount) || 0,
+        total: Number(full.total) || 0,
+        pv_total: Number(full.pv_total) || 0,
+        notes: full.notes || undefined,
+        logo_url: settings?.logo_url || undefined,
+        signature_url: settings?.signature_url || undefined,
+        business_name: settings?.business_name || "Almaia RD",
+        email: settings?.email || undefined,
+        phone: settings?.phone || undefined,
+      });
+      toast.success("JPG descargado");
+    } catch (e: any) {
+      console.error("[handleJpg] error:", e);
+      toast.error(e?.message || "Error al generar el JPG");
     }
   }
 
@@ -471,6 +509,7 @@ function CotizacionesContent() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => handlePdf(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="PDF"><Printer size={15} /></button>
+                        <button onClick={() => handleJpg(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="JPG"><Image size={15} /></button>
                         {(q.status === "DRAFT" || q.status === "SENT") && (
                           <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="Marcar enviada"><Send size={15} /></button>
                         )}
@@ -823,6 +862,10 @@ function CotizacionesContent() {
                 className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
                 <Printer size={16} /> PDF
               </button>
+              <button onClick={() => handleJpg(selectedQuote)}
+                className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
+                <Image size={16} /> JPG
+              </button>
               <button onClick={() => setDraftModal({ type: "email" })}
                 className="flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
                 <Mail size={16} /> Email
@@ -906,6 +949,7 @@ function CotizacionesContent() {
               pv_total: Number(full.pv_total) || 0,
               notes: full.notes || undefined,
               logo_url: settings?.logo_url || undefined,
+              signature_url: settings?.signature_url || undefined,
               business_name: settings?.business_name || "Almaia RD",
               email: settings?.email || undefined,
               phone: settings?.phone || undefined,
