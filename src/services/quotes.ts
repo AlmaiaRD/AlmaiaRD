@@ -34,19 +34,32 @@ export interface QuoteInput {
   items: QuoteInputItem[];
 }
 
+async function hydrateQuotes(rows: any[]): Promise<QuoteWithClient[]> {
+  if (rows.length === 0) return [];
+  const clientIds = [...new Set(rows.map((r) => r.client_id).filter(Boolean))];
+  let clientMap: Record<string, { id: string; full_name: string; phone?: string; email?: string }> = {};
+  if (clientIds.length > 0) {
+    const { data } = await supabase.from("clients").select("id, full_name, phone, email").in("id", clientIds);
+    if (data) {
+      clientMap = Object.fromEntries(data.map((c: any) => [c.id, { id: c.id, full_name: c.full_name, phone: c.phone, email: c.email }]));
+    }
+  }
+  return rows.map((r) => ({ ...r, clients: clientMap[r.client_id] || undefined }));
+}
+
 export async function getQuotes() {
   const { data, error } = await supabase
     .from("quotes")
-    .select("*, clients(id, full_name, phone, email)")
+    .select("*")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data as QuoteWithClient[];
+  return hydrateQuotes(data || []);
 }
 
 export async function getQuote(id: string) {
   const { data: quote, error } = await supabase
     .from("quotes")
-    .select("*, clients(id, full_name, phone, email)")
+    .select("*")
     .eq("id", id)
     .single();
   if (error) throw error;
@@ -57,6 +70,8 @@ export async function getQuote(id: string) {
     .eq("quote_id", id)
     .order("created_at", { ascending: true });
   if (itemsError) throw itemsError;
+
+  const [hydratedQuote] = await hydrateQuotes([quote]);
 
   const productIds = [...new Set((items || []).map((i: any) => i.product_id).filter(Boolean))];
   let productMap: Record<string, { id: string; name: string; code?: string }> = {};
@@ -70,7 +85,7 @@ export async function getQuote(id: string) {
     }
   }
 
-  const mappedItems = (items || []).map((i: any) => ({
+  const mappedItems: QuoteItemWithProduct[] = (items || []).map((i: any) => ({
     id: i.id,
     quote_id: i.quote_id,
     product_id: i.product_id,
@@ -82,20 +97,21 @@ export async function getQuote(id: string) {
     itbis: i.itbis,
     itbis_amount: i.itbis_amount,
     custom_name: i.custom_name,
+    created_at: i.created_at,
     products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "" }
   }));
 
-  return { quote: quote as QuoteWithClient, items: mappedItems as QuoteItemWithProduct[] };
+  return { quote: hydratedQuote as QuoteWithClient, items: mappedItems };
 }
 
 export async function getClientQuotes(clientId: string) {
   const { data, error } = await supabase
     .from("quotes")
-    .select("*, clients(id, full_name, phone, email)")
+    .select("*")
     .eq("client_id", clientId)
     .order("quote_date", { ascending: false });
   if (error) throw error;
-  return data as QuoteWithClient[];
+  return hydrateQuotes(data || []);
 }
 
 export async function getNextQuoteNumber() {
@@ -110,7 +126,6 @@ export async function getNextQuoteNumber() {
 }
 
 export async function createQuote(data: QuoteInput) {
-  // Validación defensiva: asegurar valores numéricos
   const safeSubtotal = Number(data.subtotal) || 0;
   const safeDiscount = Number(data.discount_amount) || 0;
   const safeItbis = Number(data.itbis_total) || 0;
