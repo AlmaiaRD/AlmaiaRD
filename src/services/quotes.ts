@@ -46,7 +46,7 @@ export async function getQuotes() {
 export async function getQuote(id: string) {
   const { data: quote, error } = await supabase
     .from("quotes")
-    .select("*")
+    .select("*, clients(id, full_name, phone, email)")
     .eq("id", id)
     .single();
   if (error) throw error;
