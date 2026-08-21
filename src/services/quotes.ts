@@ -62,13 +62,19 @@ export async function getQuote(id: string) {
     .select("*")
     .eq("id", id)
     .single();
-  if (error) throw error;
+  if (error) {
+    console.error("[getQuote] quotes query failed:", error.message, error.code, error.details);
+    throw new Error(`Error al cargar cotización: ${error.message}`);
+  }
 
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
     .select("*")
     .eq("quote_id", id);
-  if (itemsError) throw itemsError;
+  if (itemsError) {
+    console.error("[getQuote] quote_items query failed:", itemsError.message, itemsError.code, itemsError.details);
+    throw new Error(`Error al cargar items: ${itemsError.message}`);
+  }
 
   const [hydratedQuote] = await hydrateQuotes([quote]);
 
@@ -96,7 +102,6 @@ export async function getQuote(id: string) {
     itbis: i.itbis,
     itbis_amount: i.itbis_amount,
     custom_name: i.custom_name,
-    created_at: i.created_at,
     products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "" }
   }));
 

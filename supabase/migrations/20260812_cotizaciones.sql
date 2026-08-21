@@ -95,7 +95,7 @@ CREATE POLICY quote_items_update ON public.quote_items
   FOR UPDATE USING (get_user_role() IN ('admin','seller'))
   WITH CHECK (get_user_role() IN ('admin','seller'));
 CREATE POLICY quote_items_delete ON public.quote_items
-  FOR DELETE USING (get_user_role() = 'admin');
+  FOR DELETE USING (get_user_role() IN ('admin','seller'));
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quote_items TO anon, authenticated, service_role;

@@ -187,8 +187,9 @@ function CotizacionesContent() {
       setShowProducts(false);
       setShowManualProduct(false);
       setShowModal(true);
-    } catch {
-      toast.error("Error al cargar la cotización");
+    } catch (e: any) {
+      console.error("[openEdit] error:", e);
+      toast.error(e?.message || "Error al cargar la cotización");
     }
   }
 
@@ -321,10 +322,11 @@ function CotizacionesContent() {
       const { quote: full, items: qItems } = await getQuote(quote.id);
       setSelectedQuote(full);
       setDetailItems(qItems);
-       const fl = await getFollowupsByQuote(quote.id).catch(() => []);
+       const fl = await getFollowupsByQuote(quote.id).catch((e) => { console.error("[openDetail] followups failed:", e); return []; });
        setDetailFollowups(fl);
-    } catch {
-      toast.error("Error al cargar el detalle");
+    } catch (e: any) {
+      console.error("[openDetail] full error:", e);
+      toast.error(e?.message || "Error al cargar el detalle");
     }
   }
 
@@ -357,8 +359,9 @@ function CotizacionesContent() {
         email: settings?.email || undefined,
         phone: settings?.phone || undefined,
       });
-    } catch {
-      toast.error("Error al generar el PDF");
+    } catch (e: any) {
+      console.error("[handlePdf] error:", e);
+      toast.error(e?.message || "Error al generar el PDF");
     }
   }
 
