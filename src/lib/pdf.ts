@@ -938,36 +938,26 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   }
 
   // ── A. HEADER ──
-  if (logoBase64) {
-    try {
-      doc.addImage(logoBase64, "PNG", M, y, 25, 25);
-    } catch {
-      drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
-      setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-      doc.text(bizName, M + 22, y + 6);
-    }
-  } else {
-    drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
-    setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 22, y + 6);
-  }
+  drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
+  setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
+  doc.text(bizName, M + 22, y + 6);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", M + 22, y + (logoBase64 ? 28 : 11));
+  doc.text("BIENESTAR & SALUD", M + 22, y + 28);
 
   setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-  doc.text("Distribuidor Independiente Amway", M, y + (logoBase64 ? 33 : 17));
+  doc.text("Distribuidor Independiente Amway", M, y + 33);
 
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
-  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + (logoBase64 ? 37.5 : 21.5));
-  doc.text("República Dominicana", M, y + (logoBase64 ? 41 : 25));
+  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + 37.5);
+  doc.text("República Dominicana", M, y + 41);
 
   // Badge (font 20% larger than invoice)
-  const badgeW = 42; const badgeH = 16; const badgeX = PW - M - badgeW;
+  const badgeW = 56; const badgeH = 18; const badgeX = PW - M - badgeW;
   setDrawFillColor(doc, "#F0EBE3");
   doc.roundedRect(badgeX, y, badgeW, badgeH, 12, 12, "F");
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 2.5, { align: "center" });
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 3, { align: "center" });
 
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
   const numberY = y + badgeH + 7;
@@ -977,7 +967,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
   doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
 
-  y += logoBase64 ? 48 : 32;
+  y += 48;
 
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
   doc.line(M, y, PW - M, y); y += 8;
@@ -1080,7 +1070,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
       const maxW = PW - 2 * M;
-      const targetH = Math.max(7, Math.min(21, (y - M) * 0.06));
+      const targetH = Math.max(2, Math.min(6, (y - M) * 0.018));
       const sigW = Math.min(targetH * ratio, maxW);
       const sigH = sigW / ratio;
       doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
