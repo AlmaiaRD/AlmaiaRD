@@ -1,0 +1,31 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="43" fill="#F7F2F2"/>
+
+  <!-- Flower symbol — monoline, stroke only -->
+  <g fill="none" stroke="#B8837E" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- 4 petals as bezier loops, connected at center -->
+    <!-- Top-left petal -->
+    <path d="M 50 37 C 46 29, 37 29, 39 37 C 37 29, 46 29, 50 37" />
+    <!-- Top-right petal -->
+    <path d="M 50 37 C 54 29, 63 29, 61 37 C 63 29, 54 29, 50 37" />
+    <!-- Bottom-left petal -->
+    <path d="M 50 43 C 46 51, 37 51, 39 43 C 37 51, 46 51, 50 43" />
+    <!-- Bottom-right petal -->
+    <path d="M 50 43 C 54 51, 63 51, 61 43 C 63 51, 54 51, 50 43" />
+
+    <!-- Stem -->
+    <line x1="50" y1="47" x2="50" y2="66" />
+
+    <!-- Left leaf curve -->
+    <path d="M 43 60 C 37 55, 33 60, 38 66" />
+
+    <!-- Right leaf curve -->
+    <path d="M 57 60 C 63 55, 67 60, 62 66" />
+
+    <!-- Bottom connecting curve -->
+    <path d="M 38 66 C 40 72, 60 72, 62 66" />
+
+  </g>
+</svg>

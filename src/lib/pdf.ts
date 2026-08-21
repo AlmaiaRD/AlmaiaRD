@@ -128,60 +128,36 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
-function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
-  const r = size / 2;
-  const MARK_R = 180, MARK_G = 135, MARK_B = 130;
-
-  // 1. Background circle #F1ECEC (solid fill)
-  doc.setFillColor(241, 236, 236);
-  doc.setDrawColor(241, 236, 236);
-  doc.circle(cx, cy, r, "FD");
-
-  // Stroke for flower elements
-  doc.setDrawColor(MARK_R, MARK_G, MARK_B);
-  doc.setLineWidth(0.8);
-  doc.setFillColor(255, 255, 255);
-
-  // 2. Four petals — 2×2 grid, outlined circles (no fill)
-  const petalR = r * 0.24;
-  const gapX = r * 0.30;
-  const gapYup = r * 0.30;
-  const gapYdn = r * 0.15;
-  // Top row
-  doc.circle(cx - gapX, cy - gapYup, petalR, "S");
-  doc.circle(cx + gapX, cy - gapYup, petalR, "S");
-  // Bottom row
-  doc.circle(cx - gapX, cy + gapYdn, petalR, "S");
-  doc.circle(cx + gapX, cy + gapYdn, petalR, "S");
-
-  // 3. Stem — vertical line, round linecap
-  const stemTop = cy + gapYdn + petalR * 0.5;
-  const stemBottom = cy + r * 0.75;
-  doc.setLineCap("round");
-  doc.line(cx, stemTop, cx, stemBottom);
-
-  // 4. Leaves — two symmetrical almond/oval shapes ) (
-  doc.setLineWidth(0.9);
-  const leafY = cy + r * 0.40;
-  const leafRX = r * 0.08;
-  const leafRY = r * 0.16;
-  doc.ellipse(cx + r * 0.26, leafY, leafRX, leafRY, "S");
-  doc.ellipse(cx - r * 0.26, leafY, leafRX, leafRY, "S");
-
-  // 5. Base curve — smile shape \___/
-  doc.setLineWidth(0.8);
-  const baseY = stemBottom;
-  const hw = r * 0.30;
-  const dip = r * 0.06;
-  // left diagonal down
-  doc.line(cx - hw, baseY, cx - hw * 0.5, baseY + dip);
-  // flat bottom
-  doc.line(cx - hw * 0.5, baseY + dip, cx + hw * 0.5, baseY + dip);
-  // right diagonal up
-  doc.line(cx + hw * 0.5, baseY + dip, cx + hw, baseY);
-
-  // Reset linecap
-  doc.setLineCap("butt");
+async function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
+  try {
+    const resp = await fetch("/almaia-logo.svg");
+    const svgText = await resp.text();
+    const blob = new Blob([svgText], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    const pxSize = Math.round(size * 10);
+    canvas.width = pxSize;
+    canvas.height = pxSize;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, pxSize, pxSize);
+    URL.revokeObjectURL(url);
+    const pngBase64 = canvas.toDataURL("image/png");
+    doc.addImage(pngBase64, "PNG", cx - size / 2, cy - size / 2, size, size);
+  } catch {
+    // Fallback: simple circle with text
+    setDrawFillColor(doc, "#F1ECEC");
+    doc.circle(cx, cy, size / 2, "FD");
+    setTextColor(doc, "#B8837E");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(size * 0.35);
+    doc.text("A", cx, cy + size * 0.12, { align: "center" });
+  }
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
