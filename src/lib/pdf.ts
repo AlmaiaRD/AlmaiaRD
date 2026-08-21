@@ -130,48 +130,58 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
 
 function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
   const r = size / 2;
+  const MARK_R = 180, MARK_G = 135, MARK_B = 130;
 
-  // 1. Background circle #F1ECEC
-  setDrawFillColor(doc, "#F1ECEC");
+  // 1. Background circle #F1ECEC (solid fill)
+  doc.setFillColor(241, 236, 236);
+  doc.setDrawColor(241, 236, 236);
   doc.circle(cx, cy, r, "FD");
 
-  // Stroke setup
-  doc.setDrawColor(180, 135, 130);
-  doc.setLineWidth(0.7);
+  // Stroke for flower elements
+  doc.setDrawColor(MARK_R, MARK_G, MARK_B);
+  doc.setLineWidth(0.8);
   doc.setFillColor(255, 255, 255);
 
-  // 2. Four petals in 2x2 grid (outlined circles, no fill)
-  const petalR = r * 0.30;
-  const gap = r * 0.28;
-  const positions = [
-    [cx - gap, cy - gap],
-    [cx + gap, cy - gap],
-    [cx - gap, cy + gap * 0.6],
-    [cx + gap, cy + gap * 0.6],
-  ];
-  positions.forEach(([px, py]) => {
-    doc.circle(px, py, petalR, "S");
-  });
+  // 2. Four petals — 2×2 grid, outlined circles (no fill)
+  const petalR = r * 0.24;
+  const gapX = r * 0.30;
+  const gapYup = r * 0.30;
+  const gapYdn = r * 0.15;
+  // Top row
+  doc.circle(cx - gapX, cy - gapYup, petalR, "S");
+  doc.circle(cx + gapX, cy - gapYup, petalR, "S");
+  // Bottom row
+  doc.circle(cx - gapX, cy + gapYdn, petalR, "S");
+  doc.circle(cx + gapX, cy + gapYdn, petalR, "S");
 
-  // 3. Stem — vertical line
-  const stemTop = cy + gap * 0.6 + petalR * 0.3;
-  const stemBottom = cy + r * 0.78;
+  // 3. Stem — vertical line, round linecap
+  const stemTop = cy + gapYdn + petalR * 0.5;
+  const stemBottom = cy + r * 0.75;
+  doc.setLineCap("round");
   doc.line(cx, stemTop, cx, stemBottom);
 
-  // 4. Leaves — two small circles as almond shapes
-  doc.setLineWidth(0.5);
-  const leafY = cy + r * 0.42;
-  const leafW = r * 0.18;
-  const leafH = r * 0.12;
-  doc.circle(cx + r * 0.3, leafY, leafH, "S");
-  doc.circle(cx - r * 0.3, leafY, leafH, "S");
+  // 4. Leaves — two symmetrical almond/oval shapes ) (
+  doc.setLineWidth(0.9);
+  const leafY = cy + r * 0.40;
+  const leafRX = r * 0.08;
+  const leafRY = r * 0.16;
+  doc.ellipse(cx + r * 0.26, leafY, leafRX, leafRY, "S");
+  doc.ellipse(cx - r * 0.26, leafY, leafRX, leafRY, "S");
 
-  // 5. Base curve — horizontal line with slight curve
-  doc.setLineWidth(0.7);
+  // 5. Base curve — smile shape \___/
+  doc.setLineWidth(0.8);
   const baseY = stemBottom;
-  const baseW = r * 0.35;
-  doc.line(cx - baseW, baseY, cx + baseW, baseY);
-  doc.line(cx - baseW * 0.6, baseY + r * 0.06, cx + baseW * 0.6, baseY + r * 0.06);
+  const hw = r * 0.30;
+  const dip = r * 0.06;
+  // left diagonal down
+  doc.line(cx - hw, baseY, cx - hw * 0.5, baseY + dip);
+  // flat bottom
+  doc.line(cx - hw * 0.5, baseY + dip, cx + hw * 0.5, baseY + dip);
+  // right diagonal up
+  doc.line(cx + hw * 0.5, baseY + dip, cx + hw, baseY);
+
+  // Reset linecap
+  doc.setLineCap("butt");
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
@@ -952,7 +962,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   const badgeW = 56; const badgeH = 18; const badgeX = PW - M - badgeW;
   setDrawFillColor(doc, "#F0EBE3");
   doc.roundedRect(badgeX, y, badgeW, badgeH, 12, 12, "F");
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(18);
   doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 3, { align: "center" });
 
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
@@ -1071,22 +1081,22 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       let sigH = sigW / ratio;
       if (!isFinite(sigW) || sigW < 1) sigW = 30;
       if (!isFinite(sigH) || sigH < 1) sigH = 30;
-      const sigX = (PW - sigW) / 2;
+      const sigX = PW * 0.55;
       const sigY = y - sigH;
       doc.addImage(signatureBase64, "PNG", sigX, sigY, sigW, sigH);
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, y + 4, { align: "center" });
+      doc.text("FIRMA AUTORIZADA", sigX + sigW / 2, y + 4, { align: "center" });
     } catch {
       setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-      doc.text(bizName, PW / 2, y - 6, { align: "center" });
+      doc.text(bizName, PW * 0.65, y - 6, { align: "center" });
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
+      doc.text("FIRMA AUTORIZADA", PW * 0.65, y, { align: "center" });
     }
   } else {
     setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-    doc.text(bizName, PW / 2, y - 6, { align: "center" });
+    doc.text(bizName, PW * 0.65, y - 6, { align: "center" });
     setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
+    doc.text("FIRMA AUTORIZADA", PW * 0.65, y, { align: "center" });
   }
 
   return doc;
