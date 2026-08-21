@@ -912,9 +912,12 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + (logoBase64 ? 37.5 : 21.5));
   doc.text("República Dominicana", M, y + (logoBase64 ? 41 : 25));
 
-  // Badge
+  // Badge (font 20% larger than invoice)
   const badgeW = 42; const badgeH = 16; const badgeX = PW - M - badgeW;
-  drawBadge(doc, badgeX, y, badgeW, badgeH, "COTIZACIÓN", "#F0EBE3", PRIMARY);
+  setDrawFillColor(doc, "#F0EBE3");
+  doc.roundedRect(badgeX, y, badgeW, badgeH, 12, 12, "F");
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 2.5, { align: "center" });
 
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
   const numberY = y + badgeH + 7;
