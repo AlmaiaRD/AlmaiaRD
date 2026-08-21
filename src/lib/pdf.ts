@@ -128,6 +128,56 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
+function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
+  const r = size / 2;
+  const MARK = "#B48782";
+
+  // 1. Background circle #F1ECEC
+  setDrawFillColor(doc, "#F1ECEC");
+  doc.circle(cx, cy, r, "FD");
+
+  // Stroke setup
+  doc.setDrawColor(MARK);
+  doc.setLineWidth(0.7);
+  doc.setFillColor(255, 255, 255);
+
+  // 2. Four petals in 2×2 grid (outlined circles, no fill)
+  const petalR = r * 0.30;
+  const gap = r * 0.28;
+  const positions = [
+    [cx - gap, cy - gap],
+    [cx + gap, cy - gap],
+    [cx - gap, cy + gap * 0.6],
+    [cx + gap, cy + gap * 0.6],
+  ];
+  positions.forEach(([px, py]) => {
+    doc.circle(px, py, petalR, "S");
+  });
+
+  // 3. Stem — vertical line from below petals down
+  const stemTop = cy + gap * 0.6 + petalR * 0.3;
+  const stemBottom = cy + r * 0.78;
+  doc.line(cx, stemTop, cx, stemBottom);
+
+  // 4. Leaves — two symmetrical curves
+  doc.setLineWidth(0.6);
+  const leafY = cy + r * 0.38;
+  const leafW = r * 0.32;
+  const leafH = r * 0.22;
+
+  // Right leaf ) 
+  doc.lines([[leafW, -leafH, leafW, leafH]], cx, leafY);
+
+  // Left leaf (
+  doc.lines([[-leafW, -leafH, -leafW, leafH]], cx, leafY);
+
+  // 5. Base curve — smile shape
+  doc.setLineWidth(0.7);
+  const baseY = stemBottom;
+  const baseW = r * 0.35;
+  doc.lines([[-baseW, 0, -baseW * 0.6, r * 0.08, baseW * 0.6, r * 0.08, baseW, 0]], cx, baseY);
+}
+
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
     const response = await fetch(url);
@@ -892,12 +942,12 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     try {
       doc.addImage(logoBase64, "PNG", M, y, 25, 25);
     } catch {
-      drawFlowerIcon(doc, M + 10, y + 10, 20);
+      drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
       setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
       doc.text(bizName, M + 22, y + 6);
     }
   } else {
-    drawFlowerIcon(doc, M + 10, y + 10, 20);
+    drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
     setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
     doc.text(bizName, M + 22, y + 6);
   }
@@ -919,7 +969,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
   doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 2.5, { align: "center" });
 
-  setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+  setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
   const numberY = y + badgeH + 7;
   doc.text(quote.quote_number, PW - M, numberY, { align: "right" });
 
@@ -1030,7 +1080,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
       const maxW = PW - 2 * M;
-      const targetH = Math.max(24, Math.min(70, (y - M) * 0.2));
+      const targetH = Math.max(7, Math.min(21, (y - M) * 0.06));
       const sigW = Math.min(targetH * ratio, maxW);
       const sigH = sigW / ratio;
       doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
