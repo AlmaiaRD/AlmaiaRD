@@ -930,7 +930,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.line(M, y, PW - M, y); y += 8;
 
   // ── B. CLIENT ──
-  const clientSectionH = 30;
+  const clientSectionH = 34;
   drawCreamRoundedRect(doc, M, y, CW, clientSectionH, 5);
   setTextColor(doc, PRIMARY); doc.setFontSize(8); doc.setFont("helvetica", "bold");
   doc.text("CLIENTE / ADQUIRIENTE", M + 6, y + 6);
@@ -1010,7 +1010,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 10;
 
   // ── E. FOOTER ──
-  if (y > 220) { doc.addPage(); y = M; }
+  if (y > 250) { doc.addPage(); y = M; }
 
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.5);
   doc.line(M, y, PW - M, y); y += 6;
