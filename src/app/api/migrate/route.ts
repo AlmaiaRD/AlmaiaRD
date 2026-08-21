@@ -36,11 +36,11 @@ async function assertAllowed(req: NextRequest): Promise<NextResponse | null> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
   );
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
-  const { data: userData } = await supabase.from("users").select("role").eq("id", session.user.id).single();
+  const { data: userData } = await supabase.from("users").select("role").eq("id", user.id).single();
   if (userData?.role !== "admin") {
     return NextResponse.json({ error: "No autorizado, se requiere rol admin" }, { status: 403 });
   }

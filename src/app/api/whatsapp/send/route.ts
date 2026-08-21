@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
   );
-  const { data: { session } } = await authSupabase.auth.getSession();
-  if (!session) {
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

@@ -53,7 +53,7 @@ export async function getQuote(id: string) {
 
   const { data: items, error: itemsError } = await supabase
     .from("quote_items")
-    .select("*")
+    .select("*, products(id, name, code)")
     .eq("quote_id", id)
     .order("created_at", { ascending: true });
   if (itemsError) throw itemsError;
@@ -106,10 +106,13 @@ export async function createQuote(data: QuoteInput) {
   const safePvTotal = Number(data.pv_total) || 0;
   const safeMargin = Number(data.margin) || 0;
 
+  const quoteNumber = await getNextQuoteNumber().catch(() => null);
+  if (!quoteNumber) throw new Error("No se pudo generar el número de cotización. Verifica que la función get_next_quote_number exista en Supabase.");
+
   const { data: quote, error: quoteError } = await supabase
     .from("quotes")
     .insert({
-      quote_number: null,
+      quote_number: quoteNumber,
       client_id: String(data.client_id),
       quote_date: String(data.quote_date),
       valid_until: String(data.valid_until),
@@ -130,7 +133,7 @@ export async function createQuote(data: QuoteInput) {
 
   const items = data.items.map((item) => ({
     quote_id: quote.id,
-    product_id: String(item.product_id) || null,
+    product_id: item.product_id || null,
     quantity: Number(item.quantity) || 0,
     unit_price: round2(Number(item.unit_price) || 0),
     unit_cost: round2(Number(item.unit_cost) || 0),
@@ -162,7 +165,7 @@ export async function updateQuote(id: string, data: QuoteInput) {
     total: data.total,
     pv_total: data.pv_total,
     notes: data.notes || null,
-    margin: data.margin ?? null,
+    margin: data.margin ?? 30,
     updated_by: data.updated_by || null,
   } as Record<string, unknown>;
   if (data.status === "SENT") patch.sent_at = new Date().toISOString();

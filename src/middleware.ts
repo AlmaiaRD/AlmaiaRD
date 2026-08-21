@@ -6,7 +6,8 @@ export async function middleware(req: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.next();
+    console.error("[middleware] SUPABASE_URL o SUPABASE_ANON_KEY no definidos — bloqueando acceso");
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const res = NextResponse.next();

@@ -54,7 +54,7 @@ async function processIncomingMessage(supabase: AdminClient | null, message: any
   const text = message?.text?.body;
 
   if (!supabase) {
-    console.log(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${text || "(media)"}`);
+    console.error(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${text || "(media)"}`);
     return;
   }
 

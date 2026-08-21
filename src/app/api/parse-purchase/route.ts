@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
     );
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
     const ip = req.headers.get("x-forwarded-for") || "unknown";
     const limit = checkRateLimit(`parse-purchase:${ip}`, 5, 60000);
