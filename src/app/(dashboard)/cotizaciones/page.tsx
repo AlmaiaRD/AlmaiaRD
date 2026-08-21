@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -44,6 +44,14 @@ interface FormItem {
 }
 
 export default function CotizacionesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>}>
+      <CotizacionesContent />
+    </Suspense>
+  );
+}
+
+function CotizacionesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
