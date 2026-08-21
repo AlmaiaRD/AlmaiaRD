@@ -889,7 +889,9 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
 
   // ── A. HEADER ──
   if (logoBase64) {
-    try { doc.addImage(logoBase64, "PNG", M, y, 25, 25); } catch {
+    try {
+      doc.addImage(logoBase64, "PNG", M, y, 25, 25);
+    } catch {
       drawFlowerIcon(doc, M + 10, y + 10, 20);
       setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
       doc.text(bizName, M + 22, y + 6);
@@ -1019,30 +1021,29 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", M, y); y += 5;
 
-  // Firma
+  // Firma centrada sobre "FIRMA AUTORIZADA" (misma lógica que factura)
   if (signatureBase64) {
     try {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
       const maxW = PW - 2 * M;
-      const targetH = Math.min(220, Math.max(60, PW - y - M - 15));
+      const targetH = Math.max(120, Math.min(354, y - M));
       const sigW = Math.min(targetH * ratio, maxW);
       const sigH = sigW / ratio;
-      const sigY = PW > 280 ? y + 4 : y;
-      doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, sigY, sigW, sigH);
+      doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, sigY + sigH + 4, { align: "center" });
+      doc.text("FIRMA AUTORIZADA", PW / 2, y + 4, { align: "center" });
     } catch {
       setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-      doc.text(bizName, PW / 2, y + 2, { align: "center" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, y + 8, { align: "center" });
+      doc.text(bizName, PW / 2, y - 6, { align: "center" });
+      setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+      doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
     }
   } else {
     setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-    doc.text(bizName, PW / 2, y + 2, { align: "center" });
-    doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", PW / 2, y + 8, { align: "center" });
+    doc.text(bizName, PW / 2, y - 6, { align: "center" });
+    setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+    doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
   }
 
   return doc;
