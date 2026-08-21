@@ -935,11 +935,11 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text("República Dominicana", M, y + 41);
 
   // Badge — alineado a la izquierda
-  const badgeW = 56; const badgeH = 18; const badgeX = M;
+  const badgeW = 44; const badgeH = 14; const badgeX = M;
   setDrawFillColor(doc, "#F0EBE3");
-  doc.roundedRect(badgeX, y, badgeW, badgeH, 12, 12, "F");
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(18);
-  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 3, { align: "center" });
+  doc.roundedRect(badgeX, y, badgeW, badgeH, 10, 10, "F");
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(15);
+  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 2.5, { align: "center" });
 
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
   const numberY = y + badgeH + 7;
@@ -1034,7 +1034,8 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   setTextColor(doc, GRAY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
   doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 10;
 
-  // Firma a la derecha, debajo del total en letras
+  // Firma a la izquierda, 2cm debajo del total en letras
+  y += 20;
   if (signatureBase64) {
     try {
       const props = doc.getImageProperties(signatureBase64);
@@ -1045,7 +1046,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       let sigH = sigW / ratio;
       if (!isFinite(sigW) || sigW < 1) sigW = 30;
       if (!isFinite(sigH) || sigH < 1) sigH = 30;
-      const sigX = PW - M - sigW;
+      const sigX = M;
       const sigY = y;
       doc.addImage(signatureBase64, "PNG", sigX, sigY, sigW, sigH);
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
@@ -1053,16 +1054,16 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       y += sigH + 12;
     } catch {
       setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-      doc.text(bizName, PW - M, y, { align: "right" });
+      doc.text(bizName, M, y);
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
+      doc.text("FIRMA AUTORIZADA", M, y + 6);
       y += 16;
     }
   } else {
     setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-    doc.text(bizName, PW - M, y, { align: "right" });
+    doc.text(bizName, M, y);
     setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
+    doc.text("FIRMA AUTORIZADA", M, y + 6);
     y += 16;
   }
 
