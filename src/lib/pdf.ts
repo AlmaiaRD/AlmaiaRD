@@ -128,34 +128,47 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
-async function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
-  try {
-    const resp = await fetch("/almaia-logo.svg");
-    const svgText = await resp.text();
-    const b64 = typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(svgText))) : Buffer.from(svgText).toString("base64");
-    const dataUri = `data:image/svg+xml;base64,${b64}`;
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = reject;
-      img.src = dataUri;
-    });
-    const canvas = document.createElement("canvas");
-    const pxSize = Math.round(size * 12);
-    canvas.width = pxSize;
-    canvas.height = pxSize;
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(img, 0, 0, pxSize, pxSize);
-    const pngBase64 = canvas.toDataURL("image/png");
-    doc.addImage(pngBase64, "PNG", cx - size / 2, cy - size / 2, size, size);
-  } catch {
-    setDrawFillColor(doc, "#F1ECEC");
-    doc.circle(cx, cy, size / 2, "FD");
-    setTextColor(doc, "#B8837E");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(size * 0.35);
-    doc.text("A", cx, cy + size * 0.12, { align: "center" });
-  }
+function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
+  const r = size / 2;
+
+  // 1. Background circle #F7F2F2
+  doc.setFillColor(247, 242, 242);
+  doc.setDrawColor(247, 242, 242);
+  doc.circle(cx, cy, r, "FD");
+
+  // 2. Flower petals — 4 outlined circles in 2×2 grid
+  doc.setDrawColor(184, 131, 126);
+  doc.setLineWidth(0.7);
+  doc.setFillColor(255, 255, 255);
+  const petalR = r * 0.22;
+  const gx = r * 0.30;
+  const gyUp = r * 0.28;
+  const gyDn = r * 0.12;
+  doc.circle(cx - gx, cy - gyUp, petalR, "S");
+  doc.circle(cx + gx, cy - gyUp, petalR, "S");
+  doc.circle(cx - gx, cy + gyDn, petalR, "S");
+  doc.circle(cx + gx, cy + gyDn, petalR, "S");
+
+  // 3. Stem
+  doc.setLineCap("round");
+  doc.setLineWidth(0.7);
+  const stemTop = cy + gyDn + petalR * 0.4;
+  const stemBot = cy + r * 0.72;
+  doc.line(cx, stemTop, cx, stemBot);
+
+  // 4. Leaves — two ellipses
+  const leafY = cy + r * 0.42;
+  doc.ellipse(cx - r * 0.22, leafY, r * 0.07, r * 0.14, "S");
+  doc.ellipse(cx + r * 0.22, leafY, r * 0.07, r * 0.14, "S");
+
+  // 5. Base curve — smile
+  const bw = r * 0.28;
+  const bd = r * 0.05;
+  doc.line(cx - bw, stemBot, cx - bw * 0.5, stemBot + bd);
+  doc.line(cx - bw * 0.5, stemBot + bd, cx + bw * 0.5, stemBot + bd);
+  doc.line(cx + bw * 0.5, stemBot + bd, cx + bw, stemBot);
+
+  doc.setLineCap("butt");
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
@@ -918,7 +931,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   }
 
   // ── A. HEADER ──
-  await drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
+  drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
   doc.text(bizName, M + 22, y + 6);
 
