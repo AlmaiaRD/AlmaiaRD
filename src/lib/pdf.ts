@@ -1,6 +1,5 @@
 import { jsPDF } from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
-import { ALMAIA_LOGO_SVG_B64 } from "./almaia-logo-b64";
 export type PDFDoc = InstanceType<typeof jsPDF>;
 
 interface InvoiceItemData {
@@ -130,46 +129,36 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
 }
 
 async function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
-  try {
-    const dataUri = `data:image/svg+xml;base64,${ALMAIA_LOGO_SVG_B64}`;
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("SVG load failed"));
-      img.src = dataUri;
-    });
-    const canvas = document.createElement("canvas");
-    const px = Math.round(size * 4);
-    canvas.width = px;
-    canvas.height = Math.round(px * (97 / 117));
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const pngUri = canvas.toDataURL("image/png");
-    doc.addImage(pngUri, "PNG", cx - size / 2, cy - size / 2, size, size * (97 / 117));
-  } catch {
-    const r = size / 2;
-    doc.setFillColor(247, 242, 242);
-    doc.setDrawColor(247, 242, 242);
-    doc.circle(cx, cy, r, "FD");
-    doc.setDrawColor(184, 131, 126);
-    doc.setLineWidth(0.7);
-    doc.setFillColor(255, 255, 255);
-    const petalR = r * 0.22;
-    const gx = r * 0.30;
-    const gyUp = r * 0.28;
-    const gyDn = r * 0.12;
-    doc.circle(cx - gx, cy - gyUp, petalR, "S");
-    doc.circle(cx + gx, cy - gyUp, petalR, "S");
-    doc.circle(cx - gx, cy + gyDn, petalR, "S");
-    doc.circle(cx + gx, cy + gyDn, petalR, "S");
-    doc.setLineCap("round");
-    const stemTop = cy + gyDn + petalR * 0.4;
-    const stemBot = cy + r * 0.72;
-    doc.line(cx, stemTop, cx, stemBot);
-    doc.ellipse(cx - r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
-    doc.ellipse(cx + r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
-    doc.setLineCap("butt");
+  const pngB64 = await loadImageAsBase64("/almaia-logo.png");
+  if (pngB64) {
+    const ratio = 97 / 117;
+    const w = size;
+    const h = size * ratio;
+    doc.addImage(pngB64, "PNG", cx - w / 2, cy - h / 2, w, h);
+    return;
   }
+  const r = size / 2;
+  doc.setFillColor(247, 242, 242);
+  doc.setDrawColor(247, 242, 242);
+  doc.circle(cx, cy, r, "FD");
+  doc.setDrawColor(184, 131, 126);
+  doc.setLineWidth(0.7);
+  doc.setFillColor(255, 255, 255);
+  const petalR = r * 0.22;
+  const gx = r * 0.30;
+  const gyUp = r * 0.28;
+  const gyDn = r * 0.12;
+  doc.circle(cx - gx, cy - gyUp, petalR, "S");
+  doc.circle(cx + gx, cy - gyUp, petalR, "S");
+  doc.circle(cx - gx, cy + gyDn, petalR, "S");
+  doc.circle(cx + gx, cy + gyDn, petalR, "S");
+  doc.setLineCap("round");
+  const stemTop = cy + gyDn + petalR * 0.4;
+  const stemBot = cy + r * 0.72;
+  doc.line(cx, stemTop, cx, stemBot);
+  doc.ellipse(cx - r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
+  doc.ellipse(cx + r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
+  doc.setLineCap("butt");
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
