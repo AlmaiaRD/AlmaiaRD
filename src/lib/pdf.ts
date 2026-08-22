@@ -132,25 +132,23 @@ async function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) 
   try {
     const resp = await fetch("/almaia-logo.svg");
     const svgText = await resp.text();
-    const blob = new Blob([svgText], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
+    const b64 = typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(svgText))) : Buffer.from(svgText).toString("base64");
+    const dataUri = `data:image/svg+xml;base64,${b64}`;
     const img = new Image();
     await new Promise<void>((resolve, reject) => {
       img.onload = () => resolve();
       img.onerror = reject;
-      img.src = url;
+      img.src = dataUri;
     });
     const canvas = document.createElement("canvas");
-    const pxSize = Math.round(size * 10);
+    const pxSize = Math.round(size * 12);
     canvas.width = pxSize;
     canvas.height = pxSize;
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(img, 0, 0, pxSize, pxSize);
-    URL.revokeObjectURL(url);
     const pngBase64 = canvas.toDataURL("image/png");
     doc.addImage(pngBase64, "PNG", cx - size / 2, cy - size / 2, size, size);
   } catch {
-    // Fallback: simple circle with text
     setDrawFillColor(doc, "#F1ECEC");
     doc.circle(cx, cy, size / 2, "FD");
     setTextColor(doc, "#B8837E");
@@ -920,7 +918,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   }
 
   // ── A. HEADER ──
-  drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
+  await drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
   doc.text(bizName, M + 22, y + 6);
 
