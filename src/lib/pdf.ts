@@ -934,8 +934,8 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + 37.5);
   doc.text("República Dominicana", M, y + 41);
 
-  // Badge — alineado a la izquierda
-  const badgeW = 44; const badgeH = 14; const badgeX = M;
+  // Badge — alineado a la derecha (opuesto al logo)
+  const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
   setDrawFillColor(doc, "#F0EBE3");
   doc.roundedRect(badgeX, y, badgeW, badgeH, 10, 10, "F");
   setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(15);
@@ -955,22 +955,22 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.line(M, y, PW - M, y); y += 8;
 
   // ── B. CLIENT ──
-  const clientSectionH = 34;
+  const clientSectionH = 24;
   drawCreamRoundedRect(doc, M, y, CW, clientSectionH, 5);
-  setTextColor(doc, PRIMARY); doc.setFontSize(8); doc.setFont("helvetica", "bold");
-  doc.text("CLIENTE / ADQUIRIENTE", M + 6, y + 6);
-  setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "normal");
-  doc.text(`Nombre: ${quote.client_name}`, M + 6, y + 14);
-  if (quote.client_phone) doc.text(`Teléfono: ${quote.client_phone}`, M + CW / 2, y + 14);
-  doc.text(`Email: ${quote.client_email || "N/D"}`, M + 6, y + 21);
-  y += clientSectionH + 8;
+  setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "bold");
+  doc.text("CLIENTE / ADQUIRIENTE", M + 6, y + 5);
+  setTextColor(doc, DARK); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+  doc.text(`Nombre: ${quote.client_name}`, M + 6, y + 12);
+  if (quote.client_phone) doc.text(`Teléfono: ${quote.client_phone}`, M + CW / 2, y + 12);
+  doc.text(`Email: ${quote.client_email || "N/D"}`, M + 6, y + 18);
+  y += clientSectionH + 6;
 
   // ── C. TABLE ──
   const colDefs = [
-    { label: "Descripción / Producto", x: M, w: 85, align: "left" as const },
-    { label: "Cant.", x: M + 85, w: 12, align: "right" as const },
-    { label: "Precio Unit.", x: M + 97, w: 24, align: "right" as const },
-    { label: "Total", x: M + 121, w: 30, align: "right" as const },
+    { label: "Descripción / Producto", x: M, w: 108, align: "left" as const },
+    { label: "Cant.", x: M + 108, w: 14, align: "right" as const },
+    { label: "Precio Unit.", x: M + 122, w: 30, align: "right" as const },
+    { label: "Total", x: M + 152, w: 34, align: "right" as const },
   ];
 
   doc.setFillColor(240, 235, 227);
@@ -1034,7 +1034,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   setTextColor(doc, GRAY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
   doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 10;
 
-  // Firma a la izquierda, 2cm debajo del total en letras
+  // Firma a la derecha (opuesto al logo), 2cm debajo del total en letras
   y += 20;
   if (signatureBase64) {
     try {
@@ -1046,7 +1046,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       let sigH = sigW / ratio;
       if (!isFinite(sigW) || sigW < 1) sigW = 30;
       if (!isFinite(sigH) || sigH < 1) sigH = 30;
-      const sigX = M;
+      const sigX = PW - M - sigW;
       const sigY = y;
       doc.addImage(signatureBase64, "PNG", sigX, sigY, sigW, sigH);
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
@@ -1054,16 +1054,16 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       y += sigH + 12;
     } catch {
       setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-      doc.text(bizName, M, y);
+      doc.text(bizName, PW - M, y, { align: "right" });
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", M, y + 6);
+      doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
       y += 16;
     }
   } else {
     setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-    doc.text(bizName, M, y);
+    doc.text(bizName, PW - M, y, { align: "right" });
     setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", M, y + 6);
+    doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
     y += 16;
   }
 
