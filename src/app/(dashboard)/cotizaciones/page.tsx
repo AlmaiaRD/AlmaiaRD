@@ -17,7 +17,7 @@ import type { Client, Followup, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf, generateQuoteJpg } from "@/lib/pdf";
+import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image } from "lucide-react";
 import toast from "react-hot-toast";
@@ -366,36 +366,150 @@ function CotizacionesContent() {
     }
   }
 
+  function buildQuotePreviewEl(data: any, st: any) {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
+    function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
+    const statusLabel = statusMap[data.status]?.label || data.status;
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+          </div>
+          <div>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(st?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
+            <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
+            <p style="font-size:12px;color:#9C8A82;margin:0;">Rep\u00fablica Dominicana</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${esc(data.quote_number)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${esc(data.quote_date)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">V\u00e1lida hasta: ${esc(data.valid_until)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Estado: ${esc(statusLabel)}</p>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${esc(data.client_name) || ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${esc(data.client_phone) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${esc(data.client_email) || "N/D"}</p>
+        </div>
+      </div>
+      <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#F0EBE3;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(data.items || []).map((item: any) => `
+            <tr style="border-bottom:1px solid #F0EBE3;">
+              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.name) || "Producto"}</td>
+              <td style="padding:10px 12px;text-align:center;font-size:13px;color:#5C3E35;">${item.quantity}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${esc(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${esc(formatCurrency(Number(item.line_total)))}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+          <span>Subtotal</span>
+          <span>${esc(formatCurrency(Number(data.subtotal)))}</span>
+        </div>
+        ${Number(data.itbis_total) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+            <span>ITBIS (18%)</span>
+            <span>${esc(formatCurrency(Number(data.itbis_total)))}</span>
+          </div>
+        ` : ""}
+        ${Number(data.discount_amount) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#D4A0A0;margin-bottom:4px;">
+            <span>Descuento</span>
+            <span>-${esc(formatCurrency(Number(data.discount_amount)))}</span>
+          </div>
+        ` : ""}
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
+          <span>Total General</span>
+          <span>${esc(formatCurrency(Number(data.total)))}</span>
+        </div>
+        ${Number(data.pv_total) > 0 ? `
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+            <span>Puntos PV</span>
+            <span>${Number(data.pv_total).toFixed(1)}</span>
+          </div>
+        ` : ""}
+        ${data.notes ? `
+          <div style="margin-top:8px;padding:8px 12px;background:#FAF6F0;border-radius:8px;font-size:12px;color:#9C8A82;">
+            <span style="font-weight:600;">Notas:</span> ${esc(data.notes)}
+          </div>
+        ` : ""}
+      </div>
+      <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu inter\u00e9s en ${esc(st?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
+        </div>
+        <div style="text-align:center;">
+          ${st?.signature_url ? `<img src="${st.signature_url}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(st?.business_name) || "ALMAIA"}</p>`}
+          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+        </div>
+      </div>
+    `;
+    return el;
+  }
+
+  async function captureQuote(quote: QuoteWithClient) {
+    const { quote: full, items: qItems } = await getQuote(quote.id);
+    const data = {
+      quote_number: full.quote_number,
+      quote_date: formatDate(full.quote_date),
+      valid_until: formatDate(full.valid_until),
+      status: full.status,
+      client_name: full.clients?.full_name || "",
+      client_phone: full.clients?.phone || undefined,
+      client_email: full.clients?.email || undefined,
+      items: qItems.map((i: any) => ({
+        name: i.products?.name || i.custom_name || "Producto",
+        quantity: Number(i.quantity) || 0,
+        unit_price: Number(i.unit_price) || 0,
+        line_total: Number(i.line_total) || 0,
+        pv: Number(i.pv) || 0,
+      })),
+      subtotal: Number(full.subtotal) || 0,
+      itbis_total: Number(full.itbis_total) || 0,
+      discount_amount: Number(full.discount_amount) || 0,
+      total: Number(full.total) || 0,
+      pv_total: Number(full.pv_total) || 0,
+      notes: full.notes || undefined,
+    };
+    const el = buildQuotePreviewEl(data, settings);
+    document.body.appendChild(el);
+    await new Promise(r => setTimeout(r, 500));
+    const domtoimage = await import("dom-to-image-more");
+    const canvas = await domtoimage.toCanvas(el, { scale: 2, width: 800 });
+    document.body.removeChild(el);
+    return { canvas, data: full, quote_number: full.quote_number };
+  }
+
   async function handleJpg(quote: QuoteWithClient) {
     try {
-      const { quote: full, items: qItems } = await getQuote(quote.id);
-      await generateQuoteJpg({
-        quote_number: full.quote_number,
-        quote_date: full.quote_date,
-        valid_until: full.valid_until,
-        status: full.status,
-        client_name: full.clients?.full_name || "",
-        client_phone: full.clients?.phone || undefined,
-        client_email: full.clients?.email || undefined,
-        items: qItems.map((i) => ({
-          name: i.products?.name || i.custom_name || "Producto",
-          quantity: Number(i.quantity) || 0,
-          unit_price: Number(i.unit_price) || 0,
-          line_total: Number(i.line_total) || 0,
-          pv: Number(i.pv) || 0,
-        })),
-        subtotal: Number(full.subtotal) || 0,
-        itbis_total: Number(full.itbis_total) || 0,
-        discount_amount: Number(full.discount_amount) || 0,
-        total: Number(full.total) || 0,
-        pv_total: Number(full.pv_total) || 0,
-        notes: full.notes || undefined,
-        logo_url: settings?.logo_url || undefined,
-        signature_url: settings?.signature_url || undefined,
-        business_name: settings?.business_name || "Almaia RD",
-        email: settings?.email || undefined,
-        phone: settings?.phone || undefined,
-      });
+      const { canvas, quote_number } = await captureQuote(quote);
+      const link = document.createElement("a");
+      const clientName = quote.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      link.download = `cotizacion-${quote_number}-${clientName}.jpg`;
+      link.href = canvas.toDataURL("image/jpeg", 0.95);
+      link.click();
       toast.success("JPG descargado");
     } catch (e: any) {
       console.error("[handleJpg] error:", e);
