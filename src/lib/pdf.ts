@@ -921,19 +921,19 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   }
 
   // ── A. HEADER ──
-  await drawAlmaiaLogo(doc, M + 12.5, y + 12.5, 25);
+  drawFlowerIcon(doc, M + 10, y + 10, 20);
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
   doc.text(bizName, M + 22, y + 6);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", M + 22, y + 28);
+  doc.text("BIENESTAR & SALUD", M + 22, y + 11);
 
   setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-  doc.text("Distribuidor Independiente Amway", M, y + 33);
+  doc.text("Distribuidor Independiente Amway", M, y + 17);
 
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
-  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + 37.5);
-  doc.text("República Dominicana", M, y + 41);
+  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + 21.5);
+  doc.text("República Dominicana", M, y + 25);
 
   // Badge — alineado a la derecha (opuesto al logo)
   const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
@@ -950,7 +950,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
   doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
 
-  y += 48;
+  y += 30;
 
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
   doc.line(M, y, PW - M, y); y += 8;
