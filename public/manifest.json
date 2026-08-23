@@ -1,6 +1,7 @@
 {
   "name": "SISTEMA DE FACTURACION ALMAIA RD",
   "short_name": "Almaia RD",
+  "id": "/",
   "description": "Sistema integral de gestión comercial para distribución Amway en República Dominicana",
   "start_url": "/",
   "display": "standalone",

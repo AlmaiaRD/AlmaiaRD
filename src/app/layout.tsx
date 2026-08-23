@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
-import KillServiceWorker from "@/components/KillServiceWorker";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ToastProvider from "@/components/ui/ToastProvider";
 
@@ -24,8 +24,14 @@ const greatVibes = Great_Vibes({
 export const metadata: Metadata = {
   title: "Almaia RD - Gestión Comercial",
   description: "Sistema de gestión comercial para submarcas Amway",
+  manifest: "/manifest.json",
   icons: {
     apple: "/icons/icon-192x192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Almaia RD",
   },
 };
 
@@ -44,7 +50,7 @@ export default function RootLayout({
       className={`${jakarta.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <KillServiceWorker />
+        <ServiceWorkerRegistration />
         <ErrorBoundary>
           <AuthProvider>
             <ToastProvider />
