@@ -1019,10 +1019,6 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     setTextColor(doc, GRAY); doc.text("Descuento:", summaryX, y);
     setTextColor(doc, "#D4A0A0"); doc.text(`-${formatCurrency(quote.discount_amount)}`, summaryX + summaryW, y, { align: "right" }); y += 6;
   }
-  if (quote.pv_total) {
-    setTextColor(doc, GRAY); doc.text("Puntos PV:", summaryX, y);
-    setTextColor(doc, DARK); doc.text(String(quote.pv_total), summaryX + summaryW, y, { align: "right" }); y += 6;
-  }
 
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
   doc.line(summaryX, y, summaryX + summaryW, y); y += 4;

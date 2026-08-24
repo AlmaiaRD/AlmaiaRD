@@ -443,12 +443,6 @@ function CotizacionesContent() {
           <span>Total General</span>
           <span>${esc(formatCurrency(Number(data.total)))}</span>
         </div>
-        ${Number(data.pv_total) > 0 ? `
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
-            <span>Puntos PV</span>
-            <span>${Number(data.pv_total).toFixed(1)}</span>
-          </div>
-        ` : ""}
         ${data.notes ? `
           <div style="margin-top:8px;padding:8px 12px;background:#FAF6F0;border-radius:8px;font-size:12px;color:#9C8A82;">
             <span style="font-weight:600;">Notas:</span> ${esc(data.notes)}
@@ -605,7 +599,6 @@ function CotizacionesContent() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Fecha</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Válida hasta</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Total</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">PV</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acciones</th>
                 </tr>
@@ -618,7 +611,6 @@ function CotizacionesContent() {
                     <td className="px-4 py-3 text-[#9C8A82]">{formatDate(q.quote_date)}</td>
                     <td className="px-4 py-3 text-[#9C8A82]">{formatDate(q.valid_until)}</td>
                     <td className="px-4 py-3 text-right font-semibold text-[#5C3E35]">{formatCurrency(Number(q.total))}</td>
-                    <td className="px-4 py-3 text-right text-[#9C8A82]">{Number(q.pv_total) || 0}</td>
                     <td className="px-4 py-3"><Badge variant={statusMap[q.status]?.variant || "neutral"}>{statusMap[q.status]?.label || q.status}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
