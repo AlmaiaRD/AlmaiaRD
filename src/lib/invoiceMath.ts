@@ -9,6 +9,10 @@ export function roundToNearest50(value: number): number {
   return Math.round(value / 50) * 50;
 }
 
+export function ceilToNearest50(value: number): number {
+  return Math.ceil(value / 50) * 50;
+}
+
 export interface InvoiceMathItem {
   quantity: number;
   unit_price: number;
@@ -76,10 +80,14 @@ export function computeNetProfit(
  *  - El total de CADA línea se redondea al múltiplo de 50 MÁS CERCANO; la
  *    diferencia se absorbe ajustando el precio de cobro (el ITBIS queda
  *    intacto, sin tocar el precio del catálogo).
+ *  - El total FINAL se redondea al múltiplo de 50 SUPERIOR (ceiling); la
+ *    diferencia se absorbe como ganancia adicional (campo `rounding`).
  *
  * Ejemplo: costo 360, precio 486 (margen 35%), qty 1:
  *   ITBIS = 486 × 0.18 = 87.48 (fijo sobre precio catálogo); 486 + 87.48 = 573.48 → total 550
  *   (múltiplo de 50 más cercano); ajuste −23.48 → precio de cobro 462.52.
+ *
+ * Ejemplo total final: rawTotal = 4,199.04 → total = 4,200 (ceiling) → rounding = +0.96.
  */
 export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): InvoiceMathResult {
   const lines = items.map((item) => {
@@ -124,8 +132,9 @@ export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): Invo
   const subtotal = round2(lines.reduce((s, l) => s + l.line_total, 0));
   const itbis_total = round2(lines.reduce((s, l) => s + l.itbis_amount, 0));
   const discountR = round2(Math.max(0, Number(discount) || 0));
-  const total = round2(Math.max(0, subtotal + itbis_total - discountR));
-  const rounding = round2(total - subtotal - itbis_total + discountR);
+  const rawTotal = round2(Math.max(0, subtotal + itbis_total - discountR));
+  const total = ceilToNearest50(rawTotal);
+  const rounding = round2(total - rawTotal);
 
   return { lines, subtotal, itbis_total, discount: discountR, rounding, total };
 }
