@@ -24,7 +24,6 @@ const greatVibes = Great_Vibes({
 export const metadata: Metadata = {
   title: "Almaia RD - Gestión Comercial",
   description: "Sistema de gestión comercial para submarcas Amway",
-  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
