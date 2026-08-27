@@ -12,7 +12,8 @@ import { formatCurrency } from "@/lib/utils";
 import { ITBIS_RATE } from "@/lib/constants";
 import { invoiceLineTotalForUnit } from "@/lib/invoiceMath";
 import { ImageUpload } from "@/components/ui/ImageUpload";
-import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff, NotebookPen, Boxes, PackagePlus, Minus, Download, Copy, RefreshCw } from "lucide-react";
+import DescriptionReviewTool from "@/components/catalogo/DescriptionReviewTool";
+import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff, NotebookPen, Boxes, PackagePlus, Minus, Download, Copy, RefreshCw, FileCheck2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -43,6 +44,7 @@ export default function CatalogoPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [filterBundles, setFilterBundles] = useState(false);
+  const [showReviewTool, setShowReviewTool] = useState(false);
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
@@ -496,11 +498,16 @@ export default function CatalogoPage() {
           <button onClick={openBundleNew} className="flex items-center gap-2 bg-white border border-[#B8837E]/50 text-[#B8837E] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 transition-all duration-200">
             <PackagePlus size={18} /> Crear Bundle
           </button>
+          <button onClick={() => setShowReviewTool(true)} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+            <FileCheck2 size={18} /> Revisar descripciones
+          </button>
           <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm">
             <Plus size={18} /> Nuevo Producto
           </button>
         </div>
       </div>
+
+      <DescriptionReviewTool isOpen={showReviewTool} onClose={() => setShowReviewTool(false)} />
 
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6">
         <div className="relative flex-1 min-w-[220px]">
