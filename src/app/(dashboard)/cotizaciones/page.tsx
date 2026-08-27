@@ -19,7 +19,7 @@ import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image, Copy } from "lucide-react";
+import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image, Copy, Undo2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -802,6 +802,9 @@ function CotizacionesContent() {
                         )}
                         {(q.status === "DRAFT" || q.status === "SENT") && (
                           <button onClick={() => handleStatus(q.id, "CANCELLED")} className="p-2 text-[#9C8A82] hover:bg-[#9C8A82]/10 rounded-lg" title="Cancelar"><Ban size={15} /></button>
+                        )}
+                        {q.status === "ACCEPTED" && (
+                          <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#9C8A82] hover:bg-[#9C8A82]/10 rounded-lg" title="Revertir a enviada"><Undo2 size={15} /></button>
                         )}
                         {q.status === "ACCEPTED" && (
                           <button onClick={() => convertToInvoice(q)} className="p-2 text-[#86C7A3] hover:bg-[#86C7A3]/10 rounded-lg" title="Convertir en factura"><ArrowRightLeft size={15} /></button>
