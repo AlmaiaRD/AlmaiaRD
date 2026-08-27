@@ -6,6 +6,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
+import { supabase } from "@/lib/supabase";
 import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuoteStatus, type QuoteWithClient, type QuoteItemWithProduct } from "@/services/quotes";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
@@ -550,7 +551,17 @@ function CotizacionesContent() {
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
       try {
-        const response = await fetch(url);
+        let target = url;
+        const marker = "/object/public/product-images/";
+        const idx = url.indexOf(marker);
+        if (idx !== -1) {
+          const path = url.slice(idx + marker.length).split("?")[0];
+          const { data: signedData, error: signedError } = await supabase.rpc("get_product_image_signed_url", { p_path: path, p_expires_in: 3600 });
+          if (!signedError && signedData) {
+            target = signedData;
+          }
+        }
+        const response = await fetch(target, { cache: "no-store" });
         if (!response.ok) return null;
         const blob = await response.blob();
         return new Promise((resolve, reject) => {
@@ -631,27 +642,38 @@ function CotizacionesContent() {
           y += 8;
         }
 
-        // ── Description ──
+        // ── Description (full) ──
         if (product?.description) {
-          sc(doc, "#5C3E35"); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-          doc.text("DESCRIPCIÓN", M, y); y += 5;
-          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
           const descLines = doc.splitTextToSize(product.description, CW - 20);
-          const maxDesc = Math.min(descLines.length, 6);
-          doc.text(descLines.slice(0, maxDesc), M + 4, y);
-          y += maxDesc * 4.5 + 6;
+          if (y > PH - 60) { doc.addPage(); y = M; }
+          sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
+          doc.text("DESCRIPCIÓN", M, y); y += 5;
+          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9.5);
+          const lineH = 5;
+          for (let li = 0; li < descLines.length; li++) {
+            if (y > PH - 15) { doc.addPage(); y = M + 5; }
+            doc.text(descLines[li], M + 4, y);
+            y += lineH;
+          }
+          y += 4;
         }
 
-        // ── Benefits ──
+        // ── Benefits (full) ──
         if (product?.benefits) {
-          sc(doc, "#5C3E35"); doc.setFontSize(9); doc.setFont("helvetica", "bold");
+          const benefitList = product.benefits.split("\n").filter(Boolean);
+          if (y > PH - (benefitList.length * 6 + 20)) { doc.addPage(); y = M; }
+          sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
           doc.text("BENEFICIOS", M, y); y += 5;
-          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-          const benefitList = product.benefits.split("\n").filter(Boolean).slice(0, 4);
+          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9.5);
+          const lineH = 5;
           for (const b of benefitList) {
-            const bLines = doc.splitTextToSize(b, CW - 22);
-            doc.text(bLines, M + 4, y);
-            y += Math.min(bLines.length, 2) * 4.5 + 1;
+            const bLines = doc.splitTextToSize(`• ${b}`, CW - 22);
+            for (let li = 0; li < bLines.length; li++) {
+              if (y > PH - 15) { doc.addPage(); y = M + 5; }
+              doc.text(bLines[li], M + 4, y);
+              y += lineH;
+            }
+            y += 1;
           }
           y += 3;
         }
