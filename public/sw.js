@@ -1,4 +1,4 @@
-const CACHE_NAME = "almaia-v1";
+const CACHE_NAME = "almaia-v2";
 const STATIC_ASSETS = [
   "/",
   "/icons/icon-192x192.png",
@@ -28,13 +28,35 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
 
-  if (request.url.includes("/rest/v1/") || request.url.includes("/auth/")) {
+  const url = new URL(request.url);
+
+  // APIs y auth: siempre red (nunca servir caché obsoleta)
+  if (url.pathname.startsWith("/rest/v1/") || url.pathname.includes("/auth/")) {
     event.respondWith(
       fetch(request).catch(() => caches.match(request))
     );
     return;
   }
 
+  const isNavigation = request.mode === "navigate";
+
+  // Los JS/CSS de Next tienen hash de contenido: red primero, caché como respaldo
+  const isHashedAsset = /_next\/static\//.test(url.pathname);
+
+  if (isNavigation || isHashedAsset) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Otros assets (imágenes públicas, etc.): caché primero con actualización en segundo plano
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request)
@@ -46,7 +68,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => cached);
-
       return cached || fetchPromise;
     })
   );
