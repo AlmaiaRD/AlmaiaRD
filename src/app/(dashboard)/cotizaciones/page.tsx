@@ -44,6 +44,18 @@ interface FormItem {
   itbis: boolean;
 }
 
+interface CatalogEntry {
+  key: string;
+  name: string;
+  description: string;
+  benefits: string;
+  price: number;
+  apply_itbis: boolean;
+  image_url?: string | null;
+  subbrand?: string;
+  category?: string;
+}
+
 export default function CotizacionesPage() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>}>
@@ -87,6 +99,9 @@ function CotizacionesContent() {
   const [productSearch, setProductSearch] = useState("");
   const [showManualProduct, setShowManualProduct] = useState(false);
   const [manualProduct, setManualProduct] = useState({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false });
+
+  const [showCatalogEditor, setShowCatalogEditor] = useState(false);
+  const [catalogEntries, setCatalogEntries] = useState<CatalogEntry[]>([]);
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch)) || (p.code && normalize(p.code).includes(normalize(productSearch)))));
 
@@ -546,8 +561,39 @@ function CotizacionesContent() {
     router.push(`/facturacion?nueva=true&quote=${quote.id}`);
   }
 
-  async function handleCatalogPdf() {
+  function buildCatalogEntries(): CatalogEntry[] {
+    return items.map((item, i) => {
+      const product = item.product_id ? products.find((p) => p.id === item.product_id) : undefined;
+      const price35 = Number(item.price_35 || product?.price_35 || item.unit_price) || 0;
+      const withItbis = product ? product.apply_itbis !== false : item.itbis;
+      const raw = price35 * (withItbis ? 1.18 : 1);
+      const priceClient = Math.ceil(raw / 50) * 50;
+      return {
+        key: `${item.product_id || "manual"}-${i}`,
+        name: item.name || "Producto",
+        description: product?.description || "",
+        benefits: product?.benefits || "",
+        price: priceClient,
+        apply_itbis: withItbis,
+        image_url: product?.image_url || null,
+        subbrand: product?.subbrands?.name,
+        category: product?.categories?.name,
+      };
+    });
+  }
+
+  function handleCatalogPdf() {
     if (items.length === 0) return;
+    setCatalogEntries(buildCatalogEntries());
+    setShowCatalogEditor(true);
+  }
+
+  function updateCatalogEntry(key: string, field: keyof CatalogEntry, value: string | number) {
+    setCatalogEntries((prev) => prev.map((e) => (e.key === key ? { ...e, [field]: value } : e)));
+  }
+
+  async function generateCatalogPdf(entries: CatalogEntry[]) {
+    if (entries.length === 0) return;
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
       try {
@@ -589,11 +635,10 @@ function CotizacionesContent() {
       const CW = PW - M * 2;
       const bizName = settings?.business_name || "Almaia RD";
 
-      for (let idx = 0; idx < items.length; idx++) {
-        const item = items[idx];
+      for (let idx = 0; idx < entries.length; idx++) {
+        const entry = entries[idx];
         if (idx > 0) doc.addPage();
         let y = M;
-        const product = item.product_id ? products.find((p) => p.id === item.product_id) : undefined;
 
         // ── Header brand ──
         sc(doc, "#B8837E"); doc.setFontSize(8); doc.setFont("helvetica", "normal");
@@ -604,13 +649,13 @@ function CotizacionesContent() {
 
         // ── Product name ──
         sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(18);
-        const nameLines = doc.splitTextToSize(item.name || "Producto", CW);
+        const nameLines = doc.splitTextToSize(entry.name || "Producto", CW);
         doc.text(nameLines, PW / 2, y, { align: "center" });
         y += nameLines.length * 7 + 2;
 
         // ── Subbrand / category ──
-        const sub = product?.subbrands?.name;
-        const cat = product?.categories?.name;
+        const sub = entry.subbrand;
+        const cat = entry.category;
         if (sub || cat) {
           sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
           doc.text([sub, cat].filter(Boolean).join(" · "), PW / 2, y, { align: "center" });
@@ -618,8 +663,8 @@ function CotizacionesContent() {
         }
 
         // ── Photo ──
-        if (product?.image_url) {
-          const img = await loadImage(product.image_url);
+        if (entry.image_url) {
+          const img = await loadImage(entry.image_url);
           if (img) {
             const box = 110;
             const imgX = (PW - box) / 2;
@@ -643,8 +688,8 @@ function CotizacionesContent() {
         }
 
         // ── Description (full) ──
-        if (product?.description) {
-          const descLines = doc.splitTextToSize(product.description, CW - 20);
+        if (entry.description) {
+          const descLines = doc.splitTextToSize(entry.description, CW - 20);
           if (y > PH - 60) { doc.addPage(); y = M; }
           sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
           doc.text("DESCRIPCIÓN", M, y); y += 5;
@@ -659,8 +704,8 @@ function CotizacionesContent() {
         }
 
         // ── Benefits (full) ──
-        if (product?.benefits) {
-          const benefitList = product.benefits.split("\n").filter(Boolean);
+        if (entry.benefits) {
+          const benefitList = entry.benefits.split("\n").filter(Boolean);
           if (y > PH - (benefitList.length * 6 + 20)) { doc.addPage(); y = M; }
           sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
           doc.text("BENEFICIOS", M, y); y += 5;
@@ -679,10 +724,7 @@ function CotizacionesContent() {
         }
 
         // ── Price ──
-        const price35 = Number(item.price_35 || (product?.price_35) || item.unit_price) || 0;
-        const withItbis = product ? (product.apply_itbis !== false) : item.itbis;
-        const raw = price35 * (withItbis ? 1.18 : 1);
-        const priceClient = Math.ceil(raw / 50) * 50;
+        const priceClient = entry.price;
 
         if (y > PH - 55) { doc.addPage(); y = M; }
         doc.setDrawColor(232, 224, 216); doc.line(M, y, PW - M, y); y += 8;
@@ -703,9 +745,10 @@ function CotizacionesContent() {
       }
 
       doc.save("catalogo-productos.pdf");
+      setShowCatalogEditor(false);
       toast.success("Catálogo PDF generado");
     } catch (e: any) {
-      console.error("[handleCatalogPdf] error:", e);
+      console.error("[generateCatalogPdf] error:", e);
       toast.error(e?.message || "Error al generar el catálogo");
     } finally {
       setSaving(false);
@@ -1291,6 +1334,65 @@ function CotizacionesContent() {
         subtitle="Registra la información del cliente"
         saveLabel="Agregar Cliente"
       />
+
+      {showCatalogEditor && (
+        <Modal isOpen={showCatalogEditor} onClose={() => setShowCatalogEditor(false)} wide title="Catálogo de Productos" subtitle="Revisa y edita la información antes de generar el PDF">
+          <div className="space-y-4">
+            <div className="bg-[#FAF6F0] rounded-xl p-3 text-sm text-[#5C3E35]">
+              Edita la descripción, beneficios y precio que aparecerán en el catálogo. Los cambios se aplican solo a este PDF, no modifican los productos guardados.
+            </div>
+
+            <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-1">
+              {catalogEntries.map((entry) => (
+                <div key={entry.key} className="border border-[#E8E0D8] rounded-xl p-4 bg-white">
+                  <div className="flex items-start gap-3 mb-3">
+                    {entry.image_url ? (
+                      <img src={entry.image_url} alt={entry.name} className="w-16 h-16 rounded-lg object-cover border border-[#E8E0D8] flex-shrink-0" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-lg bg-[#FAF6F0] border border-[#E8E0D8] flex items-center justify-center text-[#9C8A82] text-xs flex-shrink-0">Sin foto</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Nombre del producto</label>
+                      <input type="text" value={entry.name} onChange={(e) => updateCatalogEntry(entry.key, "name", e.target.value)}
+                        className="w-full h-9 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E]" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Descripción</label>
+                      <textarea value={entry.description} onChange={(e) => updateCatalogEntry(entry.key, "description", e.target.value)} rows={3}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Beneficios <span className="text-[#9C8A82] font-normal">(uno por línea)</span></label>
+                      <textarea value={entry.benefits} onChange={(e) => updateCatalogEntry(entry.key, "benefits", e.target.value)} rows={3}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="block text-xs font-medium text-[#5C3E35]">Precio al cliente</label>
+                    <input type="number" value={entry.price} min={0} onChange={(e) => updateCatalogEntry(entry.key, "price", Number(e.target.value))}
+                      className="w-32 h-9 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E]" />
+                    <span className="text-xs text-[#9C8A82]">(RD$)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-1 border-t border-[#E8E0D8] mt-1">
+              <button onClick={() => setShowCatalogEditor(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] hover:bg-[#FAF6F0] transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => generateCatalogPdf(catalogEntries)} disabled={saving}
+                className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#9A6B66] transition-colors disabled:opacity-50 flex-shrink-0">
+                <FileText size={16} /> {saving ? "Generando..." : "Generar PDF"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </PageContainer>
   );
 }
