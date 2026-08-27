@@ -545,6 +545,151 @@ function CotizacionesContent() {
     router.push(`/facturacion?nueva=true&quote=${quote.id}`);
   }
 
+  async function handleCatalogPdf() {
+    if (items.length === 0) return;
+    setSaving(true);
+    const loadImage = async (url: string): Promise<string | null> => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
+    };
+    const sc = (doc: any, hex: string) => {
+      const r = Number.parseInt(hex.slice(1, 3), 16);
+      const g = Number.parseInt(hex.slice(3, 5), 16);
+      const b = Number.parseInt(hex.slice(5, 7), 16);
+      doc.setTextColor(r, g, b);
+    };
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "letter" });
+      const PW = doc.internal.pageSize.getWidth();
+      const PH = doc.internal.pageSize.getHeight();
+      const M = 14;
+      const CW = PW - M * 2;
+      const bizName = settings?.business_name || "Almaia RD";
+
+      for (let idx = 0; idx < items.length; idx++) {
+        const item = items[idx];
+        if (idx > 0) doc.addPage();
+        let y = M;
+        const product = item.product_id ? products.find((p) => p.id === item.product_id) : undefined;
+
+        // ── Header brand ──
+        sc(doc, "#B8837E"); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("ALMAIA RD · BIENESTAR & SALUD", PW / 2, y, { align: "center" });
+        y += 5;
+        doc.setDrawColor(232, 224, 216); doc.line(M, y, PW - M, y);
+        y += 10;
+
+        // ── Product name ──
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(18);
+        const nameLines = doc.splitTextToSize(item.name || "Producto", CW);
+        doc.text(nameLines, PW / 2, y, { align: "center" });
+        y += nameLines.length * 7 + 2;
+
+        // ── Subbrand / category ──
+        const sub = product?.subbrands?.name;
+        const cat = product?.categories?.name;
+        if (sub || cat) {
+          sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+          doc.text([sub, cat].filter(Boolean).join(" · "), PW / 2, y, { align: "center" });
+          y += 7;
+        }
+
+        // ── Photo ──
+        if (product?.image_url) {
+          const img = await loadImage(product.image_url);
+          if (img) {
+            const box = 110;
+            const imgX = (PW - box) / 2;
+            const imgY = y;
+            doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
+            doc.roundedRect(imgX, imgY, box, box, 4, 4, "D");
+            try {
+              const dims = doc.getImageProperties(img);
+              const ratio = dims.height / dims.width;
+              const w = box - 8;
+              const h = w * ratio;
+              const offY = (box - h) / 2;
+              doc.addImage(img, "PNG", imgX + 4, imgY + offY, w, h);
+            } catch { /* imagen no válida */ }
+            y += box + 10;
+          } else {
+            y += 8;
+          }
+        } else {
+          y += 8;
+        }
+
+        // ── Description ──
+        if (product?.description) {
+          sc(doc, "#5C3E35"); doc.setFontSize(9); doc.setFont("helvetica", "bold");
+          doc.text("DESCRIPCIÓN", M, y); y += 5;
+          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+          const descLines = doc.splitTextToSize(product.description, CW - 20);
+          const maxDesc = Math.min(descLines.length, 6);
+          doc.text(descLines.slice(0, maxDesc), M + 4, y);
+          y += maxDesc * 4.5 + 6;
+        }
+
+        // ── Benefits ──
+        if (product?.benefits) {
+          sc(doc, "#5C3E35"); doc.setFontSize(9); doc.setFont("helvetica", "bold");
+          doc.text("BENEFICIOS", M, y); y += 5;
+          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+          const benefitList = product.benefits.split("\n").filter(Boolean).slice(0, 4);
+          for (const b of benefitList) {
+            const bLines = doc.splitTextToSize(b, CW - 22);
+            doc.text(bLines, M + 4, y);
+            y += Math.min(bLines.length, 2) * 4.5 + 1;
+          }
+          y += 3;
+        }
+
+        // ── Price ──
+        const price35 = Number(item.price_35 || (product?.price_35) || item.unit_price) || 0;
+        const withItbis = product ? (product.apply_itbis !== false) : item.itbis;
+        const raw = price35 * (withItbis ? 1.18 : 1);
+        const priceClient = Math.ceil(raw / 50) * 50;
+
+        if (y > PH - 55) { doc.addPage(); y = M; }
+        doc.setDrawColor(232, 224, 216); doc.line(M, y, PW - M, y); y += 8;
+
+        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+        doc.text("PRECIO AL CLIENTE", PW / 2, y, { align: "center" }); y += 6;
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+        doc.text(formatCurrency(priceClient), PW / 2, y, { align: "center" }); y += 10;
+
+        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
+        doc.text("Precio incluye ITBIS. Distribuidor Independiente Amway.", PW / 2, y, { align: "center" }); y += 12;
+
+        // ── Footer ──
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+        doc.text(bizName, PW / 2, y, { align: "center" }); y += 4;
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.text("Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
+      }
+
+      doc.save("catalogo-productos.pdf");
+      toast.success("Catálogo PDF generado");
+    } catch (e: any) {
+      console.error("[handleCatalogPdf] error:", e);
+      toast.error(e?.message || "Error al generar el catálogo");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const clientName = (q: QuoteWithClient) => q.clients?.full_name || "—";
 
   return (
@@ -749,6 +894,10 @@ function CotizacionesContent() {
                 </button>
                 <button onClick={() => { setShowManualProduct(!showManualProduct); setShowProducts(false); }} className="text-xs text-[#B8837E] hover:underline">
                   {showManualProduct ? "Cancelar" : "Manual"}
+                </button>
+                <button onClick={handleCatalogPdf} disabled={items.length === 0}
+                  className="text-xs bg-[#B8837E] text-white px-3 py-1 rounded-lg hover:bg-[#9A6B66] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+                  <FileText size={13} /> Catálogo PDF
                 </button>
               </div>
             </div>
