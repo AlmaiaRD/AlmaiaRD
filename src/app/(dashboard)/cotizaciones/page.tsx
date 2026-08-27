@@ -19,7 +19,7 @@ import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image } from "lucide-react";
+import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image, Copy } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -190,6 +190,36 @@ function CotizacionesContent() {
     } catch (e: any) {
       console.error("[openEdit] error:", e);
       toast.error(e?.message || "Error al cargar la cotización");
+    }
+  }
+
+  async function duplicateQuote(id: string) {
+    try {
+      const { quote, items: quoteItems } = await getQuote(id);
+      setClientId("");
+      setQuoteDate(getLocalDateString());
+      setValidUntil(getLocalDateString(new Date(Date.now() + 30 * 86400000)));
+      setMargin(quote.margin ?? settings?.default_margin ?? 30);
+      setNotes(quote.notes || "");
+      setDiscountAmount(0);
+      setDiscountPercent(0);
+      setEditingStatus("DRAFT");
+      setItems(quoteItems.map((i) => ({
+        product_id: i.product_id || "",
+        name: i.products?.name || i.custom_name || "Producto",
+        quantity: Number(i.quantity) || 0,
+        unit_price: Number(i.unit_price) || 0,
+        cost: Number(i.unit_cost) || 0,
+        pv: Number(i.pv) || 0,
+        itbis: Boolean(i.itbis),
+      })));
+      setEditingId(null);
+      setShowProducts(false);
+      setShowManualProduct(false);
+      setShowModal(true);
+    } catch (e: any) {
+      console.error("[duplicateQuote] error:", e);
+      toast.error(e?.message || "Error al duplicar la cotización");
     }
   }
 
@@ -634,6 +664,7 @@ function CotizacionesContent() {
                         {q.status !== "CONVERTED" && (
                           <button onClick={() => openEdit(q.id)} className="p-2 text-[#5C3E35] hover:bg-[#5C3E35]/10 rounded-lg" title="Editar"><Edit2 size={15} /></button>
                         )}
+                        <button onClick={() => duplicateQuote(q.id)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="Duplicar"><Copy size={15} /></button>
                         {user?.role === "admin" && q.status !== "CONVERTED" && (
                           <button onClick={() => handleDelete(q.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
                         )}
