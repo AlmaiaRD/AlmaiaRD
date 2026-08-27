@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getProducts, updateProduct } from "@/services/products";
-import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Search, RefreshCw, Save } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Search, RefreshCw, Save, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface ReviewedProduct {
@@ -175,6 +175,24 @@ export default function DescriptionReviewTool({
     if (ok === 0 && fail === 0) toast("Sin cambios que aplicar");
   }
 
+  function exportCsv() {
+    const header = ["Nombre", "Código", "Categoría", "Descripción", "Beneficios", "Observaciones"];
+    const lines = [header.join(";")];
+    for (const r of rows) {
+      const issues = detectIssue(r.description, r.benefits, r.name).join(" | ");
+      const esc = (s: string | undefined) => `"${(s || "").replace(/"/g, '""')}"`;
+      lines.push([esc(r.name), esc(r.code), esc(r.category), esc(r.description), esc(r.benefits), esc(issues)].join(";"));
+    }
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inventario-descripciones.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Inventario exportado");
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -183,8 +201,7 @@ export default function DescriptionReviewTool({
       title="Revisión de Descripciones"
       subtitle="Revisa y corrige las descripciones y beneficios de todos los productos antes de aplicar"
     >
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="space-y-4">        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 min-w-[220px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
             <input
@@ -311,6 +328,13 @@ export default function DescriptionReviewTool({
             {rows.filter((r) => r.approved === "edit" && (r.description !== r.originalDescription || r.benefits !== r.originalBenefits)).length} producto(s) con cambios por aplicar
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={exportCsv}
+              disabled={rows.length === 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-colors disabled:opacity-40 flex-shrink-0"
+            >
+              <Download size={16} /> Exportar inventario
+            </button>
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] hover:bg-[#FAF6F0] transition-colors"
