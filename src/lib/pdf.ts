@@ -881,6 +881,7 @@ interface QuoteItemData {
   unit_price: number;
   line_total: number;
   pv?: number;
+  description?: string;
 }
 
 interface QuoteData {
@@ -997,10 +998,51 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
       y += 10; doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
     }
-    const values = [item.name, String(item.quantity), formatCurrency(item.unit_price), formatCurrency(item.line_total)];
-    colDefs.forEach((c, i) => { doc.text(values[i], c.x + (c.align === "right" ? c.w : 0), y + 3, { align: c.align }); });
+    const nameLines = doc.splitTextToSize(item.name, 104);
+    const descLines = item.description ? doc.splitTextToSize(item.description, 104) : [];
+    const maxLines = Math.max(nameLines.length, descLines.length);
+    const rowHeight = Math.max(7, maxLines * 4.2 + 1);
+
+    // Check page break
+    if (y + rowHeight > 255) {
+      doc.addPage(); y = M;
+      doc.setFillColor(240, 235, 227); doc.rect(M, y, CW, 8, "F");
+      setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+      colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
+      y += 10; doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
+    }
+
+    // Product name (bold)
+    setTextColor(doc, DARK);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    nameLines.forEach((line, i) => {
+      doc.text(line, M + 2, y + 2 + i * 4);
+    });
+
+    // Description (gray, smaller)
+    if (descLines.length > 0) {
+      setTextColor(doc, GRAY);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      descLines.forEach((line, i) => {
+        doc.text(line, M + 2, y + 2 + (nameLines.length + i) * 4);
+      });
+    }
+
+    // Quantity, unit price, line total (aligned right)
+    setTextColor(doc, DARK);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(String(item.quantity), M + 108 + 12, y + 3, { align: "right" });
+    doc.text(formatCurrency(item.unit_price), M + 122 + 28, y + 3, { align: "right" });
+    doc.text(formatCurrency(item.line_total), M + 152 + 32, y + 3, { align: "right" });
+
+    // Row separator
     doc.setDrawColor(240, 235, 227); doc.setLineWidth(0.2);
-    doc.line(M, y + 5.5, M + CW, y + 5.5); y += 7;
+    doc.line(M, y + rowHeight, M + CW, y + rowHeight);
+
+    y += rowHeight;
   });
   y += 4;
 

@@ -79,14 +79,14 @@ export async function getQuote(id: string) {
   const [hydratedQuote] = await hydrateQuotes([quote]);
 
   const productIds = [...new Set((items || []).map((i: any) => i.product_id).filter(Boolean))];
-  let productMap: Record<string, { id: string; name: string; code?: string }> = {};
+  let productMap: Record<string, { id: string; name: string; code?: string; description?: string }> = {};
   if (productIds.length > 0) {
     const { data: products } = await supabase
       .from("products")
-      .select("id, name, code")
+      .select("id, name, code, description")
       .in("id", productIds);
     if (products) {
-      productMap = Object.fromEntries(products.map((p: any) => [p.id, { id: p.id, name: p.name, code: p.code }]));
+      productMap = Object.fromEntries(products.map((p: any) => [p.id, { id: p.id, name: p.name, code: p.code, description: p.description }]));
     }
   }
 
@@ -102,7 +102,7 @@ export async function getQuote(id: string) {
     itbis: i.itbis,
     itbis_amount: i.itbis_amount,
     custom_name: i.custom_name,
-    products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "" }
+    products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "", description: "" }
   }));
 
   return { quote: hydratedQuote as QuoteWithClient, items: mappedItems };

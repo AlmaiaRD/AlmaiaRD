@@ -389,6 +389,7 @@ function CotizacionesContent() {
         client_email: full.clients?.email || undefined,
         items: qItems.map((i) => ({
           name: i.products?.name || i.custom_name || "Producto",
+          description: i.products?.description || undefined,
           quantity: Number(i.quantity) || 0,
           unit_price: Number(i.unit_price) || 0,
           line_total: Number(i.line_total) || 0,
@@ -521,6 +522,7 @@ function CotizacionesContent() {
       client_email: full.clients?.email || undefined,
       items: qItems.map((i: any) => ({
         name: i.products?.name || i.custom_name || "Producto",
+        description: i.products?.description || undefined,
         quantity: Number(i.quantity) || 0,
         unit_price: Number(i.unit_price) || 0,
         line_total: Number(i.line_total) || 0,
