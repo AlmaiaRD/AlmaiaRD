@@ -599,7 +599,6 @@ function CotizacionesContent() {
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
       try {
-        // Use our proxy endpoint to avoid CORS issues
         const proxyUrl = `${window.location.origin}/api/image-proxy?url=${encodeURIComponent(url)}`;
         console.log("[catalogPdf] Fetching image via proxy:", proxyUrl);
         const response = await fetch(proxyUrl, { cache: "no-store" });
@@ -639,7 +638,7 @@ function CotizacionesContent() {
       const doc = new jsPDF({ unit: "mm", format: "letter" });
       const PW = doc.internal.pageSize.getWidth();
       const PH = doc.internal.pageSize.getHeight();
-      const M = 14;
+      const M = 12;
       const CW = PW - M * 2;
       const bizName = settings?.business_name || "Almaia RD";
 
@@ -648,108 +647,121 @@ function CotizacionesContent() {
         if (idx > 0) doc.addPage();
         let y = M;
 
-        // ── Header brand ──
-        sc(doc, "#B8837E"); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        // ── Compact header ──
+        sc(doc, "#B8837E"); doc.setFontSize(7); doc.setFont("helvetica", "normal");
         doc.text("ALMAIA RD · BIENESTAR & SALUD", PW / 2, y, { align: "center" });
+        y += 4;
+        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
         y += 5;
-        doc.setDrawColor(232, 224, 216); doc.line(M, y, PW - M, y);
-        y += 10;
 
-        // ── Product name ──
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(18);
-        const nameLines = doc.splitTextToSize(entry.name || "Producto", CW);
-        doc.text(nameLines, PW / 2, y, { align: "center" });
-        y += nameLines.length * 7 + 2;
+        // ── Product header row: Name (left) | Price (right) ──
+        const priceClient = entry.price;
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+        const nameLines = doc.splitTextToSize(entry.name || "Producto", CW * 0.65);
+        doc.text(nameLines, M, y + 3, { align: "left" });
+        const nameH = nameLines.length * 5.5;
 
-        // ── Subbrand / category ──
+        // Price on right
+        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+        doc.text(formatCurrency(priceClient), PW - M, y + 4, { align: "right" });
+        sc(doc, "#9C8A82"); doc.setFontSize(5.5);
+        doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
+
+        // Subbrand/category under name
         const sub = entry.subbrand;
         const cat = entry.category;
         if (sub || cat) {
-          sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-          doc.text([sub, cat].filter(Boolean).join(" · "), PW / 2, y, { align: "center" });
-          y += 7;
+          sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          doc.text([sub, cat].filter(Boolean).join(" · "), M, y + nameH + 2);
         }
 
-        // ── Photo ──
+        y += Math.max(nameH, 14) + 8;
+
+        // ── Photo (left) | Description (right) ──
+        const photoBox = 75;
+        const photoX = M;
+        const photoY = y;
+        const textX = photoX + photoBox + 5;
+        const textW = CW - photoBox - 5;
+
         if (entry.image_url) {
           const img = await loadImage(entry.image_url);
           if (img) {
-            const box = 110;
-            const imgX = (PW - box) / 2;
-            const imgY = y;
-            doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
-            doc.roundedRect(imgX, imgY, box, box, 4, 4, "D");
+            const box = 70;
+            const imgX = photoX + (photoBox - box) / 2;
+            const imgY = photoY;
+            doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2);
+            doc.roundedRect(imgX, imgY, box, box, 3, 3, "D");
             try {
               const dims = doc.getImageProperties(img);
               const ratio = dims.height / dims.width;
-              const w = box - 8;
+              const w = box - 6;
               const h = w * ratio;
               const offY = (box - h) / 2;
-              doc.addImage(img, "PNG", imgX + 4, imgY + offY, w, h);
+              doc.addImage(img, "PNG", imgX + 3, imgY + offY, w, h);
             } catch { /* imagen no válida */ }
-            y += box + 10;
-          } else {
-            y += 8;
           }
-        } else {
-          y += 8;
         }
 
-        // ── Description (full) ──
+        // Description (limited to ~6 lines)
+        let textY = photoY;
         if (entry.description) {
-          const descLines = doc.splitTextToSize(entry.description, CW - 20);
-          if (y > PH - 60) { doc.addPage(); y = M; }
-          sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
-          doc.text("DESCRIPCIÓN", M, y); y += 5;
-          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9.5);
-          const lineH = 5;
-          for (let li = 0; li < descLines.length; li++) {
-            if (y > PH - 15) { doc.addPage(); y = M + 5; }
-            doc.text(descLines[li], M + 4, y);
-            y += lineH;
+          sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+          doc.text("DESCRIPCIÓN", textX, textY); textY += 4;
+          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+          const descLines = doc.splitTextToSize(entry.description, textW - 2) as string[];
+          const maxDescLines = 6;
+          for (let li = 0; li < Math.min(descLines.length, maxDescLines); li++) {
+            doc.text(descLines[li], textX, textY);
+            textY += 4;
           }
-          y += 4;
+          if (descLines.length > maxDescLines) {
+            doc.text("...", textX, textY);
+            textY += 4;
+          }
+          textY += 3;
         }
 
-        // ── Benefits (full) ──
+        // Benefits (limited to 4 bullets)
         if (entry.benefits) {
           const benefitList = entry.benefits.split("\n").filter(Boolean);
-          if (y > PH - (benefitList.length * 6 + 20)) { doc.addPage(); y = M; }
-          sc(doc, "#B8837E"); doc.setFontSize(10); doc.setFont("helvetica", "bold");
-          doc.text("BENEFICIOS", M, y); y += 5;
-          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(9.5);
-          const lineH = 5;
-          for (const b of benefitList) {
-            const bLines = doc.splitTextToSize(`• ${b}`, CW - 22);
-            for (let li = 0; li < bLines.length; li++) {
-              if (y > PH - 15) { doc.addPage(); y = M + 5; }
-              doc.text(bLines[li], M + 4, y);
-              y += lineH;
+          if (benefitList.length > 0) {
+            sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+            doc.text("BENEFICIOS", textX, textY); textY += 4;
+            sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+            const maxBenefits = 4;
+            for (let bi = 0; bi < Math.min(benefitList.length, maxBenefits); bi++) {
+              const bLines = doc.splitTextToSize(`• ${benefitList[bi]}`, textW - 4) as string[];
+              for (const bl of bLines) {
+                doc.text(bl, textX + 1, textY);
+                textY += 3.5;
+              }
             }
-            y += 1;
+            if (benefitList.length > maxBenefits) {
+              doc.text("...", textX + 1, textY);
+              textY += 3.5;
+            }
+            textY += 2;
           }
-          y += 3;
         }
 
-        // ── Price ──
-        const priceClient = entry.price;
+        // Advance y past the taller of photo or text
+        y = Math.max(y, photoY + 75, textY) + 6;
 
-        if (y > PH - 55) { doc.addPage(); y = M; }
-        doc.setDrawColor(232, 224, 216); doc.line(M, y, PW - M, y); y += 8;
-
-        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(8);
-        doc.text("PRECIO AL CLIENTE", PW / 2, y, { align: "center" }); y += 6;
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
-        doc.text(formatCurrency(priceClient), PW / 2, y, { align: "center" }); y += 10;
-
-        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
-        doc.text("Precio incluye ITBIS. Distribuidor Independiente Amway.", PW / 2, y, { align: "center" }); y += 12;
+        // Thin separator
+        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2);
+        doc.line(M, y, PW - M, y);
+        y += 4;
 
         // ── Footer ──
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
         doc.text(bizName, PW / 2, y, { align: "center" }); y += 4;
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
         doc.text("Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
+        y += 3;
+        doc.text("Precio incluye ITBIS · Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
       }
 
       doc.save("catalogo-productos.pdf");
