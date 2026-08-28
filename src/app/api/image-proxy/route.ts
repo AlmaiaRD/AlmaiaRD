@@ -9,13 +9,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Create abort controller for timeout (compatible with Node 18+)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; AlmaiaRD/1.0)",
       },
-      // Timeout after 10 seconds
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return NextResponse.json(
