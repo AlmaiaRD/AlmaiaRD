@@ -599,18 +599,12 @@ function CotizacionesContent() {
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
       try {
-        let target = url;
-        const marker = "/object/public/product-images/";
-        const idx = url.indexOf(marker);
-        if (idx !== -1) {
-          const path = url.slice(idx + marker.length).split("?")[0];
-          const { data: signedData, error: signedError } = await supabase.rpc("get_product_image_signed_url", { p_path: path, p_expires_in: 3600 });
-          if (!signedError && signedData) {
-            target = signedData;
-          }
+        // Try to fetch directly - Supabase public bucket images should be accessible
+        const response = await fetch(url, { cache: "no-store", mode: "cors" });
+        if (!response.ok) {
+          console.warn(`[catalogPdf] Failed to fetch image: ${response.status} ${url}`);
+          return null;
         }
-        const response = await fetch(target, { cache: "no-store" });
-        if (!response.ok) return null;
         const blob = await response.blob();
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -618,7 +612,8 @@ function CotizacionesContent() {
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-      } catch {
+      } catch (err) {
+        console.warn("[catalogPdf] Image load error:", err, url);
         return null;
       }
     };
