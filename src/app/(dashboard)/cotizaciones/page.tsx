@@ -601,12 +601,22 @@ function CotizacionesContent() {
       try {
         // Use our proxy endpoint to avoid CORS issues
         const proxyUrl = `${window.location.origin}/api/image-proxy?url=${encodeURIComponent(url)}`;
+        console.log("[catalogPdf] Fetching image via proxy:", proxyUrl);
         const response = await fetch(proxyUrl, { cache: "no-store" });
+        console.log("[catalogPdf] Proxy response:", response.status, response.statusText);
         if (!response.ok) {
-          console.warn(`[catalogPdf] Failed to fetch image via proxy: ${response.status} ${url}`);
+          const errorText = await response.text().catch(() => "unknown error");
+          console.warn(`[catalogPdf] Failed to fetch image via proxy: ${response.status} ${response.statusText}`, errorText, url);
           return null;
         }
+        const contentType = response.headers.get("content-type");
+        console.log("[catalogPdf] Image content-type:", contentType);
         const blob = await response.blob();
+        console.log("[catalogPdf] Blob size:", blob.size, "type:", blob.type);
+        if (blob.size === 0) {
+          console.warn("[catalogPdf] Empty blob received for:", url);
+          return null;
+        }
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
