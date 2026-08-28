@@ -926,13 +926,13 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     try {
       doc.addImage(logoBase64, "PNG", M, y, 25, 25);
     } catch {
-      drawFlowerIcon(doc, M + 10, y + 10, 20);
+      drawFlowerIcon(doc, M, y + 6, 14);
     }
   } else {
-    drawFlowerIcon(doc, M + 10, y + 10, 20);
+    drawFlowerIcon(doc, M, y + 6, 14);
   }
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, M + 22, y + 6);
+  doc.text(bizName, M + 16, y + 6);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
   doc.text("BIENESTAR & SALUD", M + 22, y + (logoBase64 ? 28 : 11));
@@ -1121,7 +1121,10 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.line(M, y, PW - M, y); y += 6;
 
   setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
-  doc.text(`¡Gracias por confiar en ${bizName}, aliados a tu bienestar!`, M, y); y += 5;
+  doc.text(`¡Gracias por confiar en ${bizName}!`, M, y); y += 5;
+
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(7);
+  doc.text("Aliados de tu bienestar", M, y); y += 5;
 
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", M, y); y += 5;
