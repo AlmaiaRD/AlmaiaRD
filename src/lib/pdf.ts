@@ -1134,11 +1134,13 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
 
 export async function generateQuotePdf(quote: QuoteData): Promise<void> {
   const doc = await buildQuotePdfDoc(quote);
-  doc.save(`cotizacion-${quote.quote_number}.pdf`);
+  const clientName = (quote.client_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
+  doc.save(`cotizacion-${quote.quote_number}_${clientName}.pdf`);
 }
 
 export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
   const doc = await buildQuotePdfDoc(quote);
+  const clientName = (quote.client_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
   const pdfDataUri = doc.output("datauristring");
   const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist");
   GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${(await import("pdfjs-dist/package.json")).default.version}/build/pdf.worker.min.mjs`;
@@ -1152,6 +1154,6 @@ export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
   const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   const link = document.createElement("a");
   link.href = jpgDataUrl;
-  link.download = `cotizacion-${quote.quote_number}.jpg`;
+  link.download = `cotizacion-${quote.quote_number}_${clientName}.jpg`;
   link.click();
 }
