@@ -4,7 +4,7 @@ import type { Quote, QuoteItem, QuoteStatus } from "@/types/database";
 import { round2 } from "@/lib/invoiceMath";
 
 export type QuoteWithClient = Quote & { clients?: { id: string; full_name: string; phone?: string; email?: string } };
-export type QuoteItemWithProduct = QuoteItem & { products?: { id: string; name: string; code?: string } };
+export type QuoteItemWithProduct = QuoteItem & { products?: { id: string; name: string; code?: string; description?: string } };
 
 export interface QuoteInputItem {
   product_id?: string;
