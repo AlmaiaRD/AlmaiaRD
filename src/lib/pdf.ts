@@ -998,8 +998,8 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
       y += 10; doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
     }
-    const nameLines = doc.splitTextToSize(item.name, 104);
-    const descLines = item.description ? doc.splitTextToSize(item.description, 104) : [];
+    const nameLines = doc.splitTextToSize(item.name, 104) as string[];
+    const descLines = item.description ? (doc.splitTextToSize(item.description, 104) as string[]) : [];
     const maxLines = Math.max(nameLines.length, descLines.length);
     const rowHeight = Math.max(7, maxLines * 4.2 + 1);
 
@@ -1016,7 +1016,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    nameLines.forEach((line, i) => {
+    nameLines.forEach((line: string, i: number) => {
       doc.text(line, M + 2, y + 2 + i * 4);
     });
 
@@ -1025,7 +1025,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       setTextColor(doc, GRAY);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6.5);
-      descLines.forEach((line, i) => {
+      descLines.forEach((line: string, i: number) => {
         doc.text(line, M + 2, y + 2 + (nameLines.length + i) * 4);
       });
     }
