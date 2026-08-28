@@ -599,10 +599,11 @@ function CotizacionesContent() {
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
       try {
-        // Try to fetch directly - Supabase public bucket images should be accessible
-        const response = await fetch(url, { cache: "no-store", mode: "cors" });
+        // Use our proxy endpoint to avoid CORS issues
+        const proxyUrl = `${window.location.origin}/api/image-proxy?url=${encodeURIComponent(url)}`;
+        const response = await fetch(proxyUrl, { cache: "no-store" });
         if (!response.ok) {
-          console.warn(`[catalogPdf] Failed to fetch image: ${response.status} ${url}`);
+          console.warn(`[catalogPdf] Failed to fetch image via proxy: ${response.status} ${url}`);
           return null;
         }
         const blob = await response.blob();
