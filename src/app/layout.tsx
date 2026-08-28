@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
-import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import KillServiceWorker from "@/components/KillServiceWorker";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ToastProvider from "@/components/ui/ToastProvider";
 
@@ -57,7 +57,7 @@ export default function RootLayout({
       className={`${jakarta.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ServiceWorkerRegistration />
+        <KillServiceWorker />
         <ErrorBoundary>
           <AuthProvider>
             <ToastProvider />
