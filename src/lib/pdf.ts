@@ -909,6 +909,7 @@ interface QuoteData {
 export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const PW = doc.internal.pageSize.getWidth();
+  const PH = doc.internal.pageSize.getHeight();
   let y = M;
   const bizName = quote.business_name || "Almaia RD";
 
@@ -921,50 +922,49 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     signatureBase64 = await loadImageAsBase64WithRetry(quote.signature_url);
   }
 
-  // ── A. HEADER ──
-  if (logoBase64) {
-    try {
-      doc.addImage(logoBase64, "PNG", M, y, 25, 25);
-    } catch {
-      drawFlowerIcon(doc, M, y + 6, 14);
-    }
-  } else {
-    drawFlowerIcon(doc, M, y + 6, 14);
-  }
-  setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, M + 16, y + 6);
+  // Helper to draw header on any page
+  const drawHeader = (pageY: number) => {
+    let hy = pageY;
+    // Flower icon to the left of "Almaia"
+    drawFlowerIcon(doc, M + 8, hy + 8, 16);
+    setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
+    doc.text(bizName, M + 20, hy + 6);
 
-  setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", M + 22, y + (logoBase64 ? 28 : 11));
+    setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
+    doc.text("BIENESTAR & SALUD", M + 20, hy + (logoBase64 ? 28 : 11));
 
-  setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-  doc.text("Distribuidor Independiente Amway", M, y + (logoBase64 ? 33 : 17));
+    setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
+    doc.text("Distribuidor Independiente Amway", M, hy + (logoBase64 ? 33 : 17));
 
-  setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
-  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + (logoBase64 ? 37.5 : 21.5));
-  doc.text("República Dominicana", M, y + (logoBase64 ? 41 : 25));
+    setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+    doc.text("Suplementos, cosmética y bienestar para toda la familia", M, hy + (logoBase64 ? 37.5 : 21.5));
+    doc.text("República Dominicana", M, hy + (logoBase64 ? 41 : 25));
 
-  // Badge — alineado a la derecha (opuesto al logo)
-  const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
-  setDrawFillColor(doc, "#F0EBE3");
-  doc.roundedRect(badgeX, y, badgeW, badgeH, 10, 10, "F");
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(15);
-  doc.text("COTIZACIÓN", badgeX + badgeW / 2, y + badgeH / 2 + 2.5, { align: "center" });
+    // Badge — right aligned
+    const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
+    setDrawFillColor(doc, "#F0EBE3");
+    doc.roundedRect(badgeX, hy, badgeW, badgeH, 10, 10, "F");
+    setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(15);
+    doc.text("COTIZACIÓN", badgeX + badgeW / 2, hy + badgeH / 2 + 2.5, { align: "center" });
 
-  setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-  const numberY = y + badgeH + 7;
-  doc.text(quote.quote_number, PW - M, numberY, { align: "right" });
+    setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+    const numberY = hy + badgeH + 7;
+    doc.text(quote.quote_number, PW - M, numberY, { align: "right" });
 
-  setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8);
-  doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
-  doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
+    setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
+    doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
 
-  y += logoBase64 ? 48 : 30;
+    hy += logoBase64 ? 48 : 30;
+    doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
+    doc.line(M, hy, PW - M, hy);
+    return hy + 8;
+  };
 
-  doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
-  doc.line(M, y, PW - M, y); y += 8;
+  // ── PAGE 1: HEADER + CLIENT + TABLE + SUMMARY ──
+  y = drawHeader(y);
 
-  // ── B. CLIENT ──
+  // Client section
   const clientSectionH = 24;
   drawCreamRoundedRect(doc, M, y, CW, clientSectionH, 5);
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "bold");
@@ -975,7 +975,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.text(`Email: ${quote.client_email || "N/D"}`, M + 6, y + 18);
   y += clientSectionH + 6;
 
-  // ── C. TABLE ──
+  // Table
   const colDefs = [
     { label: "Descripción / Producto", x: M, w: 108, align: "left" as const },
     { label: "Cant.", x: M + 108, w: 14, align: "right" as const },
@@ -992,27 +992,17 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
   quote.items.forEach((item) => {
     if (y > 255) {
-      doc.addPage(); y = M;
-      doc.setFillColor(240, 235, 227); doc.rect(M, y, CW, 8, "F");
-      setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
-      colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
-      y += 10; doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
+      doc.addPage(); y = drawHeader(M);
     }
     const nameLines = doc.splitTextToSize(item.name, 104) as string[];
     const descLines = item.description ? (doc.splitTextToSize(item.description, 104) as string[]) : [];
     const maxLines = Math.max(nameLines.length, descLines.length);
     const rowHeight = Math.max(7, maxLines * 4.2 + 1);
 
-    // Check page break
     if (y + rowHeight > 255) {
-      doc.addPage(); y = M;
-      doc.setFillColor(240, 235, 227); doc.rect(M, y, CW, 8, "F");
-      setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
-      colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
-      y += 10; doc.setFont("helvetica", "normal"); doc.setFontSize(8); setTextColor(doc, DARK);
+      doc.addPage(); y = drawHeader(M);
     }
 
-    // Product name (bold)
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
@@ -1020,7 +1010,6 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       doc.text(line, M + 2, y + 2 + i * 4);
     });
 
-    // Description (gray, smaller)
     if (descLines.length > 0) {
       setTextColor(doc, GRAY);
       doc.setFont("helvetica", "normal");
@@ -1030,7 +1019,6 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
       });
     }
 
-    // Quantity, unit price, line total (aligned right)
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
@@ -1038,7 +1026,6 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     doc.text(formatCurrency(item.unit_price), M + 122 + 28, y + 3, { align: "right" });
     doc.text(formatCurrency(item.line_total), M + 152 + 32, y + 3, { align: "right" });
 
-    // Row separator
     doc.setDrawColor(240, 235, 227); doc.setLineWidth(0.2);
     doc.line(M, y + rowHeight, M + CW, y + rowHeight);
 
@@ -1046,7 +1033,7 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   });
   y += 4;
 
-  // ── D. SUMMARY ──
+  // Summary
   const summaryX = M + CW - 75; const summaryW = 75;
 
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
@@ -1075,14 +1062,12 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     doc.text(noteLines, M, y); y += noteLines.length * 4 + 6;
   }
 
-  // Amount in words
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
   doc.line(M, y, M + CW, y); y += 5;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
-  doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 10;
+  doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 15;
 
-  // Firma a la derecha (opuesto al logo), 2cm debajo del total en letras
-  y += 20;
+  // Signature on first page (right side, below total in words)
   if (signatureBase64) {
     try {
       const props = doc.getImageProperties(signatureBase64);
@@ -1114,20 +1099,60 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
     y += 16;
   }
 
-  // ── E. FOOTER ──
-  if (y > 250) { doc.addPage(); y = M; }
+  // ── LAST PAGE: Closing message with signature, contact info ──
+  doc.addPage();
+  y = M;
 
+  // Header on last page (lighter)
+  drawFlowerIcon(doc, PW / 2, y + 15, 18);
+  setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
+  doc.text(bizName, PW / 2, y + 30, { align: "center" });
+
+  setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
+  doc.text("BIENESTAR & SALUD", PW / 2, y + 34, { align: "center" });
+  y += 42;
+
+  // Message
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
+  doc.text("A la orden del cliente", PW / 2, y, { align: "center" }); y += 7;
+  setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text("si necesita cualquier información u orientación", PW / 2, y, { align: "center" }); y += 14;
+
+  // Signature on last page (centered, same size)
+  if (signatureBase64) {
+    try {
+      const props = doc.getImageProperties(signatureBase64);
+      const ratio = props.width && props.height ? props.width / props.height : 1;
+      const maxW = 100;
+      const sigW = Math.min(maxW, maxW * ratio);
+      const sigH = sigW / ratio;
+      const sigX = (PW - sigW) / 2;
+      doc.addImage(signatureBase64, "PNG", sigX, y, sigW, sigH);
+      y += sigH + 4;
+    } catch {
+      // fallback
+    }
+  }
+
+  setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text(bizName, PW / 2, y, { align: "center" }); y += 6;
+
+  // Contact info
+  setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
+  const phone = quote.phone || "809-XXX-XXXX";
+  const email = quote.email || "info@almaia-rd.com";
+  doc.text(`Tel: ${phone}`, PW / 2, y, { align: "center" }); y += 5;
+  doc.text(`Email: ${email}`, PW / 2, y, { align: "center" }); y += 5;
+
+  // Footer with "Aliados de tu bienestar"
+  y = PH - 20;
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.5);
   doc.line(M, y, PW - M, y); y += 6;
-
   setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
-  doc.text(`¡Gracias por confiar en ${bizName}!`, M, y); y += 5;
-
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(7);
-  doc.text("Aliados de tu bienestar", M, y); y += 5;
-
+  doc.text("Aliados de tu bienestar", PW / 2, y, { align: "center" });
+  y += 5;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
-  doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", M, y); y += 5;
+  doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", PW / 2, y, { align: "center" });
 
   return doc;
 }
