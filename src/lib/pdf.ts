@@ -1153,6 +1153,10 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   y += 5;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", PW / 2, y, { align: "center" });
+  y += 4;
+  setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+  const version = "v2.1-" + new Date().toISOString().slice(0, 16).replace("T", " ");
+  doc.text(`Generado: ${version}`, PW / 2, y, { align: "center" });
 
   return doc;
 }
