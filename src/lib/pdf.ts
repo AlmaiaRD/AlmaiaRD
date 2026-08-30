@@ -908,10 +908,23 @@ interface QuoteData {
 
 export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  await drawQuotePdfContent(doc, quote);
+  return doc;
+}
+
+export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promise<void> {
   const PW = doc.internal.pageSize.getWidth();
   const PH = doc.internal.pageSize.getHeight();
   let y = M;
   const bizName = quote.business_name || "Almaia RD";
+
+  // Precargar el logo PNG original de Almaia (flor) para el header
+  let almaiaLogoB64: string | null = null;
+  try {
+    almaiaLogoB64 = await loadImageAsBase64("/almaia-logo.png");
+  } catch {
+    almaiaLogoB64 = null;
+  }
 
   let logoBase64: string | null = null;
   let signatureBase64: string | null = null;
@@ -925,13 +938,24 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   // Helper to draw header on any page
   const drawHeader = (pageY: number) => {
     let hy = pageY;
-    // Flower icon to the left of "Almaia"
-    drawFlowerIcon(doc, M + 8, hy + 8, 16);
+    // Flor original de Almaia (logo PNG) a la izquierda de "Almaia"
+    if (almaiaLogoB64) {
+      try {
+        const props = doc.getImageProperties(almaiaLogoB64);
+        const ratio = props.width && props.height ? props.height / props.width : 0.8;
+        const lw = 18; const lh = lw * ratio;
+        doc.addImage(almaiaLogoB64, "PNG", M + 3, hy + 1, lw, lh);
+      } catch {
+        drawFlowerIcon(doc, M + 8, hy + 8, 16);
+      }
+    } else {
+      drawFlowerIcon(doc, M + 8, hy + 8, 16);
+    }
     setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 20, hy + 6);
+    doc.text(bizName, M + 24, hy + 6);
 
     setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-    doc.text("BIENESTAR & SALUD", M + 20, hy + (logoBase64 ? 28 : 11));
+    doc.text("BIENESTAR & SALUD", M + 24, hy + (logoBase64 ? 28 : 11));
 
     setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
     doc.text("Distribuidor Independiente Amway", M, hy + (logoBase64 ? 33 : 17));
@@ -1103,10 +1127,26 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   doc.addPage();
   y = M;
 
-  // Header on last page (lighter)
-  drawFlowerIcon(doc, PW / 2, y + 15, 18);
+  // Header on last page (lighter) — flor original de Almaia (logo PNG)
+  if (almaiaLogoB64) {
+    try {
+      const props = doc.getImageProperties(almaiaLogoB64);
+      const ratio = props.width && props.height ? props.height / props.width : 0.8;
+      const lw = 22; const lh = lw * ratio;
+      doc.addImage(almaiaLogoB64, "PNG", (PW - lw) / 2, y, lw, lh);
+      y += lh + 6;
+    } catch {
+      drawFlowerIcon(doc, PW / 2, y + 15, 18);
+    }
+  } else {
+    drawFlowerIcon(doc, PW / 2, y + 15, 18);
+  }
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, PW / 2, y + 30, { align: "center" });
+  doc.text(bizName, PW / 2, y, { align: "center" });
+
+  setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
+  doc.text("BIENESTAR & SALUD", PW / 2, y + 4, { align: "center" });
+  y += 12;
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
   doc.text("BIENESTAR & SALUD", PW / 2, y + 34, { align: "center" });
@@ -1157,8 +1197,6 @@ export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
   const version = "v2.1-" + new Date().toISOString().slice(0, 16).replace("T", " ");
   doc.text(`Generado: ${version}`, PW / 2, y, { align: "center" });
-
-  return doc;
 }
 
 export async function generateQuotePdf(quote: QuoteData): Promise<void> {

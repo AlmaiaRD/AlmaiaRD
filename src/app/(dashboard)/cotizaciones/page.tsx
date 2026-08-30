@@ -18,7 +18,7 @@ import type { Client, Followup, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf } from "@/lib/pdf";
+import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image, Copy, Undo2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -642,15 +642,40 @@ function CotizacionesContent() {
       const CW = PW - M * 2;
       const bizName = settings?.business_name || "Almaia RD";
 
+      // Cargar la flor/logo original de Almaia para el header del catálogo
+      let almaiaLogoB64: string | null = null;
+      try {
+        const logoRes = await fetch("/almaia-logo.png");
+        if (logoRes.ok) {
+          const blob = await logoRes.blob();
+          almaiaLogoB64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch { almaiaLogoB64 = null; }
+
       for (let idx = 0; idx < entries.length; idx++) {
         const entry = entries[idx];
         if (idx > 0) doc.addPage();
         let y = M;
 
-        // ── Compact header ──
-        sc(doc, "#B8837E"); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-        doc.text("ALMAIA RD · BIENESTAR & SALUD", PW / 2, y, { align: "center" });
-        y += 4;
+        // ── Header with Almaia flower/logo ──
+        if (almaiaLogoB64) {
+          try {
+            const props = doc.getImageProperties(almaiaLogoB64);
+            const ratio = props.width && props.height ? props.height / props.width : 0.8;
+            const lw = 14; const lh = lw * ratio;
+            doc.addImage(almaiaLogoB64, "PNG", M, y - 1, lw, lh);
+          } catch { /* sin logo */ }
+        }
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        doc.text(bizName, M + (almaiaLogoB64 ? 17 : 0), y + 2);
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.text("BIENESTAR & SALUD", M + (almaiaLogoB64 ? 17 : 0), y + 6);
+        y += 6;
         doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
         y += 5;
 
@@ -762,6 +787,39 @@ function CotizacionesContent() {
         doc.text("Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
         y += 3;
         doc.text("Precio incluye ITBIS · Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
+      }
+
+      // ── Añadir la hoja de cotización al final ──
+      if (selectedQuote) {
+        const quoteData = {
+          quote_number: selectedQuote.quote_number,
+          quote_date: selectedQuote.quote_date,
+          valid_until: selectedQuote.valid_until,
+          status: selectedQuote.status,
+          client_name: selectedQuote.clients?.full_name || "",
+          client_phone: selectedQuote.clients?.phone || undefined,
+          client_email: selectedQuote.clients?.email || undefined,
+          items: detailItems.map((i) => ({
+            name: i.products?.name || i.custom_name || "Producto",
+            description: i.products?.description || undefined,
+            quantity: Number(i.quantity) || 0,
+            unit_price: Number(i.unit_price) || 0,
+            line_total: Number(i.line_total) || 0,
+            pv: Number(i.pv) || 0,
+          })),
+          subtotal: Number(selectedQuote.subtotal) || 0,
+          itbis_total: Number(selectedQuote.itbis_total) || 0,
+          discount_amount: Number(selectedQuote.discount_amount) || 0,
+          total: Number(selectedQuote.total) || 0,
+          pv_total: Number(selectedQuote.pv_total) || 0,
+          notes: selectedQuote.notes || undefined,
+          logo_url: settings?.logo_url || undefined,
+          signature_url: settings?.signature_url || undefined,
+          business_name: settings?.business_name || "Almaia RD",
+          email: settings?.email || undefined,
+          phone: settings?.phone || undefined,
+        };
+        await drawQuotePdfContent(doc, quoteData);
       }
 
       doc.save("catalogo-productos.pdf");
