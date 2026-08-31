@@ -716,13 +716,8 @@ function CotizacionesContent() {
           doc.text("DESCRIPCIÓN", textX, textY); textY += 4;
           sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
           const descLines = doc.splitTextToSize(entry.description, textW - 2) as string[];
-          const maxDescLines = 6;
-          for (let li = 0; li < Math.min(descLines.length, maxDescLines); li++) {
-            doc.text(descLines[li], textX, textY);
-            textY += 4;
-          }
-          if (descLines.length > maxDescLines) {
-            doc.text("...", textX, textY);
+          for (const dl of descLines) {
+            doc.text(dl, textX, textY);
             textY += 4;
           }
           textY += 3;
@@ -734,17 +729,12 @@ function CotizacionesContent() {
             sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
             doc.text("BENEFICIOS", textX, textY); textY += 4;
             sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-            const maxBenefits = 4;
-            for (let bi = 0; bi < Math.min(benefitList.length, maxBenefits); bi++) {
-              const bLines = doc.splitTextToSize(`• ${benefitList[bi]}`, textW - 4) as string[];
+            for (const benefit of benefitList) {
+              const bLines = doc.splitTextToSize(`• ${benefit}`, textW - 4) as string[];
               for (const bl of bLines) {
                 doc.text(bl, textX + 1, textY);
                 textY += 3.5;
               }
-            }
-            if (benefitList.length > maxBenefits) {
-              doc.text("...", textX + 1, textY);
-              textY += 3.5;
             }
             textY += 2;
           }
@@ -826,10 +816,9 @@ function CotizacionesContent() {
         return h;
       };
 
+      // ── Un producto por página para que nada se superponga y todo sea legible ──
       for (let ei = 0; ei < entries.length; ei++) {
-        const est = estimateEntryHeight(entries[ei]);
-        // Si el producto (o no queda espacio suficiente) no cabe, nueva página con header
-        if (y > M && y + est > footerTop) {
+        if (ei > 0) {
           drawFooter();
           doc.addPage();
           y = drawPageHeader();
@@ -839,7 +828,8 @@ function CotizacionesContent() {
       }
       drawFooter();
 
-      // ── Añadir la hoja de cotización al final ──
+      // ── Añadir la hoja de cotización al final, SIEMPRE en una página nueva separada del catálogo ──
+      doc.addPage();
       const quoteSource = selectedQuote || editingQuote;
       if (quoteSource) {
         const hojaItems = selectedQuote
