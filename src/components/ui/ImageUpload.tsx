@@ -12,12 +12,17 @@ interface ImageUploadProps {
 
 export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentUrl || null);
+  const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevUrlRef = useRef<string | null>(null);
 
   // Sincronizar currentUrl (prop) con preview cuando cambia el producto editado
+  // Use ref to avoid setState in effect; only update when URL actually changes
   useEffect(() => {
-    setPreview(currentUrl || null);
+    const url = currentUrl ?? null;
+    if (url === prevUrlRef.current) return;
+    prevUrlRef.current = url;
+    setPreview(url);
   }, [currentUrl]);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Modal from "@/components/ui/Modal";
 import { Save } from "lucide-react";
 import { createClient, updateClient } from "@/services/clients";
@@ -50,12 +50,15 @@ export default function ClientFormModal({
 }: Props) {
   const [form, setForm] = useState<ClientFormValues>(emptyForm());
   const [saving, setSaving] = useState(false);
+  const prevInitialRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (isOpen) {
-      setForm(initial ? { ...emptyForm(), ...initial } : emptyForm());
-      setSaving(false);
-    }
+    if (!isOpen) return;
+    const initialKey = initial ? JSON.stringify(initial) : "empty";
+    if (initialKey === prevInitialRef.current) return;
+    prevInitialRef.current = initialKey;
+    setForm(initial ? { ...emptyForm(), ...initial } : emptyForm());
+    setSaving(false);
   }, [isOpen, initial]);
 
   async function handleSave() {

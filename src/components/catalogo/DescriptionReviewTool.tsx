@@ -99,8 +99,14 @@ export default function DescriptionReviewTool({
   };
 
   useEffect(() => {
-    if (isOpen) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!isOpen) return;
+    let cancelled = false;
+    load().then(() => {
+      if (!cancelled) {
+        // loaded
+      }
+    });
+    return () => { cancelled = true; };
   }, [isOpen]);
 
   const filtered = useMemo(() => {
