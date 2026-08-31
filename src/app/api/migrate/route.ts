@@ -23,7 +23,7 @@ async function assertAllowed(req: NextRequest): Promise<NextResponse | null> {
     return NextResponse.json({ error: "No disponible en producción" }, { status: 403 });
   }
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  const limit = checkRateLimit(`migrate:${ip}`, 3, 60000);
+  const limit = await checkRateLimit(`migrate:${ip}`, 3, 60000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },

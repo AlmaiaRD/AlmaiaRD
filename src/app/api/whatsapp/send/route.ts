@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  const limit = checkRateLimit(`whatsapp-send:${ip}`, 20, 60000);
+  const limit = await checkRateLimit(`whatsapp-send:${ip}`, 20, 60000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },

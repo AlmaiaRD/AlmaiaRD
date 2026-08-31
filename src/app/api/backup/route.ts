@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  const { allowed } = checkRateLimit(`backup:${ip}`, 2, 60000);
+  const { allowed } = await checkRateLimit(`backup:${ip}`, 2, 60000);
   if (!allowed) {
     return NextResponse.json({ error: "Demasiadas solicitudes. Espera un minuto." }, { status: 429 });
   }

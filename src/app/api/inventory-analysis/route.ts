@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (authError || !user) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  const limit = checkRateLimit(`inventory-analysis:${ip}`, 10, 60000);
+  const limit = await checkRateLimit(`inventory-analysis:${ip}`, 10, 60000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },

@@ -1,26 +1,55 @@
-const store = new Map<string, { count: number; resetTime: number }>();
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-export function checkRateLimit(
+// In-memory fallback for local development (no Upstash credentials)
+const memoryStore = new Map<string, { count: number; resetTime: number }>();
+
+function memoryCheck(key: string, maxRequests: number, windowMs: number): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = memoryStore.get(key);
+  if (!entry || now > entry.resetTime) {
+    memoryStore.set(key, { count: 1, resetTime: now + windowMs });
+    return { allowed: true };
+  }
+  entry.count++;
+  if (entry.count > maxRequests) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetTime - now) / 1000) };
+  }
+  return { allowed: true };
+}
+
+// Upstash Redis client (requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN env vars)
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
+
+const ratelimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      analytics: true,
+      prefix: "rl:",
+    })
+  : null;
+
+export async function checkRateLimit(
   key: string,
   maxRequests = 10,
   windowMs = 60000
-): { allowed: boolean; retryAfter?: number } {
-  const now = Date.now();
-  const entry = store.get(key);
-
-  if (!entry || now > entry.resetTime) {
-    store.set(key, { count: 1, resetTime: now + windowMs });
-    return { allowed: true };
-  }
-
-  entry.count++;
-
-  if (entry.count > maxRequests) {
+): Promise<{ allowed: boolean; retryAfter?: number }> {
+  // If Upstash configured, use distributed rate limit
+  if (ratelimit) {
+    const result = await ratelimit.limit(key);
     return {
-      allowed: false,
-      retryAfter: Math.ceil((entry.resetTime - now) / 1000),
+      allowed: result.success,
+      retryAfter: result.reset ? Math.ceil((result.reset - Date.now()) / 1000) : undefined,
     };
   }
 
-  return { allowed: true };
+  // Fallback: in-memory (per-instance, resets on cold start)
+  // Note: only for local dev; production MUST have Upstash env vars
+  return memoryCheck(key, maxRequests, windowMs);
 }

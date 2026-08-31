@@ -18,6 +18,8 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "@tanstack/react-table": "^8.21.3",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.3",
     "clsx": "^2.1.1",
     "dom-to-image-more": "^3.10.0",
     "exceljs": "^4.4.0",
