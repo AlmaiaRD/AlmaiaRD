@@ -242,7 +242,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   setTextColor(doc, DARK);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("Distribuidor Independiente Amway", M, y + (logoBase64 ? 33 : 17));
+  doc.text("Tus aliados en el camino a tu bienestar y salud.", M, y + (logoBase64 ? 33 : 17));
 
   // Description/location
   setTextColor(doc, GRAY);
@@ -963,18 +963,22 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 
     const infoY = hy + logoH + 6;
     setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("Distribuidor Independiente Amway", M, infoY);
+    doc.text("Tus aliados en el camino a tu bienestar y salud.", M, infoY);
 
     setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
     doc.text("Suplementos, cosmética y bienestar para toda la familia", M, infoY + 4.5);
     doc.text("República Dominicana", M, infoY + 9);
 
-    // Badge — right aligned
-    const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
+    // Badge — right aligned (píldora: extremos redondos, pegado al texto)
+    const badgeH = 16;
+    const badgeRad = badgeH / 2;
+    setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+    const badgeLabel = "COTIZACIÓN";
+    const badgeW = doc.getTextWidth(badgeLabel) + 18;
+    const badgeX = PW - M - badgeW;
     setDrawFillColor(doc, "#F0EBE3");
-    doc.roundedRect(badgeX, hy, badgeW, badgeH, 10, 10, "F");
-    setTextColor(doc, PRIMARY); doc.setFont("helvetica", "bold"); doc.setFontSize(15);
-    doc.text("COTIZACIÓN", badgeX + badgeW / 2, hy + badgeH / 2 + 2.5, { align: "center" });
+    doc.roundedRect(badgeX, hy, badgeW, badgeH, badgeRad, badgeRad, "F");
+    doc.text(badgeLabel, badgeX + badgeW / 2, hy + badgeH / 2 + 2.2, { align: "center" });
 
     setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
     const numberY = hy + badgeH + 7;
@@ -1121,25 +1125,27 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   doc.addPage();
   y = M;
 
-  // Header on last page (lighter) — flor original de Almaia (logo PNG)
+  // Header on last page — flor original de Almaia (logo PNG) alineado a la izquierda, junto al nombre
+  let lastLogoH = 16;
   if (almaiaLogoB64) {
     try {
       const props = doc.getImageProperties(almaiaLogoB64);
       const ratio = props.width && props.height ? props.height / props.width : 0.8;
-      const lw = 22; const lh = lw * ratio;
-      doc.addImage(almaiaLogoB64, "PNG", (PW - lw) / 2, y, lw, lh);
-      y += lh + 6;
+      const lw = 18; const lh = lw * ratio;
+      lastLogoH = lh;
+      doc.addImage(almaiaLogoB64, "PNG", M + 3, y, lw, lh);
+      y += lh + 4;
     } catch {
-      drawFlowerIcon(doc, PW / 2, y + 15, 18);
+      drawFlowerIcon(doc, M + 8, y + 8, 16);
     }
   } else {
-    drawFlowerIcon(doc, PW / 2, y + 15, 18);
+    drawFlowerIcon(doc, M + 8, y + 8, 16);
   }
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, PW / 2, y, { align: "center" });
+  doc.text(bizName, M + 24, y);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", PW / 2, y + 4, { align: "center" });
+  doc.text("BIENESTAR & SALUD", M + 24, y + 4);
   y += 12;
 
   // Mensaje de cierre (texto nuevo)
@@ -1191,7 +1197,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 export async function generateQuotePdf(quote: QuoteData): Promise<void> {
   const doc = await buildQuotePdfDoc(quote);
   const clientName = (quote.client_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
-  doc.save(`cotizacion-${quote.quote_number}_${clientName}.pdf`);
+  doc.save(`AlmaiaRD-${quote.quote_number}_${clientName}.pdf`);
 }
 
 export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
@@ -1210,6 +1216,6 @@ export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
   const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   const link = document.createElement("a");
   link.href = jpgDataUrl;
-  link.download = `cotizacion-${quote.quote_number}_${clientName}.jpg`;
+  link.download = `AlmaiaRD-${quote.quote_number}_${clientName}.jpg`;
   link.click();
 }

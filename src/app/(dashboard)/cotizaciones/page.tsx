@@ -427,7 +427,7 @@ function CotizacionesContent() {
           <div>
             <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(st?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
-            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
+            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Tus aliados en el camino a tu bienestar y salud.</p>
             <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
             <p style="font-size:12px;color:#9C8A82;margin:0;">Rep\u00fablica Dominicana</p>
           </div>
@@ -758,22 +758,25 @@ function CotizacionesContent() {
         if (pi > 0) doc.addPage();
         let y = M;
 
-        // ── Header with Almaia flower/logo ──
-        let headLogoH = 11;
+        // ── Header with Almaia flower/logo (logo + nombre alineados, sin superposición) ──
+        const headerTop = y;
+        let headLogoW = 0; let headLogoH = 11; let headLogoBottom = headerTop + 11;
         if (almaiaLogoB64) {
           try {
             const props = doc.getImageProperties(almaiaLogoB64);
             const ratio = props.width && props.height ? props.height / props.width : 0.8;
-            const lw = 14; const lh = lw * ratio;
-            headLogoH = lh;
-            doc.addImage(almaiaLogoB64, "PNG", M, y - 1, lw, lh);
-          } catch { /* sin logo */ }
-        }
+            headLogoW = 14; headLogoH = headLogoW * ratio;
+            doc.addImage(almaiaLogoB64, "PNG", M, headerTop, headLogoW, headLogoH);
+            headLogoBottom = headerTop + headLogoH;
+          } catch { /* sin logo */ headLogoH = 11; headLogoBottom = headerTop + 11; }
+        } else { headLogoH = 11; headLogoBottom = headerTop + 11; }
+        const catCenterY = headerTop + headLogoH / 2;
+        const catTextX = M + (almaiaLogoB64 ? headLogoW + 5 : 0);
         sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-        doc.text(bizName, M + (almaiaLogoB64 ? 17 : 0), y + headLogoH / 2);
+        doc.text(bizName, catTextX, catCenterY + 2);
         sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("BIENESTAR & SALUD", M + (almaiaLogoB64 ? 17 : 0), y + headLogoH / 2 + 4);
-        y += 6;
+        doc.text("BIENESTAR & SALUD", catTextX, catCenterY + 6);
+        y = headLogoBottom + 7;
         doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
         y += 5;
 
@@ -789,7 +792,7 @@ function CotizacionesContent() {
         doc.text(bizName, PW / 2, y, { align: "center" });
         y += 4;
         sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-        doc.text("Aliados a tu Bienestar y Salud", PW / 2, y, { align: "center" });
+        doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, y, { align: "center" });
         y += 3;
         doc.text("Precio incluye ITBIS", PW / 2, y, { align: "center" });
       }
