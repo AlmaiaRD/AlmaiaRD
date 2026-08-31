@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { items, discount_amount, margin } = body;
+    const { items, discount_amount } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Se requiere al menos un producto" }, { status: 400 });

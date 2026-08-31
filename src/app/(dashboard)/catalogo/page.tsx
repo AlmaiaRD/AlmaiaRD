@@ -584,7 +584,7 @@ export default function CatalogoPage() {
       };
 
       const drawPageHeader = () => {
-        let hTop = M;
+        const hTop = M;
         let hLogoW = 0; let hLogoH = 13; let hLogoBottom = hTop + hLogoH;
         if (almaiaLogoB64) {
           try {
@@ -1801,10 +1801,10 @@ export default function CatalogoPage() {
 
           <div className="bg-[#FAF6F0] rounded-xl p-4 border border-[#E8E0D8]">
             <p className="text-sm text-[#5C3E35]">
-              <strong>Se guardará automáticamente</strong> como una cotización con estado <strong>"Catálogo"</strong> en el módulo Cotizaciones.
+              <strong>Se guardará automáticamente</strong> como una cotización con estado <strong>{'"'}{"Catálogo"}{'"'}</strong> en el módulo Cotizaciones.
             </p>
             <p className="text-xs text-[#9C8A82] mt-1">
-              Cuando el cliente apruebe el documento, entra a Cotizaciones, abre esa cotización y usa <strong>Editar</strong> para agregar el cliente, fechas, notas y el resto de los detalles.
+              Cuando el cliente apruebe el documento, entra a Cotizaciones, abre esa cotización y usa <strong>{'"'}{"Editar"}{'"'}</strong> para agregar el cliente, fechas, notas y el resto de los detalles.
             </p>
           </div>
 

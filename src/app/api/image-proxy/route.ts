@@ -1,11 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function isAllowedHost(host: string): boolean {
+  // Block private/internal IP ranges and localhost
+  const blockedPatterns = [
+    /^localhost$/i,
+    /^127\./,
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+    /^192\.168\./,
+    /^169\.254\./,
+    /^::1$/,
+    /^fc00:/i,
+    /^fe80:/i,
+  ];
+  return !blockedPatterns.some((p) => p.test(host));
+}
+
+function isAllowedUrl(url: string): { allowed: boolean; reason?: string } {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return { allowed: false, reason: "Invalid URL" };
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    return { allowed: false, reason: "Only HTTP/HTTPS allowed" };
+  }
+  if (!isAllowedHost(parsed.hostname)) {
+    return { allowed: false, reason: "Blocked host (private/internal IP)" };
+  }
+  return { allowed: true };
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");
 
   if (!url) {
     return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
+  }
+
+  const urlCheck = isAllowedUrl(url);
+  if (!urlCheck.allowed) {
+    console.warn("[image-proxy] Blocked SSRF attempt:", urlCheck.reason, url);
+    return NextResponse.json({ error: urlCheck.reason }, { status: 400 });
   }
 
   try {
@@ -55,9 +93,6 @@ export async function GET(request: NextRequest) {
         headers: {
           "Content-Type": contentType,
           "Cache-Control": "public, max-age=31536000, immutable",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
         },
       });
     }
@@ -69,9 +104,6 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET",
-        "Access-Control-Allow-Headers": "Content-Type",
       },
     });
   } catch (error) {
