@@ -264,7 +264,7 @@ export interface Followup {
   quote_id?: string;
 }
 
-export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED";
+export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED" | "CATALOGO";
 
 export interface Quote {
   id: string;

@@ -7,9 +7,8 @@ import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
 import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, getBundleItemsBatch, createBundle, updateBundle, removeProductImage } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
-import { createQuote } from "@/services/quotes";
-import { getClients } from "@/services/clients";
-import type { Product, Category, Subbrand, Settings, BundleItem, Client } from "@/types/database";
+import { createQuote, getQuotes } from "@/services/quotes";
+import type { Product, Category, Subbrand, Settings, BundleItem } from "@/types/database";
 import { formatCurrency } from "@/lib/utils";
 import { ITBIS_RATE, ITBIS_MULTIPLIER } from "@/lib/constants";
 import { invoiceLineTotalForUnit, computeInvoiceMath } from "@/lib/invoiceMath";
@@ -51,10 +50,10 @@ export default function CatalogoPage() {
   const [catalogPdfSearch, setCatalogPdfSearch] = useState("");
   const [selectedCatalogIds, setSelectedCatalogIds] = useState<Set<string>>(new Set());
   const [catalogPdfNumber, setCatalogPdfNumber] = useState("001");
-  const [catalogPdfClientId, setCatalogPdfClientId] = useState("");
-  const [catalogPdfMigrate, setCatalogPdfMigrate] = useState(false);
-  const [clients, setClients] = useState<Client[]>([]);
   const [generatingCatalog, setGeneratingCatalog] = useState(false);
+  const [showCatalogsList, setShowCatalogsList] = useState(false);
+  const [catalogQuotes, setCatalogQuotes] = useState<any[]>([]);
+  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
 
   const [form, setForm] = useState({
     code: "", name: "", description: "", benefits: "",
@@ -481,13 +480,22 @@ export default function CatalogoPage() {
 
   async function openCatalogPdfModal() {
     setSelectedCatalogIds(new Set(products.filter((p) => p.active !== false).map((p) => p.id)));
-    if (clients.length === 0) {
-      try {
-        const c = await getClients();
-        setClients(c);
-      } catch { setClients([]); }
-    }
     setShowCatalogPdfModal(true);
+  }
+
+  async function openCatalogsList() {
+    setLoadingCatalogs(true);
+    setShowCatalogsList(true);
+    try {
+      const q = await getQuotes();
+      setCatalogQuotes(q.filter((x: any) => x.status === "CATALOGO"));
+    } catch (e: any) {
+      console.warn("[catalogsList] error:", e);
+      setCatalogQuotes([]);
+      toast.error("Error al cargar los catálogos guardados");
+    } finally {
+      setLoadingCatalogs(false);
+    }
   }
 
   function toggleCatalogProduct(id: string) {
@@ -687,7 +695,10 @@ export default function CatalogoPage() {
       const fileName = `CAT-${num}-${mm}${aa}.pdf`;
       doc.save(fileName);
 
-      if (catalogPdfMigrate && catalogPdfClientId) {
+      // Guardar el catálogo SIEMPRE como una cotización con estado CATALOGO
+      // (sin cliente todavía). Cuando el cliente apruebe, se completa la
+      // cotización desde Cotizaciones (cliente, fechas, notas) al editarla.
+      try {
         const margin = settings?.default_margin ?? 30;
         const invoiceItems = selected.map((p) => ({
           quantity: 1,
@@ -698,16 +709,17 @@ export default function CatalogoPage() {
         const math = computeInvoiceMath(invoiceItems, 0);
         const pvTotal = selected.reduce((s, p) => s + (Number(p.pv || 0) * 1), 0);
         await createQuote({
-          client_id: catalogPdfClientId,
+          client_id: null,
           quote_date: new Date().toISOString().slice(0, 10),
           valid_until: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
-          status: "DRAFT",
+          status: "CATALOGO",
           subtotal: math.subtotal,
           discount_amount: 0,
           itbis_total: math.itbis_total,
           total: math.total,
           pv_total: pvTotal,
           margin,
+          notes: "Catálogo PDF generado desde el módulo Catálogo.",
           items: selected.map((p, idx) => ({
             product_id: p.id,
             quantity: 1,
@@ -718,7 +730,10 @@ export default function CatalogoPage() {
             itbis_amount: math.lines[idx]?.itbis_amount ?? 0,
           })),
         });
-        toast.success("Cotización creada desde el catálogo");
+        toast.success("Catálogo guardado como cotización (estado Catálogo). Complétalo en Cotizaciones cuando el cliente apruebe.");
+      } catch (err: any) {
+        console.warn("[catPdf] No se pudo guardar como cotización:", err);
+        toast.error("El PDF se descargó, pero no se pudo guardar como cotización.");
       }
 
       setShowCatalogPdfModal(false);
@@ -765,6 +780,9 @@ export default function CatalogoPage() {
           </button>
           <button onClick={openCatalogPdfModal} className="flex items-center gap-2 bg-white border border-[#B8837E]/50 text-[#B8837E] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 transition-all duration-200">
             <FileDown size={18} /> Catálogo PDF
+          </button>
+          <button onClick={openCatalogsList} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+            <Archive size={18} /> Mis catálogos
           </button>
           <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm">
             <Plus size={18} /> Nuevo Producto
@@ -1782,32 +1800,54 @@ export default function CatalogoPage() {
           </div>
 
           <div className="bg-[#FAF6F0] rounded-xl p-4 border border-[#E8E0D8]">
-            <label className="flex items-center gap-2 text-sm font-medium text-[#5C3E35] cursor-pointer">
-              <input type="checkbox" checked={catalogPdfMigrate} onChange={(e) => setCatalogPdfMigrate(e.target.checked)}
-                className="w-4 h-4 rounded text-[#B8837E] focus:ring-[#B8837E]/30" />
-              Migrar los productos seleccionados a una nueva cotización
-            </label>
-            {catalogPdfMigrate && (
-              <div className="mt-3">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cliente</label>
-                <select value={catalogPdfClientId} onChange={(e) => setCatalogPdfClientId(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
-                  <option value="">Selecciona un cliente...</option>
-                  {clients.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-                </select>
-              </div>
-            )}
+            <p className="text-sm text-[#5C3E35]">
+              <strong>Se guardará automáticamente</strong> como una cotización con estado <strong>"Catálogo"</strong> en el módulo Cotizaciones.
+            </p>
+            <p className="text-xs text-[#9C8A82] mt-1">
+              Cuando el cliente apruebe el documento, entra a Cotizaciones, abre esa cotización y usa <strong>Editar</strong> para agregar el cliente, fechas, notas y el resto de los detalles.
+            </p>
           </div>
 
           <div className="flex gap-3">
             <button onClick={() => setShowCatalogPdfModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
               Cancelar
             </button>
-            <button onClick={generateCatalogPdfPack} disabled={generatingCatalog || selectedCatalogIds.size === 0 || (catalogPdfMigrate && !catalogPdfClientId)}
+            <button onClick={generateCatalogPdfPack} disabled={generatingCatalog || selectedCatalogIds.size === 0}
               className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <FileDown size={16} /> {generatingCatalog ? "Generando..." : "Generar Catálogo PDF"}
             </button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showCatalogsList} onClose={() => setShowCatalogsList(false)} title="Mis Catálogos Guardados">
+        <div className="space-y-4">
+          <p className="text-sm text-[#9C8A82]">
+            Catálogos generados desde este módulo y guardados como cotizaciones con estado <strong>Catálogo</strong>. Ábrelos en Cotizaciones para ver/descargar el PDF o completarlos cuando el cliente apruebe.
+          </p>
+          {loadingCatalogs ? (
+            <div className="py-10 text-center text-[#9C8A82] text-sm"><div className="inline-block w-6 h-6 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+          ) : catalogQuotes.length === 0 ? (
+            <div className="py-10 text-center text-[#9C8A82] text-sm">
+              <Archive size={40} className="mx-auto mb-3 opacity-40" />
+              <p>No hay catálogos guardados todavía.<br />Genera un Catálogo PDF para que aparezca aquí.</p>
+            </div>
+          ) : (
+            <div className="max-h-96 overflow-y-auto border border-[#E8E0D8] rounded-xl divide-y divide-[#E8E0D8]">
+              {catalogQuotes.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#5C3E35]">{c.quote_number}</p>
+                    <p className="text-xs text-[#9C8A82]">{new Date(c.created_at).toLocaleDateString()} · {c.total ? formatCurrency(c.total) : "—"}</p>
+                  </div>
+                  <button onClick={() => router.push("/cotizaciones")}
+                    className="h-10 px-4 rounded-xl bg-[#B8837E] text-white text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+                    Abrir en Cotizaciones
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </Modal>
     </PageContainer>

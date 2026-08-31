@@ -30,6 +30,7 @@ const statusMap: Record<string, { label: string; variant: "success" | "warning" 
   REJECTED: { label: "Rechazada", variant: "danger" },
   CANCELLED: { label: "Cancelada", variant: "danger" },
   CONVERTED: { label: "Convertida", variant: "success" },
+  CATALOGO: { label: "Catálogo", variant: "warning" },
 };
 
 interface FormItem {
@@ -302,15 +303,15 @@ function CotizacionesContent() {
   const pvTotal = Math.round(items.reduce((s, i) => s + (Number(i.pv) || 0) * (Number(i.quantity) || 0), 0) * 100) / 100;
 
   async function handleSave() {
-    if (!clientId) { toast.error("Selecciona un cliente"); return; }
+    if (!clientId && !(editingId && editingStatus === "CATALOGO")) { toast.error("Selecciona un cliente"); return; }
     if (items.length === 0) { toast.error("Agrega al menos un producto"); return; }
     setSaving(true);
     try {
       const payload = {
-        client_id: clientId,
+        client_id: clientId || null,
         quote_date: quoteDate,
         valid_until: validUntil,
-        status: (editingId ? editingStatus : "DRAFT") as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED",
+        status: (editingId ? editingStatus : "DRAFT") as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "CONVERTED" | "CATALOGO",
         subtotal,
         discount_amount: discountValue,
         itbis_total: itbisTotal,

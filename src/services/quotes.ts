@@ -18,7 +18,7 @@ export interface QuoteInputItem {
 }
 
 export interface QuoteInput {
-  client_id: string;
+  client_id?: string | null;
   quote_date: string;
   valid_until: string;
   status: QuoteStatus;
@@ -144,7 +144,7 @@ export async function createQuote(data: QuoteInput) {
     .from("quotes")
     .insert({
       quote_number: quoteNumber,
-      client_id: String(data.client_id),
+      client_id: data.client_id ? String(data.client_id) : null,
       quote_date: String(data.quote_date),
       valid_until: String(data.valid_until),
       status: data.status,
@@ -186,7 +186,7 @@ export async function createQuote(data: QuoteInput) {
 
 export async function updateQuote(id: string, data: QuoteInput) {
   const patch: Record<string, unknown> = {
-    client_id: data.client_id,
+    client_id: data.client_id ? String(data.client_id) : null,
     quote_date: data.quote_date,
     valid_until: data.valid_until,
     status: data.status,
