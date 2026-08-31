@@ -756,52 +756,59 @@ function CotizacionesContent() {
         return y + 4;
       };
 
-      // 2 productos por página (diseño holgado), con header/footer comunes por página
-      for (let pi = 0; pi < entries.length; pi += 2) {
-        if (pi > 0) doc.addPage();
-        let y = M;
+      // ── Paginación dinámica: 2 productos por página cuando caben, página nueva si el contenido se desborda ──
+      const footerTop = PH - 34;
 
-        // ── Header con logotipo y nombre de Almaia alineados (igual que la cotización) ──
-        const headerTop = y;
-        let headLogoW = 0; let headLogoH = 11; let headLogoBottom = headerTop + 11;
+      const drawFooter = () => {
+        let fy = PH - 20;
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+        doc.text(bizName, PW / 2, fy, { align: "center" });
+        fy += 4;
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, fy, { align: "center" });
+        fy += 3;
+        doc.text("Precio incluye ITBIS", PW / 2, fy, { align: "center" });
+        fy += 4;
+        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
+        doc.text(`Generado: ${"v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, fy, { align: "center" });
+      };
+
+      const drawPageHeader = () => {
+        let hTop = M;
+        let hLogoW = 0; let hLogoH = 13; let hLogoBottom = hTop + hLogoH;
         if (almaiaLogoB64) {
           try {
-            const props = doc.getImageProperties(almaiaLogoB64);
-            const ratio = props.width && props.height ? props.height / props.width : 0.8;
-            headLogoW = 18; headLogoH = headLogoW * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M + 3, headerTop, headLogoW, headLogoH);
-            headLogoBottom = headerTop + headLogoH;
-          } catch { headLogoH = 11; headLogoBottom = headerTop + 11; }
-        } else { headLogoH = 11; headLogoBottom = headerTop + 11; }
-        const catCenterY = headerTop + headLogoH / 2;
-        const catTextX = M + 24;
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(17);
-        doc.text(bizName, catTextX, catCenterY + 2);
+            const p = doc.getImageProperties(almaiaLogoB64);
+            const ratio = p.width && p.height ? p.height / p.width : 0.8;
+            hLogoW = 20; hLogoH = hLogoW * ratio;
+            doc.addImage(almaiaLogoB64, "PNG", M, hTop, hLogoW, hLogoH);
+            hLogoBottom = hTop + hLogoH;
+          } catch { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
+        } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
+        const hCenterY = hTop + hLogoH / 2;
+        const hTextX = M + hLogoW + 4;
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
+        doc.text(bizName, hTextX, hCenterY);
         sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("BIENESTAR & SALUD", catTextX, catCenterY + 6);
-        y = headLogoBottom + 7;
-        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
-        y += 5;
+        doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
+        const hy = hLogoBottom + 7;
+        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
+        return hy + 5;
+      };
 
-        const pageEntries = entries.slice(pi, pi + 2);
-        for (const entry of pageEntries) {
-          y = await drawCatalogEntry(entry, y);
-          y += 8;
+      let y = drawPageHeader();
+      const minEntryH = 88;
+      for (let ei = 0; ei < entries.length; ei++) {
+        // Si el siguiente producto no cabe en el espacio disponible, nueva página con header
+        if (y > M && y + minEntryH > footerTop) {
+          drawFooter();
+          doc.addPage();
+          y = drawPageHeader();
         }
-
-        // ── Footer ──
-        y = PH - 20;
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-        doc.text(bizName, PW / 2, y, { align: "center" });
-        y += 4;
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-        doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, y, { align: "center" });
-        y += 3;
-        doc.text("Precio incluye ITBIS", PW / 2, y, { align: "center" });
-        y += 4;
-        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
-        doc.text(`Generado: ${"v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, y, { align: "center" });
+        y = await drawCatalogEntry(entries[ei], y);
+        y += 8;
       }
+      drawFooter();
 
       // ── Añadir la hoja de cotización al final ──
       const quoteSource = selectedQuote || editingQuote;
@@ -846,12 +853,14 @@ function CotizacionesContent() {
         await drawQuotePdfContent(doc, quoteData);
       }
 
-      // ── Naming: <numero>_<cliente>-Detalle_v2.3 <fecha>.pdf (único e inequívoco, sin palabras antes de COT) ──
+      // ── Naming: COT-XXXX-NombreCliente-Detalle.MMAA.pdf (sin palabras antes de COT, cliente sin espacios) ──
       const catQuoteNum = quoteSource?.quote_number || "COT-0000";
       const catClientRaw = quoteSource?.clients?.full_name?.trim() || "cliente";
-      const catClientName = catClientRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
-      const catStamp = new Date().toISOString().slice(0, 16).replace("T", "-").replace(":", "-");
-      doc.save(`${catQuoteNum}_${catClientName}-Detalle_v2.3_${catStamp}.pdf`);
+      const catClientName = catClientRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, "");
+      const catDate = quoteSource?.quote_date ? new Date(quoteSource.quote_date) : null;
+      const mm = catDate ? String(catDate.getMonth() + 1).padStart(2, "0") : "";
+      const aa = catDate ? String(catDate.getFullYear()).slice(-2) : "";
+      doc.save(`${catQuoteNum}-${catClientName}-Detalle.${mm}${aa}.pdf`);
       setShowCatalogEditor(false);
       toast.success("Catálogo PDF generado");
     } catch (e: any) {

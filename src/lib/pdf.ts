@@ -938,14 +938,14 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   // Helper to draw header on any page
   const drawHeader = (pageY: number) => {
     let hy = pageY;
-    // Flor original de Almaia (logo PNG) a la izquierda de "Almaia", centrada verticalmente con el nombre
+    // Flor original de Almaia (logo PNG) a la izquierda de "Almaia", ambos alineados a la izquierda (como las facturas)
     let logoW = 0; let logoH = 0;
     if (almaiaLogoB64) {
       try {
         const props = doc.getImageProperties(almaiaLogoB64);
         const ratio = props.width && props.height ? props.height / props.width : 0.8;
-        logoW = 18; logoH = logoW * ratio;
-        doc.addImage(almaiaLogoB64, "PNG", M + 3, hy + 1, logoW, logoH);
+        logoW = 20; logoH = logoW * ratio;
+        doc.addImage(almaiaLogoB64, "PNG", M, hy, logoW, logoH);
       } catch {
         logoW = 16; logoH = 16;
         drawFlowerIcon(doc, M + 8, hy + 8, 16);
@@ -954,12 +954,12 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       logoW = 16; logoH = 16;
       drawFlowerIcon(doc, M + 8, hy + 8, 16);
     }
-    const nameBaseY = hy + logoH / 2 + 2;
+    const nameBaseY = hy + logoH / 2;
     setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 24, nameBaseY);
+    doc.text(bizName, M + logoW + 4, nameBaseY);
 
     setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-    doc.text("BIENESTAR & SALUD", M + 24, nameBaseY + 5);
+    doc.text("BIENESTAR & SALUD", M + logoW + 4, nameBaseY + 5);
 
     const infoY = hy + logoH + 6;
     setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
@@ -1125,28 +1125,29 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   doc.addPage();
   y = M;
 
-  // Header on last page — flor original de Almaia (logo PNG) alineado a la izquierda, junto al nombre
-  let lastLogoH = 16;
+  // Header on last page — flor original de Almaia (logo PNG) a la izquierda, "Almaia" a su derecha alineado (como las facturas)
+  let lastLogoW = 0; let lastLogoH = 16;
   if (almaiaLogoB64) {
     try {
       const props = doc.getImageProperties(almaiaLogoB64);
       const ratio = props.width && props.height ? props.height / props.width : 0.8;
-      const lw = 18; const lh = lw * ratio;
-      lastLogoH = lh;
-      doc.addImage(almaiaLogoB64, "PNG", M + 3, y, lw, lh);
-      y += lh + 4;
+      lastLogoW = 20; lastLogoH = lastLogoW * ratio;
+      doc.addImage(almaiaLogoB64, "PNG", M, y, lastLogoW, lastLogoH);
     } catch {
+      lastLogoW = 16;
       drawFlowerIcon(doc, M + 8, y + 8, 16);
     }
   } else {
+    lastLogoW = 16;
     drawFlowerIcon(doc, M + 8, y + 8, 16);
   }
+  const lastCenterY = y + lastLogoH / 2;
   setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, M + 24, y);
+  doc.text(bizName, M + lastLogoW + 4, lastCenterY);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", M + 24, y + 4);
-  y += 12;
+  doc.text("BIENESTAR & SALUD", M + lastLogoW + 4, lastCenterY + 5);
+  y += Math.max(lastLogoH, 20) + 6;
 
   // Mensaje de cierre (texto nuevo)
   y += 16;
