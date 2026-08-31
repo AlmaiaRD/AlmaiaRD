@@ -1190,7 +1190,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", PW / 2, y, { align: "center" });
   y += 4;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-  const version = "v2.2-" + new Date().toISOString().slice(0, 16).replace("T", " ");
+  const version = "v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ");
   doc.text(`Generado: ${version}`, PW / 2, y, { align: "center" });
 }
 

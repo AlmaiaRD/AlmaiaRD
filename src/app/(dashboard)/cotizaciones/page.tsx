@@ -549,7 +549,7 @@ function CotizacionesContent() {
       const { canvas, quote_number } = await captureQuote(quote);
       const link = document.createElement("a");
       const clientName = quote.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      link.download = `cotizacion-${quote_number}-${clientName}.jpg`;
+      link.download = `${quote_number}_${clientName}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
       toast.success("JPG descargado");
@@ -795,6 +795,9 @@ function CotizacionesContent() {
         doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, y, { align: "center" });
         y += 3;
         doc.text("Precio incluye ITBIS", PW / 2, y, { align: "center" });
+        y += 4;
+        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
+        doc.text(`Generado: ${"v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, y, { align: "center" });
       }
 
       // ── Añadir la hoja de cotización al final ──
