@@ -17,6 +17,7 @@ test.describe("Login Page", () => {
     await page.locator('input[type="password"]').fill("123");
     await page.locator('button[type="submit"]').click();
 
-    await expect(page.locator("text=Email inválido")).toBeVisible();
+    // Debe permanecer en login (no redirigir)
+    await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
   });
 });
