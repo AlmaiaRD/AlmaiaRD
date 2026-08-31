@@ -11,7 +11,7 @@ import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuote
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts } from "@/services/products";
-import { getSettings } from "@/services/settings";
+import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getFollowupsByQuote } from "@/services/followups";
 import { getBankAccounts } from "@/services/invoices";
 import type { Client, Followup, Settings } from "@/types/database";
@@ -408,7 +408,7 @@ function CotizacionesContent() {
         signature_url: settings?.signature_url || undefined,
         business_name: settings?.business_name || "Almaia RD",
         email: settings?.email || undefined,
-        phone: settings?.phone || undefined,
+        phone: resolveDefaultPhone(settings) || undefined,
       });
     } catch (e: any) {
       console.error("[handlePdf] error:", e);
@@ -867,7 +867,7 @@ function CotizacionesContent() {
           signature_url: settings?.signature_url || undefined,
           business_name: settings?.business_name || "Almaia RD",
           email: settings?.email || undefined,
-          phone: settings?.phone || undefined,
+          phone: resolveDefaultPhone(settings) || undefined,
         };
         await drawQuotePdfContent(doc, quoteData);
       }
@@ -1454,7 +1454,7 @@ function CotizacionesContent() {
               signature_url: settings?.signature_url || undefined,
               business_name: settings?.business_name || "Almaia RD",
               email: settings?.email || undefined,
-              phone: settings?.phone || undefined,
+              phone: resolveDefaultPhone(settings) || undefined,
             });
             return { filename: `cotizacion-${full.quote_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}

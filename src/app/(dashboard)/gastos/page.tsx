@@ -7,7 +7,7 @@ import { formatCurrency, formatDate, numberToWords, getLocalDateString } from "@
 import { normalize } from "@/lib/search";
 import { generateExpensePdf } from "@/lib/pdf";
 import { getExpenses, createExpense, updateExpense, deleteExpense } from "@/services/expenses";
-import { getSettings } from "@/services/settings";
+import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Search, TrendingDown, Edit3, Trash2, Save, Eye, FileText, Download, Flower2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -340,7 +340,7 @@ export default function GastosPage() {
       logo_url: settings?.logo_url,
       business_name: settings?.business_name,
       email: settings?.email,
-      phone: settings?.phone,
+      phone: resolveDefaultPhone(settings),
     });
   }
 

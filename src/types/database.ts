@@ -362,6 +362,8 @@ export interface Settings {
   currency?: string;
   email: string;
   phone: string;
+  phone_2?: string;
+  default_phone?: string;
   sender_name: string;
   email_template: string;
   whatsapp_template: string;

@@ -13,7 +13,7 @@ import CommunicationDraftModal from "@/components/communications/CommunicationDr
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
-import { getSettings } from "@/services/settings";
+import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import type { Client, BankAccount, Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
@@ -483,7 +483,7 @@ export default function FacturacionPage() {
         signature_url: settings?.signature_url || undefined,
         business_name: settings?.business_name || "Almaia RD",
         email: settings?.email || undefined,
-        phone: settings?.phone || undefined,
+        phone: resolveDefaultPhone(settings) || undefined,
       });
       const clientName = full.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
       doc.save(`factura-${full.invoice_number}-${clientName}.pdf`);
@@ -1049,7 +1049,7 @@ export default function FacturacionPage() {
               signature_url: settings?.signature_url || undefined,
               business_name: settings?.business_name || "Almaia RD",
               email: settings?.email || undefined,
-              phone: settings?.phone || undefined,
+              phone: resolveDefaultPhone(settings) || undefined,
             });
             return { filename: `factura-${full.invoice_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}

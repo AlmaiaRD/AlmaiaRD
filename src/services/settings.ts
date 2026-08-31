@@ -5,6 +5,11 @@ import type { Settings, BankAccount } from "@/types/database";
 
 export type SettingsResult = Settings & { has_smtp_password?: boolean };
 
+export function resolveDefaultPhone(s?: { phone?: string; phone_2?: string; default_phone?: string } | null): string {
+  if (!s) return "";
+  return s.default_phone === "phone_2" && s.phone_2 ? s.phone_2 : s.phone || "";
+}
+
 function isMigrationPending(error: { code?: string; message?: string } | null): boolean {
   return Boolean(
     error?.code === "PGRST202" || /could not find the function/i.test(error?.message || "")
@@ -125,6 +130,8 @@ export async function updateSettings(
     quote_prefix: settings.quote_prefix,
     currency: settings.currency,
     nutrilite_itbis_enabled: settings.nutrilite_itbis_enabled,
+    phone_2: settings.phone_2,
+    default_phone: settings.default_phone,
   };
   // No sobrescribir la contraseña SMTP cuando el cliente la envía vacía (enmascarada).
   if (settings.smtp_pass) {

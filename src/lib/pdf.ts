@@ -1178,7 +1178,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 
   // Contact info
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
-  const phone = "809-863-5602";
+  const phone = quote.phone || "809-863-5602";
   const email = quote.email || "info@almaia-rd.com";
   doc.text(`Tel: ${phone}`, PW / 2, y, { align: "center" }); y += 5;
   doc.text(`Email: ${email}`, PW / 2, y, { align: "center" }); y += 5;

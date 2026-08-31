@@ -69,6 +69,8 @@ export default function ConfiguracionPage() {
     signature_url: "",
     email: "",
     phone: "",
+    phone_2: "",
+    default_phone: "phone",
     sender_name: "",
     default_margin: 30,
     invoice_prefix: "FAC-",
@@ -147,6 +149,8 @@ Responde en español en máximo 3 oraciones:`,
             signature_url: settingsData.signature_url || "",
             email: (settingsData as any).email || "",
             phone: (settingsData as any).phone || "",
+            phone_2: (settingsData as any).phone_2 || "",
+            default_phone: (settingsData as any).default_phone || "phone",
             sender_name: (settingsData as any).sender_name || "",
             email_template: (settingsData as any).email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
             whatsapp_template: (settingsData as any).whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
@@ -205,6 +209,8 @@ Responde en español en máximo 3 oraciones:`,
         signature_url: form.signature_url,
         email: form.email,
         phone: form.phone,
+        phone_2: form.phone_2,
+        default_phone: form.default_phone,
         sender_name: form.sender_name,
         email_template: form.email_template,
         whatsapp_template: form.whatsapp_template,
@@ -430,6 +436,37 @@ Responde en español en máximo 3 oraciones:`,
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="info@almaia-rd.com"
                   className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Teléfono 1</label>
+                <input type="text" value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="809-000-0000"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Teléfono 2</label>
+                <input type="text" value={form.phone_2}
+                  onChange={(e) => setForm({ ...form, phone_2: e.target.value })}
+                  placeholder="809-000-0000"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-2">Teléfono predeterminado (aparece en facturas, recibos, cotizaciones y demás documentos)</label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 text-sm text-[#5C3E35] cursor-pointer">
+                    <input type="radio" name="default_phone" value="phone" checked={form.default_phone === "phone"}
+                      onChange={(e) => setForm({ ...form, default_phone: e.target.value })}
+                      className="w-4 h-4 text-[#B8837E] focus:ring-[#B8837E]/30" />
+                    Teléfono 1 ({form.phone ? form.phone : "vacío"})
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-[#5C3E35] cursor-pointer">
+                    <input type="radio" name="default_phone" value="phone_2" checked={form.default_phone === "phone_2"}
+                      onChange={(e) => setForm({ ...form, default_phone: e.target.value })}
+                      className="w-4 h-4 text-[#B8837E] focus:ring-[#B8837E]/30" />
+                    Teléfono 2 ({form.phone_2 ? form.phone_2 : "vacío"})
+                  </label>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre del remitente</label>

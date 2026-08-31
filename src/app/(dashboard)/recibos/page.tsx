@@ -8,7 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice, getReceiptsPaginated } from "@/services/receipts";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
-import { getSettings } from "@/services/settings";
+import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getLocalDateString } from "@/lib/utils";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
 import { buildReceiptPdfDoc } from "@/lib/pdf";
@@ -247,7 +247,7 @@ export default function RecibosPage() {
         signature_url: settings?.signature_url || undefined,
         business_name: settings?.business_name || "Almaia RD",
         email: settings?.email || undefined,
-        phone: settings?.phone || undefined,
+        phone: resolveDefaultPhone(settings) || undefined,
       });
       const clientName = (full.invoices?.clients?.full_name || full.clients?.full_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
       doc.save(`recibo-${full.receipt_number}-${clientName}.pdf`);
@@ -603,7 +603,7 @@ export default function RecibosPage() {
               signature_url: settings?.signature_url || undefined,
               business_name: settings?.business_name || "Almaia RD",
               email: settings?.email || undefined,
-              phone: settings?.phone || undefined,
+              phone: resolveDefaultPhone(settings) || undefined,
             });
             return { filename: `recibo-${full.receipt_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}
