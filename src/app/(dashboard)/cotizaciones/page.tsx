@@ -758,21 +758,21 @@ function CotizacionesContent() {
         if (pi > 0) doc.addPage();
         let y = M;
 
-        // ── Header with Almaia flower/logo (logo + nombre alineados, sin superposición) ──
+        // ── Header con logotipo y nombre de Almaia alineados (igual que la cotización) ──
         const headerTop = y;
         let headLogoW = 0; let headLogoH = 11; let headLogoBottom = headerTop + 11;
         if (almaiaLogoB64) {
           try {
             const props = doc.getImageProperties(almaiaLogoB64);
             const ratio = props.width && props.height ? props.height / props.width : 0.8;
-            headLogoW = 14; headLogoH = headLogoW * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M, headerTop, headLogoW, headLogoH);
+            headLogoW = 18; headLogoH = headLogoW * ratio;
+            doc.addImage(almaiaLogoB64, "PNG", M + 3, headerTop, headLogoW, headLogoH);
             headLogoBottom = headerTop + headLogoH;
-          } catch { /* sin logo */ headLogoH = 11; headLogoBottom = headerTop + 11; }
+          } catch { headLogoH = 11; headLogoBottom = headerTop + 11; }
         } else { headLogoH = 11; headLogoBottom = headerTop + 11; }
         const catCenterY = headerTop + headLogoH / 2;
-        const catTextX = M + (almaiaLogoB64 ? headLogoW + 5 : 0);
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        const catTextX = M + 24;
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(17);
         doc.text(bizName, catTextX, catCenterY + 2);
         sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("BIENESTAR & SALUD", catTextX, catCenterY + 6);
@@ -830,7 +830,11 @@ function CotizacionesContent() {
         await drawQuotePdfContent(doc, quoteData);
       }
 
-      doc.save("catalogo-productos.pdf");
+      // ── Naming: COT-XXX_cliente-Detalle.pdf (sin palabras antes de COT) ──
+      const catQuoteNum = selectedQuote?.quote_number || "catalogo";
+      const catClientRaw = selectedQuote?.clients?.full_name?.trim() || "cliente";
+      const catClientName = catClientRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
+      doc.save(`${catQuoteNum}_${catClientName}-Detalle.pdf`);
       setShowCatalogEditor(false);
       toast.success("Catálogo PDF generado");
     } catch (e: any) {

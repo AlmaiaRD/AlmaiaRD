@@ -1197,7 +1197,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 export async function generateQuotePdf(quote: QuoteData): Promise<void> {
   const doc = await buildQuotePdfDoc(quote);
   const clientName = (quote.client_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
-  doc.save(`AlmaiaRD-${quote.quote_number}_${clientName}.pdf`);
+  doc.save(`${quote.quote_number}_${clientName}.pdf`);
 }
 
 export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
@@ -1216,6 +1216,6 @@ export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
   const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   const link = document.createElement("a");
   link.href = jpgDataUrl;
-  link.download = `AlmaiaRD-${quote.quote_number}_${clientName}.jpg`;
+  link.download = `${quote.quote_number}_${clientName}.jpg`;
   link.click();
 }
