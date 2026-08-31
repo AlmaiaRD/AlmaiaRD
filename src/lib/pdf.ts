@@ -938,31 +938,36 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   // Helper to draw header on any page
   const drawHeader = (pageY: number) => {
     let hy = pageY;
-    // Flor original de Almaia (logo PNG) a la izquierda de "Almaia"
+    // Flor original de Almaia (logo PNG) a la izquierda de "Almaia", centrada verticalmente con el nombre
+    let logoW = 0; let logoH = 0;
     if (almaiaLogoB64) {
       try {
         const props = doc.getImageProperties(almaiaLogoB64);
         const ratio = props.width && props.height ? props.height / props.width : 0.8;
-        const lw = 18; const lh = lw * ratio;
-        doc.addImage(almaiaLogoB64, "PNG", M + 3, hy + 1, lw, lh);
+        logoW = 18; logoH = logoW * ratio;
+        doc.addImage(almaiaLogoB64, "PNG", M + 3, hy + 1, logoW, logoH);
       } catch {
+        logoW = 16; logoH = 16;
         drawFlowerIcon(doc, M + 8, hy + 8, 16);
       }
     } else {
+      logoW = 16; logoH = 16;
       drawFlowerIcon(doc, M + 8, hy + 8, 16);
     }
+    const nameBaseY = hy + logoH / 2 + 2;
     setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 24, hy + 6);
+    doc.text(bizName, M + 24, nameBaseY);
 
     setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-    doc.text("BIENESTAR & SALUD", M + 24, hy + (logoBase64 ? 28 : 11));
+    doc.text("BIENESTAR & SALUD", M + 24, nameBaseY + 5);
 
+    const infoY = hy + logoH + 6;
     setTextColor(doc, DARK); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("Distribuidor Independiente Amway", M, hy + (logoBase64 ? 33 : 17));
+    doc.text("Distribuidor Independiente Amway", M, infoY);
 
     setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
-    doc.text("Suplementos, cosmética y bienestar para toda la familia", M, hy + (logoBase64 ? 37.5 : 21.5));
-    doc.text("República Dominicana", M, hy + (logoBase64 ? 41 : 25));
+    doc.text("Suplementos, cosmética y bienestar para toda la familia", M, infoY + 4.5);
+    doc.text("República Dominicana", M, infoY + 9);
 
     // Badge — right aligned
     const badgeW = 44; const badgeH = 14; const badgeX = PW - M - badgeW;
@@ -979,7 +984,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     doc.text(`Fecha: ${quote.quote_date}`, PW - M, numberY + 5, { align: "right" });
     doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
 
-    hy += logoBase64 ? 48 : 30;
+    hy += logoH + 24;
     doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
     doc.line(M, hy, PW - M, hy);
     return hy + 8;
@@ -1019,9 +1024,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       doc.addPage(); y = drawHeader(M);
     }
     const nameLines = doc.splitTextToSize(item.name, 104) as string[];
-    const descLines = item.description ? (doc.splitTextToSize(item.description, 104) as string[]) : [];
-    const maxLines = Math.max(nameLines.length, descLines.length);
-    const rowHeight = Math.max(7, maxLines * 4.2 + 1);
+    const rowHeight = Math.max(7, nameLines.length * 4.2 + 1);
 
     if (y + rowHeight > 255) {
       doc.addPage(); y = drawHeader(M);
@@ -1033,15 +1036,6 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     nameLines.forEach((line: string, i: number) => {
       doc.text(line, M + 2, y + 2 + i * 4);
     });
-
-    if (descLines.length > 0) {
-      setTextColor(doc, GRAY);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      descLines.forEach((line: string, i: number) => {
-        doc.text(line, M + 2, y + 2 + (nameLines.length + i) * 4);
-      });
-    }
 
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
@@ -1148,22 +1142,20 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   doc.text("BIENESTAR & SALUD", PW / 2, y + 4, { align: "center" });
   y += 12;
 
-  setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("BIENESTAR & SALUD", PW / 2, y + 34, { align: "center" });
-  y += 42;
-
-  // Message
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-  doc.text("A la orden del cliente", PW / 2, y, { align: "center" }); y += 7;
-  setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-  doc.text("si necesita cualquier información u orientación", PW / 2, y, { align: "center" }); y += 14;
+  // Mensaje de cierre (texto nuevo)
+  y += 16;
+  setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
+  doc.text("Nos sentimos honrados de poder apoyarte y orientarte", PW / 2, y, { align: "center" }); y += 6;
+  doc.text("en este camino hacia una mejor calidad de vida.", PW / 2, y, { align: "center" }); y += 6;
+  doc.text("Estamos a tus órdenes y en la mejor disposición", PW / 2, y, { align: "center" }); y += 6;
+  doc.text("de responder a tus preguntas e inquietudes.", PW / 2, y, { align: "center" }); y += 12;
 
   // Signature on last page (centered, same size)
   if (signatureBase64) {
     try {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
-      const maxW = 100;
+      const maxW = 50;
       const sigW = Math.min(maxW, maxW * ratio);
       const sigH = sigW / ratio;
       const sigX = (PW - sigW) / 2;
@@ -1174,28 +1166,25 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     }
   }
 
-  setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-  doc.text(bizName, PW / 2, y, { align: "center" }); y += 6;
+  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
+  doc.text("Aliados a tu bienestar y salud", PW / 2, y, { align: "center" }); y += 8;
 
   // Contact info
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
-  const phone = quote.phone || "809-XXX-XXXX";
+  const phone = "809-863-5602";
   const email = quote.email || "info@almaia-rd.com";
   doc.text(`Tel: ${phone}`, PW / 2, y, { align: "center" }); y += 5;
   doc.text(`Email: ${email}`, PW / 2, y, { align: "center" }); y += 5;
 
-  // Footer with "Aliados de tu bienestar"
+  // Footer (sin "Aliados de tu bienestar" — ahora va tras la firma)
   y = PH - 20;
   doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.5);
-  doc.line(M, y, PW - M, y); y += 6;
-  setTextColor(doc, PRIMARY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
-  doc.text("Aliados de tu bienestar", PW / 2, y, { align: "center" });
-  y += 5;
+  doc.line(M, y, PW - M, y); y += 7;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", PW / 2, y, { align: "center" });
   y += 4;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-  const version = "v2.1-" + new Date().toISOString().slice(0, 16).replace("T", " ");
+  const version = "v2.2-" + new Date().toISOString().slice(0, 16).replace("T", " ");
   doc.text(`Generado: ${version}`, PW / 2, y, { align: "center" });
 }
 

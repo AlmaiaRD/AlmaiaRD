@@ -657,36 +657,15 @@ function CotizacionesContent() {
         }
       } catch { almaiaLogoB64 = null; }
 
-      for (let idx = 0; idx < entries.length; idx++) {
-        const entry = entries[idx];
-        if (idx > 0) doc.addPage();
-        let y = M;
-
-        // ── Header with Almaia flower/logo ──
-        if (almaiaLogoB64) {
-          try {
-            const props = doc.getImageProperties(almaiaLogoB64);
-            const ratio = props.width && props.height ? props.height / props.width : 0.8;
-            const lw = 14; const lh = lw * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M, y - 1, lw, lh);
-          } catch { /* sin logo */ }
-        }
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-        doc.text(bizName, M + (almaiaLogoB64 ? 17 : 0), y + 2);
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("BIENESTAR & SALUD", M + (almaiaLogoB64 ? 17 : 0), y + 6);
-        y += 6;
-        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
-        y += 5;
-
-        // ── Product header row: Name (left) | Price (right) ──
+      // Dibuja un producto (nombre/precio/foto/descripción/beneficios) y devuelve la nueva y
+      const drawCatalogEntry = async (entry: CatalogEntry, startY: number): Promise<number> => {
+        let y = startY;
         const priceClient = entry.price;
         sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
         const nameLines = doc.splitTextToSize(entry.name || "Producto", CW * 0.65);
         doc.text(nameLines, M, y + 3, { align: "left" });
         const nameH = nameLines.length * 5.5;
 
-        // Price on right
         sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
         sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
@@ -694,7 +673,6 @@ function CotizacionesContent() {
         sc(doc, "#9C8A82"); doc.setFontSize(5.5);
         doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
 
-        // Subbrand/category under name
         const sub = entry.subbrand;
         const cat = entry.category;
         if (sub || cat) {
@@ -704,7 +682,6 @@ function CotizacionesContent() {
 
         y += Math.max(nameH, 14) + 8;
 
-        // ── Photo (left) | Description (right) ──
         const photoBox = 75;
         const photoX = M;
         const photoY = y;
@@ -730,7 +707,6 @@ function CotizacionesContent() {
           }
         }
 
-        // Description (limited to ~6 lines)
         let textY = photoY;
         if (entry.description) {
           sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
@@ -749,7 +725,6 @@ function CotizacionesContent() {
           textY += 3;
         }
 
-        // Benefits (limited to 4 bullets)
         if (entry.benefits) {
           const benefitList = entry.benefits.split("\n").filter(Boolean);
           if (benefitList.length > 0) {
@@ -772,21 +747,51 @@ function CotizacionesContent() {
           }
         }
 
-        // Advance y past the taller of photo or text
         y = Math.max(y, photoY + 75, textY) + 6;
-
-        // Thin separator
         doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2);
         doc.line(M, y, PW - M, y);
-        y += 4;
+        return y + 4;
+      };
+
+      // 2 productos por página (diseño holgado), con header/footer comunes por página
+      for (let pi = 0; pi < entries.length; pi += 2) {
+        if (pi > 0) doc.addPage();
+        let y = M;
+
+        // ── Header with Almaia flower/logo ──
+        let headLogoH = 11;
+        if (almaiaLogoB64) {
+          try {
+            const props = doc.getImageProperties(almaiaLogoB64);
+            const ratio = props.width && props.height ? props.height / props.width : 0.8;
+            const lw = 14; const lh = lw * ratio;
+            headLogoH = lh;
+            doc.addImage(almaiaLogoB64, "PNG", M, y - 1, lw, lh);
+          } catch { /* sin logo */ }
+        }
+        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        doc.text(bizName, M + (almaiaLogoB64 ? 17 : 0), y + headLogoH / 2);
+        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.text("BIENESTAR & SALUD", M + (almaiaLogoB64 ? 17 : 0), y + headLogoH / 2 + 4);
+        y += 6;
+        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, y, PW - M, y);
+        y += 5;
+
+        const pageEntries = entries.slice(pi, pi + 2);
+        for (const entry of pageEntries) {
+          y = await drawCatalogEntry(entry, y);
+          y += 8;
+        }
 
         // ── Footer ──
+        y = PH - 20;
         sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-        doc.text(bizName, PW / 2, y, { align: "center" }); y += 4;
+        doc.text(bizName, PW / 2, y, { align: "center" });
+        y += 4;
         sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-        doc.text("Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
+        doc.text("Aliados a tu Bienestar y Salud", PW / 2, y, { align: "center" });
         y += 3;
-        doc.text("Precio incluye ITBIS · Distribuidor Independiente Amway", PW / 2, y, { align: "center" });
+        doc.text("Precio incluye ITBIS", PW / 2, y, { align: "center" });
       }
 
       // ── Añadir la hoja de cotización al final ──
