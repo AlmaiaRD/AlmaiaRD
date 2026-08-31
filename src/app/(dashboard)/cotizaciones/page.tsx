@@ -833,11 +833,12 @@ function CotizacionesContent() {
         await drawQuotePdfContent(doc, quoteData);
       }
 
-      // ── Naming: COT-XXX_cliente-Detalle.pdf (sin palabras antes de COT) ──
-      const catQuoteNum = selectedQuote?.quote_number || "catalogo";
+      // ── Naming: <numero>_<cliente>-Detalle_v2.3 <fecha>.pdf (único e inequívoco, sin palabras antes de COT) ──
+      const catQuoteNum = selectedQuote?.quote_number || "COT-0000";
       const catClientRaw = selectedQuote?.clients?.full_name?.trim() || "cliente";
       const catClientName = catClientRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
-      doc.save(`${catQuoteNum}_${catClientName}-Detalle.pdf`);
+      const catStamp = new Date().toISOString().slice(0, 16).replace("T", "-").replace(":", "-");
+      doc.save(`${catQuoteNum}_${catClientName}-Detalle_v2.3_${catStamp}.pdf`);
       setShowCatalogEditor(false);
       toast.success("Catálogo PDF generado");
     } catch (e: any) {
