@@ -797,10 +797,39 @@ function CotizacionesContent() {
       };
 
       let y = drawPageHeader();
-      const minEntryH = 88;
+
+      // Estima el alto (en mm) que ocupará un producto antes de dibujarlo
+      const estimateEntryHeight = (entry: CatalogEntry): number => {
+        const eTextW = CW - 75 - 5;
+        const nameLines = doc.splitTextToSize(entry.name || "Producto", CW * 0.65).length;
+        const nameH = nameLines * 5.5;
+        let h = Math.max(nameH, 14) + 8; // cabecera del producto
+        let textH = 0;
+        if (entry.description) {
+          textH += 4; // "DESCRIPCIÓN"
+          const descLines = doc.splitTextToSize(entry.description, eTextW - 2).length;
+          textH += Math.min(descLines, 6) * 4 + (descLines > 6 ? 4 : 0) + 3;
+        }
+        if (entry.benefits) {
+          const list = entry.benefits.split("\n").filter(Boolean);
+          if (list.length > 0) {
+            textH += 4; // "BENEFICIOS"
+            for (let k = 0; k < Math.min(list.length, 4); k++) {
+              const bl = doc.splitTextToSize(`• ${list[k]}`, eTextW - 4).length;
+              textH += bl * 3.5;
+            }
+            if (list.length > 4) textH += 3.5;
+            textH += 2;
+          }
+        }
+        h += Math.max(75, textH) + 6;
+        return h;
+      };
+
       for (let ei = 0; ei < entries.length; ei++) {
-        // Si el siguiente producto no cabe en el espacio disponible, nueva página con header
-        if (y > M && y + minEntryH > footerTop) {
+        const est = estimateEntryHeight(entries[ei]);
+        // Si el producto (o no queda espacio suficiente) no cabe, nueva página con header
+        if (y > M && y + est > footerTop) {
           drawFooter();
           doc.addPage();
           y = drawPageHeader();
