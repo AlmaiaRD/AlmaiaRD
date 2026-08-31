@@ -8,9 +8,10 @@ import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2, Cloud
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { exportBackupToExcel } from "@/lib/excel";
+import MigrateImagesPanel from "@/components/catalogo/MigrateImagesPanel";
 
 
-type Tab = "general" | "ai" | "banks" | "backup";
+type Tab = "general" | "ai" | "banks" | "backup" | "images";
 
 function cropSignatureImage(src: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -385,7 +386,7 @@ Responde en español en máximo 3 oraciones:`,
 
       <div className="border-b border-[#E8E0D8] mb-6">
         <div className="flex gap-6">
-          {([["general", "Datos del Negocio"], ["ai", "Prompts IA"], ["banks", "Cuentas Bancarias"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
+          {([["general", "Datos del Negocio"], ["ai", "Prompts IA"], ["banks", "Cuentas Bancarias"], ["images", "Migrar Imágenes"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
             <button key={key} onClick={() => setActiveTab(key)}
               className={`pb-3 text-sm font-medium transition-colors ${
                 activeTab === key ? "text-[#B8837E] border-b-2 border-[#B8837E]" : "text-[#9C8A82] hover:text-[#5C3E35]"
@@ -760,6 +761,12 @@ ACCIÓN: ..."
               ))
             )}
           </div>
+        </div>
+      )}
+
+      {activeTab === "images" && (
+        <div>
+          <MigrateImagesPanel />
         </div>
       )}
 

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import PageContainer from "@/components/layout/PageContainer";
 import { supabase } from "@/lib/supabase";
 import { updateProduct } from "@/services/products";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ImageIcon } from "lucide-react";
+import { Loader2, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ImageIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface PendingProduct {
   id: string;
@@ -23,19 +22,16 @@ interface LogEntry {
 }
 
 async function fetchImageAsBlob(url: string): Promise<Blob> {
-  // 1) fetch directo con CORS
   try {
     const res = await fetch(url, { mode: "cors", cache: "no-store" });
     if (res.ok) {
       const blob = await res.blob();
-      if (blob && blob.size > 0 && blob.type.startsWith("image/")) return blob;
       if (blob && blob.size > 0) return blob;
     }
   } catch {
     // intenta canvas
   }
 
-  // 2) fallback con <img crossorigin + canvas>
   return new Promise<Blob>((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -70,9 +66,8 @@ function extensionFor(mime: string | undefined, currentUrl: string): string {
   return "jpg";
 }
 
-export default function MigracionImagenesPage() {
+export default function MigrateImagesPanel() {
   const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
   const [products, setProducts] = useState<PendingProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [running, setRunning] = useState(false);
@@ -92,6 +87,7 @@ export default function MigracionImagenesPage() {
       .ilike("image_url", "%amway.com.do%");
     if (error) {
       setLogs([{ code: "-", name: "Error al consultar productos", status: "err", message: error.message }]);
+      toast.error("Error al consultar productos");
     } else {
       setProducts((data || []) as PendingProduct[]);
     }
@@ -103,29 +99,16 @@ export default function MigracionImagenesPage() {
   }, [authLoading, user, loadPending]);
 
   if (authLoading) {
-    return (
-      <PageContainer>
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <Loader2 className="animate-spin" size={28} />
-        </div>
-      </PageContainer>
-    );
-  }
-
-  if (!user) {
-    router.push("/login");
-    return null;
+    return <div className="flex justify-center py-12"><Loader2 className="animate-spin" size={28} /></div>;
   }
 
   if (!isAdmin) {
     return (
-      <PageContainer>
-        <div className="max-w-md mx-auto text-center py-16">
-          <AlertTriangle size={40} className="mx-auto text-amber-500 mb-4" />
-          <h1 className="text-xl font-bold text-[#5C3E35] mb-2">Acceso restringido</h1>
-          <p className="text-[#9C8A82] text-sm">Solo los administradores pueden migrar imágenes.</p>
-        </div>
-      </PageContainer>
+      <div className="max-w-md mx-auto text-center py-12">
+        <AlertTriangle size={40} className="mx-auto text-amber-500 mb-4" />
+        <h1 className="text-lg font-bold text-[#5C3E35] mb-2">Acceso restringido</h1>
+        <p className="text-[#9C8A82] text-sm">Solo los administradores pueden migrar imágenes.</p>
+      </div>
     );
   }
 
@@ -182,77 +165,64 @@ export default function MigracionImagenesPage() {
   const errCount = logs.filter((l) => l.status === "err").length;
 
   return (
-    <PageContainer>
-      <div className="max-w-4xl mx-auto">
-        <button onClick={() => router.push("/catalogo")} className="inline-flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-4">
-          <ArrowLeft size={16} /> Volver al catálogo
-        </button>
-
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-[#5C3E35]">Migrar imágenes a Storage</h1>
-            <p className="text-sm text-[#9C8A82] mt-1">
-              Convierte las imágenes de amway.com.do a Supabase Storage para que se muestren en los PDFs.
-            </p>
+    <div className="max-w-2xl space-y-6">
+      <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-[#B8837E]/10 flex items-center justify-center">
+            <ImageIcon size={20} className="text-[#B8837E]" />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-[#5C3E35]">
+              {loadingProducts ? "Cargando productos..." : `${products.length} productos con imagen de amway`}
+            </div>
+            <p className="text-xs text-[#9C8A82]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
           </div>
           {!loadingProducts && (
-            <button onClick={loadPending} className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
+            <button onClick={loadPending} className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
               <RefreshCw size={16} /> Recargar
             </button>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6 mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <ImageIcon size={20} className="text-[#B8837E]" />
-            <div>
-              <div className="font-semibold text-[#5C3E35]">
-                {loadingProducts ? "Cargando productos..." : `${products.length} productos con imagen de amway`}
-              </div>
-              <p className="text-xs text-[#9C8A82]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
-            </div>
-          </div>
-
-          <button
-            onClick={runMigration}
-            disabled={running || products.length === 0}
-            className="w-full h-12 bg-[#B8837E] text-white rounded-xl text-sm font-semibold hover:bg-[#9A6B66] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {running ? (
-              <><Loader2 size={18} className="animate-spin" /> Migrando {progress.done}/{progress.total}...</>
-            ) : (
-              <>Iniciar migración ({products.length})</>
-            )}
-          </button>
-
-          {running && current && (
-            <div className="mt-4 p-3 rounded-xl bg-[#FAF6F0] text-sm text-[#5C3E35]">
-              <span className="text-[#9C8A82]">Procesando:</span> {current.code} — {current.name}
-            </div>
+        <button
+          onClick={runMigration}
+          disabled={running || products.length === 0}
+          className="w-full h-12 bg-[#B8837E] text-white rounded-xl text-sm font-semibold hover:bg-[#9A6B66] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {running ? (
+            <><Loader2 size={18} className="animate-spin" /> Migrando {progress.done}/{progress.total}...</>
+          ) : (
+            <>Iniciar migración ({products.length})</>
           )}
-        </div>
+        </button>
 
-        {logs.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
-            <div className="flex gap-6 mb-4">
-              <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={16} /> {okCount} migradas</span>
-              <span className="text-sm font-semibold text-red-500 flex items-center gap-1.5"><XCircle size={16} /> {errCount} con error</span>
-              <span className="text-sm text-[#9C8A82] ml-auto">{logs.length} registros</span>
-            </div>
-            <div className="max-h-96 overflow-y-auto space-y-1">
-              {logs.map((l, idx) => (
-                <div key={idx} className={`flex items-start gap-2 text-sm p-2 rounded-lg ${l.status === "ok" ? "bg-emerald-50" : l.status === "err" ? "bg-red-50" : "bg-gray-50"}`}>
-                  {l.status === "ok" ? <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" /> : <XCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />}
-                  <div>
-                    <span className="font-medium text-[#5C3E35]">{l.code}</span> <span className="text-[#9C8A82]">— {l.name}</span>
-                    <div className="text-xs text-[#9C8A82]">{l.message}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {running && current && (
+          <div className="mt-4 p-3 rounded-xl bg-[#FAF6F0] text-sm text-[#5C3E35]">
+            <span className="text-[#9C8A82]">Procesando:</span> {current.code} — {current.name}
           </div>
         )}
       </div>
-    </PageContainer>
+
+      {logs.length > 0 && (
+        <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+          <div className="flex gap-6 mb-4">
+            <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={16} /> {okCount} migradas</span>
+            <span className="text-sm font-semibold text-red-500 flex items-center gap-1.5"><XCircle size={16} /> {errCount} con error</span>
+            <span className="text-sm text-[#9C8A82] ml-auto">{logs.length} registros</span>
+          </div>
+          <div className="max-h-96 overflow-y-auto space-y-1">
+            {logs.map((l, idx) => (
+              <div key={idx} className={`flex items-start gap-2 text-sm p-2 rounded-lg ${l.status === "ok" ? "bg-emerald-50" : l.status === "err" ? "bg-red-50" : "bg-gray-50"}`}>
+                {l.status === "ok" ? <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" /> : <XCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />}
+                <div>
+                  <span className="font-medium text-[#5C3E35]">{l.code}</span> <span className="text-[#9C8A82]">— {l.name}</span>
+                  <div className="text-xs text-[#9C8A82]">{l.message}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -21,7 +21,6 @@ import {
   Sparkles,
   RotateCcw,
   ClipboardList,
-  ImageDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +32,6 @@ const navItems = [
   { href: "/devoluciones", label: "Devoluciones", icon: RotateCcw },
   { href: "/gastos", label: "Gastos", icon: DollarSign },
   { href: "/catalogo", label: "Catálogo", icon: BookOpen },
-  { href: "/migracion-imagenes", label: "Migrar Imágenes", icon: ImageDown },
   { href: "/recomendaciones", label: "Recomendaciones IA", icon: Sparkles },
   { href: "/inventario", label: "Inventario", icon: Package },
   { href: "/crm", label: "CRM y Seguimiento", icon: Calendar },
