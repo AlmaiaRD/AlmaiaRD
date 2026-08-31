@@ -1,14 +1,9 @@
 -- ============================================================================
--- FIX: teléfonos (2) con predeterminado + permisos de UPDATE en settings
+-- FIX (v2): teléfonos (2) con predeterminado + permisos de UPDATE en settings
 -- Fecha: 2026-08-31
 --
--- 1. Agrega phone_2 y default_phone a settings (para 2 teléfonos y elegir cuál
---    es el predeterminado que aparece en facturas, recibos, cotizaciones, etc.)
--- 2. Actualiza get_settings_public() para que devuelva esos campos (el app los
---    lee por RPC, no por tabla directa).
--- 3. Recrea las políticas RLS de settings para que un usuario 'admin' pueda
---    ACTUALIZAR (corrige "permission denied for table settings").
---
+-- Corrige el error 42P13 "cannot change return type of existing function"
+-- haciendo DROP FUNCTION antes de recrear get_settings_public().
 -- Idempotente: se puede ejecutar varias veces. Ejecutar una vez en SQL Editor.
 -- ============================================================================
 
@@ -16,7 +11,9 @@
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS phone_2 TEXT DEFAULT '';
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS default_phone TEXT DEFAULT 'phone';
 
--- 2) RPC público que devuelve también los teléfonos (sin secretos)
+-- 2) Quitar la función vieja ANTES de recrearla (cambia la estructura/OUT)
+DROP FUNCTION IF EXISTS public.get_settings_public();
+
 CREATE OR REPLACE FUNCTION public.get_settings_public()
 RETURNS TABLE (
   id UUID, business_name TEXT, logo_url TEXT, signature_url TEXT,
@@ -61,8 +58,8 @@ CREATE POLICY "settings_update" ON public.settings
 CREATE POLICY "settings_delete" ON public.settings
   FOR DELETE USING (get_user_role() = 'admin');
 
--- Asegura privilegios de tabla (por si quedaron revocados por drifts)
+-- Asegura privilegios de tabla
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
 
--- Extra: los privilegios de columna smtp_pass quedan revocados para no-admin
+-- Extra: protege la contraseña SMTP para no-admin
 REVOKE SELECT (smtp_pass) ON public.settings FROM anon;
