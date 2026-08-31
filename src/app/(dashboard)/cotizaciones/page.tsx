@@ -82,6 +82,7 @@ function CotizacionesContent() {
   const [editingStatus, setEditingStatus] = useState<string>("DRAFT");
   const [saving, setSaving] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<QuoteWithClient | null>(null);
+  const [editingQuote, setEditingQuote] = useState<QuoteWithClient | null>(null);
   const [detailItems, setDetailItems] = useState<QuoteItemWithProduct[]>([]);
   const [detailFollowups, setDetailFollowups] = useState<Followup[]>([]);
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
@@ -168,6 +169,7 @@ function CotizacionesContent() {
     setNotes("");
     setEditingId(null);
     setEditingStatus("DRAFT");
+    setEditingQuote(null);
   }
 
   function openNew() {
@@ -180,6 +182,7 @@ function CotizacionesContent() {
   async function openEdit(id: string) {
     try {
       const { quote, items: quoteItems } = await getQuote(id);
+      setEditingQuote(quote as QuoteWithClient);
       setClientId(quote.client_id);
       setQuoteDate(quote.quote_date);
       setValidUntil(quote.valid_until || getLocalDateString(new Date(Date.now() + 30 * 86400000)));
@@ -801,29 +804,39 @@ function CotizacionesContent() {
       }
 
       // ── Añadir la hoja de cotización al final ──
-      if (selectedQuote) {
+      const quoteSource = selectedQuote || editingQuote;
+      if (quoteSource) {
+        const hojaItems = selectedQuote
+          ? detailItems.map((i) => ({
+              name: i.products?.name || i.custom_name || "Producto",
+              description: i.products?.description || undefined,
+              quantity: Number(i.quantity) || 0,
+              unit_price: Number(i.unit_price) || 0,
+              line_total: Number(i.line_total) || 0,
+              pv: Number(i.pv) || 0,
+            }))
+          : items.map((i) => ({
+              name: i.name || "Producto",
+              quantity: Number(i.quantity) || 0,
+              unit_price: Number(i.unit_price) || 0,
+              line_total: (Number(i.quantity) || 0) * (Number(i.unit_price) || 0),
+              pv: Number(i.pv) || 0,
+            }));
         const quoteData = {
-          quote_number: selectedQuote.quote_number,
-          quote_date: selectedQuote.quote_date,
-          valid_until: selectedQuote.valid_until,
-          status: selectedQuote.status,
-          client_name: selectedQuote.clients?.full_name || "",
-          client_phone: selectedQuote.clients?.phone || undefined,
-          client_email: selectedQuote.clients?.email || undefined,
-          items: detailItems.map((i) => ({
-            name: i.products?.name || i.custom_name || "Producto",
-            description: i.products?.description || undefined,
-            quantity: Number(i.quantity) || 0,
-            unit_price: Number(i.unit_price) || 0,
-            line_total: Number(i.line_total) || 0,
-            pv: Number(i.pv) || 0,
-          })),
-          subtotal: Number(selectedQuote.subtotal) || 0,
-          itbis_total: Number(selectedQuote.itbis_total) || 0,
-          discount_amount: Number(selectedQuote.discount_amount) || 0,
-          total: Number(selectedQuote.total) || 0,
-          pv_total: Number(selectedQuote.pv_total) || 0,
-          notes: selectedQuote.notes || undefined,
+          quote_number: quoteSource.quote_number,
+          quote_date: quoteSource.quote_date,
+          valid_until: quoteSource.valid_until,
+          status: quoteSource.status,
+          client_name: quoteSource.clients?.full_name || "",
+          client_phone: quoteSource.clients?.phone || undefined,
+          client_email: quoteSource.clients?.email || undefined,
+          items: hojaItems,
+          subtotal: Number(quoteSource.subtotal) || 0,
+          itbis_total: Number(quoteSource.itbis_total) || 0,
+          discount_amount: Number(quoteSource.discount_amount) || 0,
+          total: Number(quoteSource.total) || 0,
+          pv_total: Number(quoteSource.pv_total) || 0,
+          notes: quoteSource.notes || undefined,
           logo_url: settings?.logo_url || undefined,
           signature_url: settings?.signature_url || undefined,
           business_name: settings?.business_name || "Almaia RD",
@@ -834,8 +847,8 @@ function CotizacionesContent() {
       }
 
       // ── Naming: <numero>_<cliente>-Detalle_v2.3 <fecha>.pdf (único e inequívoco, sin palabras antes de COT) ──
-      const catQuoteNum = selectedQuote?.quote_number || "COT-0000";
-      const catClientRaw = selectedQuote?.clients?.full_name?.trim() || "cliente";
+      const catQuoteNum = quoteSource?.quote_number || "COT-0000";
+      const catClientRaw = quoteSource?.clients?.full_name?.trim() || "cliente";
       const catClientName = catClientRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, "").replace(/\s+/g, "_");
       const catStamp = new Date().toISOString().slice(0, 16).replace("T", "-").replace(":", "-");
       doc.save(`${catQuoteNum}_${catClientName}-Detalle_v2.3_${catStamp}.pdf`);
