@@ -41,7 +41,18 @@ async function ensureProfile(session: any): Promise<User | null> {
     .select()
     .single();
 
-  if (error || !created) return null;
+  if (error) {
+    if (String(error.code) === "23505" || String(error.code) === "P2002") {
+      const { data: retry } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+      if (retry) return retry as User;
+    }
+    return null;
+  }
+  if (!created) return null;
   return created as User;
 }
 
