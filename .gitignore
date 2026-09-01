@@ -47,3 +47,9 @@ docs/CREDENCIALES.md
 /backups/
 /.amway-profile/
 *.tsbuildinfo
+
+# Playwright
+/playwright-report/
+/test-results/
+/fix-escapes.mjs
+

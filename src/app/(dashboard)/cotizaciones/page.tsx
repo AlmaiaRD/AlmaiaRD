@@ -765,7 +765,7 @@ function CotizacionesContent() {
       };
 
       const drawPageHeader = () => {
-        let hTop = M;
+        const hTop = M;
         let hLogoW = 0; let hLogoH = 13; let hLogoBottom = hTop + hLogoH;
         if (almaiaLogoB64) {
           try {
