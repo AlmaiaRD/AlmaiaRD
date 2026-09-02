@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
@@ -10,8 +11,6 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 type AdminClient = any;
 
-// El webhook no tiene sesión de usuario: se persiste con service role
-// cuando está configurado; si no, se omite la escritura a BD sin fallar.
 function getAdminClient(): AdminClient | null {
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return null;
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -32,7 +31,6 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-// Actualiza el estado (sent/delivered/read) de un mensaje enviado.
 async function processStatus(supabase: AdminClient | null, status: any) {
   const messageId = status?.id;
   const state = status?.status; // sent | delivered | read | failed
@@ -47,7 +45,6 @@ async function processStatus(supabase: AdminClient | null, status: any) {
   if (error) console.error(`[whatsapp-webhook] error actualizando estado ${messageId}:`, error.message);
 }
 
-// Persiste un mensaje entrante del cliente.
 async function processIncomingMessage(supabase: AdminClient | null, message: any) {
   const from = message?.from;
   const type = message?.type;
@@ -71,26 +68,32 @@ async function processIncomingMessage(supabase: AdminClient | null, message: any
   if (error) console.error(`[whatsapp-webhook] error guardando mensaje entrante de ${from}:`, error.message);
 }
 
-// GET - Webhook verification
+const webhookQuerySchema = z.object({
+  "hub.mode": z.enum(["subscribe"]).optional(),
+  "hub.verify_token": z.string().optional(),
+  "hub.challenge": z.string().optional(),
+});
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
+  try {
+    const params = Object.fromEntries(new URL(req.url).searchParams.entries());
+    const validated = webhookQuerySchema.parse(params);
+    const { "hub.mode": mode, "hub.verify_token": token, "hub.challenge": challenge } = validated;
 
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    return new NextResponse(challenge);
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      return new NextResponse(challenge);
+    }
+
+    return new NextResponse("Forbidden", { status: 403 });
+  } catch {
+    return new NextResponse("Forbidden", { status: 403 });
   }
-
-  return new NextResponse("Forbidden", { status: 403 });
 }
 
-// POST - Receive messages and status updates
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
 
-    // Verify the webhook signature (HMAC-SHA256 of the raw body using the App Secret)
     const signature = req.headers.get("x-hub-signature-256");
     if (!verifySignature(rawBody, signature)) {
       return new NextResponse("Invalid signature", { status: 401 });
@@ -117,10 +120,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Always return 200 quickly
     return NextResponse.json({ status: "ok" });
   } catch (error) {
     console.error("Webhook error:", error);
-    return NextResponse.json({ status: "ok" }); // Still return 200 to avoid retries
+    return NextResponse.json({ status: "ok" });
   }
 }

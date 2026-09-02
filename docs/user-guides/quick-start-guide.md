@@ -5,8 +5,10 @@
 | | |
 |---|---|
 | **URL Producción** | `https://almaia-rd.vercel.app` |
-| **Usuario** | `admin@almaia.com` |
-| **Contraseña** | `Admin123!` |
+| **Usuario** | `test@almaia.com` |
+| **Contraseña** | `TestSeguro123!` |
+
+> **Nota:** El usuario `test@almaia.com` fue creado específicamente para pruebas E2E con rol **admin** y email confirmado. Para uso regular, use sus credenciales propias configuradas en Supabase Auth.
 
 ## Navegación
 

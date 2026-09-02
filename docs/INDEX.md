@@ -82,4 +82,14 @@ Cada guía sigue: Visión General → Requisitos Previos → Flujo de Trabajo �
 
 ---
 
-*Última actualización: 10 agosto 2026*
+*Última actualización: 01 septiembre 2026*
+
+### Estado Actual (Auditoría Septiembre 2026)
+- ✅ **7/7 Tests E2E passing** (login, auth, quotes, catalog-pdf x2)
+- ✅ **47 Tests unitarios passing** (invoiceMath, utils, constants, preferences)
+- ✅ **TypeScript: 0 errores** | **ESLint: 0 errores** (561 warnings preexistentes)
+- ✅ **Seguridad hardenada**: RLS role-based, triggers seguros, secrets protegidos
+- ✅ **Rate-limit distribuido** (Upstash Redis) + fallback dev
+- ✅ **CSP headers** + **Sourcemaps Sentry** habilitados
+- ✅ **Validación Zod** en 14 API routes
+- ✅ **Migración de limpieza** lista: REVOKE anon, DROP pol_*, CHECK constraints RPCs

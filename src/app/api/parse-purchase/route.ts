@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { parsePurchaseSchema, validateBody } from "@/lib/validation";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(parsePurchaseSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   try {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -33,8 +40,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { images, catalog } = body;
+    const { images, catalog } = await req.json();
 
     if (!Array.isArray(images) || images.length === 0) {
       return NextResponse.json({ error: "No se recibieron imágenes del PDF" }, { status: 400 });

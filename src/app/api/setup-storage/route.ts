@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { z } from "zod";
+import { validateBody } from "@/lib/validation";
 
 const PROJECT_REF = "rexebvnzgnnrxhxmwayx";
 
+const setupStorageSchema = z.object({}).strict();
+
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(setupStorageSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   try {
     const cookieStore = await cookies();
     const supabase = createServerClient(

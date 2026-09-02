@@ -1,8 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
+import { z } from "zod";
+import { validateQuery } from "@/lib/validation";
+
+const guidesQuerySchema = z.object({
+  category: z.string().optional(),
+  lang: z.enum(["es", "en"]).optional(),
+});
 
 const DOCS_DIR = path.join(process.cwd(), "docs");
 
@@ -52,7 +59,13 @@ function getFilesRecursive(dir: string, group: string): { filename: string; path
   return results.sort((a, b) => a.filename.localeCompare(b.filename));
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  try {
+    validateQuery(guidesQuerySchema)(new URL(req.url).searchParams);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

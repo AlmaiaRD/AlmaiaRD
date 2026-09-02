@@ -2,40 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { recommendationsSchema, validateBody } from "@/lib/validation";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+    await validateBody(recommendationsSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+  );
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = await checkRateLimit(`recommendations:${ip}`, 10, 60000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
+      { status: 429 }
     );
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
+  }
 
-    const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const limit = await checkRateLimit(`recommendations:${ip}`, 10, 60000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Demasiadas solicitudes. Espera ${limit.retryAfter}s.` },
-        { status: 429 }
-      );
-    }
+  const apiKey = process.env.OPENAI_API_KEY;
 
-    const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "OpenAI API key no configurada. Agrega OPENAI_API_KEY en .env.local" },
+      { status: 500 }
+    );
+  }
 
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "OpenAI API key no configurada. Agrega OPENAI_API_KEY en .env.local" },
-        { status: 500 }
-      );
-    }
-
-    const body = await req.json();
-    const { query, season, type } = body;
+  try {
+    const { query, limit: recLimit, season, type } = await req.json();
 
     // Fetch products from Supabase
     const { data: products } = await supabase

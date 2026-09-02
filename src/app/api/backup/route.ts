@@ -3,12 +3,19 @@ import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { backupSchema, validateBody } from "@/lib/validation";
 
 const EXCLUDE_TABLES = new Set(["_prisma_migrations"]);
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(backupSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

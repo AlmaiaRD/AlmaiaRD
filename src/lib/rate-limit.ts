@@ -50,6 +50,9 @@ export async function checkRateLimit(
   }
 
   // Fallback: in-memory (per-instance, resets on cold start)
-  // Note: only for local dev; production MUST have Upstash env vars
+  // NOTE: Only allowed in development. Production MUST have Upstash env vars.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son requeridos en producción");
+  }
   return memoryCheck(key, maxRequests, windowMs);
 }

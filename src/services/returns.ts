@@ -34,7 +34,7 @@ export async function getReturnItems(returnId: string) {
 }
 
 export async function getNextReturnNumber() {
-  const cached = getCached<string>("next_return_number");
+  const cached = await getCached<string>("next_return_number");
   if (cached) return cached;
 
   const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function getNextReturnNumber() {
   const lastNum = data?.[0]?.return_number || "DEV-000000";
   const num = parseInt(lastNum.replace("DEV-", ""), 10) + 1;
   const next = `DEV-${String(num).padStart(6, "0")}`;
-  setCache("next_return_number", next, 30_000);
+  await setCache("next_return_number", next, 30_000);
   return next;
 }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { imageProxySchema, validateQuery } from "@/lib/validation";
 
 function isAllowedHost(host: string): boolean {
-  // Block private/internal IP ranges and localhost
   const blockedPatterns = [
     /^localhost$/i,
     /^127\./,
@@ -33,11 +33,12 @@ function isAllowedUrl(url: string): { allowed: boolean; reason?: string } {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const url = searchParams.get("url");
-
-  if (!url) {
-    return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
+  let url: string;
+  try {
+    const params = validateQuery(imageProxySchema)(new URL(request.url).searchParams);
+    url = params.url;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
 
   const urlCheck = isAllowedUrl(url);
@@ -64,31 +65,28 @@ export async function GET(request: NextRequest) {
         "Referer": "https://www.amway.com.do/",
       },
       signal: controller.signal,
-      redirect: "follow",
+      redirect: "manual",
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      // Try fallback with minimal headers
       const fallbackResponse = await fetch(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        },
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
         signal: controller.signal,
-        redirect: "follow",
+        redirect: "manual",
       });
-      
+
       if (!fallbackResponse.ok) {
         return NextResponse.json(
           { error: `Failed to fetch image: ${response.status}` },
           { status: response.status }
         );
       }
-      
+
       const contentType = fallbackResponse.headers.get("content-type") || "image/jpeg";
       const arrayBuffer = await fallbackResponse.arrayBuffer();
-      
+
       return new NextResponse(arrayBuffer, {
         headers: {
           "Content-Type": contentType,

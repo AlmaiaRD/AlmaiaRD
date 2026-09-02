@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { whatsappSendSchema, validateBody } from "@/lib/validation";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0";
 
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(whatsappSendSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const cookieStore = await cookies();
   const authSupabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

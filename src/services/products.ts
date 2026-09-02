@@ -183,22 +183,22 @@ export async function searchProducts(query: string) {
 }
 
 export async function getCategories(useCache = true) {
-  const cached = useCache ? getCached<Category[]>("categories") : undefined;
+  const cached = useCache ? await getCached<Category[]>("categories") : undefined;
   if (cached) return cached;
   const { data, error } = await supabase.from("categories").select("*").eq("active", true).order("name");
   if (error) throw error;
   const result = data as Category[];
-  setCache("categories", result, 300_000);
+  await setCache("categories", result, 300_000);
   return result;
 }
 
 export async function getSubbrands(useCache = true) {
-  const cached = useCache ? getCached<Subbrand[]>("subbrands") : undefined;
+  const cached = useCache ? await getCached<Subbrand[]>("subbrands") : undefined;
   if (cached) return cached;
   const { data, error } = await supabase.from("subbrands").select("*").eq("active", true).order("name");
   if (error) throw error;
   const result = data as Subbrand[];
-  setCache("subbrands", result, 300_000);
+  await setCache("subbrands", result, 300_000);
   return result;
 }
 

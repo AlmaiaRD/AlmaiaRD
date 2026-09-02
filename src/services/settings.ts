@@ -50,7 +50,7 @@ export async function getSettings(
 ): Promise<SettingsResult | null> {
   const includeSecrets = options?.includeSecrets ?? false;
   if (!includeSecrets && useCache) {
-    const cached = getCached<SettingsResult>("settings");
+    const cached = await getCached<SettingsResult>("settings");
     if (cached) return cached;
   }
 
@@ -58,7 +58,7 @@ export async function getSettings(
 
   if (row) {
     const result = normalizeSettings(row, includeSecrets);
-    if (!includeSecrets) setCache("settings", result, 120_000);
+    if (!includeSecrets) await setCache("settings", result, 120_000);
     return result;
   }
 
@@ -99,7 +99,7 @@ Responde en español en máximo 3 oraciones:`,
 
   if (createError) throw createError;
   const result = normalizeSettings(created as Record<string, any>, false);
-  setCache("settings", result, 120_000);
+  await setCache("settings", result, 120_000);
   return result;
 }
 
@@ -141,7 +141,7 @@ export async function updateSettings(
   // Sin .select(): tras la migración, smtp_pass no es seleccionable ni por admin.
   const { error } = await client.from("settings").update(patch).eq("id", settings.id);
   if (error) throw error;
-  invalidateCache("settings");
+  await invalidateCache("settings");
   const fresh = await getSettings(false, { client });
   return fresh as Settings;
 }

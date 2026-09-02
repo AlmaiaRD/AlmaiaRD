@@ -4,8 +4,15 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/services/settings";
+import { sendEmailSchema, validateBody } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(sendEmailSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const cookieStore = await cookies();
   const authSupabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

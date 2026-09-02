@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { z } from "zod";
+import { validateBody } from "@/lib/validation";
 
 const PROJECT_REF = "rexebvnzgnnrxhxmwayx";
 
-// Endpoint SOLO para desarrollo: ejecuta SQL con el token de administración de
-// Supabase. En producción queda deshabilitado y NO acepta SQL arbitrario.
 const DEV_ONLY_MIGRATIONS: Record<string, string> = {
   create_get_user_role: `
     CREATE OR REPLACE FUNCTION public.get_user_role()
@@ -17,6 +17,10 @@ const DEV_ONLY_MIGRATIONS: Record<string, string> = {
     AS $$ SELECT role FROM public.users WHERE id = auth.uid(); $$;
   `,
 };
+
+const migratePostSchema = z.object({
+  name: z.string().min(1).refine((v) => v in DEV_ONLY_MIGRATIONS, "Migración no permitida"),
+});
 
 async function assertAllowed(req: NextRequest): Promise<NextResponse | null> {
   if (process.env.NODE_ENV === "production") {
@@ -82,18 +86,17 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // No se acepta SQL arbitrario. Solo migraciones nombradas de la allowlist.
+  try {
+    await validateBody(migratePostSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   try {
     const denied = await assertAllowed(req);
     if (denied) return denied;
 
     const { name } = await req.json();
-    if (typeof name !== "string" || !DEV_ONLY_MIGRATIONS[name]) {
-      return NextResponse.json(
-        { error: "Migración no permitida. Usa un nombre de la allowlist." },
-        { status: 400 }
-      );
-    }
 
     const result = await runSql(DEV_ONLY_MIGRATIONS[name]);
     return NextResponse.json({ ok: true, name, result });

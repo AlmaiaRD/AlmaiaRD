@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { aiChatSchema, validateBody } from "@/lib/validation";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -36,6 +37,12 @@ async function callOpenAI(prompt: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    const { query } = await validateBody(aiChatSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,9 +63,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const { query } = await req.json();
-    if (!query || typeof query !== "string") {
-      return NextResponse.json({ error: "Consulta requerida" }, { status: 400 });
-    }
 
     const { data: products } = await supabase
       .from("products")

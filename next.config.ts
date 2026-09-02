@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.openai.com https://graph.facebook.com https://www.googleapis.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+          },
         ],
       },
       {
@@ -37,7 +42,7 @@ export default withSentryConfig(nextConfig, {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.SENTRY_DSN,
   sourcemaps: {
-    disable: true,
+    disable: false,
   },
   disableLogger: true,
   automaticVercelMonitors: true,

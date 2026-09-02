@@ -1,39 +1,42 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { preferencesSchema, validateBody } from "@/lib/validation";
 
 export async function GET() {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !anonKey) {
-      return NextResponse.json({ error: "No configurado" }, { status: 500 });
-    }
-
-    const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, anonKey, {
-      cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
-    });
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    const { data, error } = await supabase
-      .from("users")
-      .select("preferences")
-      .eq("id", user.id)
-      .single();
-
-    if (error) return NextResponse.json({ error: "Error al cargar preferencias" }, { status: 500 });
-
-    return NextResponse.json({ preferences: data?.preferences || {} });
-  } catch {
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) {
+    return NextResponse.json({ error: "No configurado" }, { status: 500 });
   }
+
+  const cookieStore = await cookies();
+  const supabase = createServerClient(supabaseUrl, anonKey, {
+    cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
+  });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("preferences")
+    .eq("id", user.id)
+    .single();
+
+  if (error) return NextResponse.json({ error: "Error al cargar preferencias" }, { status: 500 });
+
+  return NextResponse.json({ preferences: data?.preferences || {} });
 }
 
 export async function PATCH(req: Request) {
+  try {
+    await validateBody(preferencesSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !anonKey) {

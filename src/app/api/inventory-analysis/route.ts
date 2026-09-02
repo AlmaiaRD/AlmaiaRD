@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { inventoryAnalysisSchema, validateBody } from "@/lib/validation";
 
 async function callOllama(prompt: string): Promise<string | null> {
   try {
@@ -25,6 +26,12 @@ async function callOllama(prompt: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    await validateBody(inventoryAnalysisSchema)(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
+  }
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
