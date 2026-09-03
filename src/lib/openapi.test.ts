@@ -45,7 +45,10 @@ describe("OpenAPI document", () => {
 
   it("genera request bodies a partir de los schemas Zod", () => {
     const aiChat = doc.paths["/api/ai-chat"]?.post;
-    const schema = aiChat?.requestBody?.content?.["application/json"]?.schema;
+    const rb = aiChat?.requestBody as
+      | { content?: Record<string, { schema?: unknown }> }
+      | undefined;
+    const schema = rb?.content?.["application/json"]?.schema;
     expect(schema).toBeDefined();
   });
 });
