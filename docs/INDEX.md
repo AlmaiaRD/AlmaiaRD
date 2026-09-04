@@ -85,11 +85,13 @@ Cada guía sigue: Visión General → Requisitos Previos → Flujo de Trabajo �
 *Última actualización: 01 septiembre 2026*
 
 ### Estado Actual (Auditoría Septiembre 2026)
-- ✅ **7/7 Tests E2E passing** (login, auth, quotes, catalog-pdf x2)
-- ✅ **47 Tests unitarios passing** (invoiceMath, utils, constants, preferences)
-- ✅ **TypeScript: 0 errores** | **ESLint: 0 errores** (561 warnings preexistentes)
-- ✅ **Seguridad hardenada**: RLS role-based, triggers seguros, secrets protegidos
+- ✅ **9/9 Tests E2E passing** (login, auth, api-docs x2, catalog-pdf x2, quotes-to-invoice)
+- ✅ **51 Tests unitarios passing** (invoiceMath, utils, constants, preferences, openapi)
+- ✅ **TypeScript: 0 errores** | **ESLint: 0 errores** (562 warnings preexistentes)
+- ✅ **Seguridad hardenada**: RLS role-based en las 30 tablas, triggers seguros, secrets protegidos
+- ✅ **Re-auditoría (03/09/2026)**: habilitado RLS en 6 tablas que tenían políticas pero RLS desactivado (categories, subbrands, client_tags, client_tag_relations, returns, return_items) + REVOKE SELECT anon en tablas sensibles
 - ✅ **Rate-limit distribuido** (Upstash Redis) + fallback dev
 - ✅ **CSP headers** + **Sourcemaps Sentry** habilitados
-- ✅ **Validación Zod** en 14 API routes
-- ✅ **Migración de limpieza** lista: REVOKE anon, DROP pol_*, CHECK constraints RPCs
+- ✅ **Validación Zod** en 18 API routes
+- ✅ **Swagger/OpenAPI** generado desde Zod en `/docs`
+- ✅ **Migración de limpieza**: REVOKE anon, DROP pol_*, CHECK constraints RPCs, RLS post-auditoría
