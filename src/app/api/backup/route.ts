@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const date = new Date().toISOString().split("T")[0];
     const backupName = `backup-${date}`;
-    const backupData: Record<string, any[]> = {};
+    const backupData: Record<string, unknown[]> = {};
 
     for (const table of tables) {
       try {

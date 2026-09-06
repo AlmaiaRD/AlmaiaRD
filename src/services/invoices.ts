@@ -41,7 +41,7 @@ async function validateBundleStock(items: Array<{ product_id?: string | null; qu
     .select("product_id, stock")
     .in("product_id", [...totalNeeded.keys()]);
   if (error) throw error;
-  const stockMap = new Map((data || []).map((r: any) => [r.product_id, Number(r.stock || 0)]));
+  const stockMap = new Map((data || []).map((r: { product_id: string; stock: number | null }) => [r.product_id, Number(r.stock || 0)]));
   for (const [pid, need] of totalNeeded) {
     const stock = stockMap.get(pid);
     if (stock != null && stock < need) {

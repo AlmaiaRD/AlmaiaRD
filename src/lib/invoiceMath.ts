@@ -93,7 +93,6 @@ export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): Invo
   const lines = items.map((item) => {
     const quantity = item.quantity || 0;
     const catalogPrice = round2(Number(item.unit_price || 0));
-    const cost = round2(Number(item.cost) || 0);
     const rawPrice = round2(quantity * catalogPrice);
     // ITBIS sobre precio de catálogo ORIGINAL (fijo, no cambia en el guard loop)
     const itbisAmount = item.itbis && catalogPrice > 0 && quantity > 0 ? round2(catalogPrice * quantity * ITBIS_RATE) : 0;

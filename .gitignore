@@ -53,3 +53,6 @@ docs/CREDENCIALES.md
 /test-results/
 /fix-escapes.mjs
 
+# Supabase CLI local state
+/supabase/.temp/
+

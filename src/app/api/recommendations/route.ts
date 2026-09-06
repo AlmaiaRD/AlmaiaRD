@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { query, limit: recLimit, season, type } = await req.json();
+    const { query, season, type } = await req.json();
 
     // Fetch products from Supabase
     const { data: products } = await supabase
@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
       name: p.name,
       code: p.code,
       price: p.price_30,
-      subbrand: (p.subbrands as any)?.name || "Sin submarca",
-      category: (p.categories as any)?.name || "Sin categoría",
+      subbrand: (p.subbrands as { name?: string | null } | null)?.name || "Sin submarca",
+      category: (p.categories as { name?: string | null } | null)?.name || "Sin categoría",
     }));
 
     let systemPrompt = `Eres un asistente de ventas de Almaia RD, distribuidora autorizada Amway en República Dominicana. 

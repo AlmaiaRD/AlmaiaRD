@@ -12,11 +12,19 @@ import {
   sendViaApi,
   logWhatsAppMessage,
   getWhatsAppLogs,
-  getMessageTemplates,
   type WhatsAppConfig,
-  type MessageTemplate,
+  type WhatsAppLogRow as ServiceWhatsAppLogRow,
 } from "@/services/whatsapp";
 import { getClients } from "@/services/clients";
+import type { Client } from "@/types/database";
+
+interface WhatsAppLogRow extends ServiceWhatsAppLogRow {
+  direction?: string | null;
+  recipient?: string | null;
+  message_body?: string | null;
+  template_name?: string | null;
+  message_type?: string | null;
+}
 import { formatDate } from "@/lib/utils";
 import {
   MessageCircle,
@@ -38,8 +46,6 @@ import {
   Bookmark,
   Edit3,
   Eye,
-  X,
-  Save,
   Copy,
   Megaphone,
   Handshake,
@@ -173,18 +179,14 @@ const QUICK_ACTIONS_STORAGE_KEY = "almaia_whatsapp_quick_actions";
 export default function WhatsAppPage() {
   const router = useRouter();
   const [configs, setConfigs] = useState<WhatsAppConfig[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [apiTemplates, setApiTemplates] = useState<MessageTemplate[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [logs, setLogs] = useState<WhatsAppLogRow[]>([]);
   const [activeTab, setActiveTab] = useState<"send" | "templates" | "actions" | "configs" | "logs">("send");
   const [showAddConfig, setShowAddConfig] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<WhatsAppConfig | null>(null);
 
   // Send form
   const [recipientPhone, setRecipientPhone] = useState("");
-  const [selectedClient, setSelectedClient] = useState<any>(null);
-  const [messageType, setMessageType] = useState<"text" | "template">("text");
   const [messageText, setMessageText] = useState("");
   const [selectedLocalTemplate, setSelectedLocalTemplate] = useState("");
   const [sending, setSending] = useState(false);
@@ -261,22 +263,6 @@ export default function WhatsAppPage() {
       }
     } catch {
       toast.error("Error al cargar datos");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadApiTemplates() {
-    if (!selectedConfig) return;
-    try {
-      const templatesData = await getMessageTemplates(
-        selectedConfig.business_account_id,
-        "",
-        selectedConfig.id
-      );
-      setApiTemplates(templatesData);
-    } catch {
-      toast.error("Error al cargar plantillas de Meta");
     }
   }
 
@@ -338,7 +324,6 @@ export default function WhatsAppPage() {
 
   function selectTemplate(template: LocalTemplate) {
     setSelectedLocalTemplate(template.id);
-    setMessageType("text");
     // Build message with variable placeholders
     let msg = template.message;
     template.variables.forEach((v) => {
@@ -403,7 +388,6 @@ export default function WhatsAppPage() {
   }
 
   function executeQuickAction(action: QuickAction) {
-    setMessageType("text");
     let msg = action.message;
     // Replace variable placeholders with empty brackets
     const varMatches = msg.match(/\{[^}]+\}/g);
@@ -487,25 +471,19 @@ export default function WhatsAppPage() {
     }
   }
 
-  function selectClient(client: any) {
-    setSelectedClient(client);
+  function selectClient(client: Client) {
     setRecipientPhone(client.phone || "");
     setSearchClient("");
   }
 
   const filteredClients = clients.filter(
-    (c) => normalize(c.name || "").includes(normalize(searchClient)) || normalize(c.phone || "").includes(normalize(searchClient))
+    (c) => normalize(c.full_name || "").includes(normalize(searchClient)) || normalize(c.phone || "").includes(normalize(searchClient))
   );
 
   const templateCategories = useMemo(() => {
     const cats = new Set(localTemplates.map((t) => t.category));
     return ["General", ...Array.from(cats)];
   }, [localTemplates]);
-
-  function getTemplateVars(template: LocalTemplate) {
-    const matches = template.message.match(/\{[^}]+\}/g);
-    return matches ? matches.map((v) => v.replace(/[{}]/g, "")) : [];
-  }
 
   return (
     <PageContainer>
@@ -529,8 +507,7 @@ export default function WhatsAppPage() {
           <button
             key={tab.key}
             onClick={() => {
-              setActiveTab(tab.key as any);
-              if (tab.key === "configs") loadApiTemplates();
+              setActiveTab(tab.key as "send" | "templates" | "actions" | "configs" | "logs");
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === tab.key
@@ -592,7 +569,7 @@ export default function WhatsAppPage() {
                       className="w-full px-3 py-2 text-left text-sm hover:bg-[#FAF6F0] flex items-center gap-2"
                     >
                       <Phone size={14} className="text-[#9C8A82]" />
-                      <span className="text-[#5C3E35]">{client.name}</span>
+                      <span className="text-[#5C3E35]">{client.full_name}</span>
                       <span className="text-xs text-[#9C8A82]">{client.phone}</span>
                     </button>
                   ))}

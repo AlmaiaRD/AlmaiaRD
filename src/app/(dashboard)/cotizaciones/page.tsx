@@ -6,21 +6,22 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
-import { supabase } from "@/lib/supabase";
 import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuoteStatus, type QuoteWithClient, type QuoteItemWithProduct } from "@/services/quotes";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts } from "@/services/products";
+import type { Product } from "@/types/database";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getFollowupsByQuote } from "@/services/followups";
-import { getBankAccounts } from "@/services/invoices";
-import type { Client, Followup, Settings } from "@/types/database";
+import type { Client, Followup } from "@/types/database";
+import type { Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image, Copy, Undo2 } from "lucide-react";
+import jsPDF from "jspdf";
+import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image as ImageIcon, Copy, Undo2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
@@ -43,6 +44,11 @@ interface FormItem {
   cost: number;
   pv: number;
   itbis: boolean;
+}
+
+interface ProductWithRelations extends Product {
+  subbrands?: { name: string } | null;
+  categories?: { name: string } | null;
 }
 
 interface CatalogEntry {
@@ -71,7 +77,7 @@ function CotizacionesContent() {
   const { user } = useAuth();
   const [quotes, setQuotes] = useState<QuoteWithClient[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -107,7 +113,7 @@ function CotizacionesContent() {
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch)) || (p.code && normalize(p.code).includes(normalize(productSearch)))));
 
-  async function handleSavedNewClient(client: any) {
+  async function handleSavedNewClient(client: Client) {
     try {
       const fresh = await getClients();
       setClients(fresh);
@@ -140,12 +146,14 @@ function CotizacionesContent() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Carga inicial de cotizaciones al montar; los setters sincrónicos de load() son el patrón estándar de la app
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     if (!loading && searchParams.get("nueva") === "true") {
       openNew();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- openNew() se redefine por render; añadirla re-dispararía la apertura del modal
   }, [loading, searchParams]);
 
   const filtered = quotes.filter((q) => {
@@ -207,9 +215,9 @@ function CotizacionesContent() {
       setShowProducts(false);
       setShowManualProduct(false);
       setShowModal(true);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[openEdit] error:", e);
-      toast.error(e?.message || "Error al cargar la cotización");
+      toast.error(e instanceof Error ? e.message : "Error al cargar la cotización");
     }
   }
 
@@ -237,9 +245,9 @@ function CotizacionesContent() {
       setShowProducts(false);
       setShowManualProduct(false);
       setShowModal(true);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[duplicateQuote] error:", e);
-      toast.error(e?.message || "Error al duplicar la cotización");
+      toast.error(e instanceof Error ? e.message : "Error al duplicar la cotización");
     }
   }
 
@@ -248,7 +256,7 @@ function CotizacionesContent() {
     return margin === 30 ? (item.price_30 ?? 0) : (item.price_35 ?? 0);
   }
 
-  async function addProduct(product: any) {
+  async function addProduct(product: Product) {
     const price_30_ = product.price_30 ?? 0;
     const price_35_ = product.price_35 ?? 0;
     const base: FormItem = {
@@ -297,6 +305,7 @@ function CotizacionesContent() {
   const math = useMemo(() => computeInvoiceMath(
     items.map((i) => ({ quantity: i.quantity, unit_price: effectivePrice(i), cost: i.cost, itbis: i.itbis })),
     discountValue
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- effectivePrice() es función redefinida; discountValue deriva de items ya en deps, recálculo equivalente
   ), [items, margin, discountPercent, discountAmount]);
   const subtotal = math.subtotal;
   const itbisTotal = math.itbis_total;
@@ -338,8 +347,8 @@ function CotizacionesContent() {
       }
       setShowModal(false);
       load();
-    } catch (err: any) {
-      toast.error(err?.message || "Error al guardar cotización");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar cotización");
     } finally {
       setSaving(false);
     }
@@ -351,8 +360,8 @@ function CotizacionesContent() {
       await deleteQuote(id);
       toast.success("Cotización eliminada");
       load();
-    } catch (err: any) {
-      toast.error(err?.message || "Error al eliminar");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al eliminar");
     }
   }
 
@@ -362,8 +371,8 @@ function CotizacionesContent() {
       const label = statusMap[status]?.label || status;
       toast.success(`Cotización marcada como ${label.toLowerCase()}`);
       load();
-    } catch (err: any) {
-      toast.error(err?.message || "Error al actualizar estado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al actualizar estado");
     }
   }
 
@@ -374,9 +383,9 @@ function CotizacionesContent() {
       setDetailItems(qItems);
        const fl = await getFollowupsByQuote(quote.id).catch((e) => { console.error("[openDetail] followups failed:", e); return []; });
        setDetailFollowups(fl);
-    } catch (e: any) {
+    } catch (e) {
       console.error("[openDetail] full error:", e);
-      toast.error(e?.message || "Error al cargar el detalle");
+      toast.error(e instanceof Error ? e.message : "Error al cargar el detalle");
     }
   }
 
@@ -411,13 +420,30 @@ function CotizacionesContent() {
         email: settings?.email || undefined,
         phone: resolveDefaultPhone(settings) || undefined,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error("[handlePdf] error:", e);
-      toast.error(e?.message || "Error al generar el PDF");
+      toast.error(e instanceof Error ? e.message : "Error al generar el PDF");
     }
   }
 
-  function buildQuotePreviewEl(data: any, st: any) {
+  interface QuotePreviewData {
+  quote_number: string;
+  quote_date: string;
+  valid_until: string;
+  status: string;
+  client_name: string;
+  client_phone?: string;
+  client_email?: string;
+  items: Array<{ name: string; quantity: number; unit_price: number; line_total: number; pv: number }>;
+  subtotal: number;
+  itbis_total: number;
+  discount_amount: number;
+  total: number;
+  pv_total: number;
+  notes?: string;
+}
+
+function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
@@ -463,7 +489,7 @@ function CotizacionesContent() {
           </tr>
         </thead>
         <tbody>
-          ${(data.items || []).map((item: any) => `
+          ${(data.items || []).map((item) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
               <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.name) || "Producto"}</td>
               <td style="padding:10px 12px;text-align:center;font-size:13px;color:#5C3E35;">${item.quantity}</td>
@@ -524,7 +550,7 @@ function CotizacionesContent() {
       client_name: full.clients?.full_name || "",
       client_phone: full.clients?.phone || undefined,
       client_email: full.clients?.email || undefined,
-      items: qItems.map((i: any) => ({
+      items: qItems.map((i) => ({
         name: i.products?.name || i.custom_name || "Producto",
         description: i.products?.description || undefined,
         quantity: Number(i.quantity) || 0,
@@ -557,9 +583,9 @@ function CotizacionesContent() {
       link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
       toast.success("JPG descargado");
-    } catch (e: any) {
+    } catch (e) {
       console.error("[handleJpg] error:", e);
-      toast.error(e?.message || "Error al generar el JPG");
+      toast.error(e instanceof Error ? e.message : "Error al generar el JPG");
     }
   }
 
@@ -569,7 +595,7 @@ function CotizacionesContent() {
 
   function buildCatalogEntries(): CatalogEntry[] {
     return items.map((item, i) => {
-      const product = item.product_id ? products.find((p) => p.id === item.product_id) : undefined;
+      const product = item.product_id ? products.find((p) => p.id === item.product_id) as ProductWithRelations | undefined : undefined;
       const price35 = Number(item.price_35 || product?.price_35 || item.unit_price) || 0;
       const withItbis = product ? product.apply_itbis !== false : item.itbis;
       const raw = price35 * (withItbis ? 1.18 : 1);
@@ -598,7 +624,7 @@ function CotizacionesContent() {
     setCatalogEntries((prev) => prev.map((e) => (e.key === key ? { ...e, [field]: value } : e)));
   }
 
-  async function generateCatalogPdf(entries: CatalogEntry[]) {
+async function generateCatalogPdf(entries: CatalogEntry[]) {
     if (entries.length === 0) return;
     setSaving(true);
     const loadImage = async (url: string): Promise<string | null> => {
@@ -631,7 +657,7 @@ function CotizacionesContent() {
         return null;
       }
     };
-    const sc = (doc: any, hex: string) => {
+    const sc = (doc: jsPDF, hex: string) => {
       const r = Number.parseInt(hex.slice(1, 3), 16);
       const g = Number.parseInt(hex.slice(3, 5), 16);
       const b = Number.parseInt(hex.slice(5, 7), 16);
@@ -748,7 +774,6 @@ function CotizacionesContent() {
       };
 
       // ── Paginación dinámica: 2 productos por página cuando caben, página nueva si el contenido se desborda ──
-      const footerTop = PH - 34;
 
       const drawFooter = () => {
         let fy = PH - 20;
@@ -788,34 +813,6 @@ function CotizacionesContent() {
       };
 
       let y = drawPageHeader();
-
-      // Estima el alto (en mm) que ocupará un producto antes de dibujarlo
-      const estimateEntryHeight = (entry: CatalogEntry): number => {
-        const eTextW = CW - 75 - 5;
-        const nameLines = doc.splitTextToSize(entry.name || "Producto", CW * 0.65).length;
-        const nameH = nameLines * 5.5;
-        let h = Math.max(nameH, 14) + 8; // cabecera del producto
-        let textH = 0;
-        if (entry.description) {
-          textH += 4; // "DESCRIPCIÓN"
-          const descLines = doc.splitTextToSize(entry.description, eTextW - 2).length;
-          textH += Math.min(descLines, 6) * 4 + (descLines > 6 ? 4 : 0) + 3;
-        }
-        if (entry.benefits) {
-          const list = entry.benefits.split("\n").filter(Boolean);
-          if (list.length > 0) {
-            textH += 4; // "BENEFICIOS"
-            for (let k = 0; k < Math.min(list.length, 4); k++) {
-              const bl = doc.splitTextToSize(`• ${list[k]}`, eTextW - 4).length;
-              textH += bl * 3.5;
-            }
-            if (list.length > 4) textH += 3.5;
-            textH += 2;
-          }
-        }
-        h += Math.max(75, textH) + 6;
-        return h;
-      };
 
       // ── Un producto por página para que nada se superponga y todo sea legible ──
       for (let ei = 0; ei < entries.length; ei++) {
@@ -883,9 +880,9 @@ function CotizacionesContent() {
       doc.save(`${catQuoteNum}-${catClientName}-Detalle.${mm}${aa}.pdf`);
       setShowCatalogEditor(false);
       toast.success("Catálogo PDF generado");
-    } catch (e: any) {
+    } catch (e) {
       console.error("[generateCatalogPdf] error:", e);
-      toast.error(e?.message || "Error al generar el catálogo");
+      toast.error(e instanceof Error ? e.message : "Error al generar el catálogo");
     } finally {
       setSaving(false);
     }
@@ -991,7 +988,7 @@ function CotizacionesContent() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => handlePdf(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="PDF"><Printer size={15} /></button>
-                        <button onClick={() => handleJpg(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="JPG"><Image size={15} /></button>
+                        <button onClick={() => handleJpg(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="JPG"><ImageIcon size={15} /></button>
                         {(q.status === "DRAFT" || q.status === "SENT") && (
                           <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="Marcar enviada"><Send size={15} /></button>
                         )}
@@ -1367,7 +1364,7 @@ function CotizacionesContent() {
               </button>
               <button onClick={() => handleJpg(selectedQuote)}
                 className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
-                <Image size={16} /> JPG
+                <ImageIcon size={16} /> JPG
               </button>
               <button onClick={() => setDraftModal({ type: "email" })}
                 className="flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
@@ -1418,15 +1415,15 @@ function CotizacionesContent() {
           businessName={settings?.business_name || "Almaia RD"}
           senderEmail={settings?.email || undefined}
           senderName={settings?.sender_name || undefined}
-          emailTemplate={(settings as any)?.email_template || undefined}
-          whatsappTemplate={(settings as any)?.whatsapp_template || undefined}
-          smtp={(settings as any)?.smtp_host ? {
-            host: (settings as any).smtp_host,
-            port: (settings as any).smtp_port || 587,
-            user: (settings as any).smtp_user,
-            configured: !!(settings as any).has_smtp_password,
-            secure: (settings as any).smtp_secure || false,
-            senderName: (settings as any).sender_name || undefined,
+          emailTemplate={settings?.email_template || undefined}
+          whatsappTemplate={settings?.whatsapp_template || undefined}
+          smtp={settings?.smtp_host ? {
+            host: settings.smtp_host,
+            port: settings.smtp_port || 587,
+            user: settings.smtp_user,
+            configured: settings.has_smtp_password ?? false,
+            secure: settings.smtp_secure || false,
+            senderName: settings.sender_name || undefined,
           } : undefined}
           getAttachment={async () => {
             const { quote: full, items: qItems } = await getQuote(selectedQuote.id);

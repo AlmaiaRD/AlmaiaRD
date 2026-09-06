@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import { Send, User, FileText, Briefcase, Gift, Sparkles, ChevronDown, Plus, ToggleLeft, ToggleRight, Search } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { createCommunication } from "@/services/communications";
 import { getClients } from "@/services/clients";
 import { getInvoices } from "@/services/invoices";
@@ -17,11 +18,26 @@ type MessageType = "contacto_inicial" | "seguimiento_compra" | "prospecto_negoci
 interface MessageTemplate {
   id: MessageType;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   description: string;
   subject?: string;
   body: string;
   fields: FieldConfig[];
+}
+
+interface ComposerInvoice {
+  id: string;
+  invoice_number: string;
+  client_id: string;
+  status: string;
+  total: number;
+  invoice_items?: {
+    product_id?: string | null;
+    custom_name?: string | null;
+    quantity: number;
+    unit_price: number;
+    products?: { name?: string | null } | null;
+  }[];
 }
 
 interface FieldConfig {
@@ -173,7 +189,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
   const [body, setBody] = useState("");
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [clients, setClients] = useState<Client[]>([]);
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<ComposerInvoice[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>(defaultClient?.id || "");
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>("");
@@ -204,17 +220,17 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
 
   const clientInvoices = useMemo(() => {
     if (!selectedClientId) return [];
-    return invoices.filter((inv: any) => inv.client_id === selectedClientId && inv.status !== "CANCELLED");
+    return invoices.filter((inv) => inv.client_id === selectedClientId && inv.status !== "CANCELLED");
   }, [selectedClientId, invoices]);
 
   const selectedInvoice = useMemo(() => {
     if (!selectedInvoiceId) return null;
-    return invoices.find((inv: any) => inv.id === selectedInvoiceId) || null;
+    return invoices.find((inv) => inv.id === selectedInvoiceId) || null;
   }, [selectedInvoiceId, invoices]);
 
   const invoiceProducts = useMemo(() => {
     if (!selectedInvoice?.invoice_items) return [];
-    return selectedInvoice.invoice_items.map((item: any) => ({
+    return selectedInvoice.invoice_items.map((item) => ({
       name: item.products?.name || item.custom_name || "Producto",
       quantity: item.quantity,
       price: item.unit_price,
@@ -241,7 +257,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       values.numero_factura = selectedInvoice.invoice_number;
       values.monto_total = `RD$${Number(selectedInvoice.total).toLocaleString()}`;
       if (showInvoice && invoiceProducts.length > 0) {
-        values.lista_productos = invoiceProducts.map((p: any) => `• ${p.name} x${p.quantity}`).join("\n");
+        values.lista_productos = invoiceProducts.map((p) => `• ${p.name} x${p.quantity}`).join("\n");
       }
     }
 
@@ -252,6 +268,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
     }
 
     Promise.resolve().then(() => setFieldValues(prev => ({ ...values, ...prev })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- defaultClient/fieldValues/selectedInvoice son estado derivado; añadirlos resetearía campos editados por el usuario
   }, [selectedClientId, selectedInvoiceId, clients, currentTemplate, showInvoice, invoiceProducts]);
 
   useEffect(() => {
@@ -325,7 +342,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       }
 
       const commStatus = status;
-      const comm = await createCommunication({
+      await createCommunication({
         client_id: clientId || undefined,
         type: channel,
         subject: channel === "email" ? subject : undefined,
@@ -343,8 +360,9 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       }
       onSaved?.();
       onClose();
-    } catch (err: any) {
-      toast.error(err?.message || "Error al guardar");
+    } catch (err: unknown) {
+      const msg = (err as { message?: string } | null)?.message || "Error al guardar";
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -477,7 +495,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
               className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
             >
               <option value="">Sin factura (seleccionar producto manualmente)</option>
-              {clientInvoices.map((inv: any) => (
+              {clientInvoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>{inv.invoice_number} - RD${Number(inv.total).toLocaleString()}</option>
               ))}
             </select>
@@ -490,7 +508,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
             <label className="block text-xs font-medium text-[#9C8A82] mb-2">Productos</label>
             {selectedInvoiceId && showInvoice ? (
               <div className="bg-[#FAF6F0] rounded-xl p-3 space-y-1">
-                {invoiceProducts.map((p: any, i: number) => (
+                {invoiceProducts.map((p, i: number) => (
                   <div key={i} className="flex items-center justify-between text-sm text-[#5C3E35]">
                     <span>• {p.name}</span>
                     <span className="text-[#9C8A82]">x{p.quantity}</span>

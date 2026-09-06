@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { normalize } from "@/lib/search";
-import type { Client, ClientCardData, ClientTag, ClientTagRelation, ClientType } from "@/types/database";
+import type { Client, ClientCardData, ClientTag } from "@/types/database";
 import { STAGE_MIGRATION_MAP } from "@/lib/pipeline-constants";
 
 export type PaginatedResult<T> = { data: T[]; total: number; page: number; pageSize: number };
@@ -89,7 +88,7 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
   const invoiceItemsMap: Record<string, Array<{ name: string }>> = {};
   for (const item of items || []) {
     if (!invoiceItemsMap[item.invoice_id]) invoiceItemsMap[item.invoice_id] = [];
-    invoiceItemsMap[item.invoice_id].push({ name: (item as any).products?.name || "—" });
+    invoiceItemsMap[item.invoice_id].push({ name: (item as { products?: { name?: string | null } }).products?.name || "—" });
   }
 
   const clientInvoiceMap: Record<string, Array<{ invoice_date: string; total: number; pv_total: number; id: string }>> = {};
@@ -101,7 +100,7 @@ export async function getClientCardData(): Promise<ClientCardData[]> {
   const tagsByClient: Record<string, { id: string; name: string }[]> = {};
   for (const rel of tagRelations || []) {
     if (!tagsByClient[rel.client_id]) tagsByClient[rel.client_id] = [];
-    tagsByClient[rel.client_id].push({ id: rel.tag_id, name: (rel as any).client_tags?.name || "" });
+    tagsByClient[rel.client_id].push({ id: rel.tag_id, name: (rel as { client_tags?: { name?: string | null } }).client_tags?.name || "" });
   }
 
   const nextActionByClient: Record<string, { date: string; description: string }> = {};

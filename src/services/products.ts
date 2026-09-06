@@ -97,7 +97,7 @@ export async function getBundleComponentMap(bundleIds: string[]): Promise<Map<st
   for (const row of data || []) {
     const bundleId = row.bundle_id;
     const arr = map.get(bundleId) || [];
-    arr.push({ product_id: row.product_id, quantity: Number(row.quantity || 1), name: (row as any).products?.name });
+    arr.push({ product_id: row.product_id, quantity: Number(row.quantity || 1), name: (row as { products?: { name?: string | null } }).products?.name });
     map.set(bundleId, arr);
   }
   return map;

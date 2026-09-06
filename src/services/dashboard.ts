@@ -1,6 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
 
+interface InventoryViewRow {
+  stock: number | null;
+  total_value: number | null;
+  stock_status: string | null;
+}
+
 export async function getDashboardStats() {
   const localMonthStart = getLocalDateString(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
@@ -37,23 +43,23 @@ export async function getDashboardStats() {
   const pvData = pvResult.data || [];
   const pvSummary = pvSummaryResult.data;
 
-  const totalPaidReceipts = receipts.reduce((s: number, r: any) => s + Number(r.amount), 0);
-  const salesMonthLocal = monthInvoices.reduce((s: number, inv: any) => s + Number(inv.total), 0);
+  const totalPaidReceipts = receipts.reduce((s: number, r: { amount: number | null }) => s + Number(r.amount), 0);
+  const salesMonthLocal = monthInvoices.reduce((s: number, inv: { total: number | null }) => s + Number(inv.total), 0);
 
   // Consolidado: usar vw_inventory_value para valor + stock + bajo stock (elimina query duplicada)
   let inventoryValue = 0;
   let totalStock = 0;
-  const invItems = invSummary as any[];
+  const invItems = invSummary as InventoryViewRow[];
   for (const i of invItems) {
     const stock = Number(i.stock || 0);
     totalStock += stock;
     inventoryValue += Number(i.total_value || 0);
   }
 
-  const lowStock = invItems.filter((i: any) => i.stock_status === "BAJO").length;
-  const outOfStock = invItems.filter((i: any) => i.stock_status === "AGOTADO").length;
-  const pvMonth = pvData.reduce((s: number, ii: any) => s + Number(ii.pv || 0), 0);
-  const totalPending = ar.reduce((sum: number, r: any) => sum + Number(r.total_pending), 0);
+  const lowStock = invItems.filter((i) => i.stock_status === "BAJO").length;
+  const outOfStock = invItems.filter((i) => i.stock_status === "AGOTADO").length;
+  const pvMonth = pvData.reduce((s: number, ii: { pv: number | null }) => s + Number(ii.pv || 0), 0);
+  const totalPending = ar.reduce((sum: number, r: { total_pending: number | null }) => sum + Number(r.total_pending), 0);
   const pvYearData = Number(pvSummary?.pv_year || 0);
 
   return {

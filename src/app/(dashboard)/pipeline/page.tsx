@@ -14,18 +14,15 @@ import {
   STAGNATION_THRESHOLD_DAYS, type ClientType, getStagesForType,
 } from "@/lib/pipeline-constants";
 import {
-  Search, ChevronDown, ChevronRight, Phone, Mail, Tag, ShoppingCart,
-  Clock, DollarSign, TrendingUp, Calendar, AlertCircle, Users,
-  UserPlus, MessageCircle, BarChart3, Star, Zap, FileText,
-  GripVertical, CheckCircle2, Handshake, AlertTriangle, Trash2,
-  ArrowRight, MessageSquare, ExternalLink, Presentation, Briefcase, HelpCircle,
+  Search, Phone, Mail, Tag, ShoppingCart, DollarSign, TrendingUp, Users,
+  UserPlus, BarChart3, Zap, FileText, CheckCircle2, Handshake, AlertTriangle, MessageSquare, Presentation, Briefcase, HelpCircle,
   ShoppingCart as CartIcon, Briefcase as BriefcaseIcon, UserCheck, User, Edit2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import type { LucideIcon } from "lucide-react";
 import type { ClientCardData } from "@/types/database";
-import CrossSellSection from "@/components/CrossSellSection";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   UserPlus, CheckCircle: CheckCircle2, Phone, FileText, Handshake,
   Presentation, Briefcase, HelpCircle, ShoppingCart: CartIcon,
 };
@@ -80,7 +77,7 @@ export default function PipelinePage() {
           return !stages.some(s => s.key === c.stage);
         });
         if (hasOldStages) setShowMigrateModal(true);
-      } catch (e) {
+      } catch {
         toast.error("Error al cargar pipeline");
       } finally {
         setLoading(false);
@@ -227,13 +224,13 @@ export default function PipelinePage() {
         client_type: addForm.client_type,
         stage: addForm.stage,
         stage_entered_at: new Date().toISOString(),
-      } as any);
+      });
       setClients(prev => [...prev, {
         ...client,
         pending_balance: 0, total_spent: 0, num_purchases: 0, last_purchase_date: null,
         days_since_last_purchase: null, avg_ticket: 0, pv_total: 0, top_products: [],
         tags: [], next_action: null, repurchase_date: null, days_in_stage: 0,
-      } as any]);
+      }]);
       setShowAddModal(false);
       setAddForm({ full_name: "", phone: "", email: "", client_type: "comprador", stage: "prospecto" });
       toast.success("Agregado al pipeline");

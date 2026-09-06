@@ -18,7 +18,7 @@ interface ReportConfig {
   label: string;
   desc: string;
   color: string;
-  fetchData: (from?: string, to?: string) => Promise<{ columns: { header: string; key: string }[]; rows: Record<string, any>[]; filename: string }>;
+  fetchData: (from?: string, to?: string) => Promise<{ columns: { header: string; key: string }[]; rows: Record<string, unknown>[]; filename: string }>;
 }
 
 const REPORTS: ReportConfig[] = [
@@ -136,7 +136,7 @@ export default function ReportesPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [previewData, setPreviewData] = useState<{ columns: string[]; rows: Record<string, any>[] } | null>(null);
+  const [previewData, setPreviewData] = useState<{ columns: string[]; rows: Record<string, unknown>[] } | null>(null);
 
   const activeReport = REPORTS.find((r) => r.id === selectedReport);
 

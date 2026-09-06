@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Badge from "@/components/ui/Badge";
 import { normalize } from "@/lib/search";
-import { getInvoices, getInvoicesPaginated } from "@/services/invoices";
+import { getInvoicesPaginated } from "@/services/invoices";
 import { getCreditsSummary } from "@/services/credits";
 import Pagination from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Search, Phone, Wallet, ArrowUpRight } from "lucide-react";
 
+interface InvoiceRow {
+  id: string;
+  invoice_number: string;
+  status: string;
+  total: number;
+  amount_paid: number | null;
+  clients?: { full_name?: string | null; phone?: string | null } | null;
+}
+
 export default function CuentasPorCobrarPage() {
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -26,7 +35,7 @@ export default function CuentasPorCobrarPage() {
           getInvoicesPaginated(page, pageSize),
           getCreditsSummary(),
         ]);
-        const unpaid = (result.data || []).filter((inv: any) => inv.status !== "PAID" && inv.status !== "CANCELLED");
+        const unpaid = ((result.data || []) as InvoiceRow[]).filter((inv) => inv.status !== "PAID" && inv.status !== "CANCELLED");
         setInvoices(unpaid);
         setTotalInvoices(result.total);
         setTotalCredits(credits.totalAvailable || 0);
@@ -88,7 +97,7 @@ export default function CuentasPorCobrarPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((inv: any) => {
+          {filtered.map((inv) => {
             const due = Number(inv.total) - Number(inv.amount_paid || 0);
             const statusLabel = inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Pago Parcial" : inv.status;
             return (

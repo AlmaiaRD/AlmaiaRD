@@ -1,26 +1,82 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import RotationTab from "@/components/inventory/RotationTab";
 import PurchaseModal from "@/components/inventory/PurchaseModal";
-import { getInventory, getInventoryMovements, updateMinimumStock, checkCanDeleteProduct, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct, getInventoryPaginated } from "@/services/inventory";
+import { getInventory, getInventoryMovements, updateMinimumStock, deleteProduct, forceDeleteProduct, getProductUsage, getLastSalePerProduct, getLastPurchasePerProduct, getFirstPurchasePerProduct, getInventoryPaginated } from "@/services/inventory";
+import type { InventoryMovement } from "@/types/database";
 import { getProducts } from "@/services/products";
+import type { Product } from "@/types/database";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
+import type { Purchase } from "@/types/database";
 import { normalize } from "@/lib/search";
 import { getSuppliers } from "@/services/suppliers";
+import type { Supplier } from "@/types/database";
 import { getBankAccounts } from "@/services/invoices";
+import type { BankAccount } from "@/types/database";
 import { getSettings } from "@/services/settings";
-import type { Supplier, BankAccount, Settings } from "@/types/database";
-import { Package, Plus, Search, Save, Edit2, Minus, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
+import type { Settings } from "@/types/database";
+import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
+
+interface InventoryItem {
+  id: string;
+  product_id: string;
+  stock: number;
+  minimum_stock: number;
+  inventory_value: number;
+  average_cost: number;
+  pending_return: number;
+  products?: ProductWithRelations | null;
+}
+
+interface ProductWithRelations extends Product {
+  subbrands?: { name: string } | null;
+  categories?: { name: string } | null;
+}
+
+interface PurchaseWithItems extends Purchase {
+  purchase_items?: Array<{
+    id: string;
+    product_id: string;
+    quantity: number;
+    unit_cost: number;
+    line_total: number;
+    line_itbis: number;
+    itbis: boolean;
+    products?: ProductWithRelations | null;
+  }>;
+}
+
+interface RotationItem {
+  id: string | number;
+  product_id: string;
+  products?: { name?: string | null; code?: string | null; subbrands?: { name?: string | null } | null } | null;
+  code?: string | null;
+  name?: string | null;
+  subbrand?: string | null;
+  sold: number;
+  purchased: number;
+  stock: number;
+  costoPromedio: number;
+  cost: number;
+  firstPurchase?: string | null;
+  last_purchase?: string | null;
+  last_sale?: string | null;
+  diasEnInventario: number;
+  ultimaReferencia?: string | null;
+  velocidadDias: number;
+  inventory_value: number;
+  minimum_stock: number;
+}
 
 function getStockStatus(stock: number, minimum: number): { label: string; variant: "success" | "warning" | "danger" } {
   if (stock <= 0) return { label: "Agotado", variant: "danger" };
@@ -37,10 +93,10 @@ export default function InventarioPage() {
 }
 
 function InventarioContent() {
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [kpiStats, setKpiStats] = useState({ totalValue: 0, totalStock: 0, totalPending: 0 });
-  const [products, setProducts] = useState<any[]>([]);
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [products, setProducts] = useState<ProductWithRelations[]>([]);
+  const [purchases, setPurchases] = useState<PurchaseWithItems[]>([]);
   const [soldMap, setSoldMap] = useState<Record<string, number>>({});
   const [purchasedMap, setPurchasedMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -50,8 +106,8 @@ function InventarioContent() {
   const [activeTab, setActiveTab] = useState<"stock" | "history" | "rotation">("stock");
 
   const [showDetail, setShowDetail] = useState(false);
-  const [detailItem, setDetailItem] = useState<any>(null);
-  const [detailMovements, setDetailMovements] = useState<any[]>([]);
+  const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
+  const [detailMovements, setDetailMovements] = useState<InventoryMovement[]>([]);
   const [detailMinStock, setDetailMinStock] = useState(3);
 
   const [showPurchase, setShowPurchase] = useState(false);
@@ -68,23 +124,23 @@ function InventarioContent() {
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
   const [openDownloadId, setOpenDownloadId] = useState<string | null>(null);
   const [showDetailPurchase, setShowDetailPurchase] = useState(false);
-  const [detailPurchase, setDetailPurchase] = useState<any>(null);
+  const [detailPurchase, setDetailPurchase] = useState<PurchaseWithItems | null>(null);
   const [showConfirmDeleteProduct, setShowConfirmDeleteProduct] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState(false);
   const [productUsage, setProductUsage] = useState<{ movements: number; invoices: number; purchases: number } | null>(null);
   const [confirmDeleteText, setConfirmDeleteText] = useState("");
 
   // Rotation state
-  const [rotationData, setRotationData] = useState<any[]>([]);
+  const [rotationData, setRotationData] = useState<RotationItem[]>([]);
   const [rotationLoading, setRotationLoading] = useState(false);
   const [rotationFilterSubbrand, setRotationFilterSubbrand] = useState("");
   const [rotationFilterDays, setRotationFilterDays] = useState("");
   const [rotationFilterStatus, setRotationFilterStatus] = useState("");
   const [rotationExportOpen, setRotationExportOpen] = useState(false);
   const [rotationDetailProductId, setRotationDetailProductId] = useState<string | null>(null);
-  const [rotationDetailMovements, setRotationDetailMovements] = useState<any[]>([]);
+  const [rotationDetailMovements, setRotationDetailMovements] = useState<InventoryMovement[]>([]);
   const [rotationDetailLoading, setRotationDetailLoading] = useState(false);
-  const [rotationDetailItem, setRotationDetailItem] = useState<any>(null);
+  const [rotationDetailItem, setRotationDetailItem] = useState<RotationItem | null>(null);
   const [rotationAiAnalysis, setRotationAiAnalysis] = useState<string | null>(null);
   const [rotationAiLoading, setRotationAiLoading] = useState(false);
   const [showHiddenStock, setShowHiddenStock] = useState(false);
@@ -114,7 +170,7 @@ function InventarioContent() {
     })();
   }, []);
 
-  function generatePurchasePdfLocal(purchase: any) {
+  function generatePurchasePdfLocal(purchase: PurchaseWithItems) {
     const doc = new jsPDF({ unit: "mm", format: "letter" });
     const pageW = 216;
     let y = 30;
@@ -191,7 +247,7 @@ function InventarioContent() {
     setTextColor("#5C3E35");
     doc.setFontSize(9);
 
-    (purchase.purchase_items || []).forEach((item: any) => {
+    (purchase.purchase_items || []).forEach((item) => {
       if (y > 250) { doc.addPage(); y = 30; }
       const hasItbis = item.itbis !== false;
       const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
@@ -253,37 +309,59 @@ function InventarioContent() {
     doc.save(`COMPRA-${purchase.purchase_number}.pdf`);
   }
 
-  async function handleDownloadJpg(purchase: any) {
+function generateHtmlForJpg(purchase: PurchaseWithItems): string {
+    const esc = (s: string | null | undefined) => {
+      if (!s) return "";
+      return String(s)
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, "\u0026quot;")
+        .replace(/'/g, "&#039;");
+    };
+    const rows = (purchase.purchase_items || []).map((item) => {
+      const hasItbis = item.itbis !== false;
+      const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
+      const lineTotal = item.line_total + lineItbis;
+      return (
+        "<tr>" +
+        '<td style="padding:4px;">' + (esc(item.products?.name) || "—") + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + esc(String(item.quantity)) + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + esc(formatCurrency(item.unit_cost)) + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + esc(formatCurrency(lineItbis)) + "</td>" +
+        '<td style="text-align:right;padding:4px;font-weight:bold;">' + esc(formatCurrency(lineTotal)) + "</td>" +
+        "</tr>"
+      );
+    }).join("");
+    return (
+      '<div style="color:#5C3E35;">' +
+      '<h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>' +
+      '<p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ' + esc(purchase.purchase_number) + '</p>' +
+      '<hr style="border-color:#E8E0D8;margin-bottom:8px;"/>' +
+      '<p style="font-size:10px;"><b>Fecha:</b> ' + esc(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (esc(purchase.supplier_name) || "—") + '</p>' +
+      '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
+      '<table style="width:100%;font-size:9px;border-collapse:collapse;">' +
+      '<thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
+      '<div style="text-align:right;font-size:10px;">' +
+      '<p>Subtotal: ' + esc(formatCurrency(purchase.subtotal)) + '</p>' +
+      '<p>Impuesto Recogida: ' + esc(formatCurrency(purchase.impuesto_recogida || 0)) + '</p>' +
+      '<p>Cargo Admin.: ' + esc(formatCurrency(purchase.cargo_administracion || 0)) + '</p>' +
+      '<p>ITBIS (18%): ' + esc(formatCurrency(purchase.itbis || 0)) + '</p>' +
+      '<p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ' + esc(formatCurrency(purchase.total)) + '</p>' +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  async function handleDownloadJpg(purchase: PurchaseWithItems) {
     try {
       const html2canvas = (await import("html2canvas")).default;
       const tmpDiv = document.createElement("div");
       tmpDiv.style.cssText = "position:fixed;left:-9999px;top:0;background:white;padding:32px;font-family:system-ui;width:600px;";
-      function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
-      tmpDiv.innerHTML = `
-        <div style="color:#5C3E35;">
-          <h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>
-          <p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ${esc(purchase.purchase_number)}</p>
-          <hr style="border-color:#E8E0D8;margin-bottom:8px;"/>
-          <p style="font-size:10px;"><b>Fecha:</b> ${esc(formatDate(purchase.purchase_date))} &nbsp;&nbsp; <b>Proveedor:</b> ${esc(purchase.supplier_name) || "—"}</p>
-          <hr style="border-color:#E8E0D8;margin:8px 0;"/>
-          <table style="width:100%;font-size:9px;border-collapse:collapse;">
-            <thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>
-            <tbody>${(purchase.purchase_items || []).map((item: any) => {
-              const hasItbis = item.itbis !== false;
-              const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
-              const lineTotal = item.line_total + lineItbis;
-              return `<tr><td style="padding:4px;">${esc(item.products?.name) || "—"}</td><td style="text-align:center;padding:4px;">${esc(String(item.quantity))}</td><td style="text-align:center;padding:4px;">${esc(formatCurrency(item.unit_cost))}</td><td style="text-align:center;padding:4px;">${esc(formatCurrency(lineItbis))}</td><td style="text-align:right;padding:4px;font-weight:bold;">${esc(formatCurrency(lineTotal))}</td></tr>`;
-            }).join("")}</tbody>
-          </table>
-          <hr style="border-color:#E8E0D8;margin:8px 0;"/>
-          <div style="text-align:right;font-size:10px;">
-            <p>Subtotal: ${esc(formatCurrency(purchase.subtotal))}</p>
-            <p>Impuesto Recogida: ${esc(formatCurrency(purchase.impuesto_recogida || 0))}</p>
-            <p>Cargo Admin.: ${esc(formatCurrency(purchase.cargo_administracion || 0))}</p>
-            <p>ITBIS (18%): ${esc(formatCurrency(purchase.itbis || 0))}</p>
-            <p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ${esc(formatCurrency(purchase.total))}</p>
-          </div>
-        </div>`;
+      tmpDiv.innerHTML = generateHtmlForJpg(purchase);
       document.body.appendChild(tmpDiv);
       const canvas = await html2canvas(tmpDiv, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       document.body.removeChild(tmpDiv);
@@ -305,7 +383,7 @@ function InventarioContent() {
   async function handleViewPurchase(id: string) {
     try {
       const pur = await getPurchase(id);
-      setDetailPurchase(pur);
+      setDetailPurchase(pur as PurchaseWithItems);
       setShowDetailPurchase(true);
     } catch {
       toast.error("Error al cargar la compra");
@@ -337,12 +415,12 @@ function InventarioContent() {
   const purchaseAdmin = Number(purchaseForm.cargo_administracion) || 0;
   const purchaseTotal = purchaseSubtotal + purchaseRecogida + purchaseAdmin + purchaseItbis - purchaseForm.discount_amount;
 
-  function addProductToPurchase(product: any) {
+  function addProductToPurchase(product: { id: string; name: string; cost?: number | null }) {
     if (purchaseForm.items.some(i => i.product_id === product.id)) {
       toast.error("El producto ya está en la lista");
       return;
     }
-    const isNutrilite = product.subbrands?.name === "Nutrilite";
+    const isNutrilite = (product as ProductWithRelations).subbrands?.name === "Nutrilite";
     const defaultItbis = isNutrilite ? Boolean(settings?.nutrilite_itbis_enabled) : true;
     setPurchaseForm({
       ...purchaseForm,
@@ -362,9 +440,9 @@ function InventarioContent() {
     setPurchaseForm({ ...purchaseForm, items: purchaseForm.items.filter((_, i) => i !== index) });
   }
 
-  function updatePurchaseItem(index: number, field: string, value: any) {
+  function updatePurchaseItem(index: number, field: string, value: unknown) {
     const items = [...purchaseForm.items];
-    (items[index] as any)[field] = value;
+    (items[index] as Record<string, unknown>)[field] = value;
     setPurchaseForm({ ...purchaseForm, items });
   }
 
@@ -409,7 +487,7 @@ function InventarioContent() {
       Promise.resolve().then(() => setShowPurchase(true));
       router.replace("/inventario");
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   async function load() {
     try {
@@ -435,89 +513,6 @@ function InventarioContent() {
       toast.error("Error al cargar inventario");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function loadRotation() {
-    setRotationLoading(true);
-    try {
-      const [inv, sold, purchased, lastSales, lastPurchases, firstPurchases] = await Promise.all([
-        getInventory(),
-        getSoldQuantities(),
-        getPurchasedQuantities(),
-        getLastSalePerProduct(),
-        getLastPurchasePerProduct(),
-        getFirstPurchasePerProduct(),
-      ]);
-
-      const now = new Date();
-
-      const data = inv.map((item: any) => {
-        const product = item.products;
-        const itemSold = sold[item.product_id] || 0;
-        const itemPurchased = purchased[item.product_id] || 0;
-        const stock = item.stock ?? Math.max(0, itemPurchased - itemSold);
-        const cost = product?.cost || 0;
-        const lastSale = lastSales[item.product_id];
-        const lastPurchase = lastPurchases[item.product_id];
-        const firstPurchase = firstPurchases[item.product_id];
-        
-        let diasEnInventario = 0;
-        let ultimaReferencia = "";
-        
-        if (lastSale) {
-          const diff = now.getTime() - new Date(lastSale).getTime();
-          diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
-          ultimaReferencia = `Venta: ${formatDate(lastSale)}`;
-        } else if (lastPurchase) {
-          const diff = now.getTime() - new Date(lastPurchase).getTime();
-          diasEnInventario = Math.floor(diff / (1000 * 60 * 60 * 24));
-          ultimaReferencia = `Compra: ${formatDate(lastPurchase)}`;
-        } else {
-          diasEnInventario = 999;
-          ultimaReferencia = "Sin movimientos";
-        }
-
-        // Velocidad real: días desde la primera compra / total vendido
-        let diasDesdeAdquisicion = 0;
-        let velocidadDias = 0;
-        if (firstPurchase) {
-          diasDesdeAdquisicion = Math.floor((now.getTime() - new Date(firstPurchase).getTime()) / (1000 * 60 * 60 * 24));
-          if (itemSold > 0 && diasDesdeAdquisicion > 0) {
-            velocidadDias = Math.round(diasDesdeAdquisicion / itemSold);
-          }
-        }
-
-        return {
-          id: item.id,
-          product_id: item.product_id,
-          products: item.products,
-          code: product?.code || "",
-          name: product?.name || "—",
-          subbrand: product?.subbrands?.name || "—",
-          sold: itemSold,
-          purchased: itemPurchased,
-          stock,
-          costoPromedio: cost,
-          cost,
-          firstPurchase,
-          last_purchase: lastPurchase,
-          last_sale: lastSale,
-          diasEnInventario,
-          ultimaReferencia,
-          velocidadDias,
-          inventory_value: item.inventory_value || 0,
-          minimum_stock: item.minimum_stock || 3,
-        };
-      });
-
-      setRotationData(data);
-    } catch (err) {
-      console.error("[loadRotation] Error:", err);
-      const msg = err instanceof Error ? err.message : JSON.stringify(err);
-      toast.error(`Error al cargar rotación: ${msg}`);
-    } finally {
-      setRotationLoading(false);
     }
   }
 
@@ -556,7 +551,7 @@ function InventarioContent() {
 
           const now = new Date();
 
-          const data = inv.map((item: any) => {
+          const data = inv.map((item) => {
             const product = item.products;
             const itemSold = sold[item.product_id] || 0;
             const itemPurchased = purchased[item.product_id] || 0;
@@ -611,7 +606,7 @@ function InventarioContent() {
               velocidadDias,
               inventory_value: item.inventory_value || 0,
               minimum_stock: item.minimum_stock || 3,
-            };
+            } as RotationItem;
           });
 
           setRotationData(data);
@@ -672,7 +667,7 @@ function InventarioContent() {
   }
 
 
-  async function openDetail(item: any) {
+  async function openDetail(item: InventoryItem) {
     setDetailItem(item);
     setDetailMinStock(item.minimum_stock);
     setDetailMovements([]);
@@ -692,7 +687,7 @@ function InventarioContent() {
       toast.success("Stock mínimo actualizado");
       const inv = await getInventory();
       setInventory(inv);
-      setDetailItem(inv.find((i: any) => i.id === detailItem.id));
+      setDetailItem(inv.find((i) => i.id === detailItem.id) || null);
     } catch {
       toast.error("Error al actualizar");
     }
@@ -771,7 +766,7 @@ function InventarioContent() {
     setEditingId(null);
   }
 
-  function openEditPurchase(pur: any) {
+  function openEditPurchase(pur: PurchaseWithItems) {
     setEditingId(pur.id);
     setPurchaseForm({
       supplier_name: pur.supplier_name || "",
@@ -782,7 +777,7 @@ function InventarioContent() {
       cargo_administracion: pur.cargo_administracion ?? 200,
       payment_method: pur.payment_method || "Efectivo",
       bank_account_id: pur.bank_account_id || "",
-      items: (pur.purchase_items || []).map((i: any) => ({
+      items: (pur.purchase_items || []).map((i) => ({
         product_id: i.product_id,
         name: i.products?.name || "—",
         quantity: i.quantity,
@@ -821,7 +816,7 @@ function InventarioContent() {
       await load();
       if (activeTab === "history") loadPurchases();
     } catch (e) {
-      toast.error(`Error: ${(e as any)?.message || "Error al registrar compra"}`);
+      toast.error(`Error: ${e instanceof Error ? e.message : "Error al registrar compra"}`);
     } finally {
       setSaving(false);
     }
@@ -1119,7 +1114,7 @@ function InventarioContent() {
             </div>
           ) : (
             purchases
-              .filter((pur: any) => {
+              .filter((pur: PurchaseWithItems) => {
                 if (filterMonth || filterYear) {
                   const d = new Date(pur.purchase_date);
                   if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
@@ -1127,7 +1122,7 @@ function InventarioContent() {
                 }
                 return true;
               })
-              .map((pur: any) => (
+              .map((pur: PurchaseWithItems) => (
               <div key={pur.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -1195,7 +1190,7 @@ function InventarioContent() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  {pur.purchase_items?.map((pi: any) => (
+                  {pur.purchase_items?.map((pi) => (
                     <div key={pi.id} className="flex items-center justify-between text-sm">
                       <span className="text-[#5C3E35]">{pi.products?.name || "Producto"}</span>
                       <span className="text-[#9C8A82]">{pi.quantity} x {formatCurrency(pi.unit_cost)}</span>
@@ -1290,7 +1285,7 @@ function InventarioContent() {
                 <p className="text-sm text-[#9C8A82] py-4 text-center">Sin movimientos registrados</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {detailMovements.map((m: any) => (
+                  {detailMovements.map((m) => (
                     <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
                       <div>
                         <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
@@ -1401,7 +1396,7 @@ function InventarioContent() {
             <div>
               <p className="text-xs font-semibold text-[#9C8A82] uppercase mb-2">Productos</p>
               <div className="space-y-2">
-                {(detailPurchase.purchase_items || []).map((pi: any) => {
+                {(detailPurchase.purchase_items || []).map((pi) => {
                   const hasItbis = pi.itbis !== false;
                   const lineItbis = hasItbis ? pi.line_itbis || (pi.quantity * pi.unit_cost * 0.18) : 0;
                   const lineTotal = pi.line_total + lineItbis;

@@ -79,6 +79,7 @@ export default function FloatingActionButton() {
       window.removeEventListener("touchmove", handleTouch);
       window.removeEventListener("touchend", handleUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleMouse/handleTouch/handleUp se redefinen por render; moverlas a deps re-registraría listeners en cada render
   }, [dragging, onMove, onEnd]);
 
   function handleClick() {

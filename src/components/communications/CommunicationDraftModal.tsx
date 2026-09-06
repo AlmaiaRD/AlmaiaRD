@@ -92,7 +92,7 @@ export default function CommunicationDraftModal({
       }
 
       const commStatus = (isEmail && status === "sent") ? "sent" : "draft";
-      const comm = await createCommunication({
+      await createCommunication({
         client_id: client.id,
         type,
         subject: isEmail ? subject : undefined,
@@ -110,8 +110,8 @@ export default function CommunicationDraftModal({
       }
       onSaved?.();
       onClose();
-    } catch (err: any) {
-      toast.error(err?.message || "Error al guardar borrador");
+    } catch (err: unknown) {
+      toast.error((err as { message?: string } | null)?.message || "Error al guardar borrador");
     }
     finally { setSaving(false); }
   }

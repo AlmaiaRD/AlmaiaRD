@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { normalize } from "@/lib/search";
 import {
-  getProductRecommendations,
   getSeasonFromMonth,
   type ProductRecommendation,
   type Season,
@@ -13,28 +12,25 @@ import {
   ArrowLeft,
   Brain,
   Sparkles,
-  Users,
   Package,
   Sun,
   Cloud,
   Snowflake,
   Flower2,
-  AlertTriangle,
-  CheckCircle,
   Search,
   Lightbulb,
   X,
-  RefreshCw,
   Send,
   Bot,
   User,
   MessageCircle,
   Trash2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-const SEASONS: { key: Season; label: string; icon: any; color: string; bgColor: string; description: string }[] = [
+const SEASONS: { key: Season; label: string; icon: LucideIcon; color: string; bgColor: string; description: string }[] = [
   { key: "verano", label: "Verano", icon: Sun, color: "text-orange-500", bgColor: "bg-orange-50", description: "Prot solar, hidratación, energía" },
   { key: "invierno", label: "Invierno", icon: Snowflake, color: "text-blue-500", bgColor: "bg-blue-50", description: "Inmunidad, vitaminas, cuidado piel" },
   { key: "primavera", label: "Primavera", icon: Flower2, color: "text-green-500", bgColor: "bg-green-50", description: "Limpieza, renovación, energía" },
@@ -55,12 +51,8 @@ export default function RecommendationsPage() {
   const [seasonalRecs, setSeasonalRecs] = useState<ProductRecommendation[]>([]);
   const [seasonalRecsLoading, setSeasonalRecsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"products" | "seasonal" | "needs">("needs");
-  const [customNeed, setCustomNeed] = useState("");
-  const [customRecs, setCustomRecs] = useState<ProductRecommendation[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<Season>(getSeasonFromMonth(new Date().getMonth() + 1));
   const [searchFilter, setSearchFilter] = useState("");
-  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string; recommendations?: ProductRecommendation[] }[]>(() => {
@@ -85,23 +77,6 @@ export default function RecommendationsPage() {
       setChatMessages([]);
       localStorage.removeItem("aiChatHistory");
       toast.success("Historial borrado");
-    }
-  }
-
-  async function loadProducts() {
-    setProductRecsLoading(true);
-    try {
-      const res = await fetch("/api/ai-recommendations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: "nutrición, belleza, cabello, hogar, salud, vitaminas, proteínas, cuidado personal, limpieza, energía" }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProductRecs(data.recommendations || []);
-      }
-    } catch { toast.error("Error al cargar recomendaciones"); } finally {
-      setProductRecsLoading(false);
     }
   }
 
@@ -156,34 +131,8 @@ export default function RecommendationsPage() {
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedSeason ya se recarga explícitamente en su control (loadSeasonal); añadirla duplicaría el fetch
   }, []);
-
-  async function handleSearch() {
-    if (!customNeed.trim()) {
-      setCustomRecs([]);
-      return;
-    }
-    setAiLoading(true);
-    try {
-      const res = await fetch("/api/ai-recommendations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: customNeed }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCustomRecs(data.recommendations || []);
-        setAiAvailable(data.recommendations?.length > 0);
-        if (!data.recommendations?.length) {
-          toast("No se encontraron productos para esa necesidad", { icon: "🔍" });
-        }
-      }
-    } catch {
-      toast.error("Error al buscar");
-    } finally {
-      setAiLoading(false);
-    }
-  }
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -245,11 +194,6 @@ export default function RecommendationsPage() {
     }
   }
 
-  function clearSearch() {
-    setCustomNeed("");
-    setCustomRecs([]);
-  }
-
   const filteredProducts = productRecs.filter((r) => {
     if (!searchFilter) return true;
     const q = normalize(searchFilter);
@@ -295,7 +239,7 @@ export default function RecommendationsPage() {
             { key: "products", label: "Productos", icon: Package },
             { key: "seasonal", label: "Temporada", icon: Sun },
           ].map((tab) => (
-          <button key={tab.key} onClick={() => { setActiveTab(tab.key as any); setSearchFilter(""); }}
+          <button key={tab.key} onClick={() => { setActiveTab(tab.key as "products" | "seasonal" | "needs"); setSearchFilter(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.key ? "bg-[#B8837E]/10 text-[#B8837E]" : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"}`}>
             <tab.icon size={16} /> {tab.label}
           </button>
@@ -416,11 +360,6 @@ export default function RecommendationsPage() {
                       <button onClick={clearChat} className="p-1.5 text-[#9C8A82] hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg" title="Borrar historial">
                         <Trash2 size={15} />
                       </button>
-                    )}
-                    {aiAvailable !== null && (
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${aiAvailable ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}>
-                        {aiAvailable ? "IA" : "Local"}
-                      </span>
                     )}
                   </div>
                 </div>

@@ -8,7 +8,7 @@ interface CacheEntry<T> {
 const DEFAULT_TTL = 60_000;
 
 // In-memory fallback
-const memoryStore = new Map<string, CacheEntry<any>>();
+const memoryStore = new Map<string, CacheEntry<unknown>>();
 
 // Upstash Redis client (optional)
 let redis: Redis | null = null;

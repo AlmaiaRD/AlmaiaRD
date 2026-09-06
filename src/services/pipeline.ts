@@ -155,12 +155,12 @@ export async function calculateRepurchaseDate(clientId: string): Promise<string 
   if (!items || items.length === 0) return null;
 
   for (const item of items) {
-    const product = (item as any).products;
+    const product = (item as { products?: { name?: string | null; duracion_dias?: number | null } }).products;
     const productName = product?.name || "";
     const duration = product?.duracion_dias;
     
     if (duration && duration > 0) {
-      const lastDate = new Date((item as any).invoices?.invoice_date);
+      const lastDate = new Date((item as { invoices?: { invoice_date?: string | null } }).invoices?.invoice_date || "");
       lastDate.setDate(lastDate.getDate() + duration);
       return lastDate.toISOString().split("T")[0];
     }
@@ -169,7 +169,7 @@ export async function calculateRepurchaseDate(clientId: string): Promise<string 
       productName.toLowerCase().includes(key.toLowerCase())
     );
     if (cycle) {
-      const lastDate = new Date((item as any).invoices?.invoice_date);
+      const lastDate = new Date((item as { invoices?: { invoice_date?: string | null } }).invoices?.invoice_date || "");
       lastDate.setDate(lastDate.getDate() + cycle[1]);
       return lastDate.toISOString().split("T")[0];
     }

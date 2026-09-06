@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -9,7 +9,7 @@ const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-type AdminClient = any;
+type AdminClient = SupabaseClient;
 
 function getAdminClient(): AdminClient | null {
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return null;
@@ -31,9 +31,9 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-async function processStatus(supabase: AdminClient | null, status: any) {
-  const messageId = status?.id;
-  const state = status?.status; // sent | delivered | read | failed
+async function processStatus(supabase: AdminClient | null, status: unknown) {
+  const messageId = (status as { id?: string } | null)?.id;
+  const state = (status as { status?: string } | null)?.status; // sent | delivered | read | failed
   if (!messageId || !state || !supabase) return;
 
   const { error } = await supabase
@@ -45,10 +45,10 @@ async function processStatus(supabase: AdminClient | null, status: any) {
   if (error) console.error(`[whatsapp-webhook] error actualizando estado ${messageId}:`, error.message);
 }
 
-async function processIncomingMessage(supabase: AdminClient | null, message: any) {
-  const from = message?.from;
-  const type = message?.type;
-  const text = message?.text?.body;
+async function processIncomingMessage(supabase: AdminClient | null, message: unknown) {
+  const from = (message as { from?: string } | null)?.from;
+  const type = (message as { type?: string } | null)?.type;
+  const text = (message as { text?: { body?: string } } | null)?.text?.body;
 
   if (!supabase) {
     console.error(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${text || "(media)"}`);
@@ -60,7 +60,7 @@ async function processIncomingMessage(supabase: AdminClient | null, message: any
     recipient: from,
     message_type: type || "unknown",
     status: "received",
-    message_id: message?.id,
+    message_id: (message as { id?: string } | null)?.id,
     direction: "incoming",
     message_body: text,
   });

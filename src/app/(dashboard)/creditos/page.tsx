@@ -5,7 +5,7 @@ import { normalize } from "@/lib/search";
 import PageContainer from "@/components/layout/PageContainer";
 import { getCreditsSummary, getClientPendingInvoices, applyCreditToInvoice } from "@/services/credits";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Wallet, Search, ArrowRight, ArrowLeft, ChevronDown, X } from "lucide-react";
+import { Wallet, Search, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 

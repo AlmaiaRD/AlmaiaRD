@@ -6,11 +6,26 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getCommunications, deleteCommunication, updateCommunication } from "@/services/communications";
 import { formatDate } from "@/lib/utils";
-import { Search, Mail, MessageCircle, Trash2, Send, Edit2, Eye, Plus, FileText, Sparkles } from "lucide-react";
+import { Search, Mail, MessageCircle, Trash2, Send, Eye, Plus, FileText, Sparkles } from "lucide-react";
 import MessageComposer from "@/components/communications/MessageComposer";
+import type { SettingsResult } from "@/services/settings";
 import toast from "react-hot-toast";
 
 type Tab = "historial" | "componer";
+
+interface CommsRow {
+  id: string;
+  client_id: string | null;
+  type: string;
+  subject: string | null;
+  body: string | null;
+  document_type: string | null;
+  document_id: string | null;
+  status: string;
+  created_at: string;
+  sent_at: string | null;
+  clients?: { full_name?: string | null; phone?: string | null; email?: string | null } | null;
+}
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "neutral" | "danger" }> = {
   draft: { label: "Borrador", variant: "warning" },
@@ -19,15 +34,15 @@ const statusMap: Record<string, { label: string; variant: "success" | "warning" 
 };
 
 export default function ComunicacionesPage() {
-  const [comms, setComms] = useState<any[]>([]);
+  const [comms, setComms] = useState<CommsRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [detailComm, setDetailComm] = useState<any | null>(null);
+  const [detailComm, setDetailComm] = useState<CommsRow | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editBody, setEditBody] = useState("");
   const [saving, setSaving] = useState(false);
-  const [smtp, setSmtp] = useState<any>(null);
+  const [smtp, setSmtp] = useState<SettingsResult | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("historial");
   const [showComposer, setShowComposer] = useState(false);
 
@@ -38,14 +53,14 @@ export default function ComunicacionesPage() {
         setComms(data);
         const { getSettings } = await import("@/services/settings");
         const st = await getSettings();
-        if ((st as any)?.smtp_host) setSmtp(st);
+        if (st?.smtp_host) setSmtp(st);
       } catch { toast.error("Error al cargar comunicaciones"); }
       finally { setLoading(false); }
     }
     load();
   }, []);
 
-  function openDetail(c: any) {
+  function openDetail(c: CommsRow) {
     setDetailComm(c);
     setEditSubject(c.subject || "");
     setEditBody(c.body || "");
@@ -293,8 +308,8 @@ export default function ComunicacionesPage() {
                         if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
                         await handleMarkSent();
                         toast.success("Email enviado correctamente");
-                      } catch (err: any) {
-                        toast.error(err?.message || "Error al enviar email");
+                      } catch (err: unknown) {
+                        toast.error((err as { message?: string } | null)?.message || "Error al enviar email");
                       }
                     }}
                       className="flex-1 h-12 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all flex items-center justify-center gap-2">

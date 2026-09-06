@@ -1,6 +1,5 @@
 // Almaia SW v4 - sin caché: siempre red, y limpia cualquier caché vieja.
 // Esto garantiza que la app siempre cargue la versión más reciente del servidor.
-const CACHE_NAME = "almaia-v4";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

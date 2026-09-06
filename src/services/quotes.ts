@@ -34,17 +34,17 @@ export interface QuoteInput {
   items: QuoteInputItem[];
 }
 
-async function hydrateQuotes(rows: any[]): Promise<QuoteWithClient[]> {
+async function hydrateQuotes(rows: Record<string, unknown>[]): Promise<QuoteWithClient[]> {
   if (rows.length === 0) return [];
-  const clientIds = [...new Set(rows.map((r) => r.client_id).filter(Boolean))];
+  const clientIds = [...new Set(rows.map((r) => r.client_id as string | undefined).filter(Boolean))];
   let clientMap: Record<string, { id: string; full_name: string; phone?: string; email?: string }> = {};
   if (clientIds.length > 0) {
     const { data } = await supabase.from("clients").select("id, full_name, phone, email").in("id", clientIds);
     if (data) {
-      clientMap = Object.fromEntries(data.map((c: any) => [c.id, { id: c.id, full_name: c.full_name, phone: c.phone, email: c.email }]));
+      clientMap = Object.fromEntries(data.map((c: { id: string; full_name: string; phone?: string | null; email?: string | null }) => [c.id, { id: c.id, full_name: c.full_name, phone: c.phone || undefined, email: c.email || undefined }]));
     }
   }
-  return rows.map((r) => ({ ...r, clients: clientMap[r.client_id] || undefined }));
+  return rows.map((r) => ({ ...r, clients: clientMap[r.client_id as string] || undefined }) as QuoteWithClient);
 }
 
 export async function getQuotes() {
@@ -78,7 +78,7 @@ export async function getQuote(id: string) {
 
   const [hydratedQuote] = await hydrateQuotes([quote]);
 
-  const productIds = [...new Set((items || []).map((i: any) => i.product_id).filter(Boolean))];
+  const productIds = [...new Set((items || []).map((i: { product_id?: string | null }) => i.product_id).filter(Boolean))];
   let productMap: Record<string, { id: string; name: string; code?: string; description?: string }> = {};
   if (productIds.length > 0) {
     const { data: products } = await supabase
@@ -86,14 +86,14 @@ export async function getQuote(id: string) {
       .select("id, name, code, description")
       .in("id", productIds);
     if (products) {
-      productMap = Object.fromEntries(products.map((p: any) => [p.id, { id: p.id, name: p.name, code: p.code, description: p.description }]));
+      productMap = Object.fromEntries(products.map((p: { id: string; name: string; code?: string | null; description?: string | null }) => [p.id, { id: p.id, name: p.name, code: p.code || undefined, description: p.description || undefined }]));
     }
   }
 
-  const mappedItems: QuoteItemWithProduct[] = (items || []).map((i: any) => ({
+  const mappedItems: QuoteItemWithProduct[] = (items || []).map((i: { id: string; quote_id: string; product_id?: string | null; quantity: number; unit_price: number; unit_cost: number; pv: number; line_total: number; itbis: boolean; itbis_amount: number; custom_name?: string | null }) => ({
     id: i.id,
     quote_id: i.quote_id,
-    product_id: i.product_id,
+    product_id: i.product_id || undefined,
     quantity: i.quantity,
     unit_price: i.unit_price,
     unit_cost: i.unit_cost,
@@ -101,7 +101,7 @@ export async function getQuote(id: string) {
     line_total: i.line_total,
     itbis: i.itbis,
     itbis_amount: i.itbis_amount,
-    custom_name: i.custom_name,
+    custom_name: i.custom_name || undefined,
     products: i.product_id && productMap[i.product_id] ? productMap[i.product_id] : { id: "", name: "", code: "", description: "" }
   }));
 

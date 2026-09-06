@@ -8,13 +8,14 @@ import { supabase } from "@/lib/supabase";
 import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, getBundleItemsBatch, createBundle, updateBundle, removeProductImage } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { createQuote, getQuotes } from "@/services/quotes";
-import type { Product, Category, Subbrand, Settings, BundleItem } from "@/types/database";
+import type { QuoteWithClient } from "@/services/quotes";
+import type { Category, Subbrand, Settings, BundleItem, Product } from "@/types/database";
 import { formatCurrency } from "@/lib/utils";
 import { ITBIS_RATE, ITBIS_MULTIPLIER } from "@/lib/constants";
 import { invoiceLineTotalForUnit, computeInvoiceMath } from "@/lib/invoiceMath";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import DescriptionReviewTool from "@/components/catalogo/DescriptionReviewTool";
-import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, X, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, EyeOff, NotebookPen, Boxes, PackagePlus, Minus, Download, Copy, RefreshCw, FileCheck2, FileDown } from "lucide-react";
+import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, NotebookPen, Boxes, PackagePlus, Minus, Download, Copy, RefreshCw, FileCheck2, FileDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -29,15 +30,58 @@ function isNutriliteItbisException(name: string) {
   return NUTRILITE_ITBIS_EXCEPTIONS.some((e) => n.includes(e));
 }
 
+interface CatalogProduct {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  benefits: string | null;
+  cost: number;
+  pv: number;
+  price_30: number;
+  price_35: number;
+  active: boolean;
+  apply_itbis: boolean | null;
+  is_bundle: boolean;
+  category_id: string | null;
+  subbrand_id: string | null;
+  image_url: string | null;
+  duracion_dias: number | null;
+  bundle_items?: CatalogBundleItem[] | null;
+  subbrands?: { name: string } | null;
+  categories?: { name: string } | null;
+}
+
+interface CatalogBundleItem extends Omit<BundleItem, "products"> {
+  products?: CatalogProduct | null;
+}
+
+interface ProductInsertFields {
+  code: string;
+  name: string;
+  description: string | null;
+  benefits: string | null;
+  cost: number;
+  pv: number;
+  apply_itbis: boolean;
+  category_id: string | null;
+  subbrand_id: string | null;
+  price_30: number;
+  price_35: number;
+  duracion_dias?: number | null;
+  image_url: string | null;
+  is_bundle?: boolean;
+}
+
 export default function CatalogoPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subbrands, setSubbrands] = useState<Subbrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
   const [filterSubbrand, setFilterSubbrand] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -52,7 +96,7 @@ export default function CatalogoPage() {
   const [catalogPdfNumber, setCatalogPdfNumber] = useState("001");
   const [generatingCatalog, setGeneratingCatalog] = useState(false);
   const [showCatalogsList, setShowCatalogsList] = useState(false);
-  const [catalogQuotes, setCatalogQuotes] = useState<any[]>([]);
+  const [catalogQuotes, setCatalogQuotes] = useState<QuoteWithClient[]>([]);
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
 
   const [form, setForm] = useState({
@@ -69,23 +113,23 @@ export default function CatalogoPage() {
   const [newForFilter, setNewForFilter] = useState<"subbrand" | "category" | null>(null);
   const [editingPrice, setEditingPrice] = useState<{ id: string; field: "price_30" | "price_35"; value: number } | null>(null);
   const [savingItbis, setSavingItbis] = useState<string | null>(null);
-  const [editingDescription, setEditingDescription] = useState<any>(null);
+  const [editingDescription, setEditingDescription] = useState<CatalogProduct | null>(null);
   const [descForm, setDescForm] = useState({ description: "", benefits: "" });
   const [savingDesc, setSavingDesc] = useState(false);
   const [showManageSubbrands, setShowManageSubbrands] = useState(false);
   const [showManageCategories, setShowManageCategories] = useState(false);
   const [deletingSubbrand, setDeletingSubbrand] = useState<string | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
-  const [viewingProduct, setViewingProduct] = useState<any>(null);
-  const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<any>(null);
+  const [viewingProduct, setViewingProduct] = useState<CatalogProduct | null>(null);
+  const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<CatalogProduct | null>(null);
   const [deletingProduct, setDeletingProduct] = useState(false);
 
   const [showBundleModal, setShowBundleModal] = useState(false);
-  const [editingBundle, setEditingBundle] = useState<any>(null);
+  const [editingBundle, setEditingBundle] = useState<CatalogProduct | null>(null);
   const [bundleForm, setBundleForm] = useState({ code: "", name: "", price: 0, image_url: null as string | null });
   const [bundleSearch, setBundleSearch] = useState("");
   const [bundleFilterBrand, setBundleFilterBrand] = useState("");
-  const [bundleComponents, setBundleComponents] = useState<Array<{ product: any; quantity: number }>>([]);
+  const [bundleComponents, setBundleComponents] = useState<Array<{ product: CatalogProduct; quantity: number }>>([]);
   const [savingBundle, setSavingBundle] = useState(false);
 
   useEffect(() => {
@@ -100,16 +144,16 @@ export default function CatalogoPage() {
   async function loadProducts() {
     setLoading(true);
     try {
-      let data;
+      let data: CatalogProduct[];
       if (searchQuery) {
         data = await searchProducts(searchQuery);
       } else {
         data = await getProducts(true);
       }
-      if (filterSubbrand) data = data.filter((p: any) => p.subbrand_id === filterSubbrand);
-      if (filterCategory) data = data.filter((p: any) => p.category_id === filterCategory);
-      data = await attachBundleItems(data as any[]);
-      setProducts(showArchived ? data.filter((p: any) => !p.active) : data.filter((p: any) => p.active));
+      if (filterSubbrand) data = data.filter((p) => p.subbrand_id === filterSubbrand);
+      if (filterCategory) data = data.filter((p) => p.category_id === filterCategory);
+      data = await attachBundleItems(data);
+      setProducts(showArchived ? data.filter((p) => !p.active) : data.filter((p) => p.active));
     } catch {
       toast.error("Error al cargar productos");
     } finally {
@@ -117,18 +161,18 @@ export default function CatalogoPage() {
     }
   }
 
-  async function attachBundleItems(list: any[]): Promise<any[]> {
-    const bundles = list.filter((p: any) => p.is_bundle && !p.bundle_items);
+  async function attachBundleItems(list: CatalogProduct[]): Promise<CatalogProduct[]> {
+    const bundles = list.filter((p) => p.is_bundle && !p.bundle_items);
     if (bundles.length === 0) return list;
     try {
-      const items = await getBundleItemsBatch(bundles.map((b: any) => b.id));
-      const grouped = new Map<string, any[]>();
+      const items = await getBundleItemsBatch(bundles.map((b) => b.id));
+      const grouped = new Map<string, CatalogBundleItem[]>();
       for (const it of items) {
         const arr = grouped.get(it.bundle_id) || [];
         arr.push(it);
         grouped.set(it.bundle_id, arr);
       }
-      return list.map((p: any) => {
+      return list.map((p) => {
         if (p.is_bundle && grouped.has(p.id)) p.bundle_items = grouped.get(p.id);
         return p;
       });
@@ -141,17 +185,17 @@ export default function CatalogoPage() {
     (async () => {
       setLoading(true);
       try {
-        let data;
+        let data: CatalogProduct[];
         if (searchQuery) {
           data = await searchProducts(searchQuery);
         } else {
           data = await getProducts(true);
         }
-        if (filterSubbrand) data = data.filter((p: any) => p.subbrand_id === filterSubbrand);
-        if (filterCategory) data = data.filter((p: any) => p.category_id === filterCategory);
-        if (filterBundles) data = data.filter((p: any) => p.is_bundle);
-        data = await attachBundleItems(data as any[]);
-        setProducts(showArchived ? data.filter((p: any) => !p.active) : data.filter((p: any) => p.active));
+        if (filterSubbrand) data = data.filter((p) => p.subbrand_id === filterSubbrand);
+        if (filterCategory) data = data.filter((p) => p.category_id === filterCategory);
+        if (filterBundles) data = data.filter((p) => p.is_bundle);
+        data = await attachBundleItems(data);
+        setProducts(showArchived ? data.filter((p) => !p.active) : data.filter((p) => p.active));
       } catch {
         toast.error("Error al cargar productos");
       } finally {
@@ -167,7 +211,7 @@ export default function CatalogoPage() {
 
   function openNew() { resetForm(); setShowModal(true); }
 
-  function openEdit(product: any) {
+  function openEdit(product: CatalogProduct) {
     if (product.is_bundle) { openBundleEditor(product); return; }
     setEditingProduct(product);
     setForm({
@@ -192,7 +236,7 @@ export default function CatalogoPage() {
       const cost = Number(form.cost);
       const auto30 = Math.round(cost * MARKUP_30 * 100) / 100;
       const auto35 = Math.round(cost * MARKUP_35 * 100) / 100;
-      const productData: Record<string, any> = {
+      const productData: ProductInsertFields = {
         code: form.code,
         name: form.name,
         description: form.description || null,
@@ -208,17 +252,17 @@ export default function CatalogoPage() {
         image_url: form.image_url || null,
       };
       if (editingProduct) {
-        await updateProduct(editingProduct.id, productData as any);
+        await updateProduct(editingProduct.id, productData as Partial<Product>);
         toast.success("Producto actualizado");
       } else {
-        await createProduct(productData as any);
+        await createProduct(productData as Partial<Product>);
         toast.success("Producto creado");
       }
       setShowModal(false);
       resetForm();
       loadProducts();
-    } catch (e: any) {
-      toast.error(e?.message || "Error al guardar producto");
+    } catch (e: unknown) {
+      toast.error((e as { message?: string }).message || "Error al guardar producto");
     } finally {
       setSaving(false);
     }
@@ -229,13 +273,13 @@ export default function CatalogoPage() {
     const { id, field, value } = editingPrice;
     if (value < 0) { toast.error("El precio no puede ser negativo"); return; }
     try {
-      await updateProduct(id, { [field]: value } as any);
-      setProducts((prev: any[]) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+      await updateProduct(id, { [field]: value });
+      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
       setEditingPrice(null);
     } catch { toast.error("Error al actualizar precio"); }
   }
 
-  function openDescriptionEditor(product: any) {
+  function openDescriptionEditor(product: CatalogProduct) {
     setEditingDescription(product);
     setDescForm({ description: product.description || "", benefits: product.benefits || "" });
   }
@@ -247,52 +291,52 @@ export default function CatalogoPage() {
       await updateProduct(editingDescription.id, {
         description: descForm.description || null,
         benefits: descForm.benefits || null,
-      } as any);
-      setProducts((prev: any[]) => prev.map((p) => (p.id === editingDescription.id ? { ...p, description: descForm.description, benefits: descForm.benefits } : p)));
+      } as Partial<Product>);
+      setProducts((prev) => prev.map((p) => (p.id === editingDescription.id ? { ...p, description: descForm.description, benefits: descForm.benefits } : p)));
       setEditingDescription(null);
       toast.success("Descripción actualizada");
     } catch { toast.error("Error al actualizar descripción"); }
     finally { setSavingDesc(false); }
   }
 
-  async function handleToggleItbis(product: any) {    const newVal = !(product.apply_itbis !== false);
+  async function handleToggleItbis(product: CatalogProduct) {    const newVal = !(product.apply_itbis !== false);
     setSavingItbis(product.id);
     try {
-      await updateProduct(product.id, { apply_itbis: newVal } as any);
-      setProducts((prev: any[]) => prev.map((p) => (p.id === product.id ? { ...p, apply_itbis: newVal } : p)));
+      await updateProduct(product.id, { apply_itbis: newVal });
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, apply_itbis: newVal } : p)));
     } catch { toast.error("Error al actualizar ITBIS"); }
     finally { setSavingItbis(null); }
   }
 
-  async function handleArchiveProduct(product: any) {
+  async function handleArchiveProduct(product: CatalogProduct) {
     if (!confirm(`¿Archivar "${product.name}"?`)) return;
     try {
-      await updateProduct(product.id, { active: false } as any);
-      setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
+      await updateProduct(product.id, { active: false });
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
       toast.success("Producto archivado");
     } catch { toast.error("Error al archivar producto"); }
   }
 
-  async function handleRestoreProduct(product: any) {
+  async function handleRestoreProduct(product: CatalogProduct) {
     try {
-      await updateProduct(product.id, { active: true } as any);
-      setProducts((prev: any[]) => prev.map((p) => (p.id === product.id ? { ...p, active: true } : p)));
+      await updateProduct(product.id, { active: true });
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, active: true } : p)));
       toast.success("Producto restaurado");
     } catch { toast.error("Error al restaurar producto"); }
   }
 
-  async function handleDeleteProduct(product: any) {
+  async function handleDeleteProduct(product: CatalogProduct) {
     setDeletingProduct(true);
     try {
       await deleteProduct(product.id);
       await removeProductImage(product.image_url);
-      setProducts((prev: any[]) => prev.filter((p) => p.id !== product.id));
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
       toast.success("Producto eliminado");
     } catch { toast.error("Error al eliminar producto"); }
     finally { setDeletingProduct(false); setConfirmDeleteProduct(null); }
   }
 
-  function requestDeleteProduct(product: any) {
+  function requestDeleteProduct(product: CatalogProduct) {
     setConfirmDeleteProduct(product);
   }
 
@@ -305,14 +349,14 @@ export default function CatalogoPage() {
     setShowBundleModal(true);
   }
 
-  async function openBundleEditor(product: any) {
+  async function openBundleEditor(product: CatalogProduct) {
     setEditingBundle(product);
-    let items: BundleItem[] = product.bundle_items;
+    let items: CatalogBundleItem[] | null | undefined = product.bundle_items;
     if (!items) {
       try { items = await getBundleItems(product.id); } catch { items = []; }
     }
     setBundleComponents(
-      (items || []).map((it) => ({ product: it.products, quantity: it.quantity }))
+      (items || []).map((it) => ({ product: it.products as CatalogProduct, quantity: it.quantity }))
     );
     setBundleForm({
       code: product.code || "",
@@ -325,14 +369,14 @@ export default function CatalogoPage() {
     setShowBundleModal(true);
   }
 
-  async function duplicateBundle(product: any) {
-    let items: BundleItem[] = product.bundle_items;
+  async function duplicateBundle(product: CatalogProduct) {
+    let items: CatalogBundleItem[] | null | undefined = product.bundle_items;
     if (!items) {
       try { items = await getBundleItems(product.id); } catch { items = []; }
     }
     setEditingBundle(null);
     setBundleComponents(
-      (items || []).map((it) => ({ product: it.products, quantity: it.quantity }))
+      (items || []).map((it) => ({ product: it.products as CatalogProduct, quantity: it.quantity }))
     );
     setBundleForm({
       code: `${product.code || "BUN"}-COPIA`,
@@ -345,7 +389,7 @@ export default function CatalogoPage() {
     setShowBundleModal(true);
   }
 
-  function addBundleComponent(product: any) {
+  function addBundleComponent(product: CatalogProduct) {
     setBundleComponents((prev) => {
       if (prev.some((c) => c.product.id === product.id)) {
         return prev.map((c) => c.product.id === product.id ? { ...c, quantity: c.quantity + 1 } : c);
@@ -398,7 +442,7 @@ export default function CatalogoPage() {
     }
     setSavingBundle(true);
     try {
-      const productData: Record<string, any> = {
+      const productData: ProductInsertFields = {
         code: bundleForm.code.trim(),
         name: bundleForm.name.trim(),
         description: bundleSummary(),
@@ -415,22 +459,22 @@ export default function CatalogoPage() {
       };
       const components = bundleComponents.map((c) => ({ product_id: c.product.id, quantity: c.quantity }));
       if (editingBundle) {
-        await updateBundle(editingBundle.id, productData as any, components);
+        await updateBundle(editingBundle.id, productData as Partial<Product>, components);
         toast.success("Bundle actualizado");
       } else {
-        await createBundle(productData as any, components);
+        await createBundle(productData as Partial<Product>, components);
         toast.success("Bundle creado");
       }
       setShowBundleModal(false);
       loadProducts();
-    } catch (e: any) {
-      toast.error(e?.message || "Error al guardar bundle");
+    } catch (e: unknown) {
+      toast.error((e as { message?: string }).message || "Error al guardar bundle");
     } finally {
       setSavingBundle(false);
     }
   }
 
-  const bundlePickerResults = products.filter((p: any) => {
+  const bundlePickerResults = products.filter((p) => {
     if (!p.active || p.is_bundle) return false;
     if (bundleFilterBrand && p.subbrand_id !== bundleFilterBrand) return false;
     const q = bundleSearch.trim().toLowerCase();
@@ -470,8 +514,8 @@ export default function CatalogoPage() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".pdf";
-    input.onchange = async (e: any) => {
-      const file = e.target.files?.[0];
+    input.onchange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       toast.success("PDF seleccionado. La importación se procesará cuando Supabase esté configurado.");
     };
@@ -488,8 +532,8 @@ export default function CatalogoPage() {
     setShowCatalogsList(true);
     try {
       const q = await getQuotes();
-      setCatalogQuotes(q.filter((x: any) => x.status === "CATALOGO"));
-    } catch (e: any) {
+      setCatalogQuotes(q.filter((x) => x.status === "CATALOGO"));
+    } catch (e: unknown) {
       console.warn("[catalogsList] error:", e);
       setCatalogQuotes([]);
       toast.error("Error al cargar los catálogos guardados");
@@ -506,7 +550,7 @@ export default function CatalogoPage() {
     });
   }
 
-  function catalogPdfProductPrice(p: any): number {
+  function catalogPdfProductPrice(p: CatalogProduct): number {
     const margin = settings?.default_margin ?? 30;
     const base = margin === 30 ? p.price_30 : p.price_35;
     const withItbis = p.apply_itbis !== false;
@@ -606,7 +650,7 @@ export default function CatalogoPage() {
         return hy + 5;
       };
 
-      const drawEntry = async (p: any, startY: number): Promise<number> => {
+      const drawEntry = async (p: CatalogProduct, startY: number): Promise<number> => {
         let y = startY;
         const priceClient = catalogPdfProductPrice(p);
         sc("#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
@@ -731,16 +775,16 @@ export default function CatalogoPage() {
           })),
         });
         toast.success("Catálogo guardado como cotización (estado Catálogo). Complétalo en Cotizaciones cuando el cliente apruebe.");
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn("[catPdf] No se pudo guardar como cotización:", err);
         toast.error("El PDF se descargó, pero no se pudo guardar como cotización.");
       }
 
       setShowCatalogPdfModal(false);
       toast.success("Catálogo PDF generado");
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[catPdf] error:", e);
-      toast.error(e?.message || "Error al generar el catálogo");
+      toast.error((e as { message?: string }).message || "Error al generar el catálogo");
     } finally {
       setGeneratingCatalog(false);
     }
@@ -863,10 +907,10 @@ export default function CatalogoPage() {
         <div className="text-center py-16 text-[#9C8A82]"><BookOpen size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">No hay productos registrados</p></div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product: any) => {
+          {products.map((product) => {
             if (product.is_bundle) {
               const items = product.bundle_items || [];
-              const hasItbisComponents = items.some((it: any) => it.products?.apply_itbis !== false);
+              const hasItbisComponents = items.some((it) => it.products?.apply_itbis !== false);
               return (
                 <div key={product.id} className="lg:col-span-3 bg-white rounded-2xl p-5 shadow-sm border-2 border-[#B8837E]/30 hover:shadow-md transition-shadow duration-200">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -955,7 +999,7 @@ export default function CatalogoPage() {
                         <Boxes size={14} /> {items.length} {items.length === 1 ? "producto incluido" : "productos incluidos"}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {items.map((it: any) => {
+                        {items.map((it) => {
                           const p = it.products;
                           if (!p) return null;
                           return (
@@ -1077,7 +1121,7 @@ export default function CatalogoPage() {
                     )}
                   </div>
                   {product.apply_itbis !== false && (
-                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 30%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_30 || 0, product.cost || 0, product.apply_itbis !== false))}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 30%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_30 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
                   )}
                   <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Ganancia 30%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_30 || 0) - product.cost)}</span></div>
                   <div className="flex justify-between items-center">
@@ -1097,7 +1141,7 @@ export default function CatalogoPage() {
                     )}
                   </div>
                   {product.apply_itbis !== false && (
-                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 35%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_35 || 0, product.cost || 0, product.apply_itbis !== false))}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 35%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_35 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
                   )}
                   <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Ganancia 35%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_35 || 0) - product.cost)}</span></div>
                   <div className="flex items-center justify-between pt-2 border-t border-[#E8E0D8] mt-2">
@@ -1128,7 +1172,7 @@ export default function CatalogoPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre *</label>
               <input type="text" value={form.name} onChange={(e) => {
                 const newName = e.target.value;
-                const isNutri = subbrands.find((s: any) => s.id === form.subbrand_id)?.name === "Nutrilite";
+                const isNutri = subbrands.find((s) => s.id === form.subbrand_id)?.name === "Nutrilite";
                 setForm({ ...form, name: newName, apply_itbis: isNutri ? isNutriliteItbisException(newName) : true });
               }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
             </div>
@@ -1138,8 +1182,7 @@ export default function CatalogoPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Submarca</label>
               <select value={form.subbrand_id} onChange={(e) => {
                 if (e.target.value === "__new__") { setNewForFilter(null); setShowNewSubbrand(true); return; }
-                const sub = subbrands.find((s: any) => s.id === e.target.value);
-                const name = form.name.toLowerCase();
+                const sub = subbrands.find((s) => s.id === e.target.value);
                 const isNutri = sub?.name === "Nutrilite";
                 setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isNutriliteItbisException(form.name)) });
               }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
@@ -1331,7 +1374,7 @@ export default function CatalogoPage() {
                   {bundleSearch.trim() || bundleFilterBrand ? "Sin resultados" : "No hay productos disponibles"}
                 </p>
               ) : (
-                bundlePickerResults.slice(0, 20).map((p: any) => (
+                bundlePickerResults.slice(0, 20).map((p) => (
                   <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#FAF6F0] transition-colors">
                     <div className="w-9 h-9 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
                       {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-contain" /> : <BookOpen size={16} className="opacity-40" />}
@@ -1543,7 +1586,7 @@ export default function CatalogoPage() {
             {viewingProduct.image_url ? (
               <div>
                 <div className="w-full max-h-[360px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#FAF6F0] to-[#F3EAE3] flex items-center justify-center p-6">
-                  <img src={viewingProduct.image_url} alt={viewingProduct.name} className="max-h-[320px] w-auto object-contain" />
+                <img src={viewingProduct.image_url} alt={viewingProduct.name} className="max-h-[320px] w-auto object-contain" />
                 </div>
                 <a
                   href={viewingProduct.image_url}
@@ -1599,8 +1642,8 @@ export default function CatalogoPage() {
                 <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Total c/ITBIS</label>
                 {viewingProduct.apply_itbis !== false ? (
                   <>
-                    <p className="text-sm font-bold text-[#5C3E35]">30%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_30 || 0, viewingProduct.cost || 0, viewingProduct.apply_itbis !== false))}</p>
-                    <p className="text-sm text-[#5C3E35]">35%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_35 || 0, viewingProduct.cost || 0, viewingProduct.apply_itbis !== false))}</p>
+                    <p className="text-sm font-bold text-[#5C3E35]">30%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_30 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
+                    <p className="text-sm text-[#5C3E35]">35%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_35 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
                   </>
                 ) : (
                   <p className="text-sm text-[#9C8A82]">Sin ITBIS</p>
@@ -1642,7 +1685,7 @@ export default function CatalogoPage() {
                   <p className="text-sm text-[#9C8A82] py-4 text-center bg-[#FAF6F0] rounded-xl">Este bundle no tiene productos registrados.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[45vh] overflow-y-auto pr-1">
-                    {(viewingProduct.bundle_items || []).map((it: any) => {
+                    {(viewingProduct.bundle_items || []).map((it) => {
                       const p = it.products;
                       if (!p) return null;
                       return (
@@ -1747,7 +1790,7 @@ export default function CatalogoPage() {
               Cancelar
             </button>
             <button
-              onClick={() => handleDeleteProduct(confirmDeleteProduct)}
+              onClick={() => handleDeleteProduct(confirmDeleteProduct!)}
               disabled={deletingProduct}
               className="flex-1 h-12 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >

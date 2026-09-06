@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createTransport } from "nodemailer";
+import { createTransport, type SendMailOptions } from "nodemailer";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       auth: { user: settings.smtp_user, pass: settings.smtp_pass },
     });
 
-    const mailOptions: any = {
+    const mailOptions: SendMailOptions = {
       from: `"${settings.sender_name || settings.smtp_user}" <${settings.smtp_user}>`,
       to,
       subject,

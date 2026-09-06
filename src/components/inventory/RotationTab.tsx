@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { Package, EyeOff, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
+import type { InventoryMovement } from "@/types/database";
 
 const movementLabel: Record<string, string> = {
   PURCHASE: "Compra",
@@ -24,17 +25,45 @@ const movementColor: Record<string, string> = {
   CANCELLATION: "text-gray-500",
 };
 
+interface RotationProduct {
+  name?: string | null;
+  code?: string | null;
+  subbrands?: { name?: string | null } | null;
+}
+
+interface RotationRow {
+  id: string | number;
+  product_id: string;
+  products?: RotationProduct | null;
+  code?: string | null;
+  name?: string | null;
+  subbrand?: string | null;
+  sold: number;
+  purchased: number;
+  stock: number;
+  costoPromedio: number;
+  cost: number;
+  firstPurchase?: string | null;
+  last_purchase?: string | null;
+  last_sale?: string | null;
+  diasEnInventario: number;
+  ultimaReferencia?: string | null;
+  velocidadDias: number;
+  inventory_value: number;
+  minimum_stock: number;
+}
+
 interface RotationTabProps {
-  rotationData: any[];
+  rotationData: RotationRow[];
   rotationLoading: boolean;
   rotationFilterSubbrand: string;
   rotationFilterDays: string;
   rotationFilterStatus: string;
   rotationExportOpen: boolean;
   rotationDetailProductId: string | null;
-  rotationDetailMovements: any[];
+  rotationDetailMovements: InventoryMovement[];
   rotationDetailLoading: boolean;
-  rotationDetailItem: any;
+  rotationDetailItem: RotationRow | null;
   rotationAiAnalysis: string | null;
   rotationAiLoading: boolean;
   hiddenRotationIds: string[];
@@ -44,9 +73,9 @@ interface RotationTabProps {
   setRotationFilterStatus: (v: string) => void;
   setRotationExportOpen: (v: boolean) => void;
   setRotationDetailProductId: (v: string | null) => void;
-  setRotationDetailMovements: (v: any[]) => void;
+  setRotationDetailMovements: (v: InventoryMovement[]) => void;
   setRotationDetailLoading: (v: boolean) => void;
-  setRotationDetailItem: (v: any) => void;
+  setRotationDetailItem: (v: RotationRow | null) => void;
   setRotationAiAnalysis: (v: string | null) => void;
   setRotationAiLoading: (v: boolean) => void;
   toggleHideRotationProduct: (productId: string) => void;
@@ -100,25 +129,25 @@ export default function RotationTab({
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
                 <p className="text-xs text-[#9C8A82] mb-1">Rotación Alta (&lt; 15d)</p>
                 <p className="text-xl font-bold text-[#86C7A3]">
-                  {rotationData.filter((d: any) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length}
+                  {rotationData.filter((d) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
                 <p className="text-xs text-[#9C8A82] mb-1">Rotación Media (15-60d)</p>
                 <p className="text-xl font-bold text-[#E8C87A]">
-                  {rotationData.filter((d: any) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length}
+                  {rotationData.filter((d) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
                 <p className="text-xs text-[#9C8A82] mb-1">{'Rotación Baja (> 60d)'}</p>
                 <p className="text-xl font-bold text-[#D4A0A0]">
-                  {rotationData.filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length}
+                  {rotationData.filter((d) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
                 <p className="text-xs text-[#9C8A82] mb-1">Próximos a agotarse</p>
                 <p className="text-xl font-bold text-red-500">
-                  {rotationData.filter((d: any) => {
+                  {rotationData.filter((d) => {
                     if (d.sold <= 0 || d.stock <= 0) return false;
                     return d.velocidadDias > 0 && Math.round(d.velocidadDias * d.stock) < 30;
                   }).length}
@@ -132,8 +161,8 @@ export default function RotationTab({
                 <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 30 días'}</p>
                 <p className="text-lg font-bold text-[#E8C87A]">
                   {rotationData
-                    .filter((d: any) => d.diasEnInventario > 30 && d.diasEnInventario < 999)
-                    .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                    .filter((d) => d.diasEnInventario > 30 && d.diasEnInventario < 999)
+                    .reduce((s: number, d) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
                     .toLocaleString()} RD$
                 </p>
               </div>
@@ -141,8 +170,8 @@ export default function RotationTab({
                 <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 60 días'}</p>
                 <p className="text-lg font-bold text-[#D4A0A0]">
                   {rotationData
-                    .filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999)
-                    .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                    .filter((d) => d.diasEnInventario > 60 && d.diasEnInventario < 999)
+                    .reduce((s: number, d) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
                     .toLocaleString()} RD$
                 </p>
               </div>
@@ -150,8 +179,8 @@ export default function RotationTab({
                 <p className="text-xs text-[#9C8A82] mb-1">{'Inmovilizado > 90 días'}</p>
                 <p className="text-lg font-bold text-red-600">
                   {rotationData
-                    .filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
-                    .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
+                    .filter((d) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
+                    .reduce((s: number, d) => s + (d.costoPromedio || 0) * (d.stock || 0), 0)
                     .toLocaleString()} RD$
                 </p>
               </div>
@@ -159,8 +188,8 @@ export default function RotationTab({
 
             {/* Recommendations Card */}
             {(() => {
-              const staleProducts = rotationData.filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999);
-              const nearStockout = rotationData.filter((d: any) => {
+              const staleProducts = rotationData.filter((d) => d.diasEnInventario > 90 && d.diasEnInventario < 999);
+              const nearStockout = rotationData.filter((d) => {
                 if (d.sold <= 0 || d.stock <= 0 || !d.velocidadDias) return false;
                 return Math.round(d.velocidadDias * d.stock) < 30;
               });
@@ -172,7 +201,7 @@ export default function RotationTab({
                     <h3 className="text-sm font-bold text-[#5C3E35]">Recomendaciones Automáticas</h3>
                   </div>
                   <div className="space-y-2">
-                    {staleProducts.map((d: any) => (
+                    {staleProducts.map((d) => (
                       <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
                         <div className="flex items-center gap-3">
                           <TrendingDown size={16} className="text-[#D4A0A0]" />
@@ -185,7 +214,7 @@ export default function RotationTab({
                         </div>
                       </div>
                     ))}
-                    {nearStockout.map((d: any) => (
+                    {nearStockout.map((d) => (
                       <div key={d.product_id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-4 py-2.5">
                         <div className="flex items-center gap-3">
                           <TrendingUp size={16} className="text-[#86C7A3]" />
@@ -253,7 +282,7 @@ export default function RotationTab({
                 className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
               >
                 <option value="">Todas las submarcas</option>
-                {[...new Set(rotationData.map((d: any) => d.subbrand).filter(Boolean))].map((s) => (
+                {[...new Set(rotationData.map((d) => d.subbrand).filter(Boolean))].map((s) => (
                   <option key={s as string} value={s as string}>{s as string}</option>
                 ))}
               </select>
@@ -301,7 +330,6 @@ export default function RotationTab({
                         onClick={() => {
                           setRotationExportOpen(false);
                           const doc = new jsPDF({ unit: "mm", format: "letter" });
-                          const pageW = 216;
                           let y = 20;
                           const margin = 15;
                           doc.setFontSize(16);
@@ -324,7 +352,7 @@ export default function RotationTab({
                           });
                           y += 5;
                           doc.setFont("helvetica", "normal");
-                          rotationData.forEach((item: any) => {
+                          rotationData.forEach((item) => {
                             if (y > 270) { doc.addPage(); y = 20; }
                             const proy = item.velocidadDias > 0 && item.stock > 0 ? Math.round(item.velocidadDias * item.stock) : null;
                             const el = item.diasEnInventario >= 999 ? "Sin mov." :
@@ -360,7 +388,7 @@ export default function RotationTab({
                         onClick={() => {
                           setRotationExportOpen(false);
                           const headers = ["Producto", "Código", "Submarca", "Stock", "Días en Inv.", "Velocidad", "Proy. Agot.", "Estado", "Capital"];
-                          const rows = rotationData.map((item: any) => {
+                          const rows = rotationData.map((item: RotationRow) => {
                             const proy = item.velocidadDias > 0 && item.stock > 0 ? `${Math.round(item.velocidadDias * item.stock)} días` : "—";
                             const el = item.diasEnInventario >= 999 ? "Sin movimientos" :
                               item.diasEnInventario <= 15 ? "Rotación alta" :
@@ -416,14 +444,14 @@ export default function RotationTab({
                 </thead>
                 <tbody>
                   {(() => {
-                    let filtered = rotationData.filter((d: any) => showHiddenRotation || !hiddenRotationIds.includes(d.product_id));
-                    if (rotationFilterSubbrand) filtered = filtered.filter((d: any) => d.subbrand === rotationFilterSubbrand);
+                    let filtered = rotationData.filter((d) => showHiddenRotation || !hiddenRotationIds.includes(d.product_id));
+                    if (rotationFilterSubbrand) filtered = filtered.filter((d) => d.subbrand === rotationFilterSubbrand);
                     if (rotationFilterDays) {
                       const [min, max] = rotationFilterDays.split("-").map(Number);
-                      filtered = filtered.filter((d: any) => d.diasEnInventario >= min && d.diasEnInventario <= max);
+                      filtered = filtered.filter((d) => d.diasEnInventario >= min && d.diasEnInventario <= max);
                     }
                     if (rotationFilterStatus) {
-                      filtered = filtered.filter((d: any) => {
+                      filtered = filtered.filter((d) => {
                         if (rotationFilterStatus === "success") return d.diasEnInventario <= 15;
                         if (rotationFilterStatus === "warning") return d.diasEnInventario > 15 && d.diasEnInventario <= 60;
                         if (rotationFilterStatus === "danger") return d.diasEnInventario > 60 || d.diasEnInventario >= 999;
@@ -431,8 +459,8 @@ export default function RotationTab({
                       });
                     }
                     return filtered
-                      .sort((a: any, b: any) => b.diasEnInventario - a.diasEnInventario)
-                      .map((item: any) => {
+                      .sort((a, b) => b.diasEnInventario - a.diasEnInventario)
+                      .map((item: RotationRow) => {
                         const velocidad = item.velocidadDias > 0
                           ? `${item.velocidadDias} días/venta`
                           : "Sin ventas";
@@ -620,7 +648,7 @@ export default function RotationTab({
                 <p className="text-sm text-[#9C8A82] py-4 text-center">Sin movimientos registrados</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {rotationDetailMovements.map((m: any) => (
+                  {rotationDetailMovements.map((m) => (
                     <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
                       <div>
                         <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>

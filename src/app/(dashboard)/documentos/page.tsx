@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import { getDocuments } from "@/services/documents";
-import { FileText, Search, Eye, Download, File, Receipt, ShoppingCart, ArrowLeft, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
+import { FileText, Search, Eye, Download, Receipt, ShoppingCart, ArrowLeft, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { normalize } from "@/lib/search";
@@ -96,7 +96,7 @@ export default function DocumentosPage() {
   const filtered = docs.filter((d) => {
     const matchesSearch = normalize(d.number).includes(normalize(searchQuery))
       || normalize(d.client || d.supplier || "").includes(normalize(searchQuery));
-    const matchesFilter = currentFilter === "Todos" || d.type === currentFilter.slice(0, -1) as any;
+    const matchesFilter = currentFilter === "Todos" || d.type === currentFilter.slice(0, -1);
     return matchesSearch && matchesFilter;
   });
 

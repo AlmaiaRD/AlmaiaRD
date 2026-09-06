@@ -126,8 +126,8 @@ export async function getCrossSellProducts(productId: string, topN = 5): Promise
     if (!freqMap.has(pid)) {
       freqMap.set(pid, {
         product_id: pid,
-        product_name: (s as any).products?.name || "",
-        code: (s as any).products?.code || "",
+        product_name: (s as { products?: { name?: string | null } }).products?.name || "",
+        code: (s as { products?: { code?: string | null } }).products?.code || "",
         count: 0,
       });
     }
@@ -173,8 +173,8 @@ export async function getClientSummary(clientId: string) {
 
   const productCount: Record<string, { name: string; subbrand: string; count: number }> = {};
   for (const it of items || []) {
-    const name = (it as any).products?.name || "Producto";
-    const subbrand = (it as any).products?.subbrands?.name || "";
+    const name = (it as { products?: { name?: string | null } }).products?.name || "Producto";
+    const subbrand = (it as { products?: { subbrands?: { name?: string | null } } }).products?.subbrands?.name || "";
     if (!productCount[name]) productCount[name] = { name, subbrand, count: 0 };
     productCount[name].count += it.quantity;
   }

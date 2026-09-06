@@ -6,22 +6,31 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import { getClients, getClientsWithBalances, updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
+import { updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
 import ClientFormModal, { type ClientFormValues } from "@/components/clients/ClientFormModal";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
+import type { Receipt } from "@/types/database";
 import { getClientCredits } from "@/services/credits";
+import type { CreditBalance } from "@/types/database";
 import { getClientFollowups, createFollowup, updateFollowupStatus } from "@/services/followups";
+import type { Followup } from "@/types/database";
 import { getClientQuotes } from "@/services/quotes";
+import type { QuoteWithClient } from "@/services/quotes";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDebounce } from "@/hooks/useDebounce";
-import type { Client } from "@/types/database";
+import type { Client, Invoice } from "@/types/database";
+
+interface ClientWithBalances extends Omit<Client, "credit_balance"> {
+  pending_balance?: number;
+  credit_balance?: number;
+}
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
-  Users, Plus, Search, Edit2, Trash2, X, Eye, FileText, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,
+  Users, Plus, Search, Edit2, Trash2, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { SALES_STAGES, RECRUITMENT_STAGES, getStagesForType } from "@/lib/pipeline-constants";
+import { getStagesForType } from "@/lib/pipeline-constants";
 import { updateClientStage } from "@/services/clients";
 import type { ClientType } from "@/types/database";
 
@@ -37,26 +46,26 @@ const statusColor: Record<string, "warning" | "info" | "success" | "danger"> = {
 
 export default function ClientesPage() {
   const searchParams = useSearchParams();
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<ClientWithBalances[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
-  const [detailClient, setDetailClient] = useState<Client | null>(null);
+  const [detailClient, setDetailClient] = useState<ClientWithBalances | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("info");
   const [detailLoading, setDetailLoading] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editingClient, setEditingClient] = useState<ClientWithBalances | null>(null);
   const [clientFormInitial, setClientFormInitial] = useState<Partial<ClientFormValues> | undefined>(undefined);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const [detailInvoices, setDetailInvoices] = useState<any[]>([]);
-  const [detailReceipts, setDetailReceipts] = useState<any[]>([]);
-  const [detailCredits, setDetailCredits] = useState<any[]>([]);
-  const [detailFollowups, setDetailFollowups] = useState<any[]>([]);
-  const [detailQuotes, setDetailQuotes] = useState<any[]>([]);
+  const [detailInvoices, setDetailInvoices] = useState<(Invoice & { clients?: { full_name?: string | null } })[]>([]);
+  const [detailReceipts, setDetailReceipts] = useState<(Receipt & { clients?: { full_name?: string | null }; invoices?: { invoice_number?: string } })[]>([]);
+  const [detailCredits, setDetailCredits] = useState<(CreditBalance & { receipts?: { receipt_number: string; receipt_date: string } | null })[]>([]);
+  const [detailFollowups, setDetailFollowups] = useState<Followup[]>([]);
+  const [detailQuotes, setDetailQuotes] = useState<QuoteWithClient[]>([]);
   const [newFollowup, setNewFollowup] = useState("");
   const [showArchived, setShowArchived] = useState(false);
-  const [archivedClients, setArchivedClients] = useState<Client[]>([]);
+  const [archivedClients, setArchivedClients] = useState<ClientWithBalances[]>([]);
   const [page, setPage] = useState(1);
   const [totalClients, setTotalClients] = useState(0);
   const pageSize = 50;
@@ -75,7 +84,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
         setClients(result.data);
         setTotalClients(result.total);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error("Error al cargar clientes:", e);
       toast.error("Error al cargar clientes");
     } finally {
@@ -84,9 +93,11 @@ const debouncedSearch = useDebounce(searchQuery, 500);
   }, [debouncedSearch, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset intencional al cambiar la búsqueda; refactor de derivación en Fase B
     setPage(1);
     setLoading(true);
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load() se redefine por render; añadirla forzaría recargas infinitas
   }, [debouncedSearch]);
 
   function handlePageChange(newPage: number) {
@@ -97,6 +108,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     if (searchParams.get("nuevo") === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset y apertura del modal guiados por URL; intencional
       setEditingClient(null);
       setClientFormInitial(undefined);
       setShowModal(true);
@@ -113,7 +125,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
     setShowModal(true);
   }
 
-  function openEdit(client: Client) {
+  function openEdit(client: ClientWithBalances) {
     setEditingClient(client);
     setClientFormInitial({
       full_name: client.full_name,
@@ -134,7 +146,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
     load();
   }
 
-  async function openDetail(client: Client) {
+  async function openDetail(client: ClientWithBalances) {
     setDetailClient(client);
     setDetailTab("info");
     setShowDetail(true);
@@ -147,9 +159,9 @@ const debouncedSearch = useDebounce(searchQuery, 500);
         getClientFollowups(client.id),
         getClientQuotes(client.id),
       ]);
-      setDetailInvoices(inv);
-      setDetailReceipts(rec);
-      setDetailCredits(crd);
+      setDetailInvoices(inv as (Invoice & { clients?: { full_name?: string | null } })[]);
+      setDetailReceipts(rec as (Receipt & { clients?: { full_name?: string | null }; invoices?: { invoice_number?: string } })[]);
+      setDetailCredits(crd as (CreditBalance & { receipts?: { receipt_number: string; receipt_date: string } | null })[]);
       setDetailFollowups(fol);
       setDetailQuotes(qts);
     } catch {
@@ -227,7 +239,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
     }
   }
 
-  async function handleConvertClientType(client: Client, newType: ClientType) {
+  async function handleConvertClientType(client: ClientWithBalances, newType: ClientType) {
     const label = newType === "negocio" ? "Prospecto de Negocio" : "Cliente Comprador";
     if (!window.confirm(`¿Convertir a ${client.full_name} como ${label}?`)) return;
     
@@ -242,13 +254,13 @@ const debouncedSearch = useDebounce(searchQuery, 500);
       toast.success(`Cliente convertido a ${label}`);
       load();
       setDetailClient(null);
-    } catch (e: any) {
+    } catch {
       toast.error("Error al convertir cliente");
     }
   }
 
-  const totalPortfolio = clients.reduce((sum: number, c: any) => sum + Number(c.pending_balance || 0), 0);
-  const totalCreditBalance = clients.reduce((sum: number, c: any) => sum + Number(c.credit_balance || 0), 0);
+  const totalPortfolio = clients.reduce((sum: number, c: ClientWithBalances) => sum + Number(c.pending_balance || 0), 0);
+  const totalCreditBalance = clients.reduce((sum: number, c: ClientWithBalances) => sum + Number(c.credit_balance || 0), 0);
   const totalInvoiced = detailInvoices.reduce((s, i) => s + Number(i.total), 0);
   const totalPaid = detailReceipts.reduce((s, r) => s + Number(r.amount), 0);
 
@@ -296,7 +308,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
           ) : !searchQuery && totalClients > pageSize ? (
             <>
             <div className="space-y-3">
-              {clients.map((client: any) => {
+              {clients.map((client: ClientWithBalances) => {
                 const pending = Number(client.pending_balance || 0);
                 const credit = Number(client.credit_balance);
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
@@ -366,7 +378,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
             </>
           ) : (
             <div className="space-y-3">
-              {clients.map((client: any) => {
+              {clients.map((client: ClientWithBalances) => {
                 const pending = Number(client.pending_balance || 0);
                 const credit = Number(client.credit_balance);
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
@@ -481,20 +493,20 @@ const debouncedSearch = useDebounce(searchQuery, 500);
               <div className="flex items-center gap-3 flex-wrap">
                 {detailClient.client_type === "comprador" ? (
                   <button 
-                    onClick={() => handleConvertClientType(detailClient, "negocio")} 
+                    onClick={() => handleConvertClientType(detailClient!, "negocio")} 
                     className="flex items-center gap-1.5 text-sm text-[#86C7A3] hover:underline"
                   >
                     <Briefcase size={14} /> <span className="hidden sm:inline">Convertir a Prospecto</span><span className="sm:hidden">Prospecto</span>
                   </button>
                 ) : (
                   <button 
-                    onClick={() => handleConvertClientType(detailClient, "comprador")} 
+                    onClick={() => handleConvertClientType(detailClient!, "comprador")} 
                     className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"
                   >
                     <User size={14} /> <span className="hidden sm:inline">Convertir a Comprador</span><span className="sm:hidden">Comprador</span>
                   </button>
                 )}
-                <button onClick={() => openEdit(detailClient)} className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"><Edit2 size={14} /> Editar</button>
+                <button onClick={() => openEdit(detailClient!)} className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"><Edit2 size={14} /> Editar</button>
               </div>
             </div>
 
@@ -564,7 +576,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 {detailInvoices.length === 0 ? (
                   <div className="text-center py-10 text-[#9C8A82] text-sm">Sin facturas registradas</div>
                 ) : (
-                  detailInvoices.map((inv: any) => (
+                  detailInvoices.map((inv: Invoice & { clients?: { full_name?: string | null } }) => (
                     <div key={inv.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</p>
@@ -583,7 +595,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 {detailReceipts.length === 0 ? (
                   <div className="text-center py-10 text-[#9C8A82] text-sm">Sin pagos registrados</div>
                 ) : (
-                  detailReceipts.map((rec: any) => (
+                  detailReceipts.map((rec: Receipt & { clients?: { full_name?: string | null }; invoices?: { invoice_number?: string } }) => (
                     <div key={rec.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</p>
@@ -602,7 +614,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 {detailCredits.length === 0 ? (
                   <div className="text-center py-10 text-[#9C8A82] text-sm">Sin créditos disponibles</div>
                 ) : (
-                  detailCredits.map((c: any) => (
+                  detailCredits.map((c: CreditBalance & { receipts?: { receipt_number: string; receipt_date: string } | null }) => (
                     <div key={c.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
                       <div>
                         <p className="text-sm text-[#5C3E35]">Recibo {c.receipts?.receipt_number || "—"}</p>

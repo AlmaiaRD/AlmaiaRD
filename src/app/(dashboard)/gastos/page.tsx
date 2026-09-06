@@ -140,7 +140,6 @@ export default function GastosPage() {
   const jpgRef = useRef<HTMLDivElement>(null);
 
   const allCategories = [...DEFAULT_CATEGORIES, ...customCategories.filter((c) => !DEFAULT_CATEGORIES.includes(c))];
-  const subcatOptions = [...(SUBCATEGORIES[form.category] || []), ...customSubcategories];
 
   async function loadData() {
     setLoading(true);

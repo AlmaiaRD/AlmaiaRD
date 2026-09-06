@@ -29,7 +29,21 @@ function fillTemplate(template: string, vars: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] || "");
 }
 
-function generarResumen(client: any, stats: any): string {
+interface SummaryClient {
+  full_name?: string | null;
+  stage?: string | null;
+}
+
+interface SummaryStats {
+  total_spent?: number | null;
+  total_paid?: number | null;
+  pending_count?: number | null;
+  avg_ticket?: number | null;
+  num_purchases?: number | null;
+  top_products?: string | null;
+}
+
+function generarResumen(client: SummaryClient, stats: SummaryStats): string {
   const nombre = client.full_name?.split(" ")[0] || "El cliente";
   const total = stats?.total_spent || 0;
   const pagado = stats?.total_paid || 0;

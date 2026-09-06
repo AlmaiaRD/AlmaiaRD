@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getProducts, updateProduct } from "@/services/products";
+import type { Product } from "@/types/database";
 import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Search, RefreshCw, Save, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -19,6 +20,16 @@ interface ReviewedProduct {
   originalBenefits: string;
   expanded: boolean;
   approved: "keep" | "edit" | "skip";
+}
+
+interface RawProductRow {
+  id: string;
+  name: string | null;
+  code: string | null;
+  subcategory: string | null;
+  description: string | null;
+  benefits: string | null;
+  categories?: { name?: string | null } | null;
 }
 
 function detectIssue(desc: string, benefits: string, name: string) {
@@ -77,7 +88,7 @@ export default function DescriptionReviewTool({
     setLoading(true);
     try {
       const data = await getProducts(true);
-      const mapped: ReviewedProduct[] = (data as any[]).map((p) => ({
+      const mapped: ReviewedProduct[] = (data as RawProductRow[]).map((p) => ({
         id: p.id,
         name: p.name || "Sin nombre",
         code: p.code || "",
@@ -91,8 +102,8 @@ export default function DescriptionReviewTool({
         approved: detectIssue(p.description || "", p.benefits || "", p.name || "").length === 0 ? "keep" : "edit",
       }));
       setRows(mapped);
-    } catch (e: any) {
-      toast.error(e?.message || "Error al cargar productos");
+    } catch (e: unknown) {
+      toast.error((e as { message?: string } | null)?.message || "Error al cargar productos");
     } finally {
       setLoading(false);
     }
@@ -101,6 +112,7 @@ export default function DescriptionReviewTool({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Carga asíncrona de productos al abrir; load() usa setters sincrónicos internamente
     load().then(() => {
       if (!cancelled) {
         // loaded
@@ -168,7 +180,7 @@ export default function DescriptionReviewTool({
         await updateProduct(r.id, {
           description: r.description || null,
           benefits: r.benefits || null,
-        } as any);
+        } as Partial<Pick<Product, "description" | "benefits">>);
         ok++;
         updateRow(r.id, { originalDescription: r.description, originalBenefits: r.benefits, approved: "keep" });
       } catch {

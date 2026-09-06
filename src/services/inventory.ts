@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { Inventory, InventoryMovement } from "@/types/database";
+import type { InventoryMovement } from "@/types/database";
 
 export async function getInventory() {
   const { data, error } = await supabase

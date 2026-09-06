@@ -28,6 +28,13 @@ export interface SalesTrend {
 
 export type Season = "verano" | "invierno" | "primavera" | "otoño";
 
+interface LowStockRow {
+  product_id: string;
+  stock: number;
+  minimum_stock: number | null;
+  products?: unknown;
+}
+
 // Expanded need mappings for better matching
 const NEED_MAPPINGS: Record<string, string[]> = {
   nutricion: ["nutrilite", "suplemento", "vitamina", "omega", "proteina", "mineral", "hierro", "calcio", "zinc"],
@@ -111,8 +118,8 @@ export async function getProductRecommendations(
 
     for (const product of products) {
       const nameLower = product.name?.toLowerCase() || "";
-      const subbrandLower = (product.subbrands as any)?.name?.toLowerCase() || "";
-      const categoryLower = (product.categories as any)?.name?.toLowerCase() || "";
+      const subbrandLower = (product.subbrands as { name?: string | null } | null)?.name?.toLowerCase() || "";
+      const categoryLower = (product.categories as { name?: string | null } | null)?.name?.toLowerCase() || "";
       const combined = `${nameLower} ${subbrandLower} ${categoryLower}`;
 
       let score = 0;
@@ -129,7 +136,7 @@ export async function getProductRecommendations(
         // Subbrand match
         if (subbrandLower.includes(keyword)) {
           score += 8;
-          const subbrandName = Array.isArray(product.subbrands) ? product.subbrands[0]?.name : (product.subbrands as any)?.name;
+          const subbrandName = Array.isArray(product.subbrands) ? product.subbrands[0]?.name : (product.subbrands as { name?: string | null } | null)?.name;
           reason = `Submarca ${subbrandName || ""} relacionada`;
           break;
         }
@@ -137,7 +144,7 @@ export async function getProductRecommendations(
         // Category match
         if (categoryLower.includes(keyword)) {
           score += 6;
-          const catName = Array.isArray(product.categories) ? product.categories[0]?.name : (product.categories as any)?.name;
+          const catName = Array.isArray(product.categories) ? product.categories[0]?.name : (product.categories as { name?: string | null } | null)?.name;
           reason = `Categoría ${catName || ""} relacionada`;
           break;
         }
@@ -155,7 +162,7 @@ export async function getProductRecommendations(
           product_id: product.id,
           product_name: product.name,
           code: product.code,
-          subbrand: (product.subbrands as any)?.name || "",
+          subbrand: (product.subbrands as { name?: string | null } | null)?.name || "",
           reason,
           priority: score >= 8 ? "high" : score >= 5 ? "medium" : "low",
           score,
@@ -255,7 +262,7 @@ export async function getSeasonalRecommendations(season: Season): Promise<Produc
 
   for (const product of products) {
     const nameLower = product.name?.toLowerCase() || "";
-    const subbrandLower = (product.subbrands as any)?.name?.toLowerCase() || "";
+    const subbrandLower = (product.subbrands as { name?: string | null } | null)?.name?.toLowerCase() || "";
     const combined = `${nameLower} ${subbrandLower}`;
 
     for (const keyword of keywords) {
@@ -264,7 +271,7 @@ export async function getSeasonalRecommendations(season: Season): Promise<Produc
           product_id: product.id,
           product_name: product.name,
           code: product.code,
-          subbrand: (product.subbrands as any)?.name || "",
+          subbrand: (product.subbrands as { name?: string | null } | null)?.name || "",
           reason: `Recomendado para ${seasonNames[season]}`,
           priority: "medium",
           score: 5,
@@ -339,7 +346,7 @@ export async function getSalesTrends(): Promise<SalesTrend[]> {
 }
 
 // Get low stock alerts
-export async function getLowStockAlerts(): Promise<any[]> {
+export async function getLowStockAlerts(): Promise<LowStockRow[]> {
   const { data: lowStock } = await supabase
     .from("inventory")
     .select(`

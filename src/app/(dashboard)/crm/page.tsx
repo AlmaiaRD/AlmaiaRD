@@ -9,9 +9,9 @@ import { getClientCardData } from "@/services/clients";
 import {
   Search, Plus, MessageSquare, Users,
   MoreVertical, Trash2, Edit3, ChevronLeft, ChevronRight,
-  Phone, MapPin, BookOpen, CalendarCheck, ShoppingCart, PartyPopper,
+  Phone, MapPin, BookOpen, ShoppingCart, PartyPopper,
   AlertTriangle, Package, GraduationCap, Clock,
-  Wallet, MessageCircle, ArrowLeft,
+  Wallet, MessageCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDate, getLocalDateString } from "@/lib/utils";

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { getSettings, updateSettings, getBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from "@/services/settings";
 import type { Settings, BankAccount } from "@/types/database";
-import { Save, Plus, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet } from "lucide-react";
+import { Save, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { exportBackupToExcel } from "@/lib/excel";
@@ -147,19 +147,19 @@ Responde en español en máximo 3 oraciones:`,
             business_name: settingsData.business_name || "Almaia RD",
             logo_url: settingsData.logo_url || "",
             signature_url: settingsData.signature_url || "",
-            email: (settingsData as any).email || "",
-            phone: (settingsData as any).phone || "",
-            phone_2: (settingsData as any).phone_2 || "",
-            default_phone: (settingsData as any).default_phone || "phone",
-            sender_name: (settingsData as any).sender_name || "",
-            email_template: (settingsData as any).email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
-            whatsapp_template: (settingsData as any).whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
-            smtp_host: (settingsData as any).smtp_host || "",
-            smtp_port: (settingsData as any).smtp_port || 587,
-            smtp_user: (settingsData as any).smtp_user || "",
-            smtp_pass: (settingsData as any).smtp_pass || "",
-            smtp_secure: (settingsData as any).smtp_secure || false,
-            ai_client_prompt: (settingsData as any).ai_client_prompt || `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
+            email: settingsData.email || "",
+            phone: settingsData.phone || "",
+            phone_2: settingsData.phone_2 || "",
+            default_phone: settingsData.default_phone || "phone",
+            sender_name: settingsData.sender_name || "",
+            email_template: settingsData.email_template || `Hola, {{clientName}}.\n\nEspero que te encuentres muy bien.\n\nTe comparto adjunta {{label}} correspondiente a tu transacción realizada en {{businessName}}.\n\nSi tienes alguna duda o necesitas asistencia, estaré encantada de ayudarte.\n\nMuchas gracias por tu confianza.\n\nSaludos,\n{{senderName}}`,
+            whatsapp_template: settingsData.whatsapp_template || `Hola {{clientName}} 👋\n\nTe envío {{label}} {{documentNumber}} por un total de {{total}}.\n\nGracias por tu confianza.\n\n{{businessName}}`,
+            smtp_host: settingsData.smtp_host || "",
+            smtp_port: settingsData.smtp_port || 587,
+            smtp_user: settingsData.smtp_user || "",
+            smtp_pass: settingsData.smtp_pass || "",
+            smtp_secure: settingsData.smtp_secure || false,
+            ai_client_prompt: settingsData.ai_client_prompt || `Eres un asesor de ventas de Amway. Genera un análisis breve en español para el vendedor sobre este cliente:
 
 Cliente: {{clientName}}
 Etapa: {{stage}}
@@ -171,7 +171,7 @@ Productos favoritos: {{topProducts}}
 Responde SOLO en este formato (máximo 4 líneas):
 RESUMEN: [2 oraciones sobre el cliente]
 ABORDAJE: [1 sugerencia de cómo contactarlo y qué ofrecerle]`,
-            ai_learning_prompt: (settingsData as any).ai_learning_prompt || `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
+            ai_learning_prompt: settingsData.ai_learning_prompt || `Eres un coach de negocios. Basado en esta nota de aprendizaje, genera una reflexión útil y un consejo práctico:
 
 Título: {{title}}
 Contenido: {{content}}
@@ -182,8 +182,8 @@ Responde en español en máximo 3 oraciones:`,
             invoice_prefix: settingsData.invoice_prefix || "FAC-",
             receipt_prefix: settingsData.receipt_prefix || "REC-",
             purchase_prefix: settingsData.purchase_prefix || "COM-",
-            quote_prefix: (settingsData as any).quote_prefix || "COT-",
-            currency: (settingsData as any).currency || "DOP",
+            quote_prefix: settingsData.quote_prefix || "COT-",
+            currency: settingsData.currency || "DOP",
           });
         }
         setBanks(banksData as BankAccount[]);
@@ -231,9 +231,9 @@ Responde en español en máximo 3 oraciones:`,
       const result = await updateSettings(payload);
       setSettings(result);
       toast.success("Configuración guardada");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Save error:", err);
-      toast.error(err?.message || "Error al guardar configuración");
+      toast.error((err as { message?: string }).message || "Error al guardar configuración");
     } finally { setSaving(false); }
   }
 
@@ -272,8 +272,8 @@ Responde en español en máximo 3 oraciones:`,
       account_type: bank.account_type,
       account_number: bank.account_number,
       holder_name: bank.holder_name,
-      id_number: (bank as any).id_number || "",
-      email: (bank as any).email || "",
+      id_number: bank.id_number || "",
+      email: bank.email || "",
       is_default: bank.is_default || false,
     });
   }
@@ -312,8 +312,8 @@ Responde en español en máximo 3 oraciones:`,
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error);
       toast.success(`Backup subido: ${json.backup} (${json.tables.length} tablas, ${json.size_mb} MB)`);
-    } catch (err: any) {
-      toast.error(err.message || "Error al respaldar");
+    } catch (err: unknown) {
+      toast.error((err as { message?: string }).message || "Error al respaldar");
     } finally {
       setBackingUp(false);
     }
@@ -529,7 +529,7 @@ Responde en español en máximo 3 oraciones:`,
                     onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })}
                     placeholder="••••••••"
                     className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-                  {(settings as any)?.has_smtp_password && !form.smtp_pass && (
+                  {settings?.has_smtp_password && !form.smtp_pass && (
                     <p className="text-[11px] text-[#86C7A3] mt-1">Contraseña guardada. Déjala vacía para conservarla.</p>
                   )}
                 </div>
@@ -779,8 +779,8 @@ ACCIÓN: ..."
                     <p className="font-medium text-[#5C3E35]">{bank.bank_name}</p>
                     <p className="text-sm text-[#9C8A82]">{bank.account_type} — {bank.account_number}</p>
                     <p className="text-xs text-[#9C8A82]">{bank.holder_name}</p>
-                    {(bank as any).id_number && <p className="text-xs text-[#9C8A82]">Cédula: {(bank as any).id_number}</p>}
-                    {(bank as any).email && <p className="text-xs text-[#9C8A82]">{(bank as any).email}</p>}
+                    {bank.id_number && <p className="text-xs text-[#9C8A82]">Cédula: {bank.id_number}</p>}
+                    {bank.email && <p className="text-xs text-[#9C8A82]">{bank.email}</p>}
                   </div>
                   <div className="flex items-center gap-3">
                     {bank.is_default ? (

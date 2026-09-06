@@ -6,17 +6,79 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import { getReceipts, getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice, getReceiptsPaginated } from "@/services/receipts";
+import { getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice, getReceiptsPaginated } from "@/services/receipts";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getLocalDateString } from "@/lib/utils";
-import { formatCurrency, formatDate, numberToWords } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { buildReceiptPdfDoc } from "@/lib/pdf";
-import { Receipt, Plus, Search, Eye, Printer, Trash2, X, Save, Wallet, Download, Edit2, Flower2, Mail, MessageCircle } from "lucide-react";
+import { Receipt, Plus, Search, Eye, Printer, Trash2, Save, Download, Edit2, Mail, MessageCircle } from "lucide-react";
 import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
+
+interface InvoiceClientRef {
+  full_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}
+
+interface ReceiptBankRef {
+  bank_name?: string | null;
+  account_number?: string | null;
+}
+
+interface ReceiptInvoiceItem {
+  id?: string;
+  quantity?: number | null;
+  unit_price?: number | null;
+  line_total?: number | null;
+  custom_name?: string | null;
+  products?: { name?: string | null } | null;
+}
+
+interface InvoiceRef {
+  id: string;
+  invoice_number?: string | null;
+  total?: number | null;
+  amount_paid?: number | null;
+  status?: string | null;
+  client_id?: string | null;
+  clients?: InvoiceClientRef | null;
+  invoice_items?: ReceiptInvoiceItem[] | null;
+}
+
+interface ReceiptRow {
+  id: string;
+  receipt_number: string;
+  invoice_id?: string | null;
+  receipt_date?: string | null;
+  created_at?: string | null;
+  amount: number;
+  payment_method?: string | null;
+  bank_account_id?: string | null;
+  concept?: string | null;
+  amount_in_words?: string | null;
+  client_id?: string | null;
+  clients?: InvoiceClientRef | null;
+  invoices?: InvoiceRef | null;
+  bank_accounts?: ReceiptBankRef | null;
+}
+
+interface ReceiptFull {
+  id: string;
+  receipt_number?: string | null;
+  receipt_date?: string | null;
+  created_at?: string | null;
+  payment_method?: string | null;
+  amount?: number | null;
+  amount_in_words?: string | null;
+  concept?: string | null;
+  clients?: InvoiceClientRef | null;
+  invoices?: InvoiceRef | null;
+  bank_accounts?: ReceiptBankRef | null;
+}
 
 const methodMap: Record<string, { label: string; variant: "success" | "warning" | "info" | "neutral" }> = {
   CASH: { label: "Efectivo", variant: "success" },
@@ -32,8 +94,8 @@ const methodLabel: Record<string, string> = {
 
 export default function RecibosPage() {
   const searchParams = useSearchParams();
-  const [receipts, setReceipts] = useState<any[]>([]);
-  const [pendingInvoices, setPendingInvoices] = useState<any[]>([]);
+  const [receipts, setReceipts] = useState<ReceiptRow[]>([]);
+  const [pendingInvoices, setPendingInvoices] = useState<InvoiceRef[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,9 +106,9 @@ export default function RecibosPage() {
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptRow | null>(null);
   const [saving, setSaving] = useState(false);
-  const [openPrintId, setOpenPrintId] = useState<string | null>(null);
+  const [, setOpenPrintId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalReceipts, setTotalReceipts] = useState(0);
   const pageSize = 50;
@@ -66,7 +128,7 @@ export default function RecibosPage() {
       const [recResult, inv, ba, st] = await Promise.all([getReceiptsPaginated(page, pageSize), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
       setReceipts(recResult.data || []);
       setTotalReceipts(recResult.total);
-      setPendingInvoices(inv.filter((i: any) => i.status !== "PAID" && i.status !== "CANCELLED"));
+      setPendingInvoices(inv.filter((i: InvoiceRef) => i.status !== "PAID" && i.status !== "CANCELLED"));
       setBankAccounts(ba);
       setSettings(st);
     } catch { toast.error("Error al cargar recibos"); }
@@ -79,7 +141,7 @@ export default function RecibosPage() {
         const [recResult, inv, ba, st] = await Promise.all([getReceiptsPaginated(page, pageSize), getInvoices(), getBankAccounts(), getSettings().catch(() => null)]);
         setReceipts(recResult.data || []);
         setTotalReceipts(recResult.total);
-        setPendingInvoices(inv.filter((i: any) => i.status !== "PAID" && i.status !== "CANCELLED"));
+        setPendingInvoices(inv.filter((i: InvoiceRef) => i.status !== "PAID" && i.status !== "CANCELLED"));
         setBankAccounts(ba);
         setSettings(st);
       } catch { toast.error("Error al cargar recibos"); }
@@ -111,10 +173,10 @@ export default function RecibosPage() {
     setPage(newPage);
   };
 
-  const selectedInvoiceData = pendingInvoices.find((i: any) => i.id === selectedInvoice);
+  const selectedInvoiceData = pendingInvoices.find((i: InvoiceRef) => i.id === selectedInvoice);
   const balanceDue = selectedInvoiceData ? Number(selectedInvoiceData.total) - Number(selectedInvoiceData.amount_paid || 0) : 0;
 
-  const receiptSearchFiltered = receipts.filter((r: any) => {
+  const receiptSearchFiltered = receipts.filter((r: ReceiptRow) => {
     // Filter by status
     if (filterStatus !== "all") {
       const invoiceStatus = r.invoices?.status;
@@ -135,7 +197,7 @@ export default function RecibosPage() {
 
     // Filter by month/year
     if (filterMonth || filterYear) {
-      const d = new Date(r.created_at);
+      const d = new Date(r.created_at as string);
       if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
       if (filterYear && String(d.getFullYear()) !== filterYear) return false;
     }
@@ -143,7 +205,7 @@ export default function RecibosPage() {
     return true;
   });
 
-  async function buildReceiptPreviewEl(data: any, settings: any) {
+  async function buildReceiptPreviewEl(data: ReceiptFull, settings: Settings | null) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
@@ -171,7 +233,7 @@ export default function RecibosPage() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
           <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${esc(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
           <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${esc(data.invoices?.invoice_number) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${esc(methodLabel[data.payment_method] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${esc(data.bank_accounts.bank_name)}` : ""}</p>
+          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${esc(methodLabel[data.payment_method as string] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${esc(data.bank_accounts.bank_name)}` : ""}</p>
         </div>
       </div>
 
@@ -186,7 +248,7 @@ export default function RecibosPage() {
             </tr>
           </thead>
           <tbody>
-            ${data.invoices.invoice_items.map((item: any) => `
+            ${((data.invoices as { invoice_items: ReceiptInvoiceItem[] }).invoice_items).map((item: ReceiptInvoiceItem) => `
               <tr style="border-bottom:1px solid #F0EBE3;">
                 <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.products?.name || item.custom_name) || "Producto"}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
@@ -221,7 +283,7 @@ export default function RecibosPage() {
     return el;
   }
 
-  async function captureReceipt(rec: any) {
+  async function captureReceipt(rec: ReceiptRow) {
     const full = await getReceipt(rec.id);
     const el = await buildReceiptPreviewEl(full, settings);
     document.body.appendChild(el);
@@ -232,7 +294,7 @@ export default function RecibosPage() {
     return { canvas, data: full, receipt_number: rec.receipt_number };
   }
 
-  async function handlePrintPdf(rec: any) {
+  async function handlePrintPdf(rec: ReceiptRow) {
     try {
       const full = await getReceipt(rec.id);
       const doc = await buildReceiptPdfDoc({
@@ -259,7 +321,7 @@ export default function RecibosPage() {
     setOpenPrintId(null);
   }
 
-  async function handlePrintJpg(rec: any) {
+  async function handlePrintJpg(rec: ReceiptRow) {
     try {
       const { canvas, receipt_number } = await captureReceipt(rec);
       const link = document.createElement("a");
@@ -287,7 +349,7 @@ export default function RecibosPage() {
     }
     setSaving(true);
     try {
-      const clientId = selectedInvoiceData?.client_id;
+      const clientId: string | undefined = selectedInvoiceData?.client_id as string | undefined;
       await createReceipt({
         invoice_id: selectedInvoice,
         client_id: clientId,
@@ -301,8 +363,8 @@ export default function RecibosPage() {
       setShowModal(false);
       resetForm();
       load();
-    } catch (e) {
-      toast.error(`Error: ${(e as any)?.message || "Error al crear recibo"}`);
+    } catch (e: unknown) {
+      toast.error(`Error: ${(e as { message?: string } | null | undefined)?.message || "Error al crear recibo"}`);
     } finally {
       setSaving(false);
     }
@@ -318,15 +380,15 @@ export default function RecibosPage() {
         payment_method: editForm.payment_method,
         bank_account_id: editForm.payment_method === "TRANSFER" ? editForm.bank_account_id : undefined,
         concept: editForm.concept || undefined,
-        invoice_id: selectedReceipt.invoice_id,
+        invoice_id: selectedReceipt.invoice_id as string | undefined,
         _old_amount: Number(selectedReceipt.amount),
       });
       toast.success("Recibo actualizado");
       setShowEditModal(false);
       setSelectedReceipt(null);
       load();
-    } catch (e) {
-      toast.error(`Error: ${(e as any)?.message || "Error al actualizar recibo"}`);
+    } catch (e: unknown) {
+      toast.error(`Error: ${(e as { message?: string } | null | undefined)?.message || "Error al actualizar recibo"}`);
     } finally {
       setSaving(false);
     }
@@ -346,11 +408,11 @@ export default function RecibosPage() {
     }
   }
 
-  function openEdit(rec: any) {
+  function openEdit(rec: ReceiptRow) {
     setSelectedReceipt(rec);
     setEditForm({
       amount: Number(rec.amount),
-      payment_method: rec.payment_method,
+      payment_method: rec.payment_method as "CASH" | "TRANSFER" | "CARD",
       bank_account_id: rec.bank_account_id || "",
       concept: rec.concept || "",
       receipt_date: rec.receipt_date || getLocalDateString(),
@@ -384,7 +446,7 @@ export default function RecibosPage() {
       </div>
 
       <div className="flex gap-3 mb-6 flex-wrap">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as any)}
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "all" | "paid" | "pending")}
           className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
           <option value="all">Todos los estados</option>
           <option value="paid">Pagados</option>
@@ -433,8 +495,8 @@ export default function RecibosPage() {
                 </tr>
               </thead>
               <tbody>
-                {receiptSearchFiltered.map((rec: any) => {
-                const m = methodMap[rec.payment_method] || methodMap.CASH;
+                {receiptSearchFiltered.map((rec: ReceiptRow) => {
+                const m = methodMap[rec.payment_method as string] || methodMap.CASH;
                 return (
                   <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
                     <td className="px-4 py-3.5 text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</td>
@@ -489,7 +551,7 @@ export default function RecibosPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#6DB08A]">Método de pago</span>
-                <span className="text-[#5C3E35]" style={{whiteSpace:"nowrap"}}>{methodLabel[selectedReceipt.payment_method] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
+                <span className="text-[#5C3E35]" style={{whiteSpace:"nowrap"}}>{methodLabel[selectedReceipt.payment_method as string] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
               </div>
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-[#86C7A3]/30">
                 <span>Monto pagado</span>
@@ -509,7 +571,7 @@ export default function RecibosPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(selectedReceipt.invoices?.invoice_items || []).map((item: any, i: number) => (
+                    {(selectedReceipt.invoices?.invoice_items || []).map((item: ReceiptInvoiceItem, i: number) => (
                       <tr key={i} className="border-b border-[#F0EBE3]">
                         <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
@@ -567,10 +629,10 @@ export default function RecibosPage() {
           onClose={() => setDraftModal(null)}
           type={draftModal.type}
           client={{
-            id: selectedReceipt.client_id,
+            id: selectedReceipt.client_id as string,
             full_name: selectedReceipt.clients?.full_name || selectedReceipt.invoices?.clients?.full_name || "",
-            email: selectedReceipt.clients?.email || selectedReceipt.invoices?.clients?.email,
-            phone: selectedReceipt.clients?.phone || selectedReceipt.invoices?.clients?.phone,
+            email: (selectedReceipt.clients?.email || selectedReceipt.invoices?.clients?.email) ?? undefined,
+            phone: (selectedReceipt.clients?.phone || selectedReceipt.invoices?.clients?.phone) ?? undefined,
           }}
           documentType="receipt"
           documentNumber={selectedReceipt.receipt_number}
@@ -579,15 +641,15 @@ export default function RecibosPage() {
           businessName={settings?.business_name || "Almaia RD"}
           senderEmail={settings?.email || undefined}
           senderName={settings?.sender_name || undefined}
-          emailTemplate={(settings as any)?.email_template || undefined}
-          whatsappTemplate={(settings as any)?.whatsapp_template || undefined}
-          smtp={(settings as any)?.smtp_host ? {
-            host: (settings as any).smtp_host,
-            port: (settings as any).smtp_port || 587,
-            user: (settings as any).smtp_user,
-            configured: !!(settings as any).has_smtp_password,
-            secure: (settings as any).smtp_secure || false,
-            senderName: (settings as any).sender_name || undefined,
+          emailTemplate={settings?.email_template || undefined}
+          whatsappTemplate={settings?.whatsapp_template || undefined}
+          smtp={settings?.smtp_host ? {
+            host: settings.smtp_host,
+            port: settings.smtp_port || 587,
+            user: settings.smtp_user,
+            configured: !!settings.has_smtp_password,
+            secure: settings.smtp_secure || false,
+            senderName: settings.sender_name || undefined,
           } : undefined}
           getAttachment={async () => {
             const full = await getReceipt(selectedReceipt.id);
@@ -626,7 +688,7 @@ export default function RecibosPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Método de pago</label>
               <select
                 value={editForm.payment_method}
-                onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as any, bank_account_id: "" })}
+                onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as "CASH" | "TRANSFER" | "CARD", bank_account_id: "" })}
                 className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
@@ -679,7 +741,7 @@ export default function RecibosPage() {
               className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             >
               <option value="">Seleccionar factura...</option>
-              {pendingInvoices.map((inv: any) => {
+              {pendingInvoices.map((inv: InvoiceRef) => {
                 const due = Number(inv.total) - Number(inv.amount_paid || 0);
                 return (
                   <option key={inv.id} value={inv.id}>
@@ -692,7 +754,7 @@ export default function RecibosPage() {
 
           {selectedInvoiceData && (
             <div className="bg-[#F0FAF4] rounded-xl p-4 text-sm space-y-1">
-              <div className="flex justify-between"><span className="text-[#6DB08A]">Total factura</span><span>{formatCurrency(selectedInvoiceData.total)}</span></div>
+              <div className="flex justify-between"><span className="text-[#6DB08A]">Total factura</span><span>{formatCurrency(selectedInvoiceData.total as number)}</span></div>
               <div className="flex justify-between"><span className="text-[#6DB08A]">Pagado</span><span>{formatCurrency(selectedInvoiceData.amount_paid || 0)}</span></div>
               <div className="flex justify-between font-bold text-[#5C3E35] pt-1 border-t border-[#86C7A3]/30">
                 <span>Saldo pendiente</span><span>{formatCurrency(balanceDue)}</span>
@@ -722,7 +784,7 @@ export default function RecibosPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Método de pago</label>
               <select
                 value={paymentMethod}
-                onChange={(e) => { setPaymentMethod(e.target.value as any); setBankAccountId(""); }}
+                onChange={(e) => { setPaymentMethod(e.target.value as "CASH" | "TRANSFER" | "CARD"); setBankAccountId(""); }}
                 className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>

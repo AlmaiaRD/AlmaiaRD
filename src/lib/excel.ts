@@ -7,7 +7,7 @@ interface ExportColumn {
 }
 
 export async function exportToExcel(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   columns: ExportColumn[],
   filename: string
 ): Promise<void> {
@@ -23,7 +23,7 @@ export async function exportToExcel(
 
   // Rows
   data.forEach((item) => {
-    const row: Record<string, any> = {};
+    const row: Record<string, unknown> = {};
     columns.forEach((col) => {
       row[col.key] = item[col.key] ?? "";
     });
@@ -64,7 +64,7 @@ export async function exportTableToExcel(
   saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${filename}.xlsx`);
 }
 
-function computeColWidths(rows: Record<string, any>[]): { width: number }[] {
+function computeColWidths(rows: Record<string, unknown>[]): { width: number }[] {
   const widths: Record<number, number> = {};
   rows.forEach((row) => {
     Object.entries(row).forEach(([key, value], colIndex) => {
@@ -76,7 +76,7 @@ function computeColWidths(rows: Record<string, any>[]): { width: number }[] {
 }
 
 export async function exportBackupToExcel(
-  tables: Record<string, Record<string, any>[]>,
+  tables: Record<string, Record<string, unknown>[]>,
   filename: string
 ): Promise<void> {
   const workbook = new ExcelJS.Workbook();
@@ -96,7 +96,7 @@ export async function exportBackupToExcel(
     }));
 
     rows.forEach((row) => {
-      const flat: Record<string, any> = {};
+      const flat: Record<string, unknown> = {};
       Object.entries(row).forEach(([key, value]) => {
         flat[key] = value && typeof value === "object" && !Array.isArray(value) ? JSON.stringify(value) : value ?? "";
       });

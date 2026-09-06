@@ -4,6 +4,15 @@ import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { inventoryAnalysisSchema, validateBody } from "@/lib/validation";
 
+interface RotationItem {
+  name: string;
+  diasEnInventario: number;
+  costoPromedio: number;
+  stock: number;
+  sold: number;
+  velocidadDias?: number;
+}
+
 async function callOllama(prompt: string): Promise<string | null> {
   try {
     const res = await fetch("http://localhost:11434/api/generate", {
@@ -57,19 +66,19 @@ export async function POST(req: NextRequest) {
     }
 
     const total = rotationData.length;
-    const alta = rotationData.filter((d: any) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length;
-    const media = rotationData.filter((d: any) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length;
-    const baja = rotationData.filter((d: any) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length;
-    const sinMov = rotationData.filter((d: any) => d.diasEnInventario >= 999).length;
+    const alta = rotationData.filter((d: RotationItem) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length;
+    const media = rotationData.filter((d: RotationItem) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length;
+    const baja = rotationData.filter((d: RotationItem) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length;
+    const sinMov = rotationData.filter((d: RotationItem) => d.diasEnInventario >= 999).length;
     const capitalInmovilizado = rotationData
-      .filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
-      .reduce((s: number, d: any) => s + (d.costoPromedio || 0) * (d.stock || 0), 0);
+      .filter((d: RotationItem) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
+      .reduce((s: number, d: RotationItem) => s + (d.costoPromedio || 0) * (d.stock || 0), 0);
     const bajoRotacion = rotationData
-      .filter((d: any) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
-      .map((d: any) => d.name)
+      .filter((d: RotationItem) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
+      .map((d: RotationItem) => d.name)
       .slice(0, 5)
       .join(", ");
-    const proyStockout = rotationData.filter((d: any) => {
+    const proyStockout = rotationData.filter((d: RotationItem) => {
       if (d.sold <= 0 || d.stock <= 0 || !d.velocidadDias) return false;
       return Math.round(d.velocidadDias * d.stock) < 30;
     }).length;

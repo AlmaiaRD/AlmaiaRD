@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import { getInvoices, createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts, getInvoicesPaginated } from "@/services/invoices";
+import { createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice, getBankAccounts, getInvoicesPaginated } from "@/services/invoices";
 import { getQuote, markQuoteConverted } from "@/services/quotes";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
@@ -14,13 +14,88 @@ import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
-import type { Client, BankAccount, Settings } from "@/types/database";
+import type { Client, BankAccount, Settings, Product, BundleItem, Invoice } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
 import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { FileText, Plus, Search, Eye, Printer, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
+import { FileText, Plus, Search, Eye, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
+
+interface InvoiceClientsRef {
+  full_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  id_number?: string | null;
+}
+
+interface BankAccountRef {
+  holder_name?: string | null;
+  id_number?: string | null;
+  email?: string | null;
+  bank_name?: string | null;
+  account_type?: string | null;
+  account_number?: string | null;
+}
+
+interface InvoiceListRow extends Invoice {
+  clients?: InvoiceClientsRef | null;
+}
+
+interface InvoiceFullItem {
+  id?: string;
+  product_id?: string | null;
+  quantity?: number | null;
+  unit_price?: number | null;
+  unit_cost?: number | null;
+  line_total?: number | null;
+  pv?: number | null;
+  itbis?: boolean | null;
+  itbis_amount?: number | null;
+  custom_name?: string | null;
+  products?: {
+    id?: string;
+    name?: string | null;
+    is_bundle?: boolean | null;
+    subbrands?: { name?: string | null } | null;
+  } | null;
+  bundle_items?: BundleItem[];
+}
+
+interface InvoiceFull {
+  id: string;
+  invoice_number: string;
+  invoice_date: string;
+  status: string;
+  client_id: string;
+  total: number;
+  subtotal?: number | null;
+  itbis_total?: number | null;
+  discount_amount?: number | null;
+  amount_paid?: number | null;
+  notes?: string | null;
+  margin?: number | null;
+  bank_account_id?: string | null;
+  show_all_bank_accounts?: boolean | null;
+  clients?: InvoiceClientsRef | null;
+  invoice_items?: InvoiceFullItem[] | null;
+  bank_accounts?: BankAccountRef | null;
+}
+
+type InvoiceRowLike = InvoiceListRow | InvoiceFull;
+
+interface InvoiceLine {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+  price_30?: number;
+  price_35?: number;
+  cost: number;
+  pv: number;
+  itbis: boolean;
+  bundle_items?: BundleItem[];
+}
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" | "info" }> = {
   PENDING: { label: "Pendiente", variant: "warning" },
@@ -32,9 +107,9 @@ const statusMap: Record<string, { label: string; variant: "success" | "warning" 
 export default function FacturacionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceListRow[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,14 +120,14 @@ export default function FacturacionPage() {
   const [filterClient, setFilterClient] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceFull | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingStatus, setEditingStatus] = useState<"PENDING" | "PARTIAL" | "PAID" | "CANCELLED">("PENDING");
   const [selectedClient, setSelectedClient] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(getLocalDateString());
   const [margin, setMargin] = useState(30);
-  const [items, setItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; price_30?: number; price_35?: number; cost: number; pv: number; itbis: boolean; bundle_items?: any[] }>>([]);
+  const [items, setItems] = useState<InvoiceLine[]>([]);
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -61,7 +136,7 @@ export default function FacturacionPage() {
   const [showProducts, setShowProducts] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [openPrintId, setOpenPrintId] = useState<string | null>(null);
-  const [jpgData, setJpgData] = useState<any>(null);
+  const [jpgData] = useState<InvoiceFull | null>(null);
   const [showNewClient, setShowNewClient] = useState(false);
   const [draftModal, setDraftModal] = useState<{ type: "email" | "whatsapp" } | null>(null);
   const [showManualProduct, setShowManualProduct] = useState(false);
@@ -160,6 +235,7 @@ export default function FacturacionPage() {
     } else {
       pendingQuoteId.current = null;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Acción única por URL; settings?.default_margin cambia al montar (carga de settings) y re-dispararía el modal
   }, [searchParams]);
 
   useEffect(() => {
@@ -187,7 +263,7 @@ export default function FacturacionPage() {
     setPage(newPage);
   };
 
-  async function handleSavedNewClient(client: any) {
+  async function handleSavedNewClient(client: Client) {
     try {
       const fresh = await getClients();
       setClients(fresh);
@@ -213,10 +289,10 @@ export default function FacturacionPage() {
     setEditingStatus("PENDING");
   }
 
-  async function addProduct(product: any) {
+  async function addProduct(product: Product) {
     const price_30_ = product.price_30 ?? 0;
     const price_35_ = product.price_35 ?? 0;
-    const base: any = {
+    const base: InvoiceLine = {
       product_id: product.id,
       name: product.name,
       quantity: 1,
@@ -277,7 +353,7 @@ export default function FacturacionPage() {
     discountValue,
   );
 
-  async function buildPreviewEl(data: any, settings: any) {
+  async function buildPreviewEl(data: InvoiceFull, settings: Settings | null) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
@@ -321,12 +397,12 @@ export default function FacturacionPage() {
           </tr>
         </thead>
         <tbody>
-          ${(data.invoice_items || []).map((item: any) => `
+          ${(data.invoice_items || []).map((item: InvoiceFullItem) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
               <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${esc(item.products?.subbrands?.name) || "\u2014"}</td>
               <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">
                 ${esc(item.products?.name || item.custom_name) || "Producto"}
-                ${(item.bundle_items || []).map((bi: any) => `
+                ${(item.bundle_items || []).map((bi: BundleItem) => `
                   <div style="font-size:10px;color:#9C8A82;margin-top:2px;">\u2014 ${esc(bi.products?.name || "Producto")} x${bi.quantity}</div>
                 `).join("")}
               </td>
@@ -359,12 +435,12 @@ export default function FacturacionPage() {
         <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc(data.bank_accounts.holder_name)}</p>
-            ${data.bank_accounts.id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(data.bank_accounts.id_number)}</p>` : ""}
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${esc(data.bank_accounts.bank_name)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${esc(data.bank_accounts.account_type)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${esc(data.bank_accounts.account_number)}</p>
-            ${data.bank_accounts.email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(data.bank_accounts.email)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc((data.bank_accounts as BankAccountRef).holder_name)}</p>
+            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${esc((data.bank_accounts as BankAccountRef).bank_name)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${esc((data.bank_accounts as BankAccountRef).account_type)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${esc((data.bank_accounts as BankAccountRef).account_number)}</p>
+            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
           </div>
         </div>
       ` : ""}
@@ -416,23 +492,23 @@ export default function FacturacionPage() {
     return el;
   }
 
-  async function captureInvoice(inv: any) {
+  async function captureInvoice(inv: InvoiceRowLike) {
     const full = await getInvoice(inv.id);
     const bundleIds = (full.invoice_items || [])
-      .filter((it: any) => it.products?.is_bundle)
-      .map((it: any) => it.product_id);
+      .filter((it: InvoiceFullItem) => it.products?.is_bundle)
+      .map((it: InvoiceFullItem) => it.product_id);
     if (bundleIds.length > 0) {
       try {
-        const bitems = await getBundleItemsBatch(bundleIds);
-        const byBundle = new Map<string, any[]>();
+        const bitems = await getBundleItemsBatch(bundleIds as string[]);
+        const byBundle = new Map<string, BundleItem[]>();
         for (const bi of bitems) {
           const arr = byBundle.get(bi.bundle_id) || [];
           arr.push(bi);
           byBundle.set(bi.bundle_id, arr);
         }
-        full.invoice_items = (full.invoice_items || []).map((it: any) => ({
+        full.invoice_items = (full.invoice_items || []).map((it: InvoiceFullItem) => ({
           ...it,
-          bundle_items: it.products?.is_bundle ? (byBundle.get(it.product_id) || []) : undefined,
+          bundle_items: it.products?.is_bundle ? (byBundle.get(it.product_id as string) || []) : undefined,
         }));
       } catch { /* PDF sin detalle de componentes */ }
     }
@@ -445,7 +521,7 @@ export default function FacturacionPage() {
     return { canvas, data: full, invoice_number: inv.invoice_number };
   }
 
-  async function handlePrintPdf(inv: any) {
+  async function handlePrintPdf(inv: InvoiceRowLike) {
     try {
       const full = await getInvoice(inv.id);
       const bankAccount = full.show_all_bank_accounts
@@ -457,7 +533,7 @@ export default function FacturacionPage() {
         client_name: full.clients?.full_name || "",
         client_phone: full.clients?.phone || undefined,
         client_email: full.clients?.email || undefined,
-        items: (full.invoice_items || []).map((it: any) => ({
+        items: (full.invoice_items || []).map((it: InvoiceFullItem) => ({
           subbrand: it.products?.subbrands?.name || undefined,
           name: it.products?.name || it.custom_name || "Producto",
           quantity: Number(it.quantity) || 0,
@@ -494,7 +570,7 @@ export default function FacturacionPage() {
     }
   }
 
-  async function handlePrintJpg(inv: any) {
+  async function handlePrintJpg(inv: InvoiceRowLike) {
     try {
       const { canvas, invoice_number } = await captureInvoice(inv);
       const link = document.createElement("a");
@@ -510,7 +586,7 @@ export default function FacturacionPage() {
     setOpenPrintId(null);
   }
 
-  async function handleViewDetail(inv: any) {
+  async function handleViewDetail(inv: InvoiceListRow) {
     try {
       const full = await getInvoice(inv.id);
       setSelectedInvoice(full);
@@ -521,13 +597,13 @@ export default function FacturacionPage() {
     }
   }
 
-  async function handleEdit(inv: any) {
+  async function handleEdit(inv: InvoiceRowLike) {
     try {
       const full = await getInvoice(inv.id);
-      const mappedItems: any[] = full.invoice_items?.map((item: any) => ({
-        product_id: item.product_id,
+      const mappedItems: InvoiceLine[] = full.invoice_items?.map((item: InvoiceFullItem) => ({
+        product_id: item.product_id as string,
         name: item.products?.name || "Producto",
-        quantity: item.quantity,
+        quantity: item.quantity as number,
         unit_price: Number(item.unit_price),
         cost: Number(item.unit_cost || 0),
         pv: Number(item.pv || 0),
@@ -535,12 +611,12 @@ export default function FacturacionPage() {
         bundle_items: undefined,
       })) || [];
       const bundleIds = (full.invoice_items || [])
-        .filter((it: any) => it.products?.is_bundle)
-        .map((it: any) => it.product_id);
+        .filter((it: InvoiceFullItem) => it.products?.is_bundle)
+        .map((it: InvoiceFullItem) => it.product_id);
       if (bundleIds.length > 0) {
         try {
-          const bitems = await getBundleItemsBatch(bundleIds);
-          const byBundle = new Map<string, any[]>();
+          const bitems = await getBundleItemsBatch(bundleIds as string[]);
+          const byBundle = new Map<string, BundleItem[]>();
           for (const bi of bitems) {
             const arr = byBundle.get(bi.bundle_id) || [];
             arr.push(bi);
@@ -581,7 +657,7 @@ export default function FacturacionPage() {
         notes: notes || undefined,
         bank_account_id: bankAccountId === "ALL" ? undefined : (bankAccountId || undefined),
         show_all_bank_accounts: bankAccountId === "ALL",
-        currency: (settings as any)?.currency || "DOP",
+        currency: settings?.currency || "DOP",
       };
       const invoiceItems = items.map((i, idx) => {
         const line = math.lines[idx] || { unit_price: effectivePrice(i), line_total: i.quantity * effectivePrice(i) };
@@ -612,8 +688,8 @@ export default function FacturacionPage() {
       setShowModal(false);
       resetForm();
       await load(searchRef.current);
-    } catch (e: any) {
-      toast.error(e?.message || "Error al guardar factura");
+    } catch (e: unknown) {
+      toast.error((e as { message?: string } | null | undefined)?.message || "Error al guardar factura");
     } finally {
       setSaving(false);
     }
@@ -728,7 +804,7 @@ export default function FacturacionPage() {
               </thead>
               <tbody>
                 {invoices
-                .filter((inv: any) => {
+                .filter((inv: InvoiceListRow) => {
                   if (filterMonth || filterYear) {
                     const d = new Date(inv.invoice_date);
                     if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
@@ -738,7 +814,7 @@ export default function FacturacionPage() {
                   if (filterClient && inv.client_id !== filterClient) return false;
                   return true;
                 })
-                .map((inv: any) => {
+                .map((inv: InvoiceListRow) => {
                 const s = statusMap[inv.status] || statusMap.PENDING;
                 return (
                   <tr key={inv.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
@@ -843,7 +919,7 @@ export default function FacturacionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(selectedInvoice.invoice_items || []).map((item: any, i: number) => {
+                  {(selectedInvoice.invoice_items || []).map((item: InvoiceFullItem, i: number) => {
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
                         <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
@@ -880,12 +956,12 @@ export default function FacturacionPage() {
                     </>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selectedInvoice.bank_accounts.holder_name}</p>
-                      {selectedInvoice.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selectedInvoice.bank_accounts.id_number}</p>}
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selectedInvoice.bank_accounts.bank_name}</p>
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {selectedInvoice.bank_accounts.account_type}</p>
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {selectedInvoice.bank_accounts.account_number}</p>
-                      {selectedInvoice.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selectedInvoice.bank_accounts.email}</p>}
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {(selectedInvoice.bank_accounts as BankAccountRef).holder_name}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {(selectedInvoice.bank_accounts as BankAccountRef).id_number}</p>}
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {(selectedInvoice.bank_accounts as BankAccountRef).bank_name}</p>
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_type}</p>
+                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_number}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {(selectedInvoice.bank_accounts as BankAccountRef).email}</p>}
                     </div>
                   )}
                 </div>
@@ -992,8 +1068,8 @@ export default function FacturacionPage() {
           client={{
             id: selectedInvoice.client_id,
             full_name: selectedInvoice.clients?.full_name || "",
-            email: selectedInvoice.clients?.email,
-            phone: selectedInvoice.clients?.phone,
+            email: selectedInvoice.clients?.email ?? undefined,
+            phone: selectedInvoice.clients?.phone ?? undefined,
           }}
           documentType="invoice"
           documentNumber={selectedInvoice.invoice_number}
@@ -1002,15 +1078,15 @@ export default function FacturacionPage() {
           businessName={settings?.business_name || "Almaia RD"}
           senderEmail={settings?.email || undefined}
           senderName={settings?.sender_name || undefined}
-          emailTemplate={(settings as any)?.email_template || undefined}
-          whatsappTemplate={(settings as any)?.whatsapp_template || undefined}
-          smtp={(settings as any)?.smtp_host ? {
-            host: (settings as any).smtp_host,
-            port: (settings as any).smtp_port || 587,
-            user: (settings as any).smtp_user,
-            configured: !!(settings as any).has_smtp_password,
-            secure: (settings as any).smtp_secure || false,
-            senderName: (settings as any).sender_name || undefined,
+          emailTemplate={settings?.email_template || undefined}
+          whatsappTemplate={settings?.whatsapp_template || undefined}
+          smtp={settings?.smtp_host ? {
+            host: settings.smtp_host,
+            port: settings.smtp_port || 587,
+            user: settings.smtp_user,
+            configured: !!settings.has_smtp_password,
+            secure: settings.smtp_secure || false,
+            senderName: settings.sender_name || undefined,
           } : undefined}
           getAttachment={async () => {
             const full = await getInvoice(selectedInvoice.id);
@@ -1023,7 +1099,7 @@ export default function FacturacionPage() {
               client_name: full.clients?.full_name || "",
               client_phone: full.clients?.phone || undefined,
               client_email: full.clients?.email || undefined,
-              items: (full.invoice_items || []).map((it: any) => ({
+              items: (full.invoice_items || []).map((it: InvoiceFullItem) => ({
                 subbrand: it.products?.subbrands?.name || undefined,
                 name: it.products?.name || it.custom_name || "Producto",
                 quantity: Number(it.quantity) || 0,
@@ -1307,7 +1383,7 @@ export default function FacturacionPage() {
                       {expandedRows[i] && isBundle && (
                         <div className="px-4 py-3 bg-white border-t border-[#E8E0D8] space-y-1.5">
                           <p className="text-[10px] font-bold text-[#B8837E] uppercase tracking-wide">Componentes del bundle</p>
-                          {item.bundle_items?.map((bi: any) => (
+                          {item.bundle_items?.map((bi: BundleItem) => (
                             <div key={bi.id} className="flex items-center justify-between text-xs">
                               <span className="text-[#5C3E35] truncate pr-3">{bi.products?.name || "Producto"}</span>
                               <span className="text-[#9C8A82] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
@@ -1481,7 +1557,7 @@ export default function FacturacionPage() {
                 </tr>
               </thead>
               <tbody>
-                  {(jpgData.invoice_items || []).map((item: any, i: number) => (
+                  {(jpgData.invoice_items || []).map((item: InvoiceFullItem, i: number) => (
                     <tr key={i} className="border-b border-[#F0EBE3]">
                       <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
                       <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
@@ -1514,12 +1590,12 @@ export default function FacturacionPage() {
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {jpgData.bank_accounts.holder_name}</p>
-                    {jpgData.bank_accounts.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {jpgData.bank_accounts.id_number}</p>}
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {jpgData.bank_accounts.bank_name}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {jpgData.bank_accounts.account_type}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {jpgData.bank_accounts.account_number}</p>
-                    {jpgData.bank_accounts.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {jpgData.bank_accounts.email}</p>}
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {(jpgData.bank_accounts as BankAccountRef).holder_name}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {(jpgData.bank_accounts as BankAccountRef).id_number}</p>}
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {(jpgData.bank_accounts as BankAccountRef).bank_name}</p>
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_type}</p>
+                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_number}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {(jpgData.bank_accounts as BankAccountRef).email}</p>}
                   </div>
                 )}
               </div>

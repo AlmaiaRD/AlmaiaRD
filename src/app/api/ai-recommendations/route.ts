@@ -14,6 +14,16 @@ interface ProductRec {
   score: number;
 }
 
+interface CatalogRow {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  benefits: string | null;
+  subbrands?: Array<{ name?: string | null }> | { name?: string | null } | null;
+  categories?: Array<{ name?: string | null }> | { name?: string | null } | null;
+}
+
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 async function callOpenAI(prompt: string): Promise<string | null> {
@@ -47,7 +57,7 @@ async function callOpenAI(prompt: string): Promise<string | null> {
 }
 
 function keywordFallback(
-  products: any[],
+  products: CatalogRow[],
   query: string,
   season?: string
 ): ProductRec[] {
@@ -68,8 +78,8 @@ function keywordFallback(
 
   for (const product of products) {
     const name = (product.name || "").toLowerCase();
-    const subbrand = ((product.subbrands as any)?.name || "").toLowerCase();
-    const category = ((product.categories as any)?.name || "").toLowerCase();
+    const subbrand = ((product.subbrands as { name?: string | null } | null)?.name || "").toLowerCase();
+    const category = ((product.categories as { name?: string | null } | null)?.name || "").toLowerCase();
     const desc = (product.description || "").toLowerCase();
     const benefits = (product.benefits || "").toLowerCase();
     const combined = `${name} ${subbrand} ${category} ${desc} ${benefits}`;
@@ -100,7 +110,7 @@ function keywordFallback(
         product_id: product.id,
         product_name: product.name,
         code: product.code,
-        subbrand: (product.subbrands as any)?.name || "",
+        subbrand: (product.subbrands as { name?: string | null } | null)?.name || "",
         reason,
         priority: score >= 8 ? "high" : score >= 6 ? "medium" : "low",
         score,
@@ -162,8 +172,8 @@ export async function POST(req: NextRequest) {
       code: p.code,
       description: truncate(p.description, 200),
       benefits: truncate(p.benefits, 200),
-      subbrand: (p.subbrands as any)?.name || "Genérica",
-      category: (p.categories as any)?.name || "Sin categoría",
+      subbrand: (p.subbrands as { name?: string | null } | null)?.name || "Genérica",
+      category: (p.categories as { name?: string | null } | null)?.name || "Sin categoría",
     }));
 
     let context = "";

@@ -1,9 +1,9 @@
-﻿import { test, expect } from "@playwright/test";
+﻿import { test, expect, type Page } from "@playwright/test";
 
 const TEST_EMAIL = process.env.E2E_TEST_EMAIL || "admin@almaia.com";
 const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || "test1234";
 
-async function login(page: any) {
+async function login(page: Page) {
   await page.goto("/login");
   await page.fill('input[type="email"]', TEST_EMAIL);
   await page.fill('input[type="password"]', TEST_PASSWORD);

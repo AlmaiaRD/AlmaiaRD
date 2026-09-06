@@ -138,7 +138,7 @@ export default function ProveedoresPage() {
               <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">{label}</label>
               <input
                 type={type}
-                value={(form as any)[key]}
+                value={form[key]}
                 onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                 className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
               />

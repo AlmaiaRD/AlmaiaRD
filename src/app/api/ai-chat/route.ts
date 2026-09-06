@@ -38,7 +38,7 @@ async function callOpenAI(prompt: string): Promise<string | null> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { query } = await validateBody(aiChatSchema)(req);
+    await validateBody(aiChatSchema)(req);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const catalogList = (products || [])
       .map(
         (p) =>
-          `- ${p.name} (${(p.subbrands as any)?.name || "Genérica"}) - ${(p.categories as any)?.name || "Sin categoría"}${p.description ? ` | ${truncate(p.description, 150)}` : ""}${p.benefits ? ` | Beneficios: ${truncate(p.benefits, 150)}` : ""}`
+          `- ${p.name} (${(p.subbrands as { name?: string | null } | null)?.name || "Genérica"}) - ${(p.categories as { name?: string | null } | null)?.name || "Sin categoría"}${p.description ? ` | ${truncate(p.description, 150)}` : ""}${p.benefits ? ` | Beneficios: ${truncate(p.benefits, 150)}` : ""}`
       )
       .join("\n");
 

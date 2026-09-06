@@ -5,6 +5,8 @@ import type { Settings, BankAccount } from "@/types/database";
 
 export type SettingsResult = Settings & { has_smtp_password?: boolean };
 
+type SettingsRow = Partial<Settings> & { smtp_pass?: string | null; has_smtp_password?: boolean | null };
+
 export function resolveDefaultPhone(s?: { phone?: string; phone_2?: string; default_phone?: string } | null): string {
   if (!s) return "";
   return s.default_phone === "phone_2" && s.phone_2 ? s.phone_2 : s.phone || "";
@@ -16,7 +18,7 @@ function isMigrationPending(error: { code?: string; message?: string } | null): 
   );
 }
 
-function normalizeSettings(row: Record<string, any>, includeSecrets: boolean): SettingsResult {
+function normalizeSettings(row: SettingsRow, includeSecrets: boolean): SettingsResult {
   const result = { ...row } as SettingsResult;
   if (!includeSecrets) {
     result.has_smtp_password = Boolean(row?.has_smtp_password ?? row?.smtp_pass);
@@ -27,8 +29,8 @@ function normalizeSettings(row: Record<string, any>, includeSecrets: boolean): S
 
 async function loadSettingsRow(
   includeSecrets: boolean,
-  client: SupabaseClient<any> = supabase
-): Promise<Record<string, any> | null> {
+  client: SupabaseClient = supabase
+): Promise<SettingsRow | null> {
   const rpcName = includeSecrets ? "get_settings_with_secrets" : "get_settings_public";
   let result = await client.rpc(rpcName);
 
@@ -46,7 +48,7 @@ async function loadSettingsRow(
 
 export async function getSettings(
   useCache = true,
-  options?: { includeSecrets?: boolean; client?: SupabaseClient<any> }
+  options?: { includeSecrets?: boolean; client?: SupabaseClient }
 ): Promise<SettingsResult | null> {
   const includeSecrets = options?.includeSecrets ?? false;
   if (!includeSecrets && useCache) {
@@ -98,14 +100,14 @@ Responde en español en máximo 3 oraciones:`,
     .single();
 
   if (createError) throw createError;
-  const result = normalizeSettings(created as Record<string, any>, false);
+  const result = normalizeSettings(created as SettingsRow, false);
   await setCache("settings", result, 120_000);
   return result;
 }
 
 export async function updateSettings(
   settings: Partial<Settings>,
-  options?: { client?: SupabaseClient<any> }
+  options?: { client?: SupabaseClient }
 ) {
   if (!settings.id) throw new Error("Settings ID is required");
   const patch: Partial<Settings> = {

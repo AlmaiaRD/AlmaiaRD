@@ -120,8 +120,8 @@ export const validateBody = <T extends z.ZodTypeAny>(
     return schema.parse(body);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issues = (error as any).issues ?? (error as any).errors ?? [];
-      const messages = issues.map((e: any) => `${e.path?.join(".") ?? ""}: ${e.message}`).join("; ");
+      const issues = error.issues;
+      const messages = issues.map((e) => `${e.path?.join(".") ?? ""}: ${e.message}`).join("; ");
       throw new Error(`Validación fallida: ${messages}`);
     }
     throw error;

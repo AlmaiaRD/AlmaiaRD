@@ -27,6 +27,14 @@ interface PurchaseForm {
   items: PurchaseFormItem[];
 }
 
+interface ParsedPurchaseForPdf {
+  supplier_name: string;
+  purchase_date: string;
+  notes: string;
+  discount_amount: number;
+  items: Array<{ product_id: string; name: string; quantity: number; unit_cost: number; itbis?: boolean }>;
+}
+
 interface PurchaseModalProps {
   isOpen: boolean;
   editing: boolean;
@@ -50,9 +58,9 @@ interface PurchaseModalProps {
   setShowPdfImport: (v: boolean) => void;
   setShowProductSearch: (v: boolean) => void;
   setProductSearch: (v: string) => void;
-  onApplyPdf: (purchase: any) => void;
+  onApplyPdf: (purchase: ParsedPurchaseForPdf) => void;
   addProduct: (p: { id: string; name: string; cost?: number | null }) => void;
-  updateItem: (i: number, field: string, value: any) => void;
+  updateItem: (i: number, field: string, value: string | number | boolean) => void;
   removeItem: (i: number) => void;
   onClose: () => void;
   onSubmit: () => void;

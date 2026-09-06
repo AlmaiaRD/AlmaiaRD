@@ -1,8 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
 import { addInventoryStock } from "./inventory";
-import { getBundleComponentMap } from "./products";
-import { adjustPayment } from "./receipts";
+import { getBundleComponentMap, type BundleComponentInfo } from "./products";
 import type { Return, ReturnItem } from "@/types/database";
 
 export async function getReturns() {
@@ -203,7 +202,7 @@ export async function completeReturn(id: string) {
   // Reponer inventario con costos reales
   if (items && items.length > 0) {
     const ids = [...new Set(items.map(i => i.product_id).filter(Boolean) as string[])];
-    const compMap = ids.length > 0 ? await getBundleComponentMap(ids) : new Map<string, any[]>();
+    const compMap = ids.length > 0 ? await getBundleComponentMap(ids) : new Map<string, BundleComponentInfo[]>();
     for (const item of items) {
       if (!item.product_id) continue;
       const comps = compMap.get(item.product_id);

@@ -8,7 +8,9 @@ import KpiCard from "@/components/ui/KpiCard";
 import { SkeletonCard, SkeletonTable } from "@/components/ui/Skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { getInvoices } from "@/services/invoices";
+import type { Invoice } from "@/types/database";
 import { getReceipts } from "@/services/receipts";
+import type { Receipt } from "@/types/database";
 import { getDashboardStats } from "@/services/dashboard";
 import { getPreferences, updatePreferences } from "@/services/preferences";
 import { supabase } from "@/lib/supabase";
@@ -20,7 +22,6 @@ import {
   BarChart3,
   Users,
   AlertTriangle,
-  Receipt,
   ArrowUpRight,
   Award,
   FileText,
@@ -41,6 +42,28 @@ import {
   Line,
 } from "recharts";
 
+interface LowStockItem {
+  name: string;
+  stock: number;
+  status: string;
+}
+
+interface MonthDataItem {
+  mes: string;
+  ventas: number;
+  cobros: number;
+}
+
+interface DailySalesItem {
+  dia: string;
+  ventas: number;
+}
+
+interface PaymentMethodItem {
+  name: string;
+  value: number;
+}
+
 const PIE_COLORS = ["#86C7A3", "#B8837E", "#E8C87A"];
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -49,13 +72,28 @@ export default function DashboardPage() {
   const router = useRouter();
   const [loadingData, setLoadingData] = useState(true);
 
-  const [stats, setStats] = useState<any>({});
-  const [lowStock, setLowStock] = useState<any[]>([]);
-  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
-  const [recentReceipts, setRecentReceipts] = useState<any[]>([]);
-  const [monthData, setMonthData] = useState<any[]>([]);
-  const [dailySales, setDailySales] = useState<any[]>([]);
-  const [paymentMethodData, setPaymentMethodData] = useState<any[]>([]);
+  const [stats, setStats] = useState<{
+    salesToday: number;
+    salesMonth: number;
+    salesYear: number;
+    totalSales: number;
+    totalPending: number;
+    totalPaid: number;
+    inventoryValue: number;
+    totalStock: number;
+    lowStock: number;
+    outOfStock: number;
+    grossProfit: number;
+    realProfit: number;
+    pvMonth: number;
+    pvYear: number;
+  } | null>(null);
+  const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
+  const [recentInvoices, setRecentInvoices] = useState<(Invoice & { clients?: { full_name?: string | null } })[]>([]);
+  const [recentReceipts, setRecentReceipts] = useState<(Receipt & { clients?: { full_name?: string | null }; invoices?: { clients?: { full_name?: string | null } } })[]>([]);
+  const [monthData, setMonthData] = useState<MonthDataItem[]>([]);
+  const [dailySales, setDailySales] = useState<DailySalesItem[]>([]);
+  const [paymentMethodData, setPaymentMethodData] = useState<PaymentMethodItem[]>([]);
   const [monthlyGoal, setMonthlyGoal] = useState(0);
   const [goalInput, setGoalInput] = useState("");
   const defaultMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
@@ -145,26 +183,26 @@ export default function DashboardPage() {
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
           monthly[key] = { ventas: 0, cobros: 0 };
         }
-        (monthRaw || []).forEach((inv: any) => {
+        (monthRaw || []).forEach((inv: { created_at?: string; total?: number | null; amount_paid?: number | null }) => {
           const key = inv.created_at?.substring(0, 7);
-          if (monthly[key]) {
+          if (key && monthly[key]) {
             monthly[key].ventas += Number(inv.total);
             monthly[key].cobros += Number(inv.amount_paid || 0);
           }
         });
         const monthEntries = Object.entries(monthly).slice(0, 6);
         setMonthData(
-          monthEntries.map(([key, val], i) => ({
+          monthEntries.map(([key, val]) => ({
             mes: MONTHS[parseInt(key.split("-")[1]) - 1] || key,
-            ventas: (val as any).ventas,
-            cobros: (val as any).cobros,
+            ventas: val.ventas,
+            cobros: val.cobros,
           }))
         );
 
         const daily: Record<string, number> = {};
-        (dailyRaw || []).forEach((inv: any) => {
+        (dailyRaw || []).forEach((inv: { created_at?: string; total?: number | null }) => {
           const day = inv.created_at?.substring(8, 10);
-          daily[day] = (daily[day] || 0) + Number(inv.total);
+          if (day) daily[day] = (daily[day] || 0) + Number(inv.total);
         });
         const daysInMonth = today.getDate();
         const startDay = Math.max(1, daysInMonth - 14);
@@ -177,8 +215,8 @@ export default function DashboardPage() {
         );
 
         const pm: Record<string, number> = {};
-        (pmRaw || []).forEach((r: any) => {
-          pm[r.payment_method] = (pm[r.payment_method] || 0) + Number(r.amount);
+        (pmRaw || []).forEach((r: { payment_method?: string; amount?: number | null }) => {
+          pm[r.payment_method || ""] = (pm[r.payment_method || ""] || 0) + Number(r.amount);
         });
         const totalPm = Object.values(pm).reduce((a, b) => a + b, 0) || 1;
         const labels: Record<string, string> = {
@@ -193,10 +231,10 @@ export default function DashboardPage() {
           }))
         );
 
-        setLowStock((invVal || []).map((i: any) => ({
-          name: i.product_name,
-          stock: i.stock,
-          status: i.stock_status,
+        setLowStock((invVal || []).map((i: { product_name?: string; stock?: number | null; stock_status?: string | null }) => ({
+          name: i.product_name || "",
+          stock: i.stock || 0,
+          status: i.stock_status || "",
         })));
       } catch {
         // fallback to defaults
@@ -212,8 +250,8 @@ export default function DashboardPage() {
   }
 
   // KPI Metas calculations
-  const vendido = Number(stats.salesMonth) || 0;
-  const cobrado = Number(stats.totalPaid) || 0;
+  const vendido = Number(stats?.salesMonth) || 0;
+  const cobrado = Number(stats?.totalPaid) || 0;
   const metaActual = monthlyGoal || 1;
   const restanteKpi = Math.max(monthlyGoal - vendido, 0);
   const vendidoPct = monthlyGoal > 0 ? Math.min((vendido / metaActual) * 100, 100) : 0;
@@ -241,7 +279,7 @@ export default function DashboardPage() {
             <SkeletonTable rows={5} />
           </div>
         </div>
-      ) : (
+      ) : stats ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
             <KpiCard title="Ventas del Día" value={formatCurrency(Number(stats.salesToday))} icon={DollarSign} color="primary" />
@@ -381,7 +419,7 @@ export default function DashboardPage() {
                       <YAxis tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                       <Tooltip
                         contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8", backgroundColor: "#fff" }}
-                        formatter={(value: any) => formatCurrency(Number(value))}
+                        formatter={(value: unknown) => formatCurrency(typeof value === "number" ? value : Number(value) || 0)}
                       />
                       <Bar dataKey="ventas" fill="#B8837E" radius={[6, 6, 0, 0]} name="Ventas" />
                       <Bar dataKey="cobros" fill="#86C7A3" radius={[6, 6, 0, 0]} name="Cobros" />
@@ -417,7 +455,7 @@ export default function DashboardPage() {
                       </Pie>
                       <Tooltip
                         contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
-                        formatter={(value: any) => `${value}%`}
+                        formatter={(value: unknown) => `${typeof value === "number" ? value : Number(value) || 0}%`}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -450,7 +488,7 @@ export default function DashboardPage() {
                     <YAxis tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                     <Tooltip
                       contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
-                      formatter={(value: any) => formatCurrency(Number(value))}
+                      formatter={(value: unknown) => formatCurrency(typeof value === "number" ? value : Number(value) || 0)}
                     />
                     <Line type="monotone" dataKey="ventas" stroke="#B8837E" strokeWidth={2} dot={{ fill: "#B8837E", r: 3 }} />
                   </LineChart>
@@ -499,7 +537,7 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-[#9C8A82] text-sm">Sin facturas recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
-                  {recentInvoices.map((inv: any) => (
+                  {recentInvoices.map((inv: Invoice & { clients?: { full_name?: string | null } }) => (
                     <div key={inv.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</p>
@@ -530,7 +568,7 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-[#9C8A82] text-sm">Sin recibos recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
-                  {recentReceipts.map((rec: any) => (
+                  {recentReceipts.map((rec: Receipt & { clients?: { full_name?: string | null }; invoices?: { clients?: { full_name?: string | null } } }) => (
                     <div key={rec.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</p>
@@ -549,7 +587,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </>
-      )}
-    </PageContainer>
+      ) : null}
+  </PageContainer>
   );
 }

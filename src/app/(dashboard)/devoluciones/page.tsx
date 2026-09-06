@@ -4,12 +4,52 @@ import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getReturns, getReturn, getReturnItems, createReturn, completeReturn, cancelReturn } from "@/services/returns";
+import { getReturns, getReturnItems, createReturn, completeReturn, cancelReturn } from "@/services/returns";
 import { getInvoices } from "@/services/invoices";
 import { getProducts } from "@/services/products";
+import type { Product } from "@/types/database";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, Search, Eye, X, Check, RotateCcw, ArrowLeft, Package, FileText } from "lucide-react";
+import { Plus, Search, Eye, X, Check, RotateCcw, Package } from "lucide-react";
 import toast from "react-hot-toast";
+
+interface ReturnWithRelations {
+  id: string;
+  return_number: string;
+  invoice_id: string;
+  client_id: string;
+  return_date: string;
+  subtotal: number;
+  total: number;
+  reason: string;
+  status: string;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  clients?: { full_name: string } | null;
+  invoices?: { invoice_number: string } | null;
+}
+
+interface InvoiceWithClient {
+  id: string;
+  invoice_number: string;
+  client_id: string;
+  total: number;
+  status: string;
+  clients?: { full_name: string } | null;
+}
+
+interface ReturnItemWithProduct {
+  id: string;
+  return_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  reason?: string;
+  created_at: string;
+  products?: { name: string; code?: string | null } | null;
+}
 
 const STATUS_COLORS: Record<string, "warning" | "success" | "danger"> = {
   DRAFT: "warning",
@@ -18,21 +58,21 @@ const STATUS_COLORS: Record<string, "warning" | "success" | "danger"> = {
 };
 
 export default function DevolucionesPage() {
-  const [returns, setReturns] = useState<any[]>([]);
+  const [returns, setReturns] = useState<ReturnWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [invoices, setInvoices] = useState<InvoiceWithClient[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithClient | null>(null);
   const [returnItems, setReturnItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; line_total: number; reason: string; maxQty: number }>>([]);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [viewingReturn, setViewingReturn] = useState<any>(null);
-  const [viewingItems, setViewingItems] = useState<any[]>([]);
+  const [viewingReturn, setViewingReturn] = useState<ReturnWithRelations | null>(null);
+  const [viewingItems, setViewingItems] = useState<ReturnItemWithProduct[]>([]);
 
   const load = useCallback(async (query: string) => {
     setLoading(true);
@@ -40,7 +80,7 @@ export default function DevolucionesPage() {
       let data = await getReturns();
       if (query) {
         const q = query.toLowerCase();
-        data = data.filter((r: any) =>
+        data = data.filter((r) =>
           r.return_number?.toLowerCase().includes(q) ||
           r.clients?.full_name?.toLowerCase().includes(q) ||
           r.invoices?.invoice_number?.toLowerCase().includes(q)
@@ -76,7 +116,7 @@ export default function DevolucionesPage() {
     setSelectedInvoice(null);
     try {
       const [inv, pr] = await Promise.all([getInvoices(), getProducts()]);
-      setInvoices(inv.filter((i: any) => i.status !== "CANCELLED"));
+      setInvoices(inv.filter((i: InvoiceWithClient) => i.status !== "CANCELLED"));
       setProducts(pr);
     } catch {
       toast.error("Error al cargar datos");
@@ -85,16 +125,16 @@ export default function DevolucionesPage() {
   }
 
   function handleSelectInvoice(invoiceId: string) {
-    const inv = invoices.find((i: any) => i.id === invoiceId);
-    setSelectedInvoice(inv);
-    setReturnItems([]);
+    const inv = invoices.find((i: InvoiceWithClient) => i.id === invoiceId);
     if (inv) {
+      setSelectedInvoice(inv);
+      setReturnItems([]);
       setReason(`Devolución de factura ${inv.invoice_number}`);
     }
   }
 
   async function addReturnItem(productId: string) {
-    const prod = products.find((p: any) => p.id === productId);
+    const prod = products.find((p: Product) => p.id === productId);
     if (!prod) return;
     if (returnItems.some((i) => i.product_id === productId)) {
       toast.error("Producto ya agregado");
@@ -111,7 +151,7 @@ export default function DevolucionesPage() {
     }]);
   }
 
-  function updateReturnItem(index: number, field: string, value: any) {
+  function updateReturnItem(index: number, field: string, value: unknown) {
     const items = [...returnItems];
     const item = { ...items[index], [field]: value };
     if (field === "quantity" || field === "unit_price") {
@@ -152,8 +192,8 @@ export default function DevolucionesPage() {
       toast.success("Devolución creada");
       setShowModal(false);
       load("");
-    } catch (e: any) {
-      toast.error(e?.message || "Error al crear devolución");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al crear devolución");
     } finally {
       setSaving(false);
     }
@@ -181,7 +221,7 @@ export default function DevolucionesPage() {
     }
   }
 
-  async function handleView(ret: any) {
+  async function handleView(ret: ReturnWithRelations) {
     setViewingReturn(ret);
     try {
       const items = await getReturnItems(ret.id);
@@ -193,7 +233,7 @@ export default function DevolucionesPage() {
   }
 
   const filtered = searchQuery
-    ? returns.filter((r: any) =>
+    ? returns.filter((r: ReturnWithRelations) =>
         r.return_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.clients?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -227,7 +267,7 @@ export default function DevolucionesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((ret: any) => (
+          {filtered.map((ret) => (
             <div key={ret.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -264,7 +304,7 @@ export default function DevolucionesPage() {
             <select value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
               className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
               <option value="">Seleccionar factura...</option>
-              {invoices.map((inv: any) => (
+              {invoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>
                   {inv.invoice_number} — {inv.clients?.full_name || "Cliente"} — {formatCurrency(inv.total)}
                 </option>
@@ -284,7 +324,7 @@ export default function DevolucionesPage() {
                     className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
                   >
                     <option value="">+ Agregar producto</option>
-                    {products.map((p: any) => (
+                    {products.map((p) => (
                       <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.price_30 || 0)}</option>
                     ))}
                   </select>
@@ -377,7 +417,7 @@ export default function DevolucionesPage() {
                 <p className="text-sm text-[#9C8A82]">Cargando...</p>
               ) : (
                 <div className="space-y-2">
-                  {viewingItems.map((item: any) => (
+                  {viewingItems.map((item: ReturnItemWithProduct) => (
                     <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#5C3E35]">{item.products?.name || "Producto"}</p>
@@ -391,7 +431,7 @@ export default function DevolucionesPage() {
                   ))}
                   <div className="flex justify-between pt-2 text-sm font-semibold text-[#5C3E35]">
                     <span>Total</span>
-                    <span>{formatCurrency(viewingItems.reduce((s: number, i: any) => s + Number(i.line_total), 0))}</span>
+                    <span>{formatCurrency(viewingItems.reduce((s: number, i: ReturnItemWithProduct) => s + Number(i.line_total), 0))}</span>
                   </div>
                 </div>
               )}

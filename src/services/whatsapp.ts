@@ -13,6 +13,16 @@ export interface WhatsAppConfig {
   has_token?: boolean;
 }
 
+export interface WhatsAppLogRow {
+  id: string;
+  to: string | null;
+  type: string | null;
+  status: string | null;
+  message_id: string | null;
+  error: string | null;
+  created_at: string | null;
+}
+
 export interface WhatsAppMessage {
   messaging_product: string;
   to: string;
@@ -48,7 +58,7 @@ export async function getWhatsAppConfigs(): Promise<WhatsAppConfig[]> {
   const { data, error } = await supabase.rpc("get_whatsapp_configs_public");
 
   if (error) throw error;
-  return (data || []).map((row: any) => ({
+  return (data || []).map((row: { id: string; label: string; phone_number_id: string; business_account_id: string; is_active: boolean; has_token?: boolean | null }) => ({
     id: row.id,
     label: row.label,
     phone_number_id: row.phone_number_id,
@@ -286,7 +296,7 @@ export async function logWhatsAppMessage(
 }
 
 // Get message logs
-export async function getWhatsAppLogs(configId?: string): Promise<any[]> {
+export async function getWhatsAppLogs(configId?: string): Promise<WhatsAppLogRow[]> {
   let query = supabase
     .from("whatsapp_logs")
     .select("*")
@@ -326,11 +336,11 @@ export interface IncomingMessage {
   document?: { id: string; mime_type: string; filename: string };
 }
 
-export function parseWebhookMessage(body: any): IncomingMessage | null {
+export function parseWebhookMessage(body: unknown): IncomingMessage | null {
   try {
-    const entry = body.entry?.[0];
-    const changes = entry?.changes?.[0];
-    const messages = changes?.value?.messages;
+    const entries = (body as { entry?: Array<{ changes?: Array<{ value?: { messages?: IncomingMessage[] } }> }> }).entry;
+    const changes = entries?.[0]?.changes;
+    const messages = changes?.[0]?.value?.messages;
 
     if (!messages || messages.length === 0) return null;
 

@@ -51,8 +51,8 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
 
       setPreview(publicUrl);
       onUploaded(publicUrl);
-    } catch (err: any) {
-      alert(err?.message || "Error al subir imagen");
+    } catch (err: unknown) {
+      alert((err as { message?: string } | null)?.message || "Error al subir imagen");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

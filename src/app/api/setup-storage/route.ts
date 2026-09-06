@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (!bucketRes.ok) {
-      const text = await bucketRes.text();
+      await bucketRes.text();
       if (bucketRes.status === 409) {
         return NextResponse.json({ ok: true, message: "El bucket ya existe" });
       }

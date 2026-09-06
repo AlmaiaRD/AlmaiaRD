@@ -48,8 +48,8 @@ async function fetchImageAsBlob(url: string): Promise<Blob> {
           "image/jpeg",
           0.9
         );
-      } catch (e: any) {
-        reject(new Error("Imagen bloqueada por CORS: " + (e?.message || "")));
+      } catch (e: unknown) {
+        reject(new Error("Imagen bloqueada por CORS: " + ((e as { message?: string } | null)?.message || "")));
       }
     };
     img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
@@ -125,8 +125,8 @@ export default function MigrateImagesPanel() {
         let blob: Blob;
         try {
           blob = await fetchImageAsBlob(p.image_url);
-        } catch (e: any) {
-          setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: e?.message || "No se pudo leer la imagen (CORS/403)" }]);
+        } catch (e: unknown) {
+          setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: (e as { message?: string } | null)?.message || "No se pudo leer la imagen (CORS/403)" }]);
           setProgress((pr) => ({ ...pr, done: pr.done + 1 }));
           continue;
         }
@@ -149,11 +149,11 @@ export default function MigrateImagesPanel() {
         try {
           await updateProduct(p.id, { image_url: pub?.publicUrl || "" });
           setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "ok", message: "Migrada a Storage" }]);
-        } catch (updErr: any) {
-          setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: "Actualizar: " + (updErr?.message || "error") }]);
+        } catch (updErr: unknown) {
+          setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: "Actualizar: " + ((updErr as { message?: string } | null)?.message || "error") }]);
         }
-      } catch (e: any) {
-        setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: e?.message || "Error inesperado" }]);
+      } catch (e: unknown) {
+        setLogs((prev) => [...prev, { code: p.code, name: p.name, status: "err", message: (e as { message?: string } | null)?.message || "Error inesperado" }]);
       }
       setProgress((pr) => ({ ...pr, done: pr.done + 1 }));
     }

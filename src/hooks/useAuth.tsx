@@ -13,6 +13,14 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+interface ProfileSession {
+  user?: {
+    id: string;
+    email?: string | null;
+    user_metadata?: Record<string, unknown>;
+  } | null;
+}
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -21,7 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-async function ensureProfile(session: any): Promise<User | null> {
+async function ensureProfile(session: ProfileSession): Promise<User | null> {
   if (!session?.user) return null;
   const userId = session.user.id;
 
@@ -113,8 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!profile) return { error: "Error al cargar el perfil" };
       setUser(profile);
       return { error: null };
-    } catch (err: any) {
-      return { error: err?.message || "Error inesperado" };
+    } catch (err: unknown) {
+      return { error: (err as { message?: string } | null)?.message || "Error inesperado" };
     }
   }, []);
 
@@ -127,8 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await supabase.from("users").insert({ id: data.user.id, name, email, role: "assistant" });
       }
       return { error: null };
-    } catch (err: any) {
-      return { error: err?.message || "Error al registrar" };
+    } catch (err: unknown) {
+      return { error: (err as { message?: string } | null)?.message || "Error al registrar" };
     }
   }, []);
 

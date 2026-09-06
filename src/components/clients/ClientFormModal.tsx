@@ -73,8 +73,8 @@ export default function ClientFormModal({
         : await createClient({ ...form, birthday: form.birthday || null });
       onSaved(client);
       onClose();
-    } catch (e: any) {
-      toast.error(e?.message || "Error al guardar cliente");
+    } catch (e: unknown) {
+      toast.error((e as { message?: string } | null)?.message || "Error al guardar cliente");
     } finally {
       setSaving(false);
     }

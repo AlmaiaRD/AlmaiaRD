@@ -62,8 +62,6 @@ const CW = 215.9 - M * 2;
 const PRIMARY = "#B8837E";
 const DARK = "#5C3E35";
 const GRAY = "#9C8A82";
-const CREAM = "#FCFAF7";
-const TABLE_HDR_BG = "#F0EBE3";
 
 function setTextColor(doc: jsPDF, hex: string) {
   const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -78,12 +76,6 @@ function setDrawFillColor(doc: jsPDF, hex: string) {
   const b = Number.parseInt(hex.slice(5, 7), 16);
   doc.setDrawColor(r, g, b);
   doc.setFillColor(r, g, b);
-}
-
-function drawRoundedRect(doc: jsPDF, x: number, y: number, w: number, h: number, r: number, style: "S" | "F" | "FD" = "FD") {
-  setDrawFillColor(doc, "#E8E0D8");
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x, y, w, h, r, r, style);
 }
 
 function drawCreamRoundedRect(doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 4) {
@@ -128,39 +120,6 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
-async function drawAlmaiaLogo(doc: jsPDF, cx: number, cy: number, size: number) {
-  const pngB64 = await loadImageAsBase64("/almaia-logo.png");
-  if (pngB64) {
-    const ratio = 97 / 117;
-    const w = size;
-    const h = size * ratio;
-    doc.addImage(pngB64, "PNG", cx - w / 2, cy - h / 2, w, h);
-    return;
-  }
-  const r = size / 2;
-  doc.setFillColor(247, 242, 242);
-  doc.setDrawColor(247, 242, 242);
-  doc.circle(cx, cy, r, "FD");
-  doc.setDrawColor(184, 131, 126);
-  doc.setLineWidth(0.7);
-  doc.setFillColor(255, 255, 255);
-  const petalR = r * 0.22;
-  const gx = r * 0.30;
-  const gyUp = r * 0.28;
-  const gyDn = r * 0.12;
-  doc.circle(cx - gx, cy - gyUp, petalR, "S");
-  doc.circle(cx + gx, cy - gyUp, petalR, "S");
-  doc.circle(cx - gx, cy + gyDn, petalR, "S");
-  doc.circle(cx + gx, cy + gyDn, petalR, "S");
-  doc.setLineCap("round");
-  const stemTop = cy + gyDn + petalR * 0.4;
-  const stemBot = cy + r * 0.72;
-  doc.line(cx, stemTop, cx, stemBot);
-  doc.ellipse(cx - r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
-  doc.ellipse(cx + r * 0.22, cy + r * 0.42, r * 0.07, r * 0.14, "S");
-  doc.setLineCap("butt");
-}
-
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
     const response = await fetch(url);
@@ -193,10 +152,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const PW = doc.internal.pageSize.getWidth();
   let y = M;
-  const lineH = 4.5;
   const bizName = invoice.business_name || "Almaia RD";
-  const bizEmail = invoice.email || "";
-  const bizPhone = invoice.phone || "";
 
   // Load logo and signature images
   let logoBase64: string | null = null;
@@ -327,7 +283,6 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   ];
 
   // Table header background
-  const tableStartY = y;
   doc.setFillColor(240, 235, 227);
   doc.rect(M, y, CW, 8, "F");
 
@@ -345,7 +300,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   doc.setFontSize(8);
   setTextColor(doc, DARK);
 
-  invoice.items.forEach((item, idx) => {
+  invoice.items.forEach((item) => {
     // Check page break
     if (y > 255) {
       doc.addPage();
@@ -926,11 +881,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     almaiaLogoB64 = null;
   }
 
-  let logoBase64: string | null = null;
   let signatureBase64: string | null = null;
-  if (quote.logo_url) {
-    logoBase64 = await loadImageAsBase64WithRetry(quote.logo_url);
-  }
   if (quote.signature_url) {
     signatureBase64 = await loadImageAsBase64WithRetry(quote.signature_url);
   }
@@ -1213,7 +1164,7 @@ export async function generateQuoteJpg(quote: QuoteData): Promise<void> {
   const canvas = document.createElement("canvas");
   canvas.width = vp.width; canvas.height = vp.height;
   const ctx = canvas.getContext("2d")!;
-  await page.render({ canvasContext: ctx, viewport: vp, canvas } as any).promise;
+  await page.render({ canvasContext: ctx, viewport: vp, canvas }).promise;
   const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   const link = document.createElement("a");
   link.href = jpgDataUrl;
