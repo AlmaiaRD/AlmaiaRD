@@ -14,6 +14,8 @@ import {
   type TelegramLogRow,
 } from "@/services/telegram";
 import { formatDate } from "@/lib/utils";
+import { getClients } from "@/services/clients";
+import type { Client } from "@/types/database";
 import {
   Send,
   Settings,
@@ -23,6 +25,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Trash2,
+  Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -41,13 +44,17 @@ export default function TelegramPage() {
   const [messageText, setMessageText] = useState("");
   const [sending, setSending] = useState(false);
   const [webhookLoading, setWebhookLoading] = useState(false);
+  const [recipientMode, setRecipientMode] = useState<"manual" | "client" | "all">("manual");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [telegramClients, setTelegramClients] = useState<Client[]>([]);
 
   useEffect(() => {
     async function load() {
       try {
-        const [configsData, logsData] = await Promise.all([getTelegramConfigs(), getTelegramLogs()]);
+        const [configsData, logsData, clientsData] = await Promise.all([getTelegramConfigs(), getTelegramLogs(), getClients()]);
         setConfigs(configsData);
         setLogs(logsData);
+        setTelegramClients(clientsData.filter((c) => c.telegram_chat_id && c.telegram_chat_id.trim() !== ""));
         if (configsData.length > 0) {
           setSelectedConfig(configsData.find((c) => c.is_active) || configsData[0]);
         }
@@ -94,26 +101,47 @@ export default function TelegramPage() {
       toast.error("Selecciona un bot de Telegram");
       return;
     }
-    if (!chatId.trim()) {
-      toast.error("Ingresa un chat_id de Telegram");
-      return;
-    }
     if (!messageText.trim()) {
       toast.error("Ingresa un mensaje");
       return;
     }
+    const text = messageText.trim();
+
+    let targets: { chatId: string; label: string }[] = [];
+    if (recipientMode === "manual") {
+      if (!chatId.trim()) {
+        toast.error("Ingresa un chat_id de Telegram");
+        return;
+      }
+      targets = [{ chatId: chatId.trim(), label: "manual" }];
+    } else if (recipientMode === "client") {
+      const selected = telegramClients.find((c) => c.id === selectedClientId);
+      if (!selected) {
+        toast.error("Selecciona un cliente de la lista");
+        return;
+      }
+      targets = [{ chatId: selected.telegram_chat_id!, label: selected.full_name || "cliente" }];
+    } else {
+      if (telegramClients.length === 0) {
+        toast.error("No hay clientes con Telegram configurado");
+        return;
+      }
+      targets = telegramClients.map((c) => ({ chatId: c.telegram_chat_id!, label: c.full_name || "cliente" }));
+    }
 
     setSending(true);
     try {
-      const result = await sendViaTelegramApi(selectedConfig.id, chatId.trim(), messageText);
-      if (result.success) {
-        toast.success("Mensaje enviado por Telegram");
-        setMessageText("");
-        // El log lo registra la ruta /api/telegram/send; solo recargamos.
-        setLogs(await getTelegramLogs());
-      } else {
-        toast.error(result.error || "Error al enviar mensaje de Telegram");
+      let sent = 0;
+      let failed = 0;
+      for (const target of targets) {
+        const result = await sendViaTelegramApi(selectedConfig.id, target.chatId, text);
+        if (result.success) sent++;
+        else failed++;
       }
+      if (sent > 0) toast.success(`Enviado a ${sent} destinatario(s) por Telegram`);
+      if (failed > 0) toast.error(`${failed} destinatario(s) no se pudieron enviar`);
+      setMessageText("");
+      setLogs(await getTelegramLogs());
     } catch {
       toast.error("Error al enviar mensaje de Telegram");
     } finally {
@@ -201,15 +229,56 @@ export default function TelegramPage() {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del destinatario</label>
-              <input
-                type="text"
-                value={chatId}
-                onChange={(e) => setChatId(e.target.value)}
-                placeholder="Ej: 123456789 (consulta tu chat_id con /start)"
+              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Enviar a</label>
+              <select
+                value={recipientMode}
+                onChange={(e) => setRecipientMode(e.target.value as "manual" | "client" | "all")}
                 className={inputCls}
-              />
+              >
+                <option value="manual">Un chat_id manual</option>
+                <option value="client">Un cliente de la lista</option>
+                <option value="all">Todos los clientes con Telegram ({telegramClients.length})</option>
+              </select>
             </div>
+
+            {recipientMode === "manual" && (
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del destinatario</label>
+                <input
+                  type="text"
+                  value={chatId}
+                  onChange={(e) => setChatId(e.target.value)}
+                  placeholder="Ej: 123456789 (consulta tu chat_id con /start)"
+                  className={inputCls}
+                />
+              </div>
+            )}
+
+            {recipientMode === "client" && (
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cliente</label>
+                <select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="">Seleccionar cliente...</option>
+                  {telegramClients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {recipientMode === "all" && (
+              <div className="mb-4 p-3 rounded-xl bg-[#2AABEE]/5 border border-[#2AABEE]/20 text-xs text-[#5C3E35]">
+                <div className="flex items-center gap-2">
+                  <Users size={14} className="text-[#2AABEE]" />
+                  Se enviará el mensaje a los {telegramClients.length} cliente(s) que tienen Telegram configurado.
+                </div>
+              </div>
+            )}
+
             <div className="mb-4">
               <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
               <textarea
@@ -222,7 +291,14 @@ export default function TelegramPage() {
             </div>
             <button
               onClick={handleSend}
-              disabled={sending || !selectedConfig || !chatId.trim() || !messageText.trim()}
+              disabled={
+                sending ||
+                !selectedConfig ||
+                !messageText.trim() ||
+                (recipientMode === "manual" && !chatId.trim()) ||
+                (recipientMode === "client" && !selectedClientId) ||
+                (recipientMode === "all" && telegramClients.length === 0)
+              }
               className="w-full h-12 bg-[#2AABEE] text-white rounded-xl text-sm font-medium hover:bg-[#1D8FC9] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {sending ? (
