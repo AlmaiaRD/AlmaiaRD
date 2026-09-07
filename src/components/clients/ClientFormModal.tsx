@@ -15,6 +15,7 @@ export interface ClientFormValues {
   notes: string;
   client_type: ClientType;
   birthday: string;
+  telegram_chat_id?: string;
 }
 
 interface Props {
@@ -36,6 +37,7 @@ const emptyForm = (): ClientFormValues => ({
   notes: "",
   client_type: "comprador",
   birthday: "",
+  telegram_chat_id: "",
 });
 
 export default function ClientFormModal({
@@ -118,6 +120,11 @@ export default function ClientFormModal({
         <div>
           <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Número IBO (opcional)</label>
           <input type="text" value={form.ibo_number} onChange={(e) => setForm({ ...form, ibo_number: e.target.value })} placeholder="IBO" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Telegram Chat ID (opcional)</label>
+          <input type="text" value={form.telegram_chat_id || ""} onChange={(e) => setForm({ ...form, telegram_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
+          <p className="text-[11px] text-[#9C8A82] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas</label>

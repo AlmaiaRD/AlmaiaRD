@@ -14,6 +14,7 @@ import {
   preferencesSchema,
   recommendationsSchema,
   sendEmailSchema,
+  telegramSendSchema,
   whatsappSendSchema,
   whatsappTemplatesSchema,
 } from "@/lib/validation";
@@ -603,6 +604,32 @@ registry.registerPath({
   security: authSecurity,
   request: {
     body: { content: { "application/json": { schema: whatsappSendSchema } } },
+  },
+  responses: {
+    200: {
+      description: "Mensaje enviado",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(true),
+            messageId: z.string(),
+          }),
+        },
+      },
+    },
+    ...createErrorResponses(),
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/telegram/send",
+  summary: "Enviar mensaje de Telegram",
+  description:
+    "Envía un mensaje de texto vía Telegram Bot API (solo admin por RLS) y registra el resultado.",
+  security: authSecurity,
+  request: {
+    body: { content: { "application/json": { schema: telegramSendSchema } } },
   },
   responses: {
     200: {

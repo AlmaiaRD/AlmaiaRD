@@ -17,6 +17,24 @@ import {
 } from "@/services/whatsapp";
 import { getClients } from "@/services/clients";
 import type { Client } from "@/types/database";
+import {
+  getTemplates,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate as deleteTemplateRow,
+  applyTemplate,
+  type CommunicationTemplate,
+} from "@/services/templates";
+import {
+  getTelegramConfigs,
+  createTelegramConfig,
+  deleteTelegramConfig,
+  sendViaTelegramApi,
+  getTelegramLogs,
+  registerTelegramWebhook,
+  type TelegramConfig,
+  type TelegramLogRow,
+} from "@/services/telegram";
 
 interface WhatsAppLogRow extends ServiceWhatsAppLogRow {
   direction?: string | null;
@@ -24,6 +42,7 @@ interface WhatsAppLogRow extends ServiceWhatsAppLogRow {
   message_body?: string | null;
   template_name?: string | null;
   message_type?: string | null;
+  status_updated_at?: string | null;
 }
 import { formatDate } from "@/lib/utils";
 import {
@@ -66,15 +85,6 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
-interface LocalTemplate {
-  id: string;
-  name: string;
-  message: string;
-  category: string;
-  variables: string[];
-  createdAt: string;
-}
 
 interface QuickAction {
   id: string;
@@ -173,17 +183,38 @@ function getIconComponent(iconName: string) {
   return found || ICON_OPTIONS[0];
 }
 
-const TEMPLATES_STORAGE_KEY = "almaia_whatsapp_templates";
+const TEMPLATES_LEGACY_STORAGE_KEY = "almaia_whatsapp_templates";
 const QUICK_ACTIONS_STORAGE_KEY = "almaia_whatsapp_quick_actions";
+
+const STATUS_LABELS: Record<string, string> = {
+  sent: "Enviado",
+  delivered: "Entregado",
+  read: "Leído",
+  failed: "Fallido",
+  received: "Recibido",
+  processing: "Procesando",
+  pending: "Pendiente",
+};
 
 export default function WhatsAppPage() {
   const router = useRouter();
   const [configs, setConfigs] = useState<WhatsAppConfig[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [logs, setLogs] = useState<WhatsAppLogRow[]>([]);
-  const [activeTab, setActiveTab] = useState<"send" | "templates" | "actions" | "configs" | "logs">("send");
+  const [activeTab, setActiveTab] = useState<"send" | "templates" | "actions" | "configs" | "logs" | "telegram">("send");
   const [showAddConfig, setShowAddConfig] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<WhatsAppConfig | null>(null);
+
+  // Telegram
+  const [telegramConfigs, setTelegramConfigs] = useState<TelegramConfig[]>([]);
+  const [telegramLogs, setTelegramLogs] = useState<TelegramLogRow[]>([]);
+  const [telegramSelectedConfig, setTelegramSelectedConfig] = useState<TelegramConfig | null>(null);
+  const [showAddTelegramConfig, setShowAddTelegramConfig] = useState(false);
+  const [telegramConfigForm, setTelegramConfigForm] = useState({ label: "", bot_token: "", owner_chat_id: "" });
+  const [telegramChatId, setTelegramChatId] = useState("");
+  const [telegramMessageText, setTelegramMessageText] = useState("");
+  const [telegramSending, setTelegramSending] = useState(false);
+  const [telegramWebhookLoading, setTelegramWebhookLoading] = useState(false);
 
   // Send form
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -193,11 +224,11 @@ export default function WhatsAppPage() {
   const [searchClient, setSearchClient] = useState("");
 
   // Local templates
-  const [localTemplates, setLocalTemplates] = useState<LocalTemplate[]>([]);
+  const [localTemplates, setLocalTemplates] = useState<CommunicationTemplate[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<LocalTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<CommunicationTemplate | null>(null);
   const [templateForm, setTemplateForm] = useState({ name: "", message: "", category: "General", variables: "" });
-  const [previewTemplate, setPreviewTemplate] = useState<LocalTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<CommunicationTemplate | null>(null);
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({});
 
   // Quick actions
@@ -220,14 +251,11 @@ export default function WhatsAppPage() {
   useEffect(() => {
     loadData();
     loadLocalData();
+    loadTemplates();
   }, []);
 
   function loadLocalData() {
     try {
-      const storedTemplates = localStorage.getItem(TEMPLATES_STORAGE_KEY);
-      if (storedTemplates) {
-        setLocalTemplates(JSON.parse(storedTemplates));
-      }
       const storedActions = localStorage.getItem(QUICK_ACTIONS_STORAGE_KEY);
       if (storedActions) {
         setQuickActions(JSON.parse(storedActions));
@@ -238,9 +266,29 @@ export default function WhatsAppPage() {
     } catch { toast.error("Error al cargar datos locales"); }
   }
 
-  function saveLocalTemplates(templates: LocalTemplate[]) {
-    setLocalTemplates(templates);
-    localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(templates));
+  // Unificar plantillas: se leen desde BD (communication_templates). Si la BD
+  // aún no tiene ninguna y existían plantillas en localStorage (versión legacy),
+  // se migran automáticamente y se limpia la clave antigua.
+  async function loadTemplates() {
+    try {
+      let dbTemplates = await getTemplates("whatsapp");
+      const legacyRaw = localStorage.getItem(TEMPLATES_LEGACY_STORAGE_KEY);
+      if (dbTemplates.length === 0 && legacyRaw) {
+        const legacy = JSON.parse(legacyRaw) as { name: string; message: string; category: string; variables: string[] }[];
+        const migrated: CommunicationTemplate[] = [];
+        for (const t of legacy) {
+          if (!t.name || !t.message) continue;
+          migrated.push(await createTemplate({ channel: "whatsapp", name: t.name, message: t.message, variables: t.variables || [], category: t.category || "General" }));
+        }
+        if (migrated.length > 0) {
+          localStorage.removeItem(TEMPLATES_LEGACY_STORAGE_KEY);
+        }
+        dbTemplates = migrated;
+      }
+      setLocalTemplates(dbTemplates);
+    } catch {
+      toast.error("Error al cargar plantillas");
+    }
   }
 
   function saveQuickActions(actions: QuickAction[]) {
@@ -250,30 +298,122 @@ export default function WhatsAppPage() {
 
   async function loadData() {
     try {
-      const [configsData, clientsData, logsData] = await Promise.all([
+      const [configsData, clientsData, logsData, telegramConfigsData, telegramLogsData] = await Promise.all([
         getWhatsAppConfigs(),
         getClients(),
         getWhatsAppLogs(),
+        getTelegramConfigs(),
+        getTelegramLogs(),
       ]);
       setConfigs(configsData);
       setClients(clientsData);
       setLogs(logsData);
+      setTelegramConfigs(telegramConfigsData);
+      setTelegramLogs(telegramLogsData);
       if (configsData.length > 0) {
         setSelectedConfig(configsData.find((c) => c.is_active) || configsData[0]);
+      }
+      if (telegramConfigsData.length > 0) {
+        setTelegramSelectedConfig(telegramConfigsData.find((c) => c.is_active) || telegramConfigsData[0]);
       }
     } catch {
       toast.error("Error al cargar datos");
     }
   }
 
-  // ---- Template CRUD ----
+  // ---- Telegram ----
+  async function handleAddTelegramConfig() {
+    if (!telegramConfigForm.label.trim() || !telegramConfigForm.bot_token.trim()) {
+      toast.error("Completa la etiqueta y el token del bot");
+      return;
+    }
+    try {
+      const newConfig = await createTelegramConfig({
+        label: telegramConfigForm.label.trim(),
+        bot_token: telegramConfigForm.bot_token.trim(),
+        owner_chat_id: telegramConfigForm.owner_chat_id.trim() || null,
+      });
+      setTelegramConfigs((prev) => [...prev, newConfig]);
+      setShowAddTelegramConfig(false);
+      setTelegramConfigForm({ label: "", bot_token: "", owner_chat_id: "" });
+      toast.success("Bot de Telegram agregado");
+    } catch {
+      toast.error("Error al guardar el bot de Telegram");
+    }
+  }
+
+  async function handleDeleteTelegramConfig(id: string) {
+    try {
+      await deleteTelegramConfig(id);
+      setTelegramConfigs((prev) => prev.filter((c) => c.id !== id));
+      if (telegramSelectedConfig?.id === id) setTelegramSelectedConfig(telegramConfigs[0] || null);
+      toast.success("Bot de Telegram eliminado");
+    } catch {
+      toast.error("Error al eliminar el bot de Telegram");
+    }
+  }
+
+  async function handleTelegramSend() {
+    if (!telegramSelectedConfig) {
+      toast.error("Selecciona un bot de Telegram");
+      return;
+    }
+    if (!telegramChatId.trim()) {
+      toast.error("Ingresa un chat_id de Telegram");
+      return;
+    }
+    if (!telegramMessageText.trim()) {
+      toast.error("Ingresa un mensaje");
+      return;
+    }
+
+    setTelegramSending(true);
+    try {
+      const result = await sendViaTelegramApi(telegramSelectedConfig.id, telegramChatId.trim(), telegramMessageText);
+      if (result.success) {
+        toast.success("Mensaje enviado por Telegram");
+        setTelegramMessageText("");
+        // El log lo registra la ruta /api/telegram/send; solo recargamos.
+        setTelegramLogs(await getTelegramLogs());
+      } else {
+        toast.error(result.error || "Error al enviar mensaje de Telegram");
+      }
+    } catch {
+      toast.error("Error al enviar mensaje de Telegram");
+    } finally {
+      setTelegramSending(false);
+    }
+  }
+
+  async function handleRegisterTelegramWebhook() {
+    if (!telegramSelectedConfig) {
+      toast.error("Selecciona un bot de Telegram");
+      return;
+    }
+    setTelegramWebhookLoading(true);
+    try {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const result = await registerTelegramWebhook(telegramSelectedConfig.id, `${origin}/api/telegram/webhook`);
+      if (result.success) {
+        toast.success("Webhook registrado correctamente");
+      } else {
+        toast.error(result.error || "Error al registrar el webhook");
+      }
+    } catch {
+      toast.error("Error al registrar el webhook");
+    } finally {
+      setTelegramWebhookLoading(false);
+    }
+  }
+
+  // ---- Template CRUD (BD unificada) ----
   function openCreateTemplate() {
     setEditingTemplate(null);
     setTemplateForm({ name: "", message: "", category: "General", variables: "" });
     setShowTemplateModal(true);
   }
 
-  function openEditTemplate(template: LocalTemplate) {
+  function openEditTemplate(template: CommunicationTemplate) {
     setEditingTemplate(template);
     setTemplateForm({
       name: template.name,
@@ -284,7 +424,7 @@ export default function WhatsAppPage() {
     setShowTemplateModal(true);
   }
 
-  function saveTemplate() {
+  async function saveTemplate() {
     if (!templateForm.name.trim() || !templateForm.message.trim()) {
       toast.error("Nombre y mensaje son requeridos");
       return;
@@ -294,42 +434,57 @@ export default function WhatsAppPage() {
       .map((v) => v.trim())
       .filter(Boolean);
 
-    if (editingTemplate) {
-      const updated = localTemplates.map((t) =>
-        t.id === editingTemplate.id
-          ? { ...t, name: templateForm.name, message: templateForm.message, category: templateForm.category, variables: vars }
-          : t
-      );
-      saveLocalTemplates(updated);
-      toast.success("Plantilla actualizada");
-    } else {
-      const newTemplate: LocalTemplate = {
-        id: Date.now().toString(),
-        name: templateForm.name,
-        message: templateForm.message,
-        category: templateForm.category,
-        variables: vars,
-        createdAt: new Date().toISOString(),
-      };
-      saveLocalTemplates([...localTemplates, newTemplate]);
-      toast.success("Plantilla creada");
+    try {
+      if (editingTemplate) {
+        await updateTemplate(editingTemplate.id, {
+          name: templateForm.name,
+          message: templateForm.message,
+          category: templateForm.category,
+          variables: vars,
+        });
+        setLocalTemplates((prev) =>
+          prev.map((t) =>
+            t.id === editingTemplate.id
+              ? { ...t, name: templateForm.name, message: templateForm.message, category: templateForm.category, variables: vars }
+              : t
+          )
+        );
+        toast.success("Plantilla actualizada");
+      } else {
+        const created = await createTemplate({
+          channel: "whatsapp",
+          name: templateForm.name,
+          message: templateForm.message,
+          category: templateForm.category,
+          variables: vars,
+        });
+        setLocalTemplates((prev) => [created, ...prev]);
+        toast.success("Plantilla creada");
+      }
+    } catch {
+      toast.error("Error al guardar la plantilla");
+      return;
     }
     setShowTemplateModal(false);
   }
 
-  function deleteTemplate(id: string) {
-    saveLocalTemplates(localTemplates.filter((t) => t.id !== id));
-    toast.success("Plantilla eliminada");
+  async function deleteTemplate(id: string, isSystem?: boolean) {
+    if (isSystem) {
+      toast.error("Las plantillas predefinidas no se pueden eliminar, solo editar");
+      return;
+    }
+    try {
+      await deleteTemplateRow(id);
+      setLocalTemplates((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Plantilla eliminada");
+    } catch {
+      toast.error("Error al eliminar la plantilla");
+    }
   }
 
-  function selectTemplate(template: LocalTemplate) {
+  function selectTemplate(template: CommunicationTemplate) {
     setSelectedLocalTemplate(template.id);
-    // Build message with variable placeholders
-    let msg = template.message;
-    template.variables.forEach((v) => {
-      msg = msg.replace(`{${v}}`, `[${v}]`);
-    });
-    setMessageText(msg);
+    setMessageText(applyTemplate(template.message));
     setActiveTab("send");
     toast.success(`Plantilla "${template.name}" aplicada`);
   }
@@ -503,11 +658,12 @@ export default function WhatsAppPage() {
           { key: "actions", label: "Acciones Rápidas", icon: Zap },
           { key: "configs", label: "Configuraciones", icon: Settings },
           { key: "logs", label: "Historial", icon: History },
+          { key: "telegram", label: "Telegram", icon: Send },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => {
-              setActiveTab(tab.key as "send" | "templates" | "actions" | "configs" | "logs");
+              setActiveTab(tab.key as "send" | "templates" | "actions" | "configs" | "logs" | "telegram");
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === tab.key
@@ -752,7 +908,7 @@ export default function WhatsAppPage() {
                     <button onClick={() => openEditTemplate(template)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
                       <Edit3 size={14} />
                     </button>
-                    <button onClick={() => deleteTemplate(template.id)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
+                    <button onClick={() => deleteTemplate(template.id, template.is_system)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -890,7 +1046,8 @@ export default function WhatsAppPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         {log.status === "sent" ? <CheckCircle size={14} className="text-green-500" /> : log.status === "delivered" ? <CheckCheck size={14} className="text-[#B8837E]" /> : log.status === "read" ? <CheckCircle size={14} className="text-blue-500" /> : log.status === "failed" ? <AlertCircle size={14} className="text-red-500" /> : log.status === "received" ? <ArrowDownLeft size={14} className="text-[#6B8E6B]" /> : <Clock size={14} className="text-gray-400" />}
-                        <span className="text-sm text-[#5C3E35] capitalize">{log.status}</span>
+                        <span className="text-sm text-[#5C3E35]">{STATUS_LABELS[log.status || ""] || log.status}</span>
+                        {log.status === "delivered" && <span className="text-[10px] text-[#9C8A82]">· a las {new Date(log.status_updated_at || log.created_at || "").toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</span>}
                       </div>
                     </td>
                   </tr>
@@ -898,6 +1055,191 @@ export default function WhatsAppPage() {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {/* ===================== TELEGRAM TAB ===================== */}
+      {activeTab === "telegram" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            {/* Enviar mensaje */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+              <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Enviar Mensaje por Telegram</h3>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Bot de Telegram</label>
+                <select
+                  value={telegramSelectedConfig?.id || ""}
+                  onChange={(e) => {
+                    const config = telegramConfigs.find((c) => c.id === e.target.value);
+                    setTelegramSelectedConfig(config || null);
+                  }}
+                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                >
+                  <option value="">Seleccionar bot...</option>
+                  {telegramConfigs.map((config) => (
+                    <option key={config.id} value={config.id}>
+                      {config.label} {config.is_active ? "(activo)" : "(inactivo)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del destinatario</label>
+                <input
+                  type="text"
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  placeholder="Ej: 123456789 (consulta tu chat_id con /start)"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+                <textarea
+                  value={telegramMessageText}
+                  onChange={(e) => setTelegramMessageText(e.target.value)}
+                  placeholder="Escribe tu mensaje..."
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+                />
+              </div>
+              <button
+                onClick={handleTelegramSend}
+                disabled={telegramSending || !telegramSelectedConfig || !telegramChatId.trim() || !telegramMessageText.trim()}
+                className="w-full h-12 bg-[#2AABEE] text-white rounded-xl text-sm font-medium hover:bg-[#1D8FC9] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {telegramSending ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Enviar por Telegram
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Configuración del webhook */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+              <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Configuración Webhook</h3>
+              <div className="space-y-2 text-sm">
+                <p className="text-[#9C8A82]">
+                  <span className="font-medium text-[#5C3E35]">URL del Webhook:</span>
+                </p>
+                <code className="block p-3 bg-[#FAF6F0] rounded-xl text-xs text-[#5C3E35] break-all">
+                  {typeof window !== "undefined" ? `${window.location.origin}/api/telegram/webhook` : "/api/telegram/webhook"}
+                </code>
+                <button
+                  onClick={handleRegisterTelegramWebhook}
+                  disabled={telegramWebhookLoading || !telegramSelectedConfig}
+                  className="mt-2 w-full h-11 bg-[#2AABEE] text-white rounded-xl text-sm font-medium hover:bg-[#1D8FC9] transition-all shadow-sm disabled:opacity-50"
+                >
+                  {telegramWebhookLoading ? "Registrando..." : "Registrar Webhook en el Bot"}
+                </button>
+                <p className="text-xs text-[#9C8A82]">
+                  Registra la URL para que Telegram envíe aquí los mensajes que reciba el bot. Necesario para ver mensajes entrantes y vincular clientes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Bots configurados */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#5C3E35]">Bots Configurados</h3>
+                <button onClick={() => setShowAddTelegramConfig(true)} className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors">
+                  <Plus size={14} /> Agregar Bot
+                </button>
+              </div>
+              {telegramConfigs.length === 0 ? (
+                <p className="text-sm text-[#9C8A82] text-center py-6">No hay bots de Telegram configurados</p>
+              ) : (
+                <div className="space-y-2">
+                  {telegramConfigs.map((config) => (
+                    <div key={config.id} className="flex items-center justify-between p-3 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-[#5C3E35] truncate">{config.label}</p>
+                        <p className="text-xs text-[#9C8A82]">{config.is_active ? "Activo" : "Inactivo"}{config.has_token ? " · token configurado" : " · sin token"}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {config.owner_chat_id && (
+                          <span className="text-xs text-[#9C8A82] px-2 py-1 bg-[#FAF6F0] rounded-lg truncate max-w-[140px]">{config.owner_chat_id}</span>
+                        )}
+                        <button onClick={() => handleDeleteTelegramConfig(config.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg transition-all">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Historial */}
+            <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] overflow-hidden">
+              <div className="px-6 py-4 border-b border-[#E8E0D8]">
+                <h3 className="text-sm font-semibold text-[#5C3E35]">Historial de Telegram</h3>
+              </div>
+              {telegramLogs.length === 0 ? (
+                <div className="text-center py-12 text-[#9C8A82]">
+                  <History size={36} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No hay mensajes de Telegram</p>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#E8E0D8]">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Dirección</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Chat</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Mensaje</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {telegramLogs.map((log) => (
+                      <tr key={log.id} className="border-b border-[#E8E0D8] last:border-0 hover:bg-[#FAF6F0]">
+                        <td className="px-4 py-3 text-sm text-[#5C3E35] whitespace-nowrap">{formatDate(log.created_at)}</td>
+                        <td className="px-4 py-3">
+                          {log.direction === "incoming" ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#B8837E]">
+                              <ArrowDownLeft size={14} /> Entrante
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#6B8E6B]">
+                              <ArrowUpRight size={14} /> Saliente
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#5C3E35]">{log.chat_id}</td>
+                        <td className="px-4 py-3 text-sm text-[#9C8A82] max-w-[220px] truncate" title={log.message_body || ""}>
+                          {log.message_body || "(media)"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm text-[#5C3E35] capitalize">{log.status}</span>
+                            {log.direction === "incoming" && (
+                              <button
+                                onClick={() => {
+                                  setTelegramChatId(log.chat_id || "");
+                                  toast.success("Chat ID copiado a Enviar Mensaje");
+                                }}
+                                className="p-1 rounded-lg text-[#B8837E] hover:bg-[#B8837E]/10 transition-all ml-2"
+                                title="Usar este chat para responder"
+                              >
+                                <Send size={13} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -1112,6 +1454,29 @@ export default function WhatsAppPage() {
           <div className="flex gap-3 pt-2">
             <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
             <button onClick={handleAddConfig} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">Guardar</button>
+          </div>
+        </div>
+      </Modal>
+    {/* ===================== ADD TELEGRAM CONFIG MODAL ===================== */}
+      <Modal isOpen={showAddTelegramConfig} onClose={() => setShowAddTelegramConfig(false)} title="Agregar Bot de Telegram">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Etiqueta</label>
+            <input type="text" value={telegramConfigForm.label} onChange={(e) => setTelegramConfigForm({ ...telegramConfigForm, label: e.target.value })} placeholder="Ej: Bot de Avisos" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Token del Bot</label>
+            <input type="password" value={telegramConfigForm.bot_token} onChange={(e) => setTelegramConfigForm({ ...telegramConfigForm, bot_token: e.target.value })} placeholder="Token de @BotFather, ej: 123456:ABC-DEF..." className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <p className="text-[10px] text-[#9C8A82] mt-1">Ve a @BotFather en Telegram, crea un bot y copia su token. Es gratis.</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del dueño (opcional)</label>
+            <input type="text" value={telegramConfigForm.owner_chat_id} onChange={(e) => setTelegramConfigForm({ ...telegramConfigForm, owner_chat_id: e.target.value })} placeholder="Ej: 123456789" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <p className="text-[10px] text-[#9C8A82] mt-1">Para recibir avisos automáticos (Modelo A). Escríbele /start al bot para obtener tu chat_id.</p>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button onClick={() => setShowAddTelegramConfig(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
+            <button onClick={handleAddTelegramConfig} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">Guardar</button>
           </div>
         </div>
       </Modal>

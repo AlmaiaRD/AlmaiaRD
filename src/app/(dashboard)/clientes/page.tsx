@@ -135,6 +135,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
       notes: client.notes || "",
       client_type: (client.client_type as ClientType) || "comprador",
       birthday: client.birthday || "",
+      telegram_chat_id: client.telegram_chat_id || "",
     });
     setShowModal(true);
   }

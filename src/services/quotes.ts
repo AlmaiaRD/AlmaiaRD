@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { getSettings } from "@/services/settings";
 import type { Quote, QuoteItem, QuoteStatus } from "@/types/database";
 import { round2 } from "@/lib/invoiceMath";
+import { notifyOwner } from "./telegram";
 
 export type QuoteWithClient = Quote & { clients?: { id: string; full_name: string; phone?: string; email?: string } };
 export type QuoteItemWithProduct = QuoteItem & { products?: { id: string; name: string; code?: string; description?: string } };
@@ -181,7 +182,21 @@ export async function createQuote(data: QuoteInput) {
     throw itemsError;
   }
 
+  // Modelo A: aviso automático al dueño por Telegram (ni bloquea ni altera el flujo).
+  notifyOwnerQuotes(quote, data.client_id).catch(() => {});
+
   return quote as Quote;
+}
+
+async function notifyOwnerQuotes(quote: Quote, clientId: string | null | undefined) {
+  let clientName = "Cliente";
+  if (clientId) {
+    const { data: c } = await supabase.from("clients").select("full_name").eq("id", clientId).single();
+    if (c?.full_name) clientName = c.full_name;
+  }
+  const number = (quote.quote_number as string) || "";
+  const total = Number(quote.total) || 0;
+  await notifyOwner("Nueva cotización creada", `Cotización ${number}\nCliente: ${clientName}\nTotal: RD$ ${total.toLocaleString("es-DO")}`);
 }
 
 export async function updateQuote(id: string, data: QuoteInput) {

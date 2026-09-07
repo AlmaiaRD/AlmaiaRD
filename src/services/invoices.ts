@@ -6,6 +6,7 @@ import { getBundleComponentMap } from "./products";
 import { updateStageOnFirstPurchase, updateStageOnPayment } from "./pipeline";
 import { getLocalDateString } from "@/lib/utils";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
+import { notifyOwner } from "./telegram";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -14,6 +15,18 @@ type InventoryOp = "SALE" | "CANCELLATION" | "RETURN";
 async function getItemsComponentMap(items: Array<{ product_id?: string | null }>) {
   const ids = [...new Set(items.map(i => i.product_id).filter(Boolean) as string[])];
   return getBundleComponentMap(ids);
+}
+
+async function notifyOwnerInvoices(invData: unknown, clientId: string | null | undefined, fallbackTotal: number) {
+  let clientName = "Cliente";
+  if (clientId) {
+    const { data: c } = await supabase.from("clients").select("full_name").eq("id", clientId).single();
+    if (c?.full_name) clientName = c.full_name;
+  }
+  const row = (invData != null && typeof invData === "object" ? invData : {}) as Record<string, unknown>;
+  const number = typeof row.invoice_number === "string" ? row.invoice_number : "";
+  const total = typeof row.total === "number" ? row.total : fallbackTotal;
+  await notifyOwner("Nueva factura creada", `Factura ${number}\nCliente: ${clientName}\nTotal: RD$ ${Number(total).toLocaleString("es-DO")}`);
 }
 
 /**
@@ -221,6 +234,9 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
   if (invoice.client_id) {
     await updateStageOnFirstPurchase(invoice.client_id);
   }
+
+  // Modelo A: aviso automático al dueño por Telegram (ni bloquea ni altera el flujo).
+  notifyOwnerInvoices(invData, invoice.client_id, total).catch(() => {});
 
   return invData;
 }

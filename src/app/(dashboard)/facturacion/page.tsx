@@ -10,6 +10,7 @@ import { createInvoice, deleteInvoice, searchInvoices, getInvoice, updateInvoice
 import { getQuote, markQuoteConverted } from "@/services/quotes";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
+import { getWhatsAppConfigs, sendViaApi, logWhatsAppMessage } from "@/services/whatsapp";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
@@ -19,7 +20,7 @@ import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
 import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { FileText, Plus, Search, Eye, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle } from "lucide-react";
+import { FileText, Plus, Search, Eye, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle, Bell } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface InvoiceClientsRef {
@@ -709,6 +710,57 @@ export default function FacturacionPage() {
     }
   }
 
+  async function handleSendReminder() {
+    if (!selectedInvoice?.clients?.phone) {
+      toast.error("El cliente no tiene teléfono registrado");
+      return;
+    }
+    let configs;
+    try {
+      configs = await getWhatsAppConfigs();
+    } catch {
+      toast.error("Error al cargar las cuentas de WhatsApp");
+      return;
+    }
+    const active = configs.filter((c) => c.is_active);
+    if (!active || active.length === 0) {
+      toast.error("Configura una cuenta de WhatsApp activa primero");
+      return;
+    }
+    const config = active[0];
+    const balance = Number(selectedInvoice.total) - Number(selectedInvoice.amount_paid || 0);
+    const dueLabel = selectedInvoice.invoice_date ? formatDate(selectedInvoice.invoice_date) : "";
+    setSaving(true);
+    try {
+      const result = await sendViaApi(config.id, selectedInvoice.clients.phone, "template", {
+        template: {
+          name: "payment_reminder",
+          language: { code: "es" },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: selectedInvoice.clients.full_name || "" },
+                { type: "text", text: `RD$ ${formatCurrency(balance)}` },
+                { type: "text", text: dueLabel },
+              ],
+            },
+          ],
+        },
+      });
+      if (!result.success) {
+        toast.error(result.error || "Error al enviar el recordatorio");
+        return;
+      }
+      logWhatsAppMessage(config.id, selectedInvoice.clients.phone, "template", "payment_reminder", "sent", result.messageId).catch(() => {});
+      toast.success("Recordatorio de cobro enviado");
+    } catch {
+      toast.error("Error al enviar el recordatorio");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   useKeyboardShortcuts([
     { key: "n", ctrl: true, handler: () => { resetForm(); setShowModal(true); } },
     { key: "s", ctrl: true, handler: () => { if (showModal) handleSave(); }, enabled: showModal },
@@ -1048,6 +1100,15 @@ export default function FacturacionPage() {
                   className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={18} /> WhatsApp
+                </button>
+              )}
+              {(Number(selectedInvoice.total) - Number(selectedInvoice.amount_paid || 0)) > 0 && selectedInvoice.clients?.phone && (
+                <button
+                  onClick={handleSendReminder}
+                  disabled={saving}
+                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#B8837E] rounded-xl text-sm font-medium hover:bg-[#B8837E]/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Bell size={18} /> {saving ? "Enviando..." : "Recordar Cobro"}
                 </button>
               )}
               {(selectedInvoice.status === "PENDING" || selectedInvoice.status === "PARTIAL") && (

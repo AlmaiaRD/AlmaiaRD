@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { InventoryMovement } from "@/types/database";
+import { notifyOwner } from "./telegram";
 
 export async function getInventory() {
   const { data, error } = await supabase
@@ -74,6 +75,26 @@ export async function subtractInventoryStock(productId: string, quantity: number
     p_reference_id: referenceId ?? null,
   });
   if (error) throw error;
+
+  // Modelo A: aviso de stock bajo al dueño (no bloqueante, no altera el flujo).
+  notifyLowStock(productId).catch(() => {});
+}
+
+async function notifyLowStock(productId: string) {
+  const { data: row, error } = await supabase
+    .from("inventory")
+    .select("stock, minimum_stock, products(name, code)")
+    .eq("product_id", productId)
+    .maybeSingle();
+  if (error) return;
+  if (!row) return;
+  const stock = Number(row.stock) || 0;
+  const minimum = Number(row.minimum_stock) || 0;
+  if (stock > minimum) return;
+  const name = (row.products as { name?: string; code?: string } | null)?.name || "Producto";
+  const code = (row.products as { code?: string } | null)?.code || "";
+  const emoji = stock <= 0 ? "AGOTADO" : "STOCK BAJO";
+  await notifyOwner(`⚠️ ${emoji}: ${name}`, `${code ? code + " " : ""}Stock actual: ${stock}\nMínimo: ${minimum}`);
 }
 
 export async function restoreInventoryStock(productId: string, quantity: number, movementType?: string, referenceType?: string, referenceId?: string) {

@@ -30,6 +30,12 @@ export const whatsappSendSchema = z.object({
     .optional(),
 });
 
+export const telegramSendSchema = z.object({
+  configId: z.string().uuid(),
+  chatId: z.string().min(1).max(64),
+  text: z.string().max(4096),
+});
+
 export const imageProxySchema = z.object({
   url: z.string().url(),
 });

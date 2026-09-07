@@ -29,6 +29,7 @@ export interface Client {
   stage: string;
   qualification_level: string | null;
   closure_result: string | null;
+  telegram_chat_id: string | null;
   stage_entered_at: string | null;
   first_contact_date: string | null;
   lead_source: string | null;
