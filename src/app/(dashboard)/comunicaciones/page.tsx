@@ -10,6 +10,7 @@ import { Search, Mail, MessageCircle, Trash2, Send, Eye, Plus, FileText, Sparkle
 import MessageComposer from "@/components/communications/MessageComposer";
 import type { SettingsResult } from "@/services/settings";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 type Tab = "historial" | "componer";
 
@@ -34,6 +35,7 @@ const statusMap: Record<string, { label: string; variant: "success" | "warning" 
 };
 
 export default function ComunicacionesPage() {
+  const router = useRouter();
   const [comms, setComms] = useState<CommsRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,6 +124,34 @@ export default function ComunicacionesPage() {
           <h1 className="text-xl font-bold text-[#5C3E35]">Centro de Comunicaciones</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Gestiona tus mensajes y comunicaciones</p>
         </div>
+      </div>
+
+      {/* Canal shortcuts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <button
+          onClick={() => router.push("/whatsapp")}
+          className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-[#E8E0D8] hover:shadow-md hover:border-[#B8837E]/30 transition-all text-left"
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#25D366]/10 flex items-center justify-center">
+            <MessageCircle size={22} className="text-[#25D366]" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#5C3E35]">WhatsApp Business</p>
+            <p className="text-xs text-[#9C8A82]">Enviar mensajes, plantillas y recordatorios</p>
+          </div>
+        </button>
+        <button
+          onClick={() => router.push("/telegram")}
+          className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-[#E8E0D8] hover:shadow-md hover:border-[#B8837E]/30 transition-all text-left"
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#2AABEE]/10 flex items-center justify-center">
+            <Send size={22} className="text-[#2AABEE]" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#5C3E35]">Telegram</p>
+            <p className="text-xs text-[#9C8A82]">Avisos y mensajes gratuitos</p>
+          </div>
+        </button>
       </div>
 
       {/* Tabs */}

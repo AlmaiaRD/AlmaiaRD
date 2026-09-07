@@ -11,7 +11,7 @@ import {
   MoreVertical, Trash2, Edit3, ChevronLeft, ChevronRight,
   Phone, MapPin, BookOpen, ShoppingCart, PartyPopper,
   AlertTriangle, Package, GraduationCap, Clock,
-  Wallet, MessageCircle,
+  Wallet, MessageCircle, Send,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDate, getLocalDateString } from "@/lib/utils";
@@ -329,7 +329,7 @@ export default function CrmPage() {
       </div>
 
       {/* Sub-modules */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <button
           onClick={() => router.push("/creditos")}
           className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-[#E8E0D8] hover:shadow-md hover:border-[#B8837E]/30 transition-all text-left"
@@ -352,6 +352,18 @@ export default function CrmPage() {
           <div>
             <p className="text-sm font-semibold text-[#5C3E35]">WhatsApp Business</p>
             <p className="text-xs text-[#9C8A82]">Enviar mensajes y facturas</p>
+          </div>
+        </button>
+        <button
+          onClick={() => router.push("/telegram")}
+          className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-[#E8E0D8] hover:shadow-md hover:border-[#B8837E]/30 transition-all text-left"
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#2AABEE]/10 flex items-center justify-center">
+            <Send size={22} className="text-[#2AABEE]" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#5C3E35]">Telegram</p>
+            <p className="text-xs text-[#9C8A82]">Avisos y mensajes gratuitos</p>
           </div>
         </button>
       </div>
