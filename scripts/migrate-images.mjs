@@ -37,7 +37,7 @@ const env = loadEnv(path.join(__dirname, "..", ".env.local"));
 
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const ADMIN_EMAIL = env.ADMIN_EMAIL || "admin@almaia.com";
+const ADMIN_EMAIL = env.ADMIN_EMAIL || "rdalmaia@gmail.com";
 const ADMIN_PASSWORD = env.ADMIN_PASSWORD;
 
 if (!SUPABASE_URL || !SUPABASE_ANON || !ADMIN_PASSWORD) {

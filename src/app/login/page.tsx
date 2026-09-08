@@ -91,7 +91,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@almaia.com"
+                    placeholder="rdalmaia@gmail.com"
                     className="w-full h-12 pl-11 pr-4 rounded-xl border border-[#E8E0D8] bg-[#FAF8F6] text-[#5C3E35] placeholder:text-[#BFB0A8] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all text-sm"
                     disabled={loggingIn}
                     autoComplete="email"
