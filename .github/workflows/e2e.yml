@@ -1,0 +1,45 @@
+name: E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "URL base para ejecutar los tests (preproducción o producción)"
+        required: false
+        default: "https://almaia-rd.vercel.app"
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.base_url || vars.PLAYWRIGHT_BASE_URL || 'https://almaia-rd.vercel.app' }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar navegador de Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Esperar a que la app responda
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L "$PLAYWRIGHT_BASE_URL/login" || true)
+            echo "Intento $i/30 -> HTTP $code"
+            [ "$code" = "200" ] && break
+            sleep 10
+          done
+
+      - name: Ejecutar tests E2E
+        run: npm run test:e2e

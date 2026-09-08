@@ -13,16 +13,16 @@ Se ejecutaron las 7 fases de la metodología (Descubrimiento, Auditoría Profund
 - **23 hallazgos** identificados en total (2 críticos, 4 altos, 8 medios, 9 bajos/informativos).
 - **15 corregidos automáticamente** en esta sesión (todos los críticos y altos corregibles en código).
 - **0 regresiones** detectadas: TypeScript 0 errores, ESLint 0 errores, **82/82 tests unitarios en verde** (antes 51/51).
-- El único bloqueo del `next build` local es **ambiental** (`.env.local` contiene una URL de Supabase de placeholder), no de código; en Vercel el build usa las variables reales.
+- El `next build` local **ya funciona**: se colocó la URL real de Supabase en `.env.local` (R3 resuelto).
 
 ### Estado general
 
 | Ámbito | Antes | Después | Nota |
 |---|---|---|---|
-| Riesgo global | ALTO | **MEDIO-BAJO** | Riesgo residual: 2 migraciones SQL pendientes de aplicar |
+| Riesgo global | ALTO | **MEDIO-BAJO** | R1 aplicada; residual: migración R2 pendiente de aplicar y desplegar |
 | Vulnerabilidades críticas | 2 | **0** (corregidas en código) | SSRF image-proxy + fallos silenciosos en devolución |
 | Bugs altos | 3 | **0** | Race de crédito documentada (requiere migración), XSS, navigación |
-| Hallazgos medios | 8 | **2** (pendientes de decisión) | RPC inventario + preferencias | 
+| Hallazgos medios | 8 | **1** (pendiente de aplicar) | R2 crédito por sobrepago (migración + código listos) | 
 | Tests unitarios | 51 | **82** (+31 casos nuevos) | 8 archivos de test |
 | `npm audit` | 2 moderate | 2 moderate | `uuid <11.1.1` vía exceljs (sin fix no-breaking) |
 
@@ -62,8 +62,8 @@ Se ejecutaron las 7 fases de la metodología (Descubrimiento, Auditoría Profund
 
 | ID | Hallazgo | Ubicación | Estado |
 |---|---|---|---|
-| M1 | **Race condition en crédito por sobrepago** (`createReceipt`): `credit_excess` se calcula contra un saldo leído antes de aplicar el pago; dos pagos concurrentes podían generar excedente incorrecto. El trigger `fn_sync_receipt_credit` usa la columna como fuente de verdad. | `src/services/receipts.ts` | **MITIGADO/DOCUMENTADO** — solución definitiva requiere migración SQL atómica (abajo) |
-| M2 | RPCs de inventario `SECURITY DEFINER` (`add/subtract/restore_inventory_stock`) **sin control de rol interno**, ejecutables por cualquier `authenticated`. | `20260813_fix_inventory_rpcs.sql` | **PENDIENTE (migración SQL recomendada)** — ver §6 |
+| M1 | **Race condition en crédito por sobrepago** (`createReceipt`): `credit_excess` se calculaba contra un saldo leído antes de aplicar el pago; dos pagos concurrentes podían generar excedente incorrecto. El trigger `fn_sync_receipt_credit` usa la columna como fuente de verdad. | `src/services/receipts.ts` | **CORREGIDO** — RPC atómico `apply_invoice_payment_atomic` (migración R2) + código; pendiente aplicar migración y desplegar |
+| M2 | RPCs de inventario `SECURITY DEFINER` (`add/subtract/restore_inventory_stock`) **sin control de rol interno**, ejecutables por cualquier `authenticated`. | `20260908_inventory_rpc_role_fix.sql` | **CORREGIDO** (migración R1 aplicada el 08/09/2026) |
 | M3 | `invalidateCache/clearCache` usaban `KEYS` (bloqueante en producción) | `src/lib/cache.ts` | **CORREGIDO** (SCAN con cursor + borrado en lotes de 200) |
 | M4 | PATCH de preferencias leía el body 2 veces (`validateBody` consumía la request y luego `req.json()` fallaba) → la actualización siempre fallaba. | `src/app/api/preferences/route.ts` | **CORREGIDO** (`preferencesSchema` → `.passthrough()` y reuso del body validado) |
 | M5 | Modal sin rol `dialog`, `aria-modal`, cierre con Escape ni focus trap. | `src/components/ui/Modal.tsx` | **CORREGIDO** |
@@ -77,11 +77,11 @@ Se ejecutaron las 7 fases de la metodología (Descubrimiento, Auditoría Profund
 |---|---|---|
 | B1 | `supabase-schema.sql` desincronizado respecto a las migraciones (no se regenera sin acceso a BD) | Regenerar desde el proyecto y mantener como fuente de verdad |
 | B2 | `uuid <11.1.1` (moderate) vía `exceljs` | No forzar override (riesgo de romper export Excel); revisar en siguiente actualización de exceljs |
-| B3 | `.env.local` local tiene `NEXT_PUBLIC_SUPABASE_URL` de placeholder → `next build`/`next start` local fallan | Colocar la URL real del proyecto en `.env.local` (no afecta Vercel, que usa sus propias variables) |
+| B3 | `.env.local` local tenía `NEXT_PUBLIC_SUPABASE_URL` de placeholder → `next build`/`next start` local fallaban | **CORREGIDO** (URL real `https://rexebvnzgnnrxhxmwayx.supabase.co` colocada; build local verificado) |
 | B4 | Lectura de `client_balance`/lista de clientes sin límites en pantallas de dashboard | Añadir paginación/cursor para grandes volúmenes |
 | B5 | Código muerto (`jpgData`) y `.catch(() => {})` intencionales en envíos | Limpieza opcional en siguiente iteración |
 | B6 | Suma duplicada de tablas en consultas de dashboard | unificar en RPC server-side |
-| B7 | Herramientas de integración/E2E/seguridad (Playwright, dependabot) no conectadas por falta de credenciales y ambiente de preproducción | Habilitar con servicio de staging |
+| B7 | Herramientas de integración/E2E/seguridad (Playwright, dependabot) no conectadas por falta de credenciales y ambiente de preproducción | **PARCIAL** — workflow `e2e.yml` añadido; falta configurar secrets de GitHub y preproducción dedicada |
 | B8 | Deprecaciones Next/Sentry (middleware→proxy, Sentry config) | Aplicar en próxima actualización mayor |
 
 ---
@@ -116,7 +116,7 @@ Se ejecutaron las 7 fases de la metodología (Descubrimiento, Auditoría Profund
 | ESLint | 0 errores | 0 errores (verificado) |
 | Tests unitarios | 51 | **82** (8 archivos) |
 | Vulnerabilidades críticas | 2 | 0 corregibles en código |
-| Hallazgos abiertos (crítico/alto) | — | 0 (2 con migración SQL pendiente, M1/M2) |
+| Hallazgos abiertos (crítico/alto) | — | 0 (M1/M2 corregidos; R2 por aplicar/desplegar) |
 | `npm audit` (high) | pasa | pasa (2 moderate documentadas) |
 
 ---
@@ -125,37 +125,51 @@ Se ejecutaron las 7 fases de la metodología (Descubrimiento, Auditoría Profund
 
 ### 6.1 Migraciones SQL (aplicar en Supabase con el usuario)
 
-**R1 — Endurecer RPCs de inventario con control de rol interno** (alto; hoy cualquier `authenticated` puede despachar stock). Aplicar solo si el rol `assistant` no debe gestionar inventario; en caso contrario restringir a `admin`/`seller`:
+**R1 — ✅ APLICADA (08/09/2026)** — Control de rol interno en RPCs de inventario (restringido a `admin`/`seller`): `supabase/migrations/20260908_inventory_rpc_role_fix.sql`.
+
+**R2 — RPC atómico de crédito por sobrepago (M1): ⏳ PENDIENTE DE APLICAR** — migración (`20260908_atomic_payment_excess.sql`) y código (`receipts.ts`) listos:
 
 ```sql
-CREATE OR REPLACE FUNCTION public.add_inventory_stock(
-  p_product_id UUID, p_quantity NUMERIC, p_unit_cost NUMERIC, p_line_total NUMERIC,
-  p_movement_type TEXT DEFAULT 'PURCHASE', p_reference_type TEXT DEFAULT NULL, p_reference_id UUID DEFAULT NULL
-) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $function$
+CREATE OR REPLACE FUNCTION public.apply_invoice_payment_atomic(
+  p_invoice_id UUID, p_amount NUMERIC,
+  OUT p_balance_before NUMERIC, OUT p_credit_excess NUMERIC
+) RETURNS record LANGUAGE plpgsql SET search_path = public AS $function$
+DECLARE v_invoice RECORD; v_new_paid NUMERIC; v_new_balance NUMERIC;
 BEGIN
-  IF get_user_role() NOT IN ('admin','seller') THEN
-    RAISE EXCEPTION 'No autorizado';
-  END IF;
-  -- ... resto de la lógica actual ...
+  SELECT total, amount_paid INTO v_invoice
+  FROM public.invoices WHERE id = p_invoice_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Factura no encontrada'; END IF;
+  p_balance_before := COALESCE(v_invoice.total, 0) - COALESCE(v_invoice.amount_paid, 0);
+  v_new_paid := GREATEST(COALESCE(v_invoice.amount_paid, 0) + COALESCE(p_amount, 0), 0);
+  v_new_paid := LEAST(v_new_paid, v_invoice.total);
+  v_new_balance := v_invoice.total - v_new_paid;
+  UPDATE public.invoices SET
+    amount_paid = v_new_paid,
+    balance_due = GREATEST(v_new_balance, 0),
+    status = CASE WHEN v_new_balance <= 0 THEN 'PAID'
+                  WHEN v_new_paid > 0 THEN 'PARTIAL'
+                  ELSE 'PENDING' END
+  WHERE id = p_invoice_id;
+  p_credit_excess := GREATEST(COALESCE(p_amount, 0) - p_balance_before, 0);
 END;
 $function$;
+
+GRANT EXECUTE ON FUNCTION public.apply_invoice_payment_atomic(UUID, NUMERIC) TO authenticated;
 ```
 
-Aplicar el mismo patrón a `subtract_inventory_stock` y `restore_inventory_stock`.
-
-**R2 — Hacer atómico el cálculo de crédito por sobrepago** (M1): reemplazar la secuencia servicio + trigger por un RPC `apply_receipt_with_excess` que calcule el excedente contra `balance_due` dentro de una transacción con `SELECT ... FOR UPDATE`.
+> ⚠️ **Orden de despliegue:** el código ya espera este RPC. **Primero** aplicar la migración R2 en Supabase y **después** hacer push del código (evita romper la creación de recibos en producción).
 
 ### 6.2 Infraestructura / Configuración
 
-- **R3 (urgente para desarrollo):** corregir `NEXT_PUBLIC_SUPABASE_URL` en `.env.local` con la URL real; el `next build` local actualmente no puede completar.
-- **R4:** regenar `supabase-schema.sql` desde la BD y mantenerlo como fuente de verdad.
-- **R5:** habilitar entorno de preproducción y Playwright E2E (los 9 tests E2E ya existen) y Dependabot para dependencias.
+- **R3 ✅ resuelto:** `.env.local` usa la URL real (`https://rexebvnzgnnrxhxmwayx.supabase.co`) → `next build` local verificado OK.
+- **R4:** regenerar `supabase-schema.sql` desde la BD y mantenerlo como fuente de verdad.
+- **R5 (PARCIAL):** workflow `e2e.yml` añadido (corre los specs E2E existentes contra producción o una URL custom). Falta: definir secrets de GitHub `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` y una preproducción dedicada. Dependabot pendiente.
 - **R6:** migrar deprecaciones Next 16 (`middleware` → `proxy`) y Sentry en la próxima actualización mayor.
 
 ---
 
 ## 7. Conclusiones
 
-El sistema AlmaiaRD-Web se encuentra en **estado operativamente sólido**: criticidad de seguridad reducida a cero en lo corregible por código, suite de pruebas ampliada y todos los gates de calidad en verde (TS, ESLint, 82 tests, audit high OK). Quedan **dos mitigaciones de nivel de base de datos recomendadas** (R1, R2) y ajustes de configuración de desarrollo (R3) que dependen del usuario final para su aplicación, junto con mejoras de rendimiento (paginación/índices) y de plataforma (preproducción/E2E automatizado) para futuras iteraciones.
+El sistema AlmaiaRD-Web se encuentra en **estado operativamente sólido**: criticidad de seguridad reducida a cero en lo corregible por código, suite de pruebas ampliada (82 unit + specs E2E) y todos los gates de calidad en verde (TS, ESLint, build local, audit high OK). La migración **R1 quedó aplicada**; la **R2** (crédito por sobrepago atómico) está lista en migración + código, pendiente de aplicarse en Supabase y de desplegarse. El `.env.local` local ya usa la URL real de Supabase. Quedan mejoras opcionales de plataforma (secrets E2E, Dependabot, preproducción dedicada, paginación server-side, índices) y de deprecación (Next/Sentry) para futuras iteraciones.
 
 *Generado automáticamente como parte de la ejecución de la auditoría profunda del 08/09/2026.*
