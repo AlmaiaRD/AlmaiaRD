@@ -13,6 +13,8 @@ on:
 jobs:
   e2e:
     name: Playwright E2E
+    # Se salta hasta que existan los secrets de login (evita fallos huecos)
+    if: ${{ secrets.E2E_TEST_EMAIL != '' && secrets.E2E_TEST_PASSWORD != '' }}
     runs-on: ubuntu-latest
     env:
       PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.base_url || vars.PLAYWRIGHT_BASE_URL || 'https://almaia-rd.vercel.app' }}
