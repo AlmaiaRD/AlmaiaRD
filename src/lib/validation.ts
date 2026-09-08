@@ -76,7 +76,7 @@ export const preferencesSchema = z.object({
   theme: z.enum(["light", "dark", "system"]).optional(),
   language: z.enum(["es", "en"]).optional(),
   notifications: z.boolean().optional(),
-});
+}).passthrough();
 
 export const backupSchema = z.object({
   tables: z.array(z.string()).optional(),

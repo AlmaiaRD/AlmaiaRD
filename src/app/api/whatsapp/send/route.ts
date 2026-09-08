@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
 
     const response = await fetch(`${WHATSAPP_API_URL}/${config.phone_number_id}/messages`, {
       method: "POST",
+      signal: AbortSignal.timeout(20_000),
       headers: {
         Authorization: `Bearer ${config.access_token}`,
         "Content-Type": "application/json",

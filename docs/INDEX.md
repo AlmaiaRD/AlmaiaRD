@@ -86,10 +86,10 @@ Cada guía sigue: Visión General → Requisitos Previos → Flujo de Trabajo �
 
 ### Estado Actual (Auditoría Septiembre 2026)
 - ✅ **9/9 Tests E2E passing** (login, auth, api-docs x2, catalog-pdf x2, quotes-to-invoice)
-- ✅ **51 Tests unitarios passing** (invoiceMath, utils, constants, preferences, openapi)
-- ✅ **TypeScript: 0 errores** | **ESLint: 0 errores** (562 warnings preexistentes)
+- ✅ **82 Tests unitarios passing** (invoiceMath, utils, constants, preferences, openapi, ssrf, communication-errors, validation)
+- ✅ **TypeScript: 0 errores** | **ESLint: 0 errores**
 - ✅ **Seguridad hardenada**: RLS role-based en las 30 tablas, triggers seguros, secrets protegidos
-- ✅ **Re-auditoría (03/09/2026)**: habilitado RLS en 6 tablas que tenían políticas pero RLS desactivado (categories, subbrands, client_tags, client_tag_relations, returns, return_items) + REVOKE SELECT anon en tablas sensibles
+- ✅ **Re-auditoría (08/09/2026)**: SSRF en image-proxy corregido (docs/auditoria/AUDITORIA-2026-09-08.md), fallos silenciosos en devoluciones, timeouts en APIs externas, CI con tests + audit, auth en layout, XSS en inventario/cotizaciones/facturación, cache SCAN, preferences PATCH, Modal a11y
 - ✅ **Rate-limit distribuido** (Upstash Redis) + fallback dev
 - ✅ **CSP headers** + **Sourcemaps Sentry** habilitados
 - ✅ **Validación Zod** en 18 API routes

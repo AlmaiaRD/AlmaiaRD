@@ -157,7 +157,12 @@ export async function completeReturn(id: string) {
           pv_total: newPvTotal,
           status: newBalanceDue <= 0 ? "PAID" : "PARTIAL",
         })
-        .eq("id", invoiceId);
+        .eq("id", invoiceId)
+        .select("id, client_id, total, amount_paid")
+        .single()
+        .then((res) => {
+          if (res.error) throw res.error;
+        });
 
       // Si hay excedente, crear credit_balance
       if (excessCredit > 0) {
@@ -193,6 +198,8 @@ export async function completeReturn(id: string) {
             receipt_number: receiptNumber,
             created_by: userId,
             credit_excess: excessCredit,
+          }).select("id").single().then((res) => {
+            if (res.error) throw new Error(`No se pudo crear el crédito excedente: ${res.error.message}`);
           });
         }
       }

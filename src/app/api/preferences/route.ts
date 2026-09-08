@@ -31,16 +31,17 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
-  try {
-    await validateBody(preferencesSchema)(req);
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
-  }
-
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !anonKey) {
     return NextResponse.json({ error: "No configurado" }, { status: 500 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await validateBody(preferencesSchema)(req) as Record<string, unknown>;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
 
   const cookieStore = await cookies();
@@ -50,11 +51,6 @@ export async function PATCH(req: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  const body = await req.json();
-  if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
   const { data: current } = await supabase

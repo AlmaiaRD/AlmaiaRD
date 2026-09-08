@@ -70,12 +70,26 @@ async function setRedis<T>(key: string, data: T, ttl = DEFAULT_TTL): Promise<voi
   }
 }
 
+async function collectKeysMatching(pattern: string): Promise<string[]> {
+  if (!redis) return [];
+  const keys: string[] = [];
+  let cursor = "0";
+  do {
+    const [next, batch] = await redis.scan(cursor, { match: pattern, count: 200 });
+    keys.push(...batch);
+    cursor = next;
+  } while (cursor !== "0" && keys.length < 10_000);
+  return keys;
+}
+
 async function invalidateRedis(keyPrefix: string): Promise<void> {
   if (!redis) return;
   try {
-    const keys = await redis.keys(`${keyPrefix}*`);
+    const keys = await collectKeysMatching(`${keyPrefix}*`);
     if (keys.length > 0) {
-      await redis.del(...keys);
+      for (let i = 0; i < keys.length; i += 200) {
+        await redis.del(...keys.slice(i, i + 200));
+      }
     }
   } catch {
     invalidateMemory(keyPrefix);
@@ -101,8 +115,10 @@ export async function clearCache(): Promise<void> {
   memoryStore.clear();
   if (redis) {
     try {
-      const keys = await redis.keys("*");
-      if (keys.length > 0) await redis.del(...keys);
+      const keys = await collectKeysMatching("*");
+      for (let i = 0; i < keys.length; i += 200) {
+        await redis.del(...keys.slice(i, i + 200));
+      }
     } catch {
       // ignore
     }

@@ -313,10 +313,10 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
     const esc = (s: string | null | undefined) => {
       if (!s) return "";
       return String(s)
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, "\u0026quot;")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     };
     const rows = (purchase.purchase_items || []).map((item) => {

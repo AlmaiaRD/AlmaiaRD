@@ -485,7 +485,7 @@ export default function FacturacionPage() {
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${settings.signature_url}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${esc(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>

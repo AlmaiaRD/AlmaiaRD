@@ -106,6 +106,7 @@ Si no hay productos relevantes, responde con un array vacío: []`;
 
     const response = await fetch(OPENAI_API_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(30_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,

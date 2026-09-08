@@ -91,6 +91,7 @@ Extrae la compra completa en el JSON según el formato indicado.`;
 
     const response = await fetch(OPENAI_API_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(60_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,

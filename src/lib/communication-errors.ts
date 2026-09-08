@@ -8,7 +8,7 @@ export function friendlyWhatsAppError(error: string | null | undefined): string 
   if (e.includes("131047") || (e.includes("1105") && e.includes("not on whatsapp")) || e.includes("not on whatsapp") || e.includes("doesn't have whatsapp")) {
     return "Este número no tiene WhatsApp activo. Pide al cliente que verifique su número.";
   }
-  if (e.includes("131026") || e.includes("re-engagement") || e.includes("24-hour") || e.includes("template")) {
+  if (e.includes("131026") || e.includes("re-engagement") || e.includes("24-hour") || e.includes("24 hours") || e.includes("outside the allowed window") || e.includes("template")) {
     return "Meta solo permite enviar mensajes con plantillas aprobadas hasta que el cliente te escriba. Usa una plantilla aprobada en la pestaña Plantillas.";
   }
   if (e.includes("rate") || e.includes("too many") || e.includes("429")) {

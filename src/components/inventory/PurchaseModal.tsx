@@ -306,14 +306,14 @@ export default function PurchaseModal({
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-[#9C8A82]">Impuesto de Recogida</span>
-            <input type="number" step="0.01" value={form.impuesto_recogida}
-              onChange={(e) => setForm({ ...form, impuesto_recogida: Number(e.target.value) })}
+            <input type="number" step="0.01" min={0} value={form.impuesto_recogida}
+              onChange={(e) => setForm({ ...form, impuesto_recogida: Math.max(0, Number(e.target.value)) })}
               className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-[#9C8A82]">Cargo de Administración (Detalle)</span>
-            <input type="number" step="0.01" value={form.cargo_administracion}
-              onChange={(e) => setForm({ ...form, cargo_administracion: Number(e.target.value) })}
+            <input type="number" step="0.01" min={0} value={form.cargo_administracion}
+              onChange={(e) => setForm({ ...form, cargo_administracion: Math.max(0, Number(e.target.value)) })}
               className="w-24 h-7 px-2 text-right rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
           </div>
           <div className="flex justify-between text-sm">
@@ -333,8 +333,8 @@ export default function PurchaseModal({
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-          <button onClick={onSubmit} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button type="button" onClick={onClose} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
+          <button type="button" onClick={onSubmit} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
             <Save size={18} /> {saving ? "Guardando..." : "Registrar Compra"}
           </button>
         </div>

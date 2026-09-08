@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Maximize2, Minimize2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,10 +12,52 @@ interface ModalProps {
   subtitle?: string;
   children: React.ReactNode;
   wide?: boolean;
+  ariaLabel?: string;
 }
 
-export default function Modal({ isOpen, onClose, title, subtitle, children, wide }: ModalProps) {
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+export default function Modal({ isOpen, onClose, title, subtitle, children, wide, ariaLabel }: ModalProps) {
   const [expanded, setExpanded] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab" && panelRef.current) {
+        const focusables = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey) {
+          if (active === first || active === panelRef.current || !panelRef.current.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (active === last || !panelRef.current.contains(active)) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    // Enfocar el panel al abrir (fuera de React para evitar warning de framer-motion)
+    const timer = window.setTimeout(() => panelRef.current?.focus(), 30);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      window.clearTimeout(timer);
+    };
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
@@ -28,14 +70,20 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
             transition={{ duration: 0.2 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
+            aria-hidden="true"
           />
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel || title}
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto overflow-hidden",
+              "relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full mx-0 sm:mx-auto overflow-hidden outline-none",
               expanded
                 ? "max-w-[98vw] sm:max-w-[95vw] h-[96vh] sm:h-[94vh]"
                 : cn("max-h-[90vh] sm:max-h-[90vh] max-h-[calc(100vh-2rem)]", wide ? "max-w-3xl" : "max-w-lg")
@@ -50,6 +98,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
+                  type="button"
                   onClick={() => setExpanded((v) => !v)}
                   title={expanded ? "Restaurar tamaño" : "Expandir espacio de trabajo"}
                   className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
@@ -57,7 +106,9 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
                   {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </button>
                 <button
+                  type="button"
                   onClick={onClose}
+                  aria-label="Cerrar"
                   className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
                 >
                   <X size={18} />

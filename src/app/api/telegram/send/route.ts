@@ -73,12 +73,14 @@ export async function POST(req: NextRequest) {
       if (text) payload.caption = text;
       response = await fetch(`${TELEGRAM_API_URL}/bot${config.bot_token}/${endpoint}`, {
         method: "POST",
+        signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     } else {
       response = await fetch(`${TELEGRAM_API_URL}/bot${config.bot_token}/sendMessage`, {
         method: "POST",
+        signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
       });
