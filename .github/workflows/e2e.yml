@@ -13,8 +13,9 @@ on:
 jobs:
   e2e:
     name: Playwright E2E
-    # Se salta hasta que existan los secrets de login (evita fallos huecos)
-    if: ${{ secrets.E2E_TEST_EMAIL != '' && secrets.E2E_TEST_PASSWORD != '' }}
+    # Interruptor: crea la VARIABLE E2E_ENABLED=true en Settings > Secrets and
+    # variables > Actions > Variables. Los secrets no pueden usarse en job.if.
+    if: ${{ vars.E2E_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     env:
       PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.base_url || vars.PLAYWRIGHT_BASE_URL || 'https://almaia-rd.vercel.app' }}
