@@ -19,8 +19,10 @@ export const sendEmailSchema = z.object({
 export const whatsappSendSchema = z.object({
   configId: z.string().uuid(),
   to: z.string().regex(/^\+?[1-9]\d{1,14}$/), // E.164 format
-  type: z.enum(["text", "template"]),
+  type: z.enum(["text", "template", "image", "document", "audio", "video"]),
   text: z.string().max(4096).optional(),
+  mediaUrl: z.string().url().max(2048).optional(),
+  filename: z.string().max(255).optional(),
   template: z
     .object({
       name: z.string().min(1),
@@ -30,11 +32,17 @@ export const whatsappSendSchema = z.object({
     .optional(),
 });
 
-export const telegramSendSchema = z.object({
-  configId: z.string().uuid(),
-  chatId: z.string().min(1).max(64),
-  text: z.string().max(4096),
-});
+export const telegramSendSchema = z
+  .object({
+    configId: z.string().uuid(),
+    chatId: z.string().min(1).max(64),
+    text: z.string().max(4096),
+    mediaUrl: z.string().url().max(2048).optional(),
+    mediaType: z.enum(["photo", "document", "video", "audio"]).optional(),
+  })
+  .refine((data) => !data.mediaUrl || !!data.mediaType, {
+    message: "mediaType es requerido cuando se envía media",
+  });
 
 export const imageProxySchema = z.object({
   url: z.string().url(),

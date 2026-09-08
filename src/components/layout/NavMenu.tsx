@@ -21,6 +21,8 @@ import {
   Sparkles,
   RotateCcw,
   ClipboardList,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +38,8 @@ const navItems = [
   { href: "/inventario", label: "Inventario", icon: Package },
   { href: "/crm", label: "CRM y Seguimiento", icon: Calendar },
   { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { href: "/telegram", label: "Telegram", icon: Send },
   { href: "/pipeline", label: "Pipeline", icon: GitBranch },
   { href: "/comunicaciones", label: "Comunicaciones", icon: Mail },
   { href: "/aprendizaje", label: "Aprendizaje", icon: Notebook },

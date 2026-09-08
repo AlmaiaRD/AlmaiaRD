@@ -12,10 +12,13 @@ import {
   sendViaApi,
   logWhatsAppMessage,
   getWhatsAppLogs,
+  getMessageTemplates,
   type WhatsAppConfig,
   type WhatsAppLogRow as ServiceWhatsAppLogRow,
+  type MessageTemplate,
 } from "@/services/whatsapp";
-import { getClients } from "@/services/clients";
+import { getClients, getClientsWithBalances } from "@/services/clients";
+import { uploadMediaFile } from "@/services/media";
 import type { Client } from "@/types/database";
 import {
   getTemplates,
@@ -72,6 +75,9 @@ import {
   Users,
   Zap,
   ChevronDown,
+  Paperclip,
+  RefreshCw,
+  Image as ImageIcon,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -202,6 +208,19 @@ export default function WhatsAppPage() {
   const [sending, setSending] = useState(false);
   const [searchClient, setSearchClient] = useState("");
 
+  // Media adjunta al mensaje
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaDisposition, setMediaDisposition] = useState<"image" | "document" | "video" | "audio">("image");
+
+  // Recordatorios masivos
+  const [reminderSending, setReminderSending] = useState(false);
+  const [reminderResults, setReminderResults] = useState<{ name: string; ok: boolean; error?: string }[]>([]);
+
+  // Plantillas de Meta (estado de aprobación)
+  const [metaTemplates, setMetaTemplates] = useState<MessageTemplate[]>([]);
+  const [metaTemplatesLoading, setMetaTemplatesLoading] = useState(false);
+
   // Local templates
   const [localTemplates, setLocalTemplates] = useState<CommunicationTemplate[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -289,6 +308,71 @@ export default function WhatsAppPage() {
       }
     } catch {
       toast.error("Error al cargar datos");
+    }
+  }
+
+  useEffect(() => {
+    if (selectedConfig?.id) {
+      loadMetaTemplates();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedConfig?.id]);
+
+  async function loadMetaTemplates() {
+    if (!selectedConfig) return;
+    setMetaTemplatesLoading(true);
+    try {
+      const templates = await getMessageTemplates("", "", selectedConfig.id);
+      setMetaTemplates(Array.isArray(templates) ? templates : []);
+    } catch {
+      setMetaTemplates([]);
+    } finally {
+      setMetaTemplatesLoading(false);
+    }
+  }
+
+  // ---- Recordatorios masivos de pago por WhatsApp ----
+  async function handleWhatsAppReminders() {
+    if (!selectedConfig) {
+      toast.error("Selecciona una cuenta de WhatsApp");
+      return;
+    }
+    if (!messageText.trim()) {
+      toast.error("Escribe el mensaje del recordatorio");
+      return;
+    }
+    setReminderSending(true);
+    setReminderResults([]);
+    try {
+      const clientsWithBalance = await getClientsWithBalances();
+      const pending = clientsWithBalance.filter((c) => Number(c.pending_balance || 0) > 0 && c.phone);
+      if (pending.length === 0) {
+        toast.success("No hay clientes con saldo pendiente");
+        return;
+      }
+      let sent = 0;
+      let failed = 0;
+      const results: { name: string; ok: boolean; error?: string }[] = [];
+      for (const c of pending) {
+        const msg = messageText
+          .replace(/\{cliente\}/g, c.full_name || "cliente")
+          .replace(/\{monto\}/g, `RD$ ${Number(c.pending_balance || 0).toLocaleString()}`);
+        const r = await sendViaApi(selectedConfig.id, c.phone!, "text", { text: msg });
+        if (r.success) {
+          sent++;
+          results.push({ name: c.full_name || c.phone || "", ok: true });
+        } else {
+          failed++;
+          results.push({ name: c.full_name || c.phone || "", ok: false, error: r.error });
+        }
+      }
+      setReminderResults(results);
+      toast.success(`Recordatorios: ${sent} enviados · ${failed} fallidos`);
+      loadData();
+    } catch {
+      toast.error("Error al enviar los recordatorios");
+    } finally {
+      setReminderSending(false);
     }
   }
 
@@ -453,29 +537,47 @@ export default function WhatsAppPage() {
       toast.error("Ingresa un número de teléfono");
       return;
     }
-    if (!messageText.trim()) {
-      toast.error("Ingresa un mensaje");
+    if (!messageText.trim() && !mediaFile && !mediaUrl.trim()) {
+      toast.error("Escribe un mensaje o adjunta un archivo");
       return;
     }
 
     setSending(true);
     try {
+      let type: "text" | "template" | "image" | "document" | "audio" | "video" = "text";
+      let finalMediaUrl = mediaUrl.trim();
+      let uploadedName = "";
+      if (mediaFile || finalMediaUrl) {
+        type = mediaDisposition;
+      }
+      if (mediaFile) {
+        const upload = await uploadMediaFile(mediaFile);
+        if (upload.error) {
+          toast.error(upload.error);
+          return;
+        }
+        finalMediaUrl = upload.url || "";
+        uploadedName = mediaFile.name;
+      }
+
       const result = await sendViaApi(
         selectedConfig.id,
         recipientPhone,
-        "text",
-        { text: messageText }
+        type,
+        { text: messageText, mediaUrl: finalMediaUrl || undefined, filename: uploadedName || undefined }
       );
 
       if (result.success) {
         toast.success("Mensaje enviado correctamente");
         setMessageText("");
         setSelectedLocalTemplate("");
-        logWhatsAppMessage(selectedConfig.id, recipientPhone, "text", undefined, "sent", result.messageId).catch(() => {});
+        setMediaFile(null);
+        setMediaUrl("");
+        logWhatsAppMessage(selectedConfig.id, recipientPhone, type, undefined, "sent", result.messageId, undefined, messageText || type).catch(() => {});
         loadData();
       } else {
         toast.error(result.error || "Error al enviar mensaje");
-        logWhatsAppMessage(selectedConfig.id, recipientPhone, "text", undefined, "failed", undefined, result.error).catch(() => {});
+        logWhatsAppMessage(selectedConfig.id, recipientPhone, type, undefined, "failed", undefined, result.error, messageText || type).catch(() => {});
       }
     } catch {
       toast.error("Error al enviar mensaje");
@@ -672,10 +774,66 @@ export default function WhatsAppPage() {
               )}
             </div>
 
+            {/* Adjunto (imagen / documento / video / audio) */}
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Adjuntar (opcional)</label>
+              <div className="flex items-center gap-2 mb-2">
+                {(["image", "document", "video", "audio"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setMediaDisposition(t)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                      mediaDisposition === t
+                        ? "bg-[#25D366]/10 text-[#128C7E] border-[#25D366]"
+                        : "text-[#9C8A82] border-[#E8E0D8] hover:bg-[#FAF6F0]"
+                    }`}
+                  >
+                    {t === "image" ? "Imagen" : t === "document" ? "Documento" : t === "video" ? "Video" : "Audio"}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#9C8A82] cursor-pointer hover:bg-[#FAF6F0] transition-all">
+                  <Paperclip size={15} />
+                  {mediaFile ? (
+                    <span className="text-[#5C3E35] truncate">{mediaFile.name}</span>
+                  ) : (
+                    "Subir archivo (máx 8MB)"
+                  )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setMediaFile(f);
+                      if (f) {
+                        if (f.type.startsWith("image/")) setMediaDisposition("image");
+                        else if (f.type.startsWith("video/")) setMediaDisposition("video");
+                        else if (f.type.startsWith("audio/")) setMediaDisposition("audio");
+                        else setMediaDisposition("document");
+                      }
+                    }}
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={mediaUrl}
+                  onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
+                  placeholder="o pega una URL pública..."
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                />
+              </div>
+              {(mediaFile || mediaUrl) && (
+                <button onClick={() => { setMediaFile(null); setMediaUrl(""); }} className="mt-2 text-xs text-red-400 hover:text-red-500">
+                  Quitar adjunto
+                </button>
+              )}
+            </div>
+
             {/* Send Button */}
             <button
               onClick={handleSend}
-              disabled={sending || !selectedConfig || !recipientPhone || !messageText.trim()}
+              disabled={sending || !selectedConfig || !recipientPhone || (!messageText.trim() && !mediaFile && !mediaUrl.trim())}
               className="w-full h-12 bg-[#25D366] text-white rounded-xl text-sm font-medium hover:bg-[#128C7E] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {sending ? (
@@ -739,6 +897,37 @@ export default function WhatsAppPage() {
                 </code>
               </div>
             </div>
+
+            {/* Recordatorios de pago masivos */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+              <h3 className="text-sm font-semibold text-[#5C3E35] mb-1">Recordatorio Masivo de Pagos</h3>
+              <p className="text-xs text-[#9C8A82] mb-3">
+                Envía el mensaje de arriba a todos los clientes con saldo pendiente. Usa {"{cliente}"} y {"{monto}"} como variables.
+              </p>
+              <button
+                onClick={handleWhatsAppReminders}
+                disabled={reminderSending || !selectedConfig || !messageText.trim()}
+                className="w-full h-11 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
+              >
+                {reminderSending ? "Enviando recordatorios..." : "Enviar recordatorios a clientes con saldo"}
+              </button>
+              <p className="text-[10px] text-[#9C8A82] mt-2">
+                Nota: si hace más de 24 h que el cliente no te escribe, WhatsApp exige una plantilla aprobada por Meta y el envío de texto libre puede fallar (te avisamos con claridad).
+              </p>
+              {reminderResults.length > 0 && (
+                <div className="mt-3 max-h-48 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+                  {reminderResults.map((r, i) => (
+                    <div key={i} className={`px-3 py-2 text-xs border-b border-[#E8E0D8] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
+                      {r.ok ? <CheckCircle size={13} className="mt-0.5 shrink-0" /> : <AlertCircle size={13} className="mt-0.5 shrink-0" />}
+                      <span>
+                        <span className="font-medium text-[#5C3E35]">{r.name}</span>
+                        {r.ok ? " enviado" : ` · ${r.error || "no enviado"}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -751,6 +940,62 @@ export default function WhatsAppPage() {
               <Plus size={18} /> Nueva Plantilla
             </button>
           </div>
+
+          {/* Plantillas de Meta: estado de aprobación */}
+          {selectedConfig && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon size={16} className="text-[#B8837E]" />
+                  <h3 className="text-sm font-semibold text-[#5C3E35]">Plantillas de Meta (estado de aprobación)</h3>
+                </div>
+                <button
+                  onClick={loadMetaTemplates}
+                  className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors"
+                >
+                  <RefreshCw size={13} className={metaTemplatesLoading ? "animate-spin" : ""} /> Refrescar
+                </button>
+              </div>
+              <p className="text-xs text-[#9C8A82] mb-3">
+                Solo las plantillas <span className="font-medium text-[#6B8E6B]">Aprobadas</span> se pueden enviar a un cliente
+                que no te ha escrito en las últimas 24 horas. Las pendientes o rechazadas fallarán.
+              </p>
+              {metaTemplatesLoading ? (
+                <p className="text-xs text-[#9C8A82]">Cargando plantillas de Meta...</p>
+              ) : metaTemplates.length === 0 ? (
+                <div className="text-center py-8 text-[#9C8A82]">
+                  <p className="text-sm">No hay plantillas visible en la cuenta de Meta</p>
+                  <p className="text-xs mt-1">Créalas en la app de Meta Business Manager; aquí verás su estado.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {metaTemplates.map((t, idx) => {
+                    const st = (t.status || "").toString().toUpperCase();
+                    return (
+                      <div key={t.name + idx} className="p-4 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-sm font-semibold text-[#5C3E35] break-all">{t.name}</p>
+                          {st === "APPROVED" ? (
+                            <Badge variant="success">Aprobada</Badge>
+                          ) : st === "PENDING" ? (
+                            <Badge variant="warning">En revisión</Badge>
+                          ) : (
+                            <Badge variant="danger">Rechazada</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#9C8A82] capitalize">{t.category}</p>
+                        {t.language && (
+                          <p className="text-[10px] text-[#9C8A82] mt-1">
+                            Idioma: {typeof t.language === "string" ? t.language : (t.language as { code?: string })?.code || "—"}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {localTemplates.length === 0 ? (
             <div className="text-center py-16 text-[#9C8A82]">

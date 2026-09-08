@@ -49,9 +49,25 @@ async function processIncomingMessage(supabase: AdminClient | null, message: unk
   const from = (message as { from?: string } | null)?.from;
   const type = (message as { type?: string } | null)?.type;
   const text = (message as { text?: { body?: string } } | null)?.text?.body;
+  const filename = (message as { document?: { filename?: string } } | null)?.document?.filename;
+
+  let messageBody = text;
+  if (!messageBody) {
+    const mediaDescriptions: Record<string, string> = {
+      image: "[Imagen]",
+      video: "[Video]",
+      audio: "[Audio]",
+      voice: "[Nota de voz]",
+      document: filename ? `[Documento: ${filename}]` : "[Documento]",
+      sticker: "[Sticker]",
+      location: "[Ubicación]",
+      contacts: "[Contacto(s)]",
+    };
+    messageBody = mediaDescriptions[type || ""] || `[Adjunto: ${type || "unknown"}]`;
+  }
 
   if (!supabase) {
-    console.error(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${text || "(media)"}`);
+    console.error(`[whatsapp-webhook] (sin service role) mensaje de ${from}: ${messageBody}`);
     return;
   }
 
@@ -62,7 +78,7 @@ async function processIncomingMessage(supabase: AdminClient | null, message: unk
     status: "received",
     message_id: (message as { id?: string } | null)?.id,
     direction: "incoming",
-    message_body: text,
+    message_body: messageBody,
   });
 
   if (error) console.error(`[whatsapp-webhook] error guardando mensaje entrante de ${from}:`, error.message);

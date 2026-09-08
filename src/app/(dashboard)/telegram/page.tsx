@@ -14,7 +14,9 @@ import {
   type TelegramLogRow,
 } from "@/services/telegram";
 import { formatDate } from "@/lib/utils";
-import { getClients } from "@/services/clients";
+import { getClients, getClientsWithBalances } from "@/services/clients";
+import { uploadMediaFile } from "@/services/media";
+import { friendlyTelegramError } from "@/lib/communication-errors";
 import type { Client } from "@/types/database";
 import {
   getTemplates,
@@ -43,6 +45,10 @@ import {
   ChevronDown,
   MessageCircle,
   Clock,
+  CheckCircle,
+  CheckCheck,
+  AlertCircle,
+  Paperclip,
   Megaphone,
   Handshake,
   Gift,
@@ -176,6 +182,16 @@ export default function TelegramPage() {
   const [recipientMode, setRecipientMode] = useState<"manual" | "client" | "all">("manual");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [telegramClients, setTelegramClients] = useState<Client[]>([]);
+  const [allClients, setAllClients] = useState<Client[]>([]);
+
+  // Media adjunta al mensaje
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaDisposition, setMediaDisposition] = useState<"photo" | "document" | "video" | "audio">("photo");
+
+  // Envío masivo / resultados
+  const [sendResults, setSendResults] = useState<{ name: string; ok: boolean; error?: string }[]>([]);
+  const [reminderSending, setReminderSending] = useState(false);
 
   // Plantillas (BD unificada, compartidas entre WhatsApp, Telegram y Email)
   const [localTemplates, setLocalTemplates] = useState<CommunicationTemplate[]>([]);
@@ -211,6 +227,7 @@ export default function TelegramPage() {
         setConfigs(configsData);
         setLogs(logsData);
         setLocalTemplates(templatesData);
+        setAllClients(clientsData);
         setTelegramClients(clientsData.filter((c) => c.telegram_chat_id && c.telegram_chat_id.trim() !== ""));
         if (configsData.length > 0) {
           setSelectedConfig(configsData.find((c) => c.is_active) || configsData[0]);
@@ -414,8 +431,8 @@ export default function TelegramPage() {
       toast.error("Selecciona un bot de Telegram");
       return;
     }
-    if (!messageText.trim()) {
-      toast.error("Ingresa un mensaje");
+    if (!messageText.trim() && !mediaFile && !mediaUrl.trim()) {
+      toast.error("Escribe un mensaje o adjunta un archivo");
       return;
     }
     const text = messageText.trim();
@@ -442,24 +459,97 @@ export default function TelegramPage() {
       targets = telegramClients.map((c) => ({ chatId: c.telegram_chat_id!, label: c.full_name || "cliente" }));
     }
 
+    // Resolver media (archivo → URL pública firmada) antes de enviar
+    let finalMediaUrl = mediaUrl.trim();
+    if (mediaFile) {
+      const upload = await uploadMediaFile(mediaFile);
+      if (upload.error) {
+        toast.error(upload.error);
+        return;
+      }
+      finalMediaUrl = upload.url || "";
+    }
+    const media =
+      finalMediaUrl && (mediaFile || mediaUrl.trim())
+        ? { mediaUrl: finalMediaUrl, mediaType: mediaDisposition }
+        : undefined;
+
     setSending(true);
+    setSendResults([]);
     try {
       let sent = 0;
       let failed = 0;
+      const results: { name: string; ok: boolean; error?: string }[] = [];
       for (const target of targets) {
-        const result = await sendViaTelegramApi(selectedConfig.id, target.chatId, text);
-        if (result.success) sent++;
-        else failed++;
+        const result = await sendViaTelegramApi(selectedConfig.id, target.chatId, text, media);
+        if (result.success) {
+          sent++;
+          results.push({ name: target.label, ok: true });
+        } else {
+          failed++;
+          results.push({ name: target.label, ok: false, error: friendlyTelegramError(result.error) });
+        }
       }
+      setSendResults(results);
       if (sent > 0) toast.success(`Enviado a ${sent} destinatario(s) por Telegram`);
       if (failed > 0) toast.error(`${failed} destinatario(s) no se pudieron enviar`);
-      setMessageText("");
-      setSelectedTemplate("");
+      if (sent > 0) {
+        setMessageText("");
+        setSelectedTemplate("");
+        setMediaFile(null);
+        setMediaUrl("");
+      }
       setLogs(await getTelegramLogs());
     } catch {
       toast.error("Error al enviar mensaje de Telegram");
     } finally {
       setSending(false);
+    }
+  }
+
+  async function handleTelegramReminders() {
+    if (!selectedConfig) {
+      toast.error("Selecciona un bot de Telegram");
+      return;
+    }
+    if (!messageText.trim()) {
+      toast.error("Escribe el mensaje del recordatorio");
+      return;
+    }
+    setReminderSending(true);
+    setSendResults([]);
+    try {
+      const clientsWithBalance = await getClientsWithBalances();
+      const pending = clientsWithBalance.filter(
+        (c) => Number(c.pending_balance || 0) > 0 && c.telegram_chat_id && c.telegram_chat_id.trim() !== ""
+      );
+      if (pending.length === 0) {
+        toast.success("No hay clientes con saldo pendiente y Telegram vinculado");
+        return;
+      }
+      let sent = 0;
+      let failed = 0;
+      const results: { name: string; ok: boolean; error?: string }[] = [];
+      for (const c of pending) {
+        const msg = messageText
+          .replace(/\{cliente\}/g, c.full_name || "cliente")
+          .replace(/\{monto\}/g, `RD$ ${Number(c.pending_balance || 0).toLocaleString()}`);
+        const r = await sendViaTelegramApi(selectedConfig.id, c.telegram_chat_id!, msg);
+        if (r.success) {
+          sent++;
+          results.push({ name: c.full_name || "", ok: true });
+        } else {
+          failed++;
+          results.push({ name: c.full_name || "", ok: false, error: friendlyTelegramError(r.error) });
+        }
+      }
+      setSendResults(results);
+      toast.success(`Recordatorios: ${sent} enviados · ${failed} fallidos`);
+      setLogs(await getTelegramLogs());
+    } catch {
+      toast.error("Error al enviar los recordatorios");
+    } finally {
+      setReminderSending(false);
     }
   }
 
@@ -637,12 +727,69 @@ export default function TelegramPage() {
                 <p className="text-xs text-[#9C8A82] mt-1">{messageText.length} caracteres</p>
               )}
             </div>
+
+            {/* Adjunto (foto / documento / video / audio) */}
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Adjuntar (opcional)</label>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {(["photo", "document", "video", "audio"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setMediaDisposition(t)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                      mediaDisposition === t
+                        ? "bg-[#2AABEE]/10 text-[#1D8FC9] border-[#2AABEE]"
+                        : "text-[#9C8A82] border-[#E8E0D8] hover:bg-[#FAF6F0]"
+                    }`}
+                  >
+                    {t === "photo" ? "Foto" : t === "document" ? "Documento" : t === "video" ? "Video" : "Audio"}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#9C8A82] cursor-pointer hover:bg-[#FAF6F0] transition-all">
+                  <Paperclip size={15} />
+                  {mediaFile ? (
+                    <span className="text-[#5C3E35] truncate">{mediaFile.name}</span>
+                  ) : (
+                    "Subir archivo (máx 8MB)"
+                  )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setMediaFile(f);
+                      if (f) {
+                        if (f.type.startsWith("image/")) setMediaDisposition("photo");
+                        else if (f.type.startsWith("video/")) setMediaDisposition("video");
+                        else if (f.type.startsWith("audio/")) setMediaDisposition("audio");
+                        else setMediaDisposition("document");
+                      }
+                    }}
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={mediaUrl}
+                  onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
+                  placeholder="o pega una URL pública..."
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                />
+              </div>
+              {(mediaFile || mediaUrl) && (
+                <button onClick={() => { setMediaFile(null); setMediaUrl(""); }} className="mt-2 text-xs text-red-400 hover:text-red-500">
+                  Quitar adjunto
+                </button>
+              )}
+            </div>
+
             <button
               onClick={handleSend}
               disabled={
                 sending ||
                 !selectedConfig ||
-                !messageText.trim() ||
+                (!messageText.trim() && !mediaFile && !mediaUrl.trim()) ||
                 (recipientMode === "manual" && !chatId.trim()) ||
                 (recipientMode === "client" && !selectedClientId) ||
                 (recipientMode === "all" && telegramClients.length === 0)
@@ -658,6 +805,20 @@ export default function TelegramPage() {
                 </>
               )}
             </button>
+
+            {sendResults.length > 0 && (
+              <div className="mt-3 max-h-56 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+                {sendResults.map((r, i) => (
+                  <div key={i} className={`px-3 py-2 text-xs border-b border-[#E8E0D8] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
+                    {r.ok ? <CheckCircle size={13} className="mt-0.5 shrink-0" /> : <AlertCircle size={13} className="mt-0.5 shrink-0" />}
+                    <span>
+                      <span className="font-medium text-[#5C3E35]">{r.name}</span>
+                      {r.ok ? " enviado" : ` · ${r.error || "no enviado"}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Actions Panel */}
@@ -872,6 +1033,60 @@ export default function TelegramPage() {
               Registra la URL para que Telegram envíe aquí los mensajes que reciba el bot. Necesario para ver mensajes entrantes y vincular clientes.
             </p>
           </div>
+
+          {/* Clientes sin Telegram vinculado (tesis de chat_id) */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-[#5C3E35]">Clientes sin Telegram vinculado</h3>
+              <span className="text-xs text-[#9C8A82]">
+                {allClients.length - telegramClients.length} de {allClients.length}
+              </span>
+            </div>
+            <p className="text-xs text-[#9C8A82] mb-3">
+              Pídele a cada cliente que escriba <b>/start</b> a tu bot de Telegram. El sistema detecta su chat_id automáticamente.
+            </p>
+            {allClients.length - telegramClients.length === 0 ? (
+              <p className="text-sm text-[#6B8E6B]">Todos tus clientes ya tienen Telegram configurado.</p>
+            ) : (
+              <div className="max-h-56 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+                {allClients
+                  .filter((c) => !c.telegram_chat_id)
+                  .slice(0, 50)
+                  .map((c) => (
+                    <div key={c.id} className="flex items-center justify-between px-3 py-2 border-b border-[#E8E0D8] last:border-0">
+                      <p className="text-sm text-[#5C3E35] truncate">{c.full_name || "Cliente"}</p>
+                      {c.phone && (
+                        <button
+                          onClick={() => {
+                            const m = `Hola ${c.full_name || ""}\nPara seguir recibiendo tus avisos de facturas, pagos y saldos, nuestro bot @${selectedConfig?.label || "AlmaiaBot"} te espera. Abre Telegram y escríbele /start.`
+                            navigator.clipboard?.writeText(m);
+                            toast.success("Mensaje copiado: pégalo y envíalo por WhatsApp");
+                          }}
+                          className="text-xs text-[#B8837E] hover:text-[#9A6B66] flex items-center gap-1 shrink-0"
+                        >
+                          <Copy size={12} /> Copiar invitación
+                        </button>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recordatorio masivo de pagos por Telegram */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <h3 className="text-sm font-semibold text-[#5C3E35] mb-1">Recordatorio Masivo de Pagos</h3>
+            <p className="text-xs text-[#9C8A82] mb-3">
+              Envía el mensaje de arriba a todos los clientes con saldo pendiente y Telegram vinculado. Usa {"{cliente}"} y {"{monto}"} como variables.
+            </p>
+            <button
+              onClick={handleTelegramReminders}
+              disabled={reminderSending || !selectedConfig || !messageText.trim()}
+              className="w-full h-11 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
+            >
+              {reminderSending ? "Enviando recordatorios..." : "Enviar recordatorios a clientes con saldo"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -918,6 +1133,22 @@ export default function TelegramPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
+                        {log.direction === "outgoing" && (
+                          <span title={`Estado: ${log.status}`}>
+                            {log.status === "sent" ? (
+                              <CheckCheck size={15} className="text-[#6B8E6B]" />
+                            ) : log.status === "failed" ? (
+                              <AlertCircle size={15} className="text-[#D4A0A0]" />
+                            ) : (
+                              <Clock size={15} className="text-[#B8837E]" />
+                            )}
+                          </span>
+                        )}
+                        {log.direction === "incoming" ? (
+                          <ArrowDownLeft size={14} className="text-[#B8837E]" />
+                        ) : (
+                          <ArrowUpRight size={14} className="text-[#6B8E6B]" />
+                        )}
                         <span className="text-sm text-[#5C3E35] capitalize">{log.status}</span>
                         {log.direction === "incoming" && (
                           <button

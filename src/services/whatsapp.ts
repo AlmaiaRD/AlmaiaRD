@@ -38,6 +38,10 @@ export interface WhatsAppMessage {
   text?: {
     body: string;
   };
+  image?: { link: string };
+  video?: { link: string };
+  audio?: { link: string };
+  document?: { link: string; filename?: string };
 }
 
 export interface MessageTemplate {
@@ -107,8 +111,8 @@ export async function deleteWhatsAppConfig(id: string): Promise<void> {
 export async function sendViaApi(
   configId: string,
   to: string,
-  type: "text" | "template",
-  payload: { text?: string; template?: WhatsAppMessage["template"] }
+  type: "text" | "template" | "image" | "document" | "audio" | "video",
+  payload: { text?: string; mediaUrl?: string; filename?: string; template?: WhatsAppMessage["template"] }
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const res = await fetch("/api/whatsapp/send", {
@@ -281,7 +285,8 @@ export async function logWhatsAppMessage(
   templateName?: string,
   status: string = "sent",
   messageId?: string,
-  error?: string
+  error?: string,
+  messageBody?: string
 ): Promise<void> {
   const { error: insertError } = await supabase.from("whatsapp_logs").insert({
     config_id: configId,
@@ -291,6 +296,7 @@ export async function logWhatsAppMessage(
     status,
     message_id: messageId,
     error,
+    message_body: messageBody,
   });
   if (insertError) throw insertError;
 }

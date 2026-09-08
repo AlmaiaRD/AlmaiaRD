@@ -29,12 +29,43 @@ async function processIncomingMessage(
   body: unknown,
   configId: string | null
 ) {
-  const message = (body as { message?: { chat?: { id?: number | string }; text?: string; from?: { first_name?: string; last_name?: string; username?: string } } })?.message;
+  const message = (body as { message?: { chat?: { id?: number | string }; text?: string; message_id?: number; from?: { first_name?: string; last_name?: string; username?: string }; photo?: unknown[]; document?: { file_name?: string }; video?: unknown; audio?: unknown; voice?: unknown } })?.message;
   const chatId = message?.chat?.id != null ? String(message.chat.id) : null;
-  const text = message?.text;
+  const messageId = message?.message_id;
+  let text = message?.text;
+  if (!text) {
+    const mediaDescriptions: Record<string, string> = {
+      photo: "[Foto]",
+      video: "[Video]",
+      audio: "[Audio]",
+      voice: "[Nota de voz]",
+      document: message?.document?.file_name ? `[Documento: ${message.document.file_name}]` : "[Documento]",
+      sticker: "[Sticker]",
+      location: "[Ubicación]",
+      contact: "[Contacto]",
+    };
+    const type = (message as Record<string, unknown>)?.photo
+      ? "photo"
+      : (message as Record<string, unknown>)?.video
+        ? "video"
+        : (message as Record<string, unknown>)?.audio
+          ? "audio"
+          : (message as Record<string, unknown>)?.voice
+            ? "voice"
+            : (message as Record<string, unknown>)?.document
+              ? "document"
+              : (message as Record<string, unknown>)?.sticker
+                ? "sticker"
+                : (message as Record<string, unknown>)?.location
+                  ? "location"
+                  : (message as Record<string, unknown>)?.contact
+                    ? "contact"
+                    : "unknown";
+    text = mediaDescriptions[type] || "[Adjunto]";
+  }
   if (!supabase || !chatId) {
     if (chatId) {
-      console.error(`[telegram-webhook] (sin service role) mensaje de ${chatId}: ${text || "(no text)"}`);
+      console.error(`[telegram-webhook] (sin service role) mensaje de ${chatId}: ${text}`);
     }
     return;
   }
@@ -45,6 +76,7 @@ async function processIncomingMessage(
     direction: "incoming",
     message_type: "text",
     message_body: text,
+    message_id: messageId != null ? String(messageId) : null,
     status: "received",
   });
 

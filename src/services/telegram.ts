@@ -104,13 +104,14 @@ export async function registerTelegramWebhook(
 export async function sendViaTelegramApi(
   configId: string,
   chatId: string,
-  text: string
+  text: string,
+  media?: { mediaUrl: string; mediaType: "photo" | "document" | "video" | "audio" }
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const res = await fetch("/api/telegram/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ configId, chatId, text }),
+      body: JSON.stringify({ configId, chatId, text, ...(media || {}) }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {

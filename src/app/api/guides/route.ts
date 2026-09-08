@@ -40,6 +40,7 @@ const FILE_LABELS: Record<string, string> = {
   "manage-customer-process.md": "Cómo Gestionar un Cliente",
   "move-inventory-process.md": "Cómo Mover Inventario",
   "send-whatsapp-process.md": "Cómo Enviar un WhatsApp",
+  "send-telegram-process.md": "Cómo Enviar un Mensaje por Telegram",
   "generate-report-process.md": "Cómo Generar un Reporte",
   "common-issues-guide.md": "Problemas Comunes",
   "contact-support-guide.md": "Contacto y Soporte Técnico",

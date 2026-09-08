@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { telegramSendSchema, validateBody } from "@/lib/validation";
+import { friendlyTelegramError } from "@/lib/communication-errors";
 
 const TELEGRAM_API_URL = "https://api.telegram.org";
 
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { configId, chatId, text } = await req.json();
+    const { configId, chatId, text, mediaUrl, mediaType } = await req.json();
     if (!configId || !chatId || !text) {
       return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 });
     }
@@ -54,11 +55,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const response = await fetch(`${TELEGRAM_API_URL}/bot${config.bot_token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-    });
+    let response: Response;
+    if (mediaUrl) {
+      const endpoint =
+        mediaType === "photo"
+          ? "sendPhoto"
+          : mediaType === "video"
+            ? "sendVideo"
+            : mediaType === "audio"
+              ? "sendAudio"
+              : "sendDocument";
+      const payload: Record<string, unknown> = {
+        chat_id: chatId,
+        [mediaType === "photo" ? "photo" : mediaType === "video" ? "video" : mediaType === "audio" ? "audio" : "document"]: mediaUrl,
+        parse_mode: "HTML",
+      };
+      if (text) payload.caption = text;
+      response = await fetch(`${TELEGRAM_API_URL}/bot${config.bot_token}/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      response = await fetch(`${TELEGRAM_API_URL}/bot${config.bot_token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+      });
+    }
     const data = await response.json().catch(() => ({}));
 
     const status = response.ok ? "sent" : "failed";
@@ -67,7 +91,7 @@ export async function POST(req: NextRequest) {
         config_id: configId,
         chat_id: chatId,
         direction: "outgoing",
-        message_type: "text",
+        message_type: mediaUrl ? mediaType || "document" : "text",
         message_body: text,
         status,
         message_id: response.ok ? data.result?.message_id : undefined,
@@ -79,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: data.description || "Error al enviar el mensaje" },
+        { success: false, error: friendlyTelegramError(data.description || "Error al enviar el mensaje") },
         { status: 400 }
       );
     }

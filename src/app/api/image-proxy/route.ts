@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { imageProxySchema, validateQuery } from "@/lib/validation";
 
 function isAllowedHost(host: string): boolean {
@@ -33,6 +35,21 @@ function isAllowedUrl(url: string): { allowed: boolean; reason?: string } {
 }
 
 export async function GET(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const authSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get(name: string) { return cookieStore.get(name)?.value } } }
+    );
+    const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+  } catch {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   let url: string;
   try {
     const params = validateQuery(imageProxySchema)(new URL(request.url).searchParams);

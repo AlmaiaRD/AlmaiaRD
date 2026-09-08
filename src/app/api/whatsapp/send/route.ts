@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { whatsappSendSchema, validateBody } from "@/lib/validation";
+import { friendlyWhatsAppError } from "@/lib/communication-errors";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0";
 
@@ -34,9 +35,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { configId, to, type, text, template } = await req.json();
+    const { configId, to, type, text, mediaUrl, filename, template } = await req.json();
     if (!configId || !to || !type) {
       return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 });
+    }
+
+    if ((type === "image" || type === "document" || type === "audio" || type === "video") && !mediaUrl) {
+      return NextResponse.json({ error: "Se requiere una URL pública del archivo para enviar media" }, { status: 400 });
     }
 
     // La lectura de whatsapp_configs está restringida por RLS a SOLO admin,
@@ -61,6 +66,23 @@ export async function POST(req: NextRequest) {
     if (type === "template" && template) {
       message.type = "template";
       message.template = template;
+    } else if (type === "image") {
+      message.type = "image";
+      message.image = { link: mediaUrl };
+      if (text) message.caption = text;
+    } else if (type === "video") {
+      message.type = "video";
+      message.video = { link: mediaUrl };
+      if (text) message.caption = text;
+    } else if (type === "audio") {
+      message.type = "audio";
+      message.audio = { link: mediaUrl };
+    } else if (type === "document") {
+      message.type = "document";
+      const documentPayload: Record<string, unknown> = { link: mediaUrl };
+      if (filename) documentPayload.filename = filename;
+      message.document = documentPayload;
+      if (text) message.caption = text;
     } else {
       message.type = "text";
       message.text = { body: text ?? "" };
@@ -83,6 +105,7 @@ export async function POST(req: NextRequest) {
         recipient: to,
         message_type: type,
         template_name: type === "template" ? template?.name : undefined,
+        message_body: type === "text" || type === "template" ? text : text ? `${text} (adjunto ${type})` : type,
         status,
         message_id: data.messages?.[0]?.id,
         error: response.ok ? undefined : data.error?.message,
@@ -93,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: data.error?.message || "Error al enviar el mensaje" },
+        { success: false, error: friendlyWhatsAppError(data.error?.message || "Error al enviar el mensaje") },
         { status: 400 }
       );
     }
