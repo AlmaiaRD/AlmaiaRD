@@ -245,12 +245,11 @@ export default function WhatsAppPage() {
     } catch { toast.error("Error al cargar datos locales"); }
   }
 
-  // Unificar plantillas: se leen desde BD (communication_templates). Si la BD
-  // aún no tiene ninguna y existían plantillas en localStorage (versión legacy),
-  // se migran automáticamente y se limpia la clave antigua.
+  // Plantillas en BD unificada (shared entre WhatsApp, Telegram y Email).
+  // Se leen todas sin filtrar por canal para que sean compartidas.
   async function loadTemplates() {
     try {
-      let dbTemplates = await getTemplates("whatsapp");
+      let dbTemplates = await getTemplates();
       const legacyRaw = localStorage.getItem(TEMPLATES_LEGACY_STORAGE_KEY);
       if (dbTemplates.length === 0 && legacyRaw) {
         const legacy = JSON.parse(legacyRaw) as { name: string; message: string; category: string; variables: string[] }[];
