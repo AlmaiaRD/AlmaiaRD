@@ -16,6 +16,7 @@ type Tab = "general" | "ai" | "banks" | "backup" | "images";
 function cropSignatureImage(src: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = "anonymous"; // Evita tainted canvas al dibujar en canvas
     img.onload = () => {
       const canvas = document.createElement("canvas");
       canvas.width = img.naturalWidth;
