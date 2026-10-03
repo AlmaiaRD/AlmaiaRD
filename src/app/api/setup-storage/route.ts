@@ -64,21 +64,51 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           query: `
             -- Private bucket: solo authenticated pueden insertar (subir)
-            CREATE POLICY IF NOT EXISTS "product_images_insert" ON storage.objects
-              FOR INSERT TO authenticated
-              WITH CHECK (bucket_id = 'product-images');
+            -- PostgreSQL NO admite "IF NOT EXISTS" en CREATE POLICY (error de sintaxis),
+            -- así que cada policy se crea dentro de un bloque DO que primero consulta
+            -- pg_policies y solo la crea si no existe.
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'storage' AND tablename = 'objects'
+                  AND policyname = 'product_images_insert'
+              ) THEN
+                CREATE POLICY "product_images_insert" ON storage.objects
+                  FOR INSERT TO authenticated
+                  WITH CHECK (bucket_id = 'product-images');
+              END IF;
+            END $$;
 
             -- SELECT directo denegado para private bucket; acceso via signed URLs
             -- (no hay policy SELECT para authenticated en bucket privado)
 
-            CREATE POLICY IF NOT EXISTS "product_images_delete" ON storage.objects
-              FOR DELETE TO authenticated
-              USING (bucket_id = 'product-images' AND auth.uid() = owner);
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'storage' AND tablename = 'objects'
+                  AND policyname = 'product_images_delete'
+              ) THEN
+                CREATE POLICY "product_images_delete" ON storage.objects
+                  FOR DELETE TO authenticated
+                  USING (bucket_id = 'product-images' AND auth.uid() = owner);
+              END IF;
+            END $$;
 
-            CREATE POLICY IF NOT EXISTS "product_images_update" ON storage.objects
-              FOR UPDATE TO authenticated
-              USING (bucket_id = 'product-images' AND auth.uid() = owner)
-              WITH CHECK (bucket_id = 'product-images' AND auth.uid() = owner);
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'storage' AND tablename = 'objects'
+                  AND policyname = 'product_images_update'
+              ) THEN
+                CREATE POLICY "product_images_update" ON storage.objects
+                  FOR UPDATE TO authenticated
+                  USING (bucket_id = 'product-images' AND auth.uid() = owner)
+                  WITH CHECK (bucket_id = 'product-images' AND auth.uid() = owner);
+              END IF;
+            END $$;
 
             -- Función para generar signed URL (admin/seller/assistant)
             CREATE OR REPLACE FUNCTION public.get_product_image_signed_url(p_path TEXT, p_expires_in INTEGER DEFAULT 3600)

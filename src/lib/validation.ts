@@ -126,11 +126,29 @@ export const whatsappTemplatesSchema = z.object({
   }),
 });
 
+/**
+ * Valida el cuerpo de la petición contra un esquema Zod.
+ *
+ * IMPORTANTE — `req.clone()`:
+ *   Un cuerpo de `Request` es un stream de un solo uso. Next.js entrega el body
+ *   sin bufferizar (`next/dist/server/web/adapter.js` -> `body: params.request.body`),
+ *   por lo que un segundo `req.json()` lanza
+ *   `TypeError: Body is unusable: Body has already been read`
+ *   (documentado en `next/dist/docs/.../backend-for-frontend.md`: "You can only
+ *   read the request body once").
+ *
+ *   Doce rutas llamaban a este helper y acto seguido volvían a leer `req.json()`
+ *   en el handler, con lo que TODAS devolvían 500 en cada POST bien formado
+ *   (email, WhatsApp, Telegram, parseo de compras, IA). Se lee sobre un clon:
+ *   el validador consume su propia copia y el `req` original queda intacto para
+ *   el handler. No cambia el contrato: la función sigue devolviendo el valor
+ *   parseado, y las rutas que ya usaban el valor devuelto siguen igual.
+ */
 export const validateBody = <T extends z.ZodTypeAny>(
   schema: T
 ) => async (req: Request): Promise<z.infer<T>> => {
   try {
-    const body = await req.json();
+    const body = await req.clone().json();
     return schema.parse(body);
   } catch (error) {
     if (error instanceof z.ZodError) {

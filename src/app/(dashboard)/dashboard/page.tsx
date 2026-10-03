@@ -244,10 +244,14 @@ export default function DashboardPage() {
     })();
   }, [user]);
 
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
+  // Redirección en un efecto, NO durante el render.
+  // `router.push` en el cuerpo del render es un efecto secundario en render:
+  // dispara la navegación dos veces en React 18/19 modo estricto y puede
+  // provocar el aviso "Cannot update a component while rendering a different
+  // component".
+  useEffect(() => {
+    if (!user) router.push("/login");
+  }, [user, router]);
 
   // KPI Metas calculations
   const vendido = Number(stats?.salesMonth) || 0;
@@ -259,6 +263,10 @@ export default function DashboardPage() {
   const barCobrado = cobradoPct;
   const barVendido = vendidoPct > cobradoPct ? vendidoPct - cobradoPct : 0;
   const barRestante = monthlyGoal > 0 ? Math.max(100 - vendidoPct, 0) : 100;
+
+  // Mientras redirige no se pinta nada: evita el destello del panel con datos
+  // de "Admin" por defecto durante la navegación a /login.
+  if (!user) return null;
 
   return (
     <PageContainer>

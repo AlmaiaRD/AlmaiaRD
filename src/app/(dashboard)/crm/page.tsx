@@ -63,6 +63,26 @@ function getActivityColor(comments: string): string {
   return colors[type] || "bg-[#B8837E]";
 }
 
+/**
+ * Definido a nivel de módulo, no dentro de `CrmPage`.
+ *
+ * Un componente declarado dentro del cuerpo de otro se crea como un TIPO NUEVO
+ * en cada render del padre. React lo reconcilia como si fuera otro componente
+ * distinto: desmonta el anterior y monta uno desde cero. Con `StatusBadge` el
+ * efecto era invisible (es texto sin estado), pero con cualquier tarjeta
+ * editable significa perder el foco y lo que el usuario hubiera escrito a
+ * mitad de cada cambio de estado del CRM.
+ *
+ * Además, declararlo fuera evita recrear la función en cada render.
+ */
+function StatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case "COMPLETED": return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">Completada</span>;
+    case "OVERDUE": return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-700">Vencida</span>;
+    default: return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Pendiente</span>;
+  }
+}
+
 export default function CrmPage() {
   const router = useRouter();
   const [followups, setFollowups] = useState<FollowupWithClient[]>([]);
@@ -305,13 +325,7 @@ export default function CrmPage() {
     } finally { setSaving(false); }
   }
 
-  function StatusBadge({ status }: { status: string }) {
-    switch (status) {
-      case "COMPLETED": return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">Completada</span>;
-      case "OVERDUE": return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-700">Vencida</span>;
-      default: return <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Pendiente</span>;
-    }
-  }
+  
 
   return (
     <PageContainer>

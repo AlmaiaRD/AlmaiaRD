@@ -212,30 +212,83 @@ export async function forceDeleteProduct(productId: string) {
   return true;
 }
 
+/**
+ * ¿La RPC de agregación todavía no existe en la base de datos?
+ *
+ * Mismo criterio que `isMigrationPending()` en `services/settings.ts`: la
+ * aplicación suele desplegarse antes que la migración y no queremos dejar el
+ * módulo de inventario sin datos.
+ */
+function isAggregationRpcMissing(error: { code?: string; message?: string } | null): boolean {
+  return Boolean(
+    error?.code === "PGRST202" || /could not find the function/i.test(error?.message || "")
+  );
+}
+
+/**
+ * Convierte la salida de una función de agregación en el mapa
+ * { [product_id]: fecha } que espera la interfaz.
+ */
+function rowsToDateMap(
+  rows: Array<{ product_id: string | null; value: string | null }> | null,
+  valueKey: string
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const row of rows || []) {
+    if (!row?.product_id) continue;
+    const value = (row as unknown as Record<string, unknown>)[valueKey];
+    if (typeof value === "string" && value && !map[row.product_id]) {
+      map[row.product_id] = value;
+    }
+  }
+  return map;
+}
+
+/**
+ * Última venta por producto, ignorando facturas canceladas.
+ *
+ * ANTES: se traían todas las facturas y luego sus renglones con
+ * `.in("invoice_id", ids)` ordenando por `invoice_id` -- un UUID. El orden
+ * de la consulta de renglones SOBRESCRIBÍA el orden por fecha de la consulta
+ * de facturas, de modo que la fecha retenida por producto era arbitraria.
+ *
+ * AHORA: la agregación `DISTINCT ON` ocurre en la base de datos
+ * (migración 20260910_product_date_aggregations.sql), que es además la única
+ * forma de no enviar todas las facturas al cliente.
+ */
 export async function getLastSalePerProduct() {
-  // First get non-cancelled invoices, then get their items
+  const { data, error } = await supabase.rpc("get_last_sale_per_product");
+  if (!error) return rowsToDateMap(data as never, "last_date");
+
+  // La migración aún no está aplicada: se conserva el comportamiento previo.
+  if (!isAggregationRpcMissing(error)) throw error;
+  return getLastSalePerProductLegacy();
+}
+
+/** Respaldo previo a la RPC. Ver `getLastSalePerProduct`. */
+async function getLastSalePerProductLegacy(): Promise<Record<string, string>> {
   const { data: invoices, error: invError } = await supabase
     .from("invoices")
     .select("id, invoice_date")
     .neq("status", "CANCELLED")
     .order("invoice_date", { ascending: false });
-  
+
   if (invError) throw invError;
-  
+
   const invoiceIds = (invoices || []).map(i => i.id);
   if (invoiceIds.length === 0) return {};
-  
+
   const { data: items, error: itemError } = await supabase
     .from("invoice_items")
     .select("product_id, invoice_id")
     .in("invoice_id", invoiceIds)
     .order("invoice_id", { ascending: false });
-  
+
   if (itemError) throw itemError;
-  
+
   const lastSaleMap: Record<string, string> = {};
   const invoiceDateMap = new Map(invoices?.map(i => [i.id, i.invoice_date]) || []);
-  
+
   for (const item of items || []) {
     const pid = item.product_id;
     if (!lastSaleMap[pid]) {
@@ -245,30 +298,41 @@ export async function getLastSalePerProduct() {
   return lastSaleMap;
 }
 
+/**
+ * Última compra por producto, ignorando compras canceladas.
+ * Mismo defecto y misma corrección que `getLastSalePerProduct`.
+ */
 export async function getLastPurchasePerProduct() {
-  // First get non-cancelled purchases, then get their items
+  const { data, error } = await supabase.rpc("get_last_purchase_per_product");
+  if (!error) return rowsToDateMap(data as never, "last_date");
+  if (!isAggregationRpcMissing(error)) throw error;
+  return getLastPurchasePerProductLegacy();
+}
+
+/** Respaldo previo a la RPC. Ver `getLastPurchasePerProduct`. */
+async function getLastPurchasePerProductLegacy(): Promise<Record<string, string>> {
   const { data: purchases, error: purError } = await supabase
     .from("purchases")
     .select("id, purchase_date")
     .neq("status", "CANCELLED")
     .order("purchase_date", { ascending: false });
-  
+
   if (purError) throw purError;
-  
+
   const purchaseIds = (purchases || []).map(p => p.id);
   if (purchaseIds.length === 0) return {};
-  
+
   const { data: items, error: itemError } = await supabase
     .from("purchase_items")
     .select("product_id, purchase_id")
     .in("purchase_id", purchaseIds)
     .order("purchase_id", { ascending: false });
-  
+
   if (itemError) throw itemError;
-  
+
   const lastPurchaseMap: Record<string, string> = {};
   const purchaseDateMap = new Map(purchases?.map(p => [p.id, p.purchase_date]) || []);
-  
+
   for (const item of items || []) {
     const pid = item.product_id;
     if (!lastPurchaseMap[pid]) {
@@ -278,29 +342,41 @@ export async function getLastPurchasePerProduct() {
   return lastPurchaseMap;
 }
 
+/**
+ * Primera compra por producto, ignorando compras canceladas.
+ * Mismo defecto y misma corrección que `getLastSalePerProduct`.
+ */
 export async function getFirstPurchasePerProduct() {
+  const { data, error } = await supabase.rpc("get_first_purchase_per_product");
+  if (!error) return rowsToDateMap(data as never, "first_date");
+  if (!isAggregationRpcMissing(error)) throw error;
+  return getFirstPurchasePerProductLegacy();
+}
+
+/** Respaldo previo a la RPC. Ver `getFirstPurchasePerProduct`. */
+async function getFirstPurchasePerProductLegacy(): Promise<Record<string, string>> {
   const { data: purchases, error: purError } = await supabase
     .from("purchases")
     .select("id, purchase_date")
     .neq("status", "CANCELLED")
     .order("purchase_date", { ascending: true });
-  
+
   if (purError) throw purError;
-  
+
   const purchaseIds = (purchases || []).map(p => p.id);
   if (purchaseIds.length === 0) return {};
-  
+
   const { data: items, error: itemError } = await supabase
     .from("purchase_items")
     .select("product_id, purchase_id")
     .in("purchase_id", purchaseIds)
     .order("purchase_id", { ascending: true });
-  
+
   if (itemError) throw itemError;
-  
+
   const firstPurchaseMap: Record<string, string> = {};
   const purchaseDateMap = new Map(purchases?.map(p => [p.id, p.purchase_date]) || []);
-  
+
   for (const item of items || []) {
     const pid = item.product_id;
     if (!firstPurchaseMap[pid]) {

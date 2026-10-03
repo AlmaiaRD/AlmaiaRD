@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { nextSequenceNumber, SEQUENCE_DIGITS } from "@/lib/sequences";
 import type { CreditBalance, Receipt, PaymentMethod } from "@/types/database";
 
 export async function getClientCredits(clientId: string) {
@@ -47,74 +48,113 @@ export async function applyCreditToInvoice(creditId: string, invoiceId: string, 
   if (!creditId || !invoiceId) throw new Error("Crédito y factura requeridos");
   if (!Number.isFinite(amount) || amount <= 0) throw new Error("Monto inválido");
 
+  const cents = Math.round(amount * 100) / 100;
+
+  // -------------------------------------------------------------------------
   // 1) Consumir el crédito (marca USADO, reduce clients.credit_balance)
+  //
+  //    Se mantiene en PRIMER lugar a propósito: así el caso habitual de "saldo
+  //    insuficiente" falla antes de tocar la factura. El precio es que a partir
+  //    de aquí cualquier fallo debe compensarse, y eso es exactamente lo que
+    //    hace el envoltorio try/catch de más abajo.
+  // -------------------------------------------------------------------------
   const { error: useErr } = await supabase.rpc("use_credit_balance", {
     p_credit_id: creditId,
-    p_amount: amount,
+    p_amount: cents,
   });
   if (useErr) throw useErr;
 
-  // 2) Crear recibo tipo CREDIT aplicado a la factura
-  //    createReceipt llama adjustPayment (reduce balance_due) y el trigger recalcula credit_balance
-  const { data: creditData } = await supabase
-    .from("credit_balances")
-    .select("client_id, receipts!inner(client_id)")
-    .eq("id", creditId)
-    .single<{ client_id: string; receipts: { client_id: string } }>();
-  const clientId = creditData?.client_id ?? creditData?.receipts?.client_id;
-  if (!clientId) throw new Error("No se pudo determinar el cliente del crédito");
+  let invoiceAdjusted = false;
 
-  const { data: settings } = await supabase.from("settings").select("receipt_prefix").single();
-  const prefix = settings?.receipt_prefix || "REC-";
-  const { data: lastRec } = await supabase
-    .from("receipts")
-    .select("receipt_number")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  const lastNum = lastRec?.[0]?.receipt_number || `${prefix}000000`;
-  const nextNum = parseInt(lastNum.replace(prefix, ""), 10) + 1;
-  const receiptNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
+  /** Deshace los efectos ya aplicados, en orden inverso. */
+  const compensate = async () => {
+    // a) Reponer el crédito consumido (paso 1).
+    try {
+      await supabase.rpc("refund_credit_balance", {
+        p_credit_id: creditId,
+        p_amount: cents,
+      });
+    } catch { /* best-effort: el error original es el que se propaga */ }
+    // b) Revertir el ajuste de la factura, si llegó a aplicarse.
+    if (invoiceAdjusted) {
+      try {
+        await supabase.rpc("adjust_invoice_payment", {
+          p_invoice_id: invoiceId,
+          p_diff: -cents,
+        });
+      } catch { /* best-effort */ }
+    }
+  };
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = sessData.session?.user?.id;
 
-  // Calcular credit_excess (será 0 porque amount <= balance_due de la factura)
-  const { data: inv } = await supabase
-    .from("invoices")
-    .select("balance_due")
-    .eq("id", invoiceId)
-    .single();
-  const balanceDue = Number(inv?.balance_due ?? 0);
-  const creditExcess = Math.max(0, Math.round((amount - balanceDue) * 100) / 100);
+  try {
+    // 2) Crear recibo tipo CREDIT aplicado a la factura
+    //    createReceipt llama adjustPayment (reduce balance_due) y el trigger recalcula credit_balance
+    const { data: creditData } = await supabase
+      .from("credit_balances")
+      .select("client_id, receipts!inner(client_id)")
+      .eq("id", creditId)
+      .single<{ client_id: string; receipts: { client_id: string } }>();
+    const clientId = creditData?.client_id ?? creditData?.receipts?.client_id;
+    if (!clientId) throw new Error("No se pudo determinar el cliente del crédito");
 
-  // Aplicar pago a la factura ANTES del insert (patrón createReceipt)
-  if (amount > 0) {
-    const { error: adjErr } = await supabase.rpc("adjust_invoice_payment", {
-      p_invoice_id: invoiceId,
-      p_diff: Math.round(amount * 100) / 100,
-    });
-    if (adjErr) throw adjErr;
+    const { data: settings } = await supabase.from("settings").select("receipt_prefix").single();
+    const prefix = settings?.receipt_prefix || "REC-";
+    const { data: lastRec } = await supabase
+      .from("receipts")
+      .select("receipt_number")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const lastNum = lastRec?.[0]?.receipt_number ?? null;
+    const receiptNumber = nextSequenceNumber(lastNum, prefix, SEQUENCE_DIGITS);
+    if (receiptNumber === null) {
+      throw new Error(
+        `No se pudo generar el numero de recibo: el ultimo correlativo ` +
+          `(${JSON.stringify(lastNum)}) no es interpretable.`
+      );
+    }
+
+    // Calcular credit_excess (será 0 porque amount <= balance_due de la factura)
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("balance_due")
+      .eq("id", invoiceId)
+      .single();
+    const balanceDue = Number(inv?.balance_due ?? 0);
+    const creditExcess = Math.max(0, Math.round((cents - balanceDue) * 100) / 100);
+
+    // Aplicar pago a la factura ANTES del insert (patrón createReceipt)
+    if (cents > 0) {
+      const { error: adjErr } = await supabase.rpc("adjust_invoice_payment", {
+        p_invoice_id: invoiceId,
+        p_diff: cents,
+      });
+      if (adjErr) throw adjErr;
+      invoiceAdjusted = true;
+    }
+
+    const { data: receipt, error: recErr } = await supabase.from("receipts").insert({
+      client_id: clientId,
+      invoice_id: invoiceId,
+      payment_method: "CREDIT" as PaymentMethod,
+      amount: cents,
+      amount_in_words: cents.toFixed(2),
+      concept: `Aplicación de crédito #${creditId.slice(0, 8)}`,
+      receipt_number: receiptNumber,
+      created_by: userId,
+      credit_excess: creditExcess,
+    }).select().single();
+
+    if (recErr) throw recErr;
+
+    return receipt as Receipt;
+  } catch (e) {
+    // Antes: sólo se revertía el paso 5 y el crédito del paso 1 se perdía.
+    await compensate();
+    throw e;
   }
-
-  const { data: receipt, error: recErr } = await supabase.from("receipts").insert({
-    client_id: clientId,
-    invoice_id: invoiceId,
-    payment_method: "CREDIT" as PaymentMethod,
-    amount,
-    amount_in_words: amount.toFixed(2),
-    concept: `Aplicación de crédito #${creditId.slice(0, 8)}`,
-    receipt_number: receiptNumber,
-    created_by: userId,
-    credit_excess: creditExcess,
-  }).select().single();
-
-  if (recErr) {
-    // Revertir ajuste de factura si falla el insert
-    try { await supabase.rpc("adjust_invoice_payment", { p_invoice_id: invoiceId, p_diff: -Math.round(amount * 100) / 100 }); } catch {}
-    throw recErr;
-  }
-
-  return receipt as Receipt;
 }
 
 export async function getCreditsSummary() {

@@ -15,7 +15,7 @@ import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getFollowupsByQuote } from "@/services/followups";
 import type { Client, Followup } from "@/types/database";
 import type { Settings } from "@/types/database";
-import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent } from "@/lib/pdf";
@@ -446,7 +446,6 @@ function CotizacionesContent() {
 function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
-    function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
     const statusLabel = statusMap[data.status]?.label || data.status;
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
@@ -455,7 +454,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(st?.business_name) || "ALMAIA"}</h2>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Tus aliados en el camino a tu bienestar y salud.</p>
             <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
@@ -464,19 +463,19 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${esc(data.quote_number)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${esc(data.quote_date)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">V\u00e1lida hasta: ${esc(data.valid_until)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Estado: ${esc(statusLabel)}</p>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${sanitizeHtml(data.quote_number)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${sanitizeHtml(data.quote_date)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">V\u00e1lida hasta: ${sanitizeHtml(data.valid_until)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Estado: ${sanitizeHtml(statusLabel)}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
       <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${esc(data.client_name) || ""}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${esc(data.client_phone) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${esc(data.client_email) || "N/D"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${sanitizeHtml(data.client_name) || ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${sanitizeHtml(data.client_phone) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${sanitizeHtml(data.client_email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
@@ -491,10 +490,10 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
         <tbody>
           ${(data.items || []).map((item) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${esc(item.name) || "Producto"}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${sanitizeHtml(item.name) || "Producto"}</td>
               <td style="padding:10px 12px;text-align:center;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${esc(formatCurrency(Number(item.unit_price)))}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${esc(formatCurrency(Number(item.line_total)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -502,37 +501,37 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
       <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
           <span>Subtotal</span>
-          <span>${esc(formatCurrency(Number(data.subtotal)))}</span>
+          <span>${sanitizeHtml(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
-            <span>${esc(formatCurrency(Number(data.itbis_total)))}</span>
+            <span>${sanitizeHtml(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
         ` : ""}
         ${Number(data.discount_amount) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#D4A0A0;margin-bottom:4px;">
             <span>Descuento</span>
-            <span>-${esc(formatCurrency(Number(data.discount_amount)))}</span>
+            <span>-${sanitizeHtml(formatCurrency(Number(data.discount_amount)))}</span>
           </div>
         ` : ""}
         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
           <span>Total General</span>
-          <span>${esc(formatCurrency(Number(data.total)))}</span>
+          <span>${sanitizeHtml(formatCurrency(Number(data.total)))}</span>
         </div>
         ${data.notes ? `
           <div style="margin-top:8px;padding:8px 12px;background:#FAF6F0;border-radius:8px;font-size:12px;color:#9C8A82;">
-            <span style="font-weight:600;">Notas:</span> ${esc(data.notes)}
+            <span style="font-weight:600;">Notas:</span> ${sanitizeHtml(data.notes)}
           </div>
         ` : ""}
       </div>
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu inter\u00e9s en ${esc(st?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu inter\u00e9s en ${sanitizeHtml(st?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${st?.signature_url ? `<img src="${esc(st.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(st?.business_name) || "ALMAIA"}</p>`}
+          ${st?.signature_url ? `<img src="${sanitizeHtml(st.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>

@@ -21,7 +21,7 @@ import type { BankAccount } from "@/types/database";
 import { getSettings } from "@/services/settings";
 import type { Settings } from "@/types/database";
 import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
-import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -310,35 +310,27 @@ function InventarioContent() {
   }
 
 function generateHtmlForJpg(purchase: PurchaseWithItems): string {
-    const esc = (s: string | null | undefined) => {
-      if (!s) return "";
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    };
+    
     const rows = (purchase.purchase_items || []).map((item) => {
       const hasItbis = item.itbis !== false;
       const lineItbis = hasItbis ? item.line_itbis || (item.quantity * item.unit_cost * ITBIS_RATE) : 0;
       const lineTotal = item.line_total + lineItbis;
       return (
         "<tr>" +
-        '<td style="padding:4px;">' + (esc(item.products?.name) || "—") + "</td>" +
-        '<td style="text-align:center;padding:4px;">' + esc(String(item.quantity)) + "</td>" +
-        '<td style="text-align:center;padding:4px;">' + esc(formatCurrency(item.unit_cost)) + "</td>" +
-        '<td style="text-align:center;padding:4px;">' + esc(formatCurrency(lineItbis)) + "</td>" +
-        '<td style="text-align:right;padding:4px;font-weight:bold;">' + esc(formatCurrency(lineTotal)) + "</td>" +
+        '<td style="padding:4px;">' + (sanitizeHtml(item.products?.name) || "—") + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + sanitizeHtml(String(item.quantity)) + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + sanitizeHtml(formatCurrency(item.unit_cost)) + "</td>" +
+        '<td style="text-align:center;padding:4px;">' + sanitizeHtml(formatCurrency(lineItbis)) + "</td>" +
+        '<td style="text-align:right;padding:4px;font-weight:bold;">' + sanitizeHtml(formatCurrency(lineTotal)) + "</td>" +
         "</tr>"
       );
     }).join("");
     return (
       '<div style="color:#5C3E35;">' +
       '<h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>' +
-      '<p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ' + esc(purchase.purchase_number) + '</p>' +
+      '<p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ' + sanitizeHtml(purchase.purchase_number) + '</p>' +
       '<hr style="border-color:#E8E0D8;margin-bottom:8px;"/>' +
-      '<p style="font-size:10px;"><b>Fecha:</b> ' + esc(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (esc(purchase.supplier_name) || "—") + '</p>' +
+      '<p style="font-size:10px;"><b>Fecha:</b> ' + sanitizeHtml(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (sanitizeHtml(purchase.supplier_name) || "—") + '</p>' +
       '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
       '<table style="width:100%;font-size:9px;border-collapse:collapse;">' +
       '<thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>' +
@@ -346,11 +338,11 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       '</table>' +
       '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
       '<div style="text-align:right;font-size:10px;">' +
-      '<p>Subtotal: ' + esc(formatCurrency(purchase.subtotal)) + '</p>' +
-      '<p>Impuesto Recogida: ' + esc(formatCurrency(purchase.impuesto_recogida || 0)) + '</p>' +
-      '<p>Cargo Admin.: ' + esc(formatCurrency(purchase.cargo_administracion || 0)) + '</p>' +
-      '<p>ITBIS (18%): ' + esc(formatCurrency(purchase.itbis || 0)) + '</p>' +
-      '<p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ' + esc(formatCurrency(purchase.total)) + '</p>' +
+      '<p>Subtotal: ' + sanitizeHtml(formatCurrency(purchase.subtotal)) + '</p>' +
+      '<p>Impuesto Recogida: ' + sanitizeHtml(formatCurrency(purchase.impuesto_recogida || 0)) + '</p>' +
+      '<p>Cargo Admin.: ' + sanitizeHtml(formatCurrency(purchase.cargo_administracion || 0)) + '</p>' +
+      '<p>ITBIS (18%): ' + sanitizeHtml(formatCurrency(purchase.itbis || 0)) + '</p>' +
+      '<p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ' + sanitizeHtml(formatCurrency(purchase.total)) + '</p>' +
       '</div>' +
       '</div>'
     );

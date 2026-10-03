@@ -4,10 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
-import { getReturns, getReturnItems, createReturn, completeReturn, cancelReturn } from "@/services/returns";
-import { getInvoices } from "@/services/invoices";
-import { getProducts } from "@/services/products";
-import type { Product } from "@/types/database";
+import { getReturns, getReturnItems, getReturnedQuantitiesForInvoice, createReturn, completeReturn, cancelReturn } from "@/services/returns";
+import { getInvoices, getInvoice } from "@/services/invoices";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, Search, Eye, X, Check, RotateCcw, Package } from "lucide-react";
 import toast from "react-hot-toast";
@@ -39,6 +37,23 @@ interface InvoiceWithClient {
   clients?: { full_name: string } | null;
 }
 
+/**
+ * Línea de factura normalizada para el formulario de devolución.
+ *
+ * Antes este formulario tomaba el precio del catálogo (`products.price_30`),
+ * que es el precio de venta HOY, y no el precio cobrado en la factura. Una
+ * devolución credited al cliente con el precio actual en lugar del facturado
+ * deja la factura descuadrada. Aquí la fuente de verdad es `invoice_items`.
+ */
+interface InvoiceLine {
+  product_id: string;
+  name: string;
+  billed_quantity: number;
+  unit_price: number;
+  /** Unidades aún devuelbles = facturado - ya devuelto en devoluciones completadas. */
+  returnable_quantity: number;
+}
+
 interface ReturnItemWithProduct {
   id: string;
   return_id: string;
@@ -65,7 +80,8 @@ export default function DevolucionesPage() {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [invoices, setInvoices] = useState<InvoiceWithClient[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [invoiceLines, setInvoiceLines] = useState<InvoiceLine[]>([]);
+  const [loadingLines, setLoadingLines] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithClient | null>(null);
   const [returnItems, setReturnItems] = useState<Array<{ product_id: string; name: string; quantity: number; unit_price: number; line_total: number; reason: string; maxQty: number }>>([]);
   const [reason, setReason] = useState("");
@@ -114,40 +130,86 @@ export default function DevolucionesPage() {
     setNotes("");
     setReturnItems([]);
     setSelectedInvoice(null);
+    setInvoiceLines([]);
     try {
-      const [inv, pr] = await Promise.all([getInvoices(), getProducts()]);
+      const inv = await getInvoices();
       setInvoices(inv.filter((i: InvoiceWithClient) => i.status !== "CANCELLED"));
-      setProducts(pr);
     } catch {
       toast.error("Error al cargar datos");
     }
     setShowModal(true);
   }
 
-  function handleSelectInvoice(invoiceId: string) {
+  async function handleSelectInvoice(invoiceId: string) {
     const inv = invoices.find((i: InvoiceWithClient) => i.id === invoiceId);
-    if (inv) {
-      setSelectedInvoice(inv);
-      setReturnItems([]);
-      setReason(`Devolución de factura ${inv.invoice_number}`);
+    setReturnItems([]);
+    setInvoiceLines([]);
+    if (!inv) {
+      setSelectedInvoice(null);
+      return;
+    }
+    setSelectedInvoice(inv);
+    setReason(`Devolución de factura ${inv.invoice_number}`);
+    setLoadingLines(true);
+    try {
+      // El precio y la cantidad devuelble se leen de la FACTURA, no del
+      // catálogo: devolver a precio de hoy descuadra la factura.
+      const [full, alreadyReturned] = await Promise.all([
+        getInvoice(inv.id),
+        getReturnedQuantitiesForInvoice(inv.id),
+      ]);
+      const items = (full?.invoice_items ?? []) as Array<{
+        product_id: string | null;
+        quantity: number | null;
+        unit_price: number | null;
+        custom_name: string | null;
+        products?: { name?: string | null } | null;
+      }>;
+      setInvoiceLines(
+        items
+          .filter((it): it is typeof it & { product_id: string } => Boolean(it.product_id))
+          .map((it) => {
+            const billed = Number(it.quantity ?? 0);
+            const returned = alreadyReturned[it.product_id] ?? 0;
+            return {
+              product_id: it.product_id,
+              name: it.custom_name || it.products?.name || "Producto",
+              billed_quantity: billed,
+              unit_price: Number(it.unit_price ?? 0),
+              returnable_quantity: Math.max(0, billed - returned),
+            };
+          })
+      );
+    } catch {
+      toast.error("Error al cargar los productos de la factura");
+    } finally {
+      setLoadingLines(false);
     }
   }
 
-  async function addReturnItem(productId: string) {
-    const prod = products.find((p: Product) => p.id === productId);
-    if (!prod) return;
+  function addReturnItem(productId: string) {
+    const line = invoiceLines.find((l) => l.product_id === productId);
+    if (!line) {
+      toast.error("Ese producto no está en la factura seleccionada");
+      return;
+    }
     if (returnItems.some((i) => i.product_id === productId)) {
       toast.error("Producto ya agregado");
       return;
     }
+    if (line.returnable_quantity <= 0) {
+      toast.error("No queda nada por devolver de este producto");
+      return;
+    }
     setReturnItems([...returnItems, {
-      product_id: productId,
-      name: prod.name,
+      product_id: line.product_id,
+      name: line.name,
       quantity: 1,
-      unit_price: prod.price_30 || 0,
-      line_total: prod.price_30 || 0,
+      // Precio COBRADO en la factura, no el precio actual del catálogo.
+      unit_price: line.unit_price,
+      line_total: line.unit_price,
       reason: "",
-      maxQty: 999,
+      maxQty: line.returnable_quantity,
     }]);
   }
 
@@ -155,6 +217,13 @@ export default function DevolucionesPage() {
     const items = [...returnItems];
     const item = { ...items[index], [field]: value };
     if (field === "quantity" || field === "unit_price") {
+      if (field === "quantity") {
+        // Nunca por encima de lo facturado y no devuelto todavía.
+        item.quantity = Math.min(
+          Math.max(1, Math.floor(Number(item.quantity) || 1)),
+          items[index].maxQty
+        );
+      }
       item.line_total = Number(item.quantity) * Number(item.unit_price);
     }
     items[index] = item;
@@ -321,16 +390,23 @@ export default function DevolucionesPage() {
                     onChange={(e) => {
                       if (e.target.value) { addReturnItem(e.target.value); e.target.value = ""; }
                     }}
-                    className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                    disabled={loadingLines}
+                    className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 disabled:opacity-50"
                   >
-                    <option value="">+ Agregar producto</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.price_30 || 0)}</option>
-                    ))}
+                    <option value="">{loadingLines ? "Cargando productos..." : "+ Agregar producto"}</option>
+                    {invoiceLines
+                      .filter((l) => !returnItems.some((i) => i.product_id === l.product_id))
+                      .map((l) => (
+                        <option key={l.product_id} value={l.product_id}>
+                          {l.name} — {formatCurrency(l.unit_price)} — máx {l.returnable_quantity}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
-                {returnItems.length === 0 ? (
+                {invoiceLines.length === 0 && !loadingLines ? (
+                  <p className="text-sm text-[#9C8A82] py-4 text-center">Esta factura no tiene productos para devolver</p>
+                ) : returnItems.length === 0 ? (
                   <p className="text-sm text-[#9C8A82] py-4 text-center">Selecciona productos de la factura</p>
                 ) : (
                   <div className="space-y-2">
@@ -339,8 +415,9 @@ export default function DevolucionesPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[#5C3E35] truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <input type="number" min={1} value={item.quantity}
+                            <input type="number" min={1} max={item.maxQty} value={item.quantity}
                               onChange={(e) => updateReturnItem(i, "quantity", Math.max(1, Number(e.target.value)))}
+                              title={`Máximo ${item.maxQty} por devolver`}
                               className="w-16 h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
                             <input type="number" step="0.01" value={item.unit_price}
                               onChange={(e) => updateReturnItem(i, "unit_price", Number(e.target.value))}

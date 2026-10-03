@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { sanitizeHtml } from "@/lib/utils";
 
 export interface TelegramConfig {
   id: string;
@@ -175,7 +176,7 @@ export async function notifyOwner(title: string, details: string): Promise<boole
     const actor = userData?.user?.email ? ` · ${userData.user.email}` : "";
     if (!config?.owner_chat_id) return false;
 
-    const message = `<b>${escapeHtml(title)}</b>\n${escapeHtml(details)}${actor}`;
+    const message = `<b>${sanitizeHtml(title)}</b>\n${sanitizeHtml(details)}${actor}`;
     const result = await sendViaTelegramApi(config.id, config.owner_chat_id, message);
     if (!result.success) return false;
     await logTelegramMessage(config.id, config.owner_chat_id, message, "sent", result.messageId);
@@ -185,9 +186,10 @@ export async function notifyOwner(title: string, details: string): Promise<boole
   }
 }
 
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+// (auditoría 2026-10-02) El escapado local de Telegram escapaba &, < y >
+// pero NO las comillas. Telegram acepta &quot; y &#039; como entidades
+// válidas en el modo HTML, así que usar el escapado completo del proyecto
+// corrige un hueco sin cambiar lo que se envía.
 
 // Modelo B: enviar un mensaje al cliente cuyo clients.telegram_chat_id coincide.
 // Devuelve false si no hay bot activo o el cliente no tiene chat vinculado.

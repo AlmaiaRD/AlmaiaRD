@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useDeferredValue } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import Badge from "@/components/ui/Badge";
-import { normalize } from "@/lib/search";
 import { getInvoicesPaginated } from "@/services/invoices";
 import { getCreditsSummary } from "@/services/credits";
 import Pagination from "@/components/ui/Pagination";
@@ -23,37 +22,52 @@ export default function CuentasPorCobrarPage() {
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  // La búsqueda se resuelve en el servidor (ver `getInvoicesPaginated`).
+  // `useDeferredValue` evita una consulta por cada tecla sin añadir un
+  // temporizador manual: React prioriza el input y difiere la consulta.
+  const deferredSearch = useDeferredValue(searchQuery);
   const [page, setPage] = useState(1);
   const [totalInvoices, setTotalInvoices] = useState(0);
   const [totalCredits, setTotalCredits] = useState(0);
   const pageSize = 50;
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
         const [result, credits] = await Promise.all([
-          getInvoicesPaginated(page, pageSize),
+          getInvoicesPaginated(page, pageSize, {
+            onlyPending: true,
+            search: deferredSearch,
+          }),
           getCreditsSummary(),
         ]);
-        const unpaid = ((result.data || []) as InvoiceRow[]).filter((inv) => inv.status !== "PAID" && inv.status !== "CANCELLED");
-        setInvoices(unpaid);
+        if (cancelled) return;
+        // Sin filtro de estado en el cliente: el servidor ya lo aplicó, y
+        // repetirlo aquí descartaría filas sin corregir `total`.
+        setInvoices((result.data || []) as InvoiceRow[]);
         setTotalInvoices(result.total);
         setTotalCredits(credits.totalAvailable || 0);
       }
-      catch { console.error("Error al cargar facturas"); }
-      finally { setLoading(false); }
+      catch (e) { if (!cancelled) console.error("Error al cargar facturas", e); }
+      finally { if (!cancelled) setLoading(false); }
     })();
-  }, [page]);
+    return () => { cancelled = true; };
+  }, [page, deferredSearch]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
-  const pending = invoices.filter(i => i.status !== "PAID" && i.status !== "CANCELLED");
-  const filtered = pending.filter(i =>
-    normalize(i.clients?.full_name || "").includes(normalize(searchQuery)) ||
-    normalize(i.invoice_number || "").includes(normalize(searchQuery))
-  );
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    // Una búsqueda nueva siempre vuelve a la primera página: mantenerse en la
+    // 7 con un término nuevo mostraba "sin resultados" aunque la 1 tenga.
+    if (page !== 1) setPage(1);
+  };
+
+  const filtered = invoices;
   const totalPending = filtered.reduce((s, i) => s + Number(i.total) - Number(i.amount_paid || 0), 0);
 
   return (
@@ -67,7 +81,11 @@ export default function CuentasPorCobrarPage() {
         <div className="flex-1 bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
           <p className="text-xs text-[#9C8A82] mb-1">Total Pendiente</p>
           <p className="text-2xl font-bold text-[#5C3E35]">{formatCurrency(totalPending)}</p>
-          <p className="text-xs text-[#9C8A82] mt-1">{filtered.length} factura(s) pendientes</p>
+          <p className="text-xs text-[#9C8A82] mt-1">
+            {deferredSearch.trim()
+              ? `${filtered.length} factura(s) en esta página`
+              : `${totalInvoices} factura(s) pendientes`}
+          </p>
         </div>
         <a href="/creditos" className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all min-w-[180px] block">
           <div className="flex items-center gap-2 mb-1">
@@ -82,7 +100,7 @@ export default function CuentasPorCobrarPage() {
       <div className="relative mb-6">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
         <input
-          type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          type="text" value={searchQuery} onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Buscar por cliente o factura..."
           className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
         />
@@ -93,7 +111,19 @@ export default function CuentasPorCobrarPage() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-[#9C8A82]">
           <DollarSign size={40} className="mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No hay cuentas por cobrar pendientes</p>
+          <p className="text-sm">
+            {deferredSearch.trim()
+              ? "Ninguna factura pendiente coincide con la búsqueda"
+              : "No hay cuentas por cobrar pendientes"}
+          </p>
+          {deferredSearch.trim() && (
+            <button
+              onClick={() => handleSearchChange("")}
+              className="mt-3 text-xs font-medium text-[#B8837E] hover:underline"
+            >
+              Limpiar búsqueda
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

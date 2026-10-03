@@ -2,7 +2,11 @@ import { supabase } from "@/lib/supabase";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
 import { addInventoryStock } from "./inventory";
 import { getBundleComponentMap, type BundleComponentInfo } from "./products";
+import { nextSequenceNumber, SEQUENCE_DIGITS } from "@/lib/sequences";
 import type { Return, ReturnItem } from "@/types/database";
+
+/** Prefijo de los correlativos de devolución. */
+const RETURN_PREFIX = "DEV-";
 
 export async function getReturns() {
   const { data, error } = await supabase
@@ -32,6 +36,38 @@ export async function getReturnItems(returnId: string) {
   return data;
 }
 
+/**
+ * Cantidad ya devuelta por producto en las devoluciones COMPLETADAS de una
+ * factura. Se usa para que la UI de devoluciones no permita devolver más de
+ * lo que se facturó ni re-devolver lo que ya se devolvió.
+ *
+ * Se resuelve con una sola consulta (join `return_items` -> `returns`) para no
+ * abrir un N+1: el formulario de devolución pregunta por todas las líneas de
+ * la factura a la vez.
+ *
+ * @returns mapa `product_id` -> unidades ya devueltas.
+ */
+export async function getReturnedQuantitiesForInvoice(
+  invoiceId: string
+): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("return_items")
+    .select("product_id, quantity, returns!inner(invoice_id, status)")
+    .eq("returns.invoice_id", invoiceId)
+    .eq("returns.status", "COMPLETED");
+  if (error) throw error;
+
+  const totals: Record<string, number> = {};
+  for (const row of (data ?? []) as Array<{
+    product_id: string | null;
+    quantity: number | null;
+  }>) {
+    if (!row.product_id) continue;
+    totals[row.product_id] = (totals[row.product_id] ?? 0) + Number(row.quantity ?? 0);
+  }
+  return totals;
+}
+
 export async function getNextReturnNumber() {
   const cached = await getCached<string>("next_return_number");
   if (cached) return cached;
@@ -44,9 +80,17 @@ export async function getNextReturnNumber() {
 
   if (error) throw error;
 
-  const lastNum = data?.[0]?.return_number || "DEV-000000";
-  const num = parseInt(lastNum.replace("DEV-", ""), 10) + 1;
-  const next = `DEV-${String(num).padStart(6, "0")}`;
+  const lastNum = data?.[0]?.return_number ?? null;
+  // `nextSequenceNumber` devuelve null cuando el valor almacenado no contiene
+  // dígitos utilizables. Antes esto se degradaba en silencio a "DEV-000NaN",
+  // que quedaba persistido como correlativo real. Ahora es un error visible.
+  const next = nextSequenceNumber(lastNum, RETURN_PREFIX, SEQUENCE_DIGITS);
+  if (next === null) {
+    throw new Error(
+      `No se pudo determinar el siguiente numero de devolucion: el ultimo valor ` +
+        `almacenado (${JSON.stringify(lastNum)}) no es un correlativo interpretable.`
+    );
+  }
   await setCache("next_return_number", next, 30_000);
   return next;
 }
@@ -84,7 +128,42 @@ export async function createReturn(
   return data as Return;
 }
 
+/**
+ * Indica que la RPC aún no existe en la base de datos.
+ *
+ * Mismo criterio que `isMigrationPending()` en `services/settings.ts`: durante
+ * el despliegue la aplicación suele subirse antes que la migración, y no
+ * queremos que toda la sección de devoluciones quede fuera de servicio.
+ */
+function isRpcMissing(error: { code?: string; message?: string } | null): boolean {
+  return Boolean(
+    error?.code === "PGRST202" || /could not find the function/i.test(error?.message || "")
+  );
+}
+
 export async function completeReturn(id: string) {
+  // Camino preferido: una sola transacción en la base de datos.
+  const { data, error } = await supabase.rpc("complete_return_atomic", {
+    p_return_id: id,
+  });
+
+  if (!error) return data as Return;
+
+  if (!isRpcMissing(error)) throw error;
+
+  // La migración 20260910_atomic_complete_return.sql todavía no está aplicada.
+  // Se recurre al camino legacy, que conserva el defecto documentado (el estado
+  // pasa a COMPLETADA antes de los pasos que pueden fallar) pero que no empeora
+  // nada respecto de la situación anterior al despliegue.
+  return completeReturnLegacy(id);
+}
+
+/**
+ * Implementación anterior, mantenida sólo como respaldo durante el despliegue
+ * progresivo. Ver `completeReturn` y la cabecera de la migración
+ * `20260910_atomic_complete_return.sql` para la descripción del defecto.
+ */
+async function completeReturnLegacy(id: string) {
   // Idempotente: si ya está COMPLETADA no se vuelve a ajustar
   const { data: current } = await supabase
     .from("returns")
@@ -181,9 +260,16 @@ export async function completeReturn(id: string) {
             .select("receipt_number")
             .order("created_at", { ascending: false })
             .limit(1);
-          const lastNum = lastRec?.[0]?.receipt_number || `${prefix}000000`;
-          const nextNum = parseInt(lastNum.replace(prefix, ""), 10) + 1;
-          const receiptNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
+          const lastNum = lastRec?.[0]?.receipt_number ?? null;
+          const nextNum = nextSequenceNumber(lastNum, prefix, SEQUENCE_DIGITS);
+          if (nextNum === null) {
+            throw new Error(
+              `No se pudo generar el numero de recibo para el credito por ` +
+                `devolucion: el ultimo correlativo (${JSON.stringify(lastNum)}) ` +
+                `no es interpretable.`
+            );
+          }
+          const receiptNumber = nextNum;
 
           const { data: sessData } = await supabase.auth.getSession();
           const userId = sessData.session?.user?.id;

@@ -357,9 +357,16 @@ export default function GastosPage() {
       }
       if (!el) { toast.error("Vista previa no disponible"); setJpgData(null); return; }
       el.style.display = "block";
-      await new Promise((r) => setTimeout(r, 100));
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-      el.style.display = "none";
+      let canvas: HTMLCanvasElement;
+      try {
+        await new Promise((r) => setTimeout(r, 100));
+        canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      } finally {
+        // Restaurar SIEMPRE, también si html2canvas lanza. Si el `display`
+        // se queda en "block" la vista previa permanece montada sobre el
+        // resto de la página y bloquea los clics detrás.
+        el.style.display = "none";
+      }
       const link = document.createElement("a");
       link.download = `gasto-${g.expense_date}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.95);

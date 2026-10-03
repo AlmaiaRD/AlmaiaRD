@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
+import { sanitizeImageUrl } from "@/lib/utils";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Settings, BankAccount } from "@/types/database";
 
@@ -112,8 +113,10 @@ export async function updateSettings(
   if (!settings.id) throw new Error("Settings ID is required");
   const patch: Partial<Settings> = {
     business_name: settings.business_name,
-    logo_url: settings.logo_url,
-    signature_url: settings.signature_url,
+    // Validación de esquema: evita persistir URLs ejecutables (javascript:,
+    // data:text/html, ...) que luego se interpolan en plantillas HTML.
+    logo_url: sanitizeImageUrl(settings.logo_url),
+    signature_url: sanitizeImageUrl(settings.signature_url),
     email: settings.email,
     phone: settings.phone,
     sender_name: settings.sender_name,

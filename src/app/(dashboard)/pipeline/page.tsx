@@ -47,6 +47,158 @@ function StageBadge({ stage, clientType, qualificationLevel }: { stage: string; 
   );
 }
 
+/**
+ * Tarjeta del kanban. Definida a NIVEL DE MÓDULO, no dentro de
+ * `PipelinePage`.
+ *
+ * Un componente declarado dentro del cuerpo de otro se crea como un tipo
+ * nuevo en cada render del padre, y React lo trata como otro componente
+ * distinto: desmonta el anterior y monta uno desde cero. Aquí eso significa
+ * que cada cambio de estado del pipeline (mover una tarjeta, cambiar el
+ * filtro, cargar datos) reiniciaba el textarea de notas en medio de la
+ * escritura, perdiendo el foco y el texto tecleado. Al sacarlo fuera la
+ * identidad del tipo es estable y React conserva el estado.
+ *
+ * El estado y los callbacks del padre entran por props.
+ */
+function KanbanCard({
+  client,
+  draggingId,
+  batchMode,
+  isSelected,
+  onDragStart,
+  onToggleSelect,
+  onOpen,
+  onNotesSaved,
+}: {
+  client: ClientCardData;
+  draggingId: string | null;
+  batchMode: boolean;
+  isSelected: boolean;
+  onDragStart: (e: React.DragEvent, clientId: string) => void;
+  onToggleSelect: (clientId: string) => void;
+  onOpen: (client: ClientCardData) => void;
+  onNotesSaved: (clientId: string, notes: string) => void;
+}) {
+  const isStagnant = client.days_in_stage !== null && client.days_in_stage >= STAGNATION_THRESHOLD_DAYS;
+  const ct = client.client_type || "comprador";
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteValue, setNoteValue] = useState(client.notes || "");
+  const noteRef = useRef<HTMLTextAreaElement>(null);
+
+  // Sincronizar el borrador cuando la nota guardada cambia desde fuera.
+  // Se ajusta DURANTE el render (el patrón que recomienda React) y no en un
+  // efecto: un `setState` dentro del cuerpo del efecto provoca un segundo
+  // render en cascada y el texto tecleado parpadea un frame.
+  const [lastSavedNotes, setLastSavedNotes] = useState(client.notes || "");
+  if (client.notes !== lastSavedNotes) {
+    setLastSavedNotes(client.notes || "");
+    if (!editingNote) setNoteValue(client.notes || "");
+  }
+
+  useEffect(() => {
+    if (editingNote && noteRef.current) {
+      noteRef.current.focus();
+      noteRef.current.setSelectionRange(noteRef.current.value.length, noteRef.current.value.length);
+    }
+  }, [editingNote]);
+
+  async function saveNote() {
+    if (noteValue === (client.notes || "")) { setEditingNote(false); return; }
+    try {
+      await updateClient(client.id, { notes: noteValue });
+      onNotesSaved(client.id, noteValue);
+      toast.success("Nota guardada");
+    } catch { toast.error("Error al guardar nota"); }
+    setEditingNote(false);
+  }
+
+  return (
+    <div
+      className={`bg-white rounded-xl border p-3 cursor-pointer hover:shadow-md transition-all ${isStagnant ? "border-[#E8C87A]" : "border-[#E8E0D8]"} ${draggingId === client.id ? "opacity-50" : ""}`}
+      draggable={!editingNote}
+      onDragStart={e => onDragStart(e, client.id)}
+      onClick={() => {
+        if (batchMode) { onToggleSelect(client.id); return; }
+        if (editingNote) return;
+        onOpen(client);
+      }}
+    >
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {batchMode && <input type="checkbox" checked={isSelected} onChange={() => onToggleSelect(client.id)} onClick={e => e.stopPropagation()} className="rounded border-[#E8E0D8] text-[#B8837E]" />}
+          <div className="w-8 h-8 rounded-full bg-[#B8837E]/10 flex items-center justify-center flex-shrink-0">
+            <User size={14} className="text-[#B8837E]" />
+          </div>
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold text-[#5C3E35] truncate">{client.full_name}</h4>
+            {client.phone && (
+              <a href={`https://wa.me/1${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#9C8A82] hover:text-[#86C7A3] flex items-center gap-1">
+                <Phone size={10} /> {client.phone}
+              </a>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          {isStagnant && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E8C87A]/20 text-[#B8860B] font-medium whitespace-nowrap">⚠ {client.days_in_stage}d</span>}
+          <button
+            onClick={e => { e.stopPropagation(); setEditingNote(!editingNote); }}
+            className="p-1 rounded hover:bg-[#FAF6F0] text-[#9C8A82] hover:text-[#B8837E] transition-colors"
+            title={client.notes ? "Editar nota" : "Agregar nota"}
+          >
+            <Edit2 size={12} />
+          </button>
+        </div>
+      </div>
+
+      {editingNote ? (
+        <div className="mt-2" onClick={e => e.stopPropagation()}>
+          <textarea
+            ref={noteRef}
+            value={noteValue}
+            onChange={e => setNoteValue(e.target.value)}
+            onBlur={saveNote}
+            onKeyDown={e => {
+              if (e.key === "Escape") { setEditingNote(false); setNoteValue(client.notes || ""); }
+              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveNote(); }
+            }}
+            placeholder="Escribe una nota..."
+            rows={3}
+            className="w-full px-2 py-1.5 text-xs text-[#5C3E35] bg-[#FCFAF7] border border-[#B8837E]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#B8837E] resize-none"
+          />
+          <p className="text-[9px] text-[#9C8A82] mt-1">Enter para guardar · Esc para cancelar</p>
+        </div>
+      ) : (
+        client.notes && (
+          <div className="mt-2 p-2 bg-[#FAF6F0] rounded-lg">
+            <p className="text-[10px] text-[#5C3E35] line-clamp-2 leading-relaxed">{client.notes}</p>
+          </div>
+        )
+      )}
+
+      <div className="flex items-center gap-2 text-[10px] text-[#9C8A82] mt-2">
+        {ct === "comprador" && (
+          <>
+            <span className="flex items-center gap-0.5"><DollarSign size={10} /> {formatCurrency(client.total_spent)}</span>
+            <span className="flex items-center gap-0.5"><ShoppingCart size={10} /> {client.num_purchases}x</span>
+          </>
+        )}
+        {client.pending_balance > 0 && (
+          <span className="text-[#D4A0A0] font-medium">Pend: {formatCurrency(client.pending_balance)}</span>
+        )}
+      </div>
+
+      {client.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {client.tags.slice(0, 2).map(t => (
+            <span key={t.id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#B8837E]/10 text-[#B8837E]">{t.name}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PipelinePage() {
   const [clients, setClients] = useState<ClientCardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -197,6 +349,21 @@ export default function PipelinePage() {
     setDraggingId(clientId);
   }
 
+  /** Abrir el detalle del cliente: antes lo hacía la tarjeta en línea. */
+  function openClient(client: ClientCardData) {
+    setSelectedClient(client);
+    setRiskScore(null);
+    setAiSummary("");
+    calculateRiskScore(client.id)
+      .then(setRiskScore)
+      .catch((e) => console.error("Error al calcular riesgo", e));
+  }
+
+  /** Reflejar en la lista la nota que acaba de guardar la tarjeta. */
+  function handleNotesSaved(clientId: string, notes: string) {
+    setClients(prev => prev.map(c => (c.id === clientId ? { ...c, notes } : c)));
+  }
+
   function handleDragOver(e: React.DragEvent, stageKey: string) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -241,121 +408,6 @@ export default function PipelinePage() {
     }
   }
 
-  function KanbanCard({ client }: { client: ClientCardData }) {
-    const isStagnant = client.days_in_stage !== null && client.days_in_stage >= STAGNATION_THRESHOLD_DAYS;
-    const ct = client.client_type || "comprador";
-    const [editingNote, setEditingNote] = useState(false);
-    const [noteValue, setNoteValue] = useState(client.notes || "");
-    const noteRef = useRef<HTMLTextAreaElement>(null);
-
-    useEffect(() => {
-      setNoteValue(client.notes || "");
-    }, [client.notes]);
-
-    useEffect(() => {
-      if (editingNote && noteRef.current) {
-        noteRef.current.focus();
-        noteRef.current.setSelectionRange(noteRef.current.value.length, noteRef.current.value.length);
-      }
-    }, [editingNote]);
-
-    async function saveNote() {
-      if (noteValue === (client.notes || "")) { setEditingNote(false); return; }
-      try {
-        await updateClient(client.id, { notes: noteValue });
-        setClients(prev => prev.map(c => c.id === client.id ? { ...c, notes: noteValue } : c));
-        toast.success("Nota guardada");
-      } catch { toast.error("Error al guardar nota"); }
-      setEditingNote(false);
-    }
-
-    return (
-      <div
-        className={`bg-white rounded-xl border p-3 cursor-pointer hover:shadow-md transition-all ${isStagnant ? "border-[#E8C87A]" : "border-[#E8E0D8]"} ${draggingId === client.id ? "opacity-50" : ""}`}
-        draggable={!editingNote}
-        onDragStart={e => handleDragStart(e, client.id)}
-        onClick={() => {
-          if (batchMode) { toggleSelect(client.id); return; }
-          if (editingNote) return;
-          setSelectedClient(client);
-          setRiskScore(null); setAiSummary("");
-          calculateRiskScore(client.id).then(setRiskScore).catch((e) => console.error("Error al calcular riesgo", e));
-        }}
-      >
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 min-w-0">
-            {batchMode && <input type="checkbox" checked={selectedIds.has(client.id)} onChange={() => toggleSelect(client.id)} onClick={e => e.stopPropagation()} className="rounded border-[#E8E0D8] text-[#B8837E]" />}
-            <div className="w-8 h-8 rounded-full bg-[#B8837E]/10 flex items-center justify-center flex-shrink-0">
-              <User size={14} className="text-[#B8837E]" />
-            </div>
-            <div className="min-w-0">
-              <h4 className="text-sm font-semibold text-[#5C3E35] truncate">{client.full_name}</h4>
-              {client.phone && (
-                <a href={`https://wa.me/1${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#9C8A82] hover:text-[#86C7A3] flex items-center gap-1">
-                  <Phone size={10} /> {client.phone}
-                </a>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {isStagnant && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E8C87A]/20 text-[#B8860B] font-medium whitespace-nowrap">⚠ {client.days_in_stage}d</span>}
-            <button
-              onClick={e => { e.stopPropagation(); setEditingNote(!editingNote); }}
-              className="p-1 rounded hover:bg-[#FAF6F0] text-[#9C8A82] hover:text-[#B8837E] transition-colors"
-              title={client.notes ? "Editar nota" : "Agregar nota"}
-            >
-              <Edit2 size={12} />
-            </button>
-          </div>
-        </div>
-        
-        {editingNote ? (
-          <div className="mt-2" onClick={e => e.stopPropagation()}>
-            <textarea
-              ref={noteRef}
-              value={noteValue}
-              onChange={e => setNoteValue(e.target.value)}
-              onBlur={saveNote}
-              onKeyDown={e => {
-                if (e.key === "Escape") { setEditingNote(false); setNoteValue(client.notes || ""); }
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveNote(); }
-              }}
-              placeholder="Escribe una nota..."
-              rows={3}
-              className="w-full px-2 py-1.5 text-xs text-[#5C3E35] bg-[#FCFAF7] border border-[#B8837E]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#B8837E] resize-none"
-            />
-            <p className="text-[9px] text-[#9C8A82] mt-1">Enter para guardar · Esc para cancelar</p>
-          </div>
-        ) : (
-          client.notes && (
-            <div className="mt-2 p-2 bg-[#FAF6F0] rounded-lg">
-              <p className="text-[10px] text-[#5C3E35] line-clamp-2 leading-relaxed">{client.notes}</p>
-            </div>
-          )
-        )}
-
-        <div className="flex items-center gap-2 text-[10px] text-[#9C8A82] mt-2">
-          {ct === "comprador" && (
-            <>
-              <span className="flex items-center gap-0.5"><DollarSign size={10} /> {formatCurrency(client.total_spent)}</span>
-              <span className="flex items-center gap-0.5"><ShoppingCart size={10} /> {client.num_purchases}x</span>
-            </>
-          )}
-          {client.pending_balance > 0 && (
-            <span className="text-[#D4A0A0] font-medium">Pend: {formatCurrency(client.pending_balance)}</span>
-          )}
-        </div>
-
-        {client.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {client.tags.slice(0, 2).map(t => (
-              <span key={t.id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#B8837E]/10 text-[#B8837E]">{t.name}</span>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <PageContainer>
@@ -434,7 +486,17 @@ export default function PipelinePage() {
                       </div>
                       <div className="space-y-2">
                         {stageClients.map(client => (
-                          <KanbanCard key={client.id} client={client} />
+                          <KanbanCard
+                            key={client.id}
+                            client={client}
+                            draggingId={draggingId}
+                            batchMode={batchMode}
+                            isSelected={selectedIds.has(client.id)}
+                            onDragStart={handleDragStart}
+                            onToggleSelect={toggleSelect}
+                            onOpen={openClient}
+                            onNotesSaved={handleNotesSaved}
+                          />
                         ))}
                         {stageClients.length === 0 && (
                           <div className="text-center py-8 text-[10px] text-[#9C8A82]">Sin clientes</div>
@@ -478,7 +540,17 @@ export default function PipelinePage() {
                       </div>
                       <div className="space-y-2">
                         {stageClients.map(client => (
-                          <KanbanCard key={client.id} client={client} />
+                          <KanbanCard
+                            key={client.id}
+                            client={client}
+                            draggingId={draggingId}
+                            batchMode={batchMode}
+                            isSelected={selectedIds.has(client.id)}
+                            onDragStart={handleDragStart}
+                            onToggleSelect={toggleSelect}
+                            onOpen={openClient}
+                            onNotesSaved={handleNotesSaved}
+                          />
                         ))}
                         {stageClients.length === 0 && (
                           <div className="text-center py-8 text-[10px] text-[#9C8A82]">Sin clientes</div>

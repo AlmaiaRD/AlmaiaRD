@@ -7,6 +7,7 @@ import { getProducts, updateProduct } from "@/services/products";
 import type { Product } from "@/types/database";
 import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Search, RefreshCw, Save, Download } from "lucide-react";
 import toast from "react-hot-toast";
+import { toCsv } from "@/lib/utils";
 
 interface ReviewedProduct {
   id: string;
@@ -195,13 +196,15 @@ export default function DescriptionReviewTool({
 
   function exportCsv() {
     const header = ["Nombre", "Código", "Categoría", "Descripción", "Beneficios", "Observaciones"];
-    const lines = [header.join(";")];
-    for (const r of rows) {
+    const body = rows.map((r) => {
       const issues = detectIssue(r.description, r.benefits, r.name).join(" | ");
-      const esc = (s: string | undefined) => `"${(s || "").replace(/"/g, '""')}"`;
-      lines.push([esc(r.name), esc(r.code), esc(r.category), esc(r.description), esc(r.benefits), esc(issues)].join(";"));
-    }
-    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      return [r.name, r.code, r.category, r.description, r.benefits, issues];
+    });
+    // Separador ";" porque Excel en español usa la coma como separador decimal.
+    // El BOM inicial (`\uFEFF`) es lo que hace que Excel abra el archivo en
+    // UTF-8 y no en la página de códigos local.
+    const csv = toCsv(header, body, ";");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

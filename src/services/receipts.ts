@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { nextSequenceNumber, SEQUENCE_DIGITS } from "@/lib/sequences";
 import type { Receipt } from "@/types/database";
 import { getSettings } from "./settings";
 import { updateStageOnPayment } from "./pipeline";
@@ -45,7 +46,7 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
 
   const { data: current } = await supabase
     .from("receipts")
-    .select("amount, invoice_id")
+    .select("amount, invoice_id, payment_method")
     .eq("id", id)
     .single();
   const oldAmount = Number(current?.amount ?? 0);
@@ -53,18 +54,12 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
   const newAmount = Number(data.amount ?? oldAmount);
   const newInvoiceId = data.invoice_id ?? oldInvoiceId;
 
-  // Calcular credit_excess ANTES de aplicar pagos: lee balance_due de la factura
-  // destino (nueva o misma) y calcula excedente = newAmount - balance_due.
-  let creditExcess = 0;
-  if (newInvoiceId && newAmount > 0) {
-    const { data: inv } = await supabase
-      .from("invoices")
-      .select("balance_due")
-      .eq("id", newInvoiceId)
-      .single();
-    const balanceDue = Number(inv?.balance_due ?? 0);
-    creditExcess = Math.max(0, Math.round((newAmount - balanceDue) * 100) / 100);
-  }
+  // Un recibo CREDIT nunca movió `amount_paid`, así que tampoco debe moverse al
+  // editarlo. Si además el tipo cambia entre CREDIT y otro, el ajuste correcto
+  // es ambiguo: no se toca la factura y se deja constancia en el informe.
+  const touchesPayment =
+    affectsInvoicePayment(current?.payment_method) &&
+    affectsInvoicePayment(data.payment_method ?? current?.payment_method);
 
   const applied: Array<{ invoice_id: string; diff: number }> = [];
   const apply = async (invoiceId: string, diff: number) => {
@@ -79,7 +74,9 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
   };
 
   try {
-    if (newInvoiceId && oldInvoiceId && newInvoiceId !== oldInvoiceId) {
+    if (!touchesPayment) {
+      // Sin efecto sobre la factura: sólo se persiste el recibo.
+    } else if (newInvoiceId && oldInvoiceId && newInvoiceId !== oldInvoiceId) {
       await apply(oldInvoiceId, -oldAmount);
       await apply(newInvoiceId, newAmount);
     } else if (newInvoiceId && newAmount !== oldAmount) {
@@ -90,6 +87,20 @@ export async function updateReceiptWithInvoice(id: string, data: Partial<Receipt
   } catch (e) {
     await rollback();
     throw e;
+  }
+
+  // Calcular credit_excess ANTES de aplicar pagos: lee balance_due de la factura
+  // destino (nueva o misma) y calcula excedente = newAmount - balance_due.
+  // Para recibos CREDIT el valor lo gobierna el trigger, no el cliente.
+  let creditExcess = 0;
+  if (newInvoiceId && newAmount > 0 && touchesPayment) {
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("balance_due")
+      .eq("id", newInvoiceId)
+      .single();
+    const balanceDue = Number(inv?.balance_due ?? 0);
+    creditExcess = Math.max(0, Math.round((newAmount - balanceDue) * 100) / 100);
   }
 
   const { error } = await supabase.from("receipts").update({
@@ -125,9 +136,17 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   
   const settings = await getSettings().catch(() => null);
   const prefix = settings?.receipt_prefix || "REC-";
-  const lastNum = lastRec?.[0]?.receipt_number || `${prefix}000000`;
-  const nextNum = parseInt(lastNum.replace(prefix, ""), 10) + 1;
-  const receiptNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
+  const lastNum = lastRec?.[0]?.receipt_number ?? null;
+  // Antes: `parseInt(lastNum.replace(prefix,""),10)+1` devolvía NaN si el prefijo
+  // no coincidía con el valor guardado, y `padStart` lo convertía en el
+  // correlativo literal "REC-000NaN", que quedaba persistido.
+  const receiptNumber = nextSequenceNumber(lastNum, prefix, SEQUENCE_DIGITS);
+  if (receiptNumber === null) {
+    throw new Error(
+      `No se pudo generar el numero de recibo: el ultimo correlativo ` +
+        `(${JSON.stringify(lastNum)}) no es interpretable.`
+    );
+  }
 
   const { data: sessData } = await supabase.auth.getSession();
   const userId = sessData.session?.user?.id;
@@ -176,24 +195,45 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   return data as Receipt;
 }
 
+/**
+ * ¿Este recibo representa un pago efectivo contra la factura?
+ *
+ * Un recibo de tipo `CREDIT` NO mueve `invoices.amount_paid` al crearse: lo
+ * que hace es alimentar `credit_balances` (véase `completeReturn` para el
+ * crédito por excedente, y `applyCreditToInvoice` para la aplicación de un
+ * crédito ya existente). Por eso su eliminación tampoco debe mover
+ * `amount_paid`.
+ *
+ * Antes de esta comprobación, `deleteReceipt` hacía
+ * `adjustPayment(invoiceId, -amount)` para CUALQUIER recibo con factura
+ * asociada, lo que para un recibo CREDIT reducía `amount_paid` —una cantidad
+ * que nunca se había incrementado— y dejaba la factura con un `balance_due`
+ * inflado. Es una corrupción silenciosa del estado financiero.
+ */
+function affectsInvoicePayment(paymentMethod: string | null | undefined): boolean {
+  return String(paymentMethod ?? "").toUpperCase() !== "CREDIT";
+}
+
 export async function deleteReceipt(id: string) {
   const { data: receipt } = await supabase
     .from("receipts")
-    .select("invoice_id, amount")
+    .select("invoice_id, amount, payment_method")
     .eq("id", id)
     .single();
 
   const invoiceId = receipt?.invoice_id ?? null;
   const amount = Number(receipt?.amount ?? 0);
+  const shouldAdjust =
+    !!invoiceId && amount > 0 && affectsInvoicePayment(receipt?.payment_method);
 
   // Ajusta la factura antes de borrar el recibo; si el borrado falla se revierte.
-  if (invoiceId && amount > 0) {
+  if (shouldAdjust) {
     await adjustPayment(invoiceId, -amount);
   }
 
   const { error } = await supabase.from("receipts").delete().eq("id", id);
   if (error) {
-    if (invoiceId && amount > 0) {
+    if (shouldAdjust) {
       try { await adjustPayment(invoiceId, amount); } catch { /* reversión */ }
     }
     throw error;

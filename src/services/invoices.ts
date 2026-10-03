@@ -64,9 +64,31 @@ async function validateBundleStock(items: Array<{ product_id?: string | null; qu
 }
 
 /**
+ * Costeo actual de una lista de productos, leído de `inventory.average_cost`.
+ *
+ * Es la misma base de coste que usa internamente `restore_inventory_stock`
+ * ("costo de lo que se restaura = al costo promedio actual"), de modo que
+ * ambos caminos valoran el inventario de forma consistente.
+ */
+async function getAverageCosts(productIds: string[]) {
+  const ids = [...new Set(productIds.filter(Boolean))];
+  const map = new Map<string, number>();
+  if (ids.length === 0) return map;
+  const { data, error } = await supabase
+    .from("inventory")
+    .select("product_id, average_cost")
+    .in("product_id", ids);
+  if (error) throw error;
+  for (const row of data || []) {
+    map.set(row.product_id, Number(row.average_cost || 0));
+  }
+  return map;
+}
+
+/**
  * Aplica el movimiento de inventario de una factura. Los bundles descuentan/
- * restituyen el stock de cada componente multiplicado por la cantidad del bundle;
- * los productos normales se procesan como antes.
+ * restituyen el stock de cada componente multiplicado por la cantidad del
+ * bundle; los productos normales se procesan como antes.
  */
 async function applyInvoiceInventory(
   items: Array<{ product_id?: string | null; quantity?: number | null; line_total?: number | null }>,
@@ -74,6 +96,23 @@ async function applyInvoiceInventory(
   op: InventoryOp
 ) {
   const compMap = await getItemsComponentMap(items);
+
+  // Reúne los productos cuyo stock se va a mover, incluidos los componentes de
+  // los bundles, para leer su coste UNA sola vez.
+  const affected: string[] = [];
+  for (const item of items) {
+    if (!item.product_id) continue;
+    if (Number(item.quantity || 0) <= 0) continue;
+    const comps = compMap.get(item.product_id);
+    if (comps && comps.length > 0) {
+      for (const c of comps) affected.push(c.product_id);
+    } else {
+      affected.push(item.product_id);
+    }
+  }
+  const averageCost = await getAverageCosts(affected);
+  const costOf = (pid: string) => Number(averageCost.get(pid) ?? 0);
+
   for (const item of items) {
     if (!item.product_id) continue;
     const comps = compMap.get(item.product_id);
@@ -84,14 +123,27 @@ async function applyInvoiceInventory(
         const totalQty = qty * c.quantity;
         if (op === "SALE") await subtractInventoryStock(c.product_id, totalQty, "SALE", "invoice", referenceId);
         else if (op === "CANCELLATION") await restoreInventoryStock(c.product_id, totalQty, "CANCELLATION", "invoice", referenceId);
-        else await addInventoryStock(c.product_id, totalQty, 0, 0, "RETURN", "invoice", referenceId);
+        else {
+          // ANTES: addInventoryStock(c.product_id, totalQty, 0, 0, ...).
+          // `p_unit_cost = 0` arrastraba `inventory.average_cost` hacia cero y
+          // `p_line_total = 0` hacía que `inventory_value` NO reflejara la
+          // reposición: el inventario quedaba infravalorado.
+          const unitCost = costOf(c.product_id);
+          await addInventoryStock(c.product_id, totalQty, unitCost, unitCost * totalQty, "RETURN", "invoice", referenceId);
+        }
       }
     } else if (op === "SALE") {
       await subtractInventoryStock(item.product_id, qty, "SALE", "invoice", referenceId);
     } else if (op === "CANCELLATION") {
       await restoreInventoryStock(item.product_id, qty, "CANCELLATION", "invoice", referenceId);
     } else {
-      await addInventoryStock(item.product_id, qty, 0, Number(item.line_total || 0), "RETURN", "invoice", referenceId);
+      // ANTES: addInventoryStock(item.product_id, qty, 0, item.line_total, ...).
+      // Dos errores de valoración en la misma llamada:
+      //   * `p_unit_cost = 0` hundía el costo promedio del producto, y
+      //   * `p_line_total = item.line_total` sumaba el PRECIO DE VENTA al valor
+      //     del inventario, que debe contabilizarse a coste.
+      const unitCost = costOf(item.product_id);
+      await addInventoryStock(item.product_id, qty, unitCost, unitCost * qty, "RETURN", "invoice", referenceId);
     }
   }
 }
@@ -105,14 +157,48 @@ export async function getInvoices() {
   return data;
 }
 
-export async function getInvoicesPaginated(page: number, pageSize = 50) {
+/**
+ * Facturas paginadas con el filtro aplicado EN EL SERVIDOR.
+ *
+ * Los filtros opcionales existen para que `count` describa el mismo conjunto
+ * que se pinta. Filtrar en el cliente después de paginar rompe la paginación:
+ * el total sale del conjunto completo mientras las filas salen del filtrado, y
+ * el usuario acaba en páginas vacías sin ninguna explicación.
+ *
+ * @param opts.onlyPending excluye PAID y CANCELLED (usado por cuentas por cobrar).
+ * @param opts.search      busca por número de factura o nombre del cliente.
+ */
+export async function getInvoicesPaginated(
+  page: number,
+  pageSize = 50,
+  opts: { onlyPending?: boolean; search?: string } = {}
+) {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { data, error, count } = await supabase
+
+  let query = supabase
     .from("invoices")
     .select("*, clients(full_name, phone, email)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
+
+  if (opts.onlyPending) {
+    query = query.not("status", "in", "(PAID,CANCELLED)");
+  }
+
+  const term = opts.search?.trim();
+  if (term) {
+    // Se escapan las comas y paréntesis porque son separadores de la sintaxis
+    // de filtros de PostgREST; sin esto, un nombre con coma inyecta filtros.
+    const safe = term.replace(/[,()%*]/g, " ").trim();
+    if (safe) {
+      query = query.or(
+        `invoice_number.ilike.%${safe}%,clients.full_name.ilike.%${safe}%`
+      );
+    }
+  }
+
+  const { data, error, count } = await query;
   if (error) throw error;
   return { data, total: count || 0, page, pageSize };
 }

@@ -141,10 +141,94 @@ export function sanitizeHtml(str: string | null | undefined): string {
     .replace(/'/g, "&#039;");
 }
 
+/**
+ * Valida una URL de imagen antes de persistirla o incrustarla en un atributo.
+ *
+ * Contexto (auditoría 2026-10-02): `settings.signature_url` / `logo_url` se
+ * escribían en la BD sin ninguna validación y luego se interpolaban en una
+ * plantilla `innerHTML` para el recibo (XSS almacenado). Además del escapado
+ * del atributo, conviene impedir que se guarden esquemas ejecutables.
+ *
+ * Se aceptan:
+ *  - `http:` / `https:` absolutas
+ *  - rutas relativas que empiezan por `/` (bucket de Supabase, etc.)
+ *  - `data:image/...` (previews sin subir; los SVG data-URL quedan excluidos)
+ *
+ * Todo lo demás (`javascript:`, `vbscript:`, `data:text/html`, etc.) devuelve "".
+ */
+export function sanitizeImageUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  const value = String(url).trim();
+  if (!value) return "";
+  // Se eliminan los caracteres de control (saltos de línea, tabuladores, NUL...):
+  // los navegadores los ignoran al resolver el esquema, por lo que una variante
+  // con un tabulador intercalado ("java" + TAB + "script:") se ejecutaría igual.
+  const cleaned = value.replace(/[\u0000-\u001F\u007F]/g, "");
+  if (!cleaned) return "";
+  if (cleaned.startsWith("/")) return cleaned;
+  if (/^data:image\/(png|jpe?g|gif|webp|bmp|avif);base64,/i.test(cleaned)) return cleaned;
+  if (/^https?:\/\//i.test(cleaned)) return cleaned;
+  return "";
+}
+
 export function getLocalDateString(date?: Date): string {
   const d = date || new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+/**
+ * Escapa un valor para escribirlo en una celda CSV.
+ *
+ * Entrecomillar NO basta contra la inyeccion de formulas: si la celda
+ * empieza por =, +, - o @, Excel / Google Sheets / LibreOffice la
+ * interpretan como una formula al abrir el archivo. Un producto cuyo
+ * nombre empiece por esos caracteres, o un campo de texto libre, puede
+ * ejecutar una formula en el equipo de quien abre el CSV.
+ *
+ * El prefijo de apostrofo es el escape que todos los hojas de calculo
+ * reconocen como "esto es texto". Se aplica solo cuando el valor empieza
+ * por un caracter peligroso, para no ensuciar las demas celdas.
+ *
+ * Ademas se duplican las comillas dobles internas (RFC 4180) y se envuelve
+ * todo entrecomillas.
+ */
+export function csvCell(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  let str = String(value);
+  // 1) Caracteres de control y saltos de linea -> espacio. RFC 4180
+  //    permite CRLF dentro de un campo entrecomillado, pero no todos los
+  //    lectores lo respetan y un salto incrustado permite inyectar filas
+  //    falsas en el archivo. Ningun campo de este reporte necesita un
+  //    salto de linea, asi que se aplana.
+  str = str.replace(/[\r\n\t]+/g, " ");
+  // 2) Prefijo de formula. El apostrofo es el escape que Excel, Google
+  //    Sheets y LibreOffice reconocen como "esto es texto".
+  if (/^[=+\-@]/.test(str)) str = "'" + str;
+  // 3) Comillas dobles duplicadas (RFC 4180) y campo entrecomillado.
+  return '"' + str.replace(/"/g, '""') + '"';
+}
+
+/**
+ * Serializa cabeceras y filas a CSV usando `csvCell`.
+ *
+ * Se usa CRLF como separador de linea: RFC 4180 lo exige y Excel en
+ * Windows no trata el archivo correctamente con LF a secas.
+ *
+ * `separator` permite usar ";" en los exportes destinados a Excel en
+ * espanol, que interpretan la coma como separador decimal en la
+ * configuracion regional por defecto y abrirían el archivo descuadrado.
+ * El separador va entrecomillado junto a la cabecera, así que un valor
+ * que lo contenga no rompe nada.
+ */
+export function toCsv(
+  headers: Array<string | number>,
+  rows: Array<Array<string | number | null | undefined>>,
+  separator = ","
+): string {
+  const lines = [headers.map(csvCell).join(separator)];
+  for (const row of rows) lines.push(row.map(csvCell).join(separator));
+  return lines.join("\r\n");
 }

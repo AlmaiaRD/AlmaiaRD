@@ -3,7 +3,7 @@
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { getInventoryMovements } from "@/services/inventory";
-import { formatDate } from "@/lib/utils";
+import { formatDate, toCsv } from "@/lib/utils";
 import { Package, EyeOff, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -406,7 +406,7 @@ export default function RotationTab({
                               `${cap} RD$`,
                             ];
                           });
-                          const csv = [headers.join(","), ...rows.map((r: string[]) => r.map(v => `"${v}"`).join(","))].join("\n");
+                          const csv = toCsv(headers, rows);
                           const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                           const link = document.createElement("a");
                           link.href = URL.createObjectURL(blob);

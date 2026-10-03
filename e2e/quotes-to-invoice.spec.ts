@@ -1,12 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
-
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL || "rdalmaia@gmail.com";
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || "test1234";
+import { getE2ECredentials } from "./_credentials";
 
 async function login(page: Page) {
+  const { email, password } = getE2ECredentials();
   await page.goto("/login");
-  await page.fill('input[type="email"]', TEST_EMAIL);
-  await page.fill('input[type="password"]', TEST_PASSWORD);
+  await page.fill('input[type="email"]', email);
+  await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/(dashboard|cotizaciones|catalogo)/, { timeout: 10000 }).catch(() => {});
 }

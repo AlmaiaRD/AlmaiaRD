@@ -16,7 +16,7 @@ import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import type { Client, BankAccount, Settings, Product, BundleItem, Invoice } from "@/types/database";
-import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
+import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
 import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -357,7 +357,6 @@ export default function FacturacionPage() {
   async function buildPreviewEl(data: InvoiceFull, settings: Settings | null) {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
-    function esc(s: string | null | undefined) { return s ? String(s).replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" } as Record<string, string>)[c]) : ""; }
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -365,7 +364,7 @@ export default function FacturacionPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${esc(settings?.business_name) || "ALMAIA"}</h2>
+            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
             <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
@@ -374,17 +373,17 @@ export default function FacturacionPage() {
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${esc(data.invoice_number)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${esc(formatDate(data.invoice_date))}</p>
+          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${sanitizeHtml(data.invoice_number)}</p>
+          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
       <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${esc(data.clients?.full_name) || ""}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${esc(data.clients?.phone) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${esc(data.clients?.email) || "N/D"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${sanitizeHtml(data.clients?.phone) || "\u2014"}</p>
+          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
@@ -400,16 +399,16 @@ export default function FacturacionPage() {
         <tbody>
           ${(data.invoice_items || []).map((item: InvoiceFullItem) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${esc(item.products?.subbrands?.name) || "\u2014"}</td>
+              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
               <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">
-                ${esc(item.products?.name || item.custom_name) || "Producto"}
+                ${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}
                 ${(item.bundle_items || []).map((bi: BundleItem) => `
-                  <div style="font-size:10px;color:#9C8A82;margin-top:2px;">\u2014 ${esc(bi.products?.name || "Producto")} x${bi.quantity}</div>
+                  <div style="font-size:10px;color:#9C8A82;margin-top:2px;">\u2014 ${sanitizeHtml(bi.products?.name || "Producto")} x${bi.quantity}</div>
                 `).join("")}
               </td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${esc(formatCurrency(Number(item.unit_price)))}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${esc(formatCurrency(Number(item.line_total)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -418,16 +417,16 @@ export default function FacturacionPage() {
         <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:flex;white-space:nowrap;gap:0 24px;font-size:13px;margin-bottom:10px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc(bankAccounts[0].holder_name)}</p>
-            ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc(bankAccounts[0].id_number)}</p>` : ""}
-            ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc(bankAccounts[0].email)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
+            ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${sanitizeHtml(bankAccounts[0].id_number)}</p>` : ""}
+            ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${sanitizeHtml(bankAccounts[0].email)}</p>` : ""}
           </div>
           <div style="margin-top:10px;border-top:1px solid #E8E0D8;padding-top:10px;">
             ${bankAccounts.map((b) => `
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:7px 0;border-bottom:1px solid #F0EBE3;font-size:13px;">
-                <span style="color:#5C3E35;font-weight:600;">${esc(b.bank_name)}</span>
-                <span style="color:#5C3E35;">${esc(b.account_type)}</span>
-                <span style="color:#5C3E35;">No. ${esc(b.account_number)}</span>
+                <span style="color:#5C3E35;font-weight:600;">${sanitizeHtml(b.bank_name)}</span>
+                <span style="color:#5C3E35;">${sanitizeHtml(b.account_type)}</span>
+                <span style="color:#5C3E35;">No. ${sanitizeHtml(b.account_number)}</span>
               </div>
             `).join("")}
           </div>
@@ -436,56 +435,56 @@ export default function FacturacionPage() {
         <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${esc((data.bank_accounts as BankAccountRef).holder_name)}</p>
-            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${esc((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${esc((data.bank_accounts as BankAccountRef).bank_name)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${esc((data.bank_accounts as BankAccountRef).account_type)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${esc((data.bank_accounts as BankAccountRef).account_number)}</p>
-            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${esc((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
+            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).bank_name)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_type)}</p>
+            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_number)}</p>
+            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
           </div>
         </div>
       ` : ""}
       <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
           <span>Subtotal</span>
-          <span>${esc(formatCurrency(Number(data.subtotal)))}</span>
+          <span>${sanitizeHtml(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
-            <span>${esc(formatCurrency(Number(data.itbis_total)))}</span>
+            <span>${sanitizeHtml(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
         ` : ""}
         ${Number(data.discount_amount) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#D4A0A0;margin-bottom:4px;">
             <span>Descuento</span>
-            <span>-${esc(formatCurrency(Number(data.discount_amount)))}</span>
+            <span>-${sanitizeHtml(formatCurrency(Number(data.discount_amount)))}</span>
           </div>
         ` : ""}
         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
           <span>Total General</span>
-          <span>${esc(formatCurrency(Number(data.total)))}</span>
+          <span>${sanitizeHtml(formatCurrency(Number(data.total)))}</span>
         </div>
         ${Number(data.amount_paid) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#86C7A3;margin-bottom:4px;">
             <span>Monto Cobrado</span>
-            <span>${esc(formatCurrency(Number(data.amount_paid)))}</span>
+            <span>${sanitizeHtml(formatCurrency(Number(data.amount_paid)))}</span>
           </div>
         ` : ""}
         ${(Number(data.total) - Number(data.amount_paid || 0)) > 0 ? `
           <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#B8837E;">
             <span>Saldo Pendiente</span>
-            <span>${esc(formatCurrency(Number(data.total) - Number(data.amount_paid || 0)))}</span>
+            <span>${sanitizeHtml(formatCurrency(Number(data.total) - Number(data.amount_paid || 0)))}</span>
           </div>
         ` : ""}
       </div>
       <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${esc(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${sanitizeHtml(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
           <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${esc(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${esc(settings?.business_name) || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
