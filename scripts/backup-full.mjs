@@ -3,6 +3,9 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import ws from "ws";
 
+import { adminCredentials } from "./_auth.mjs";
+const creds = adminCredentials();
+
 const env = {};
 for (const line of readFileSync("./.env.local", "utf-8").split("\n")) {
   const t = line.trim();

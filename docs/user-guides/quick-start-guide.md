@@ -5,10 +5,18 @@
 | | |
 |---|---|
 | **URL Producción** | `https://almaia-rd.vercel.app` |
-| **Usuario** | `test@almaia.com` |
-| **Contraseña** | `TestSeguro123!` |
+| **Usuario** | _sus propias credenciales de Supabase Auth_ |
+| **Contraseña** | _gestionada por usted; no se documenta aquí_ |
 
-> **Nota:** El usuario `test@almaia.com` fue creado específicamente para pruebas E2E con rol **admin** y email confirmado. Para uso regular, use sus credenciales propias configuradas en Supabase Auth.
+> **Nota:** este documento ya **no publica credenciales**. Hasta la auditoría del
+> 2026-10-02 contenía el correo y la contraseña de una cuenta de administrador de
+> producción, lo que exponía un secreto real en el repositorio y en el historial
+> de git. Las credenciales de pruebas E2E viven en `.env.local` (ignorado por
+> git) o en los secretos del CI, en las variables `E2E_TEST_EMAIL` y
+> `E2E_TEST_PASSWORD` — nunca en el código.
+>
+> La credencial que se publicaba en este documento debe considerarse
+> comprometida: **rotela en Supabase Auth de inmediato**.
 
 ## Navegación
 

@@ -1,0 +1,59 @@
+# Normalización de finales de línea.
+#
+# MOTIVACIÓN (auditoría 2026-10-02)
+#
+#   El repositorio no tenía este archivo y el árbol de trabajo estaba en CRLF
+#   mientras el historial estaba en LF. Eso hacía que `git status` mostrara 264
+#   archivos modificados de los que sólo 39 tenían cambios reales: el resto eran
+#   30 inserciones / 30 borrados de contenido idéntico por el salto de línea.
+#
+#   Ese ruido tiene un coste real, no sólo estético: esconde los cambios
+#   importantes en un diff ilegible, hace que una revisión de código no sea
+#   posible y que una reversión (git revert) arrase trabajo que no debía tocar.
+#
+# POLÍTICA
+#
+#   * En el repositorio se guarda siempre LF.
+#   * `* text=auto` deja que git detecte el tipo de archivo; el `eol=lf` fuerza
+#     LF en el checkout también en Windows, que es el equipo donde se hizo el
+#     desarrollo original de parte de este proyecto.
+#   * Los binarios se marcan como tales para que git no intente normalizarlos.
+#
+# Hay un archivo versionado por scripting (scripts/*.mjs y los de shell) que
+# necesitan permiso de ejecución: se conserva con el bit de ejecución.
+
+* text=auto eol=lf
+
+# Binarios: nunca normalizar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.xlsx binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+
+# Sin normalización (ya son texto y gestionamos el EOL arriba).
+*.sql text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.mjs text eol=lf
+
+# Los secretos: la proteccion real la da .gitignore, no este archivo.
+#
+#  .gitignore linea 34 ya tiene `.env*`, asi que ningun `.env` ni
+#  `.env.local` puede entrar al historial por git add. Un archivo de
+#  atributos no puede hacer eso: los patrones negativos (`!patron`) se
+#  ignoran aqui y sólo producen un aviso. Por eso esta seccion documenta
+#  en vez de fingir que protege.
+#
+# `.env.example` SÍ se versiona (es una plantilla sin valores reales) y
+#  `* text=auto eol=lf` lo trata como texto, que es lo correcto.

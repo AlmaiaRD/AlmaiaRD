@@ -10,9 +10,21 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+          // Aislamiento de origen. OJO: NO subir COEP a `require-corp`.
+          // El catálogo, la firma y el logo se sirven como <img> cross-origin desde
+          // Supabase Storage, y html2canvas/dom-to-image rasterizan el DOM a canvas.
+          // Con `require-corp` el navegador bloquea toda subrecarga cross-origin que
+          // no traiga CORP propio, lo que rompería el renderizado de imágenes y el
+          // export a PDF. `credentialless` mantiene ese comportamiento (sin exigir
+          // CORP) y aun así habilita crossOriginIsolated en Chromium, Firefox y Safari.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+          // Protege nuestros propios recursos frente a embebido por terceros sitios.
+          // No afecta a las imágenes que ESTE sitio carga de Supabase.
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
           {
             key: "Content-Security-Policy",
             value:
