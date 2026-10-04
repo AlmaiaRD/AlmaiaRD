@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { getE2ECredentials } from "./_credentials";
+import { getE2ECredentials, hasE2ECredentials } from "./_credentials";
 
 async function login(page: Page) {
   const { email, password } = getE2ECredentials();
@@ -12,6 +12,10 @@ async function login(page: Page) {
 
 test.describe("API Docs (Swagger/OpenAPI)", () => {
   test("endpoint /api/openapi.json devuelve el documento OpenAPI", async ({ page }) => {
+    test.skip(
+      !hasE2ECredentials(),
+      "Faltan E2E_TEST_EMAIL / E2E_TEST_PASSWORD: define las credenciales de E2E para correr esta prueba."
+    );
     await login(page);
     if (page.url().includes("/login")) {
       test.skip(true, "Login falló - credenciales inválidas");
@@ -29,6 +33,10 @@ test.describe("API Docs (Swagger/OpenAPI)", () => {
   });
 
   test("página /docs renderiza Swagger UI", async ({ page }) => {
+    test.skip(
+      !hasE2ECredentials(),
+      "Faltan E2E_TEST_EMAIL / E2E_TEST_PASSWORD: define las credenciales de E2E para correr esta prueba."
+    );
     await login(page);
     if (page.url().includes("/login")) {
       test.skip(true, "Login falló - credenciales inválidas");

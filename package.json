@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && npm run typecheck:e2e",
     "test:e2e": "playwright test",
     "test": "vitest run --config=vitest.config.mts",
     "test:watch": "vitest --config=vitest.config.mts",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run build"
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
+    "typecheck:e2e": "tsc --noEmit --strict --module esnext --moduleResolution bundler --target es2022 --lib dom,esnext --skipLibCheck --types node e2e/*.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

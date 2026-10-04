@@ -1,5 +1,5 @@
 ﻿import { test, expect, type Page } from "@playwright/test";
-import { getE2ECredentials } from "./_credentials";
+import { getE2ECredentials, hasE2ECredentials } from "./_credentials";
 
 async function login(page: Page) {
   const { email, password } = getE2ECredentials();
@@ -14,6 +14,14 @@ test.describe("Catálogo PDF", () => {
   test.describe.configure({ mode: "serial" });
 
   test.beforeEach(async ({ page }) => {
+    // El salto va ANTES de login(). Si no, getE2ECredentials() lanza dentro
+    // del beforeEach y la prueba falla con un error de variables de entorno
+    // en vez de saltarse: lo que pasaba con un CI al que le faltaran los
+    // secretos, que se ponía rojo sin motivo.
+    test.skip(
+      !hasE2ECredentials(),
+      "Faltan E2E_TEST_EMAIL / E2E_TEST_PASSWORD: define las credenciales de E2E para correr esta prueba."
+    );
     await login(page);
   });
 

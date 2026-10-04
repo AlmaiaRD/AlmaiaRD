@@ -26,6 +26,13 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.base_url || vars.PLAYWRIGHT_BASE_URL || 'https://almaia-rd.vercel.app' }}
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      # Necesarias para que critical-path.spec.ts borre al terminar lo que
+      # crea. No son secretos: son las mismas dos que ya viajan dentro del
+      # paquete de la web, cualquiera que abra el código las puede leer. Sin
+      # ellas la limpieza se salta y la base de pruebas acumula facturas falsas
+      # en cada ejecución.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
