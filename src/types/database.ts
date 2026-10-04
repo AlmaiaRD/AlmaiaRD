@@ -84,22 +84,29 @@ export interface Subbrand {
   created_at: string;
 }
 
+/**
+ * `image_url`, `category_id`, `subbrand_id`, `description`, `benefits` y
+ * `apply_itbis` admiten NULL en la base de datos. Este tipo los declaraba
+ * obligatorios, y como consecuencia cada pantalla se habia redefined por su
+ * cuenta con las versiones correctas (CatalogProduct, ProductWithRelations...).
+ * Seis copias de lo mismo porque la original mentia.
+ */
 export interface Product {
   id: string;
   code: string;
   name: string;
-  image_url: string;
-  subcategory: string;
-  category_id: string;
-  subbrand_id: string;
-  description: string;
-  benefits: string;
+  image_url: string | null;
+  subcategory: string | null;
+  category_id: string | null;
+  subbrand_id: string | null;
+  description: string | null;
+  benefits: string | null;
   cost: number;
   pv: number;
   price_30: number;
   price_35: number;
   active: boolean;
-  apply_itbis: boolean;
+  apply_itbis: boolean | null;
   duracion_dias: number | null;
   is_bundle: boolean;
   created_at: string;

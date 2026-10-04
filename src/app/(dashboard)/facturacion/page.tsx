@@ -15,7 +15,8 @@ import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
-import type { Client, BankAccount, Settings, Product, BundleItem, Invoice } from "@/types/database";
+import type { Client, BankAccount, Settings, Product, BundleItem } from "@/types/database";
+import type { InvoiceWithClient, InvoiceFull, BankAccountRef, InvoiceLineWithProduct } from "@/types/relations";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import VirtualTable, { type Column } from "@/components/ui/VirtualTable";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
@@ -24,65 +25,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { FileText, Plus, Search, Eye, Edit2, Trash2, X, Save, DollarSign, Download, ChevronDown, Flower2, Mail, MessageCircle, Bell } from "lucide-react";
 import toast from "react-hot-toast";
 
-interface InvoiceClientsRef {
-  full_name?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  id_number?: string | null;
-}
-
-interface BankAccountRef {
-  holder_name?: string | null;
-  id_number?: string | null;
-  email?: string | null;
-  bank_name?: string | null;
-  account_type?: string | null;
-  account_number?: string | null;
-}
-
-interface InvoiceListRow extends Invoice {
-  clients?: InvoiceClientsRef | null;
-}
-
-interface InvoiceFullItem {
-  id?: string;
-  product_id?: string | null;
-  quantity?: number | null;
-  unit_price?: number | null;
-  unit_cost?: number | null;
-  line_total?: number | null;
-  pv?: number | null;
-  itbis?: boolean | null;
-  itbis_amount?: number | null;
-  custom_name?: string | null;
-  products?: {
-    id?: string;
-    name?: string | null;
-    is_bundle?: boolean | null;
-    subbrands?: { name?: string | null } | null;
-  } | null;
-  bundle_items?: BundleItem[];
-}
-
-interface InvoiceFull {
-  id: string;
-  invoice_number: string;
-  invoice_date: string;
-  status: string;
-  client_id: string;
-  total: number;
-  subtotal?: number | null;
-  itbis_total?: number | null;
-  discount_amount?: number | null;
-  amount_paid?: number | null;
-  notes?: string | null;
-  margin?: number | null;
-  bank_account_id?: string | null;
-  show_all_bank_accounts?: boolean | null;
-  clients?: InvoiceClientsRef | null;
-  invoice_items?: InvoiceFullItem[] | null;
-  bank_accounts?: BankAccountRef | null;
-}
+type InvoiceListRow = InvoiceWithClient;
 
 type InvoiceRowLike = InvoiceListRow | InvoiceFull;
 
@@ -435,7 +378,7 @@ export default function FacturacionPage() {
           </tr>
         </thead>
         <tbody>
-          ${(data.invoice_items || []).map((item: InvoiceFullItem) => `
+          ${(data.invoice_items || []).map((item: InvoiceLineWithProduct) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
               <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
               <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">
@@ -533,8 +476,8 @@ export default function FacturacionPage() {
   async function captureInvoice(inv: InvoiceRowLike) {
     const full = await getInvoice(inv.id);
     const bundleIds = (full.invoice_items || [])
-      .filter((it: InvoiceFullItem) => it.products?.is_bundle)
-      .map((it: InvoiceFullItem) => it.product_id);
+      .filter((it: InvoiceLineWithProduct) => it.products?.is_bundle)
+      .map((it: InvoiceLineWithProduct) => it.product_id);
     if (bundleIds.length > 0) {
       try {
         const bitems = await getBundleItemsBatch(bundleIds as string[]);
@@ -544,7 +487,7 @@ export default function FacturacionPage() {
           arr.push(bi);
           byBundle.set(bi.bundle_id, arr);
         }
-        full.invoice_items = (full.invoice_items || []).map((it: InvoiceFullItem) => ({
+        full.invoice_items = (full.invoice_items || []).map((it: InvoiceLineWithProduct) => ({
           ...it,
           bundle_items: it.products?.is_bundle ? (byBundle.get(it.product_id as string) || []) : undefined,
         }));
@@ -571,7 +514,7 @@ export default function FacturacionPage() {
         client_name: full.clients?.full_name || "",
         client_phone: full.clients?.phone || undefined,
         client_email: full.clients?.email || undefined,
-        items: (full.invoice_items || []).map((it: InvoiceFullItem) => ({
+        items: (full.invoice_items || []).map((it: InvoiceLineWithProduct) => ({
           subbrand: it.products?.subbrands?.name || undefined,
           name: it.products?.name || it.custom_name || "Producto",
           quantity: Number(it.quantity) || 0,
@@ -638,7 +581,7 @@ export default function FacturacionPage() {
   async function handleEdit(inv: InvoiceRowLike) {
     try {
       const full = await getInvoice(inv.id);
-      const mappedItems: InvoiceLine[] = full.invoice_items?.map((item: InvoiceFullItem) => ({
+      const mappedItems: InvoiceLine[] = full.invoice_items?.map((item: InvoiceLineWithProduct) => ({
         product_id: item.product_id as string,
         name: item.products?.name || "Producto",
         quantity: item.quantity as number,
@@ -649,8 +592,8 @@ export default function FacturacionPage() {
         bundle_items: undefined,
       })) || [];
       const bundleIds = (full.invoice_items || [])
-        .filter((it: InvoiceFullItem) => it.products?.is_bundle)
-        .map((it: InvoiceFullItem) => it.product_id);
+        .filter((it: InvoiceLineWithProduct) => it.products?.is_bundle)
+        .map((it: InvoiceLineWithProduct) => it.product_id);
       if (bundleIds.length > 0) {
         try {
           const bitems = await getBundleItemsBatch(bundleIds as string[]);
@@ -1064,7 +1007,7 @@ export default function FacturacionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(selectedInvoice.invoice_items || []).map((item: InvoiceFullItem, i: number) => {
+                  {(selectedInvoice.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => {
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
                         <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
@@ -1253,7 +1196,7 @@ export default function FacturacionPage() {
               client_name: full.clients?.full_name || "",
               client_phone: full.clients?.phone || undefined,
               client_email: full.clients?.email || undefined,
-              items: (full.invoice_items || []).map((it: InvoiceFullItem) => ({
+              items: (full.invoice_items || []).map((it: InvoiceLineWithProduct) => ({
                 subbrand: it.products?.subbrands?.name || undefined,
                 name: it.products?.name || it.custom_name || "Producto",
                 quantity: Number(it.quantity) || 0,
@@ -1711,7 +1654,7 @@ export default function FacturacionPage() {
                 </tr>
               </thead>
               <tbody>
-                  {(jpgData.invoice_items || []).map((item: InvoiceFullItem, i: number) => (
+                  {(jpgData.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => (
                     <tr key={i} className="border-b border-[#F0EBE3]">
                       <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
                       <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>

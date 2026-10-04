@@ -8,10 +8,11 @@ import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
 import { createProduct, updateProduct, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, createBundle, updateBundle, removeProductImage } from "@/services/products";
 import { useCatalog, catalogKey as catalogQueryKey } from "@/lib/queries/catalogo";
+import type { CatalogProduct, CatalogBundleItem } from "@/types/relations";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { createQuote, getQuotes } from "@/services/quotes";
 import type { QuoteWithClient } from "@/services/quotes";
-import type { Category, Subbrand, Settings, BundleItem, Product } from "@/types/database";
+import type { Category, Subbrand, Settings, Product } from "@/types/database";
 import { formatCurrency } from "@/lib/utils";
 import { ITBIS_RATE, ITBIS_MULTIPLIER } from "@/lib/constants";
 import { invoiceLineTotalForUnit, computeInvoiceMath } from "@/lib/invoiceMath";
@@ -31,32 +32,6 @@ const NUTRILITE_ITBIS_EXCEPTIONS = ["proteína vegetal", "cerocarb", "fibra en p
 function isNutriliteItbisException(name: string) {
   const n = name.toLowerCase();
   return NUTRILITE_ITBIS_EXCEPTIONS.some((e) => n.includes(e));
-}
-
-interface CatalogProduct {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  benefits: string | null;
-  cost: number;
-  pv: number;
-  price_30: number;
-  price_35: number;
-  active: boolean;
-  apply_itbis: boolean | null;
-  is_bundle: boolean;
-  category_id: string | null;
-  subbrand_id: string | null;
-  image_url: string | null;
-  duracion_dias: number | null;
-  bundle_items?: CatalogBundleItem[] | null;
-  subbrands?: { name: string } | null;
-  categories?: { name: string } | null;
-}
-
-interface CatalogBundleItem extends Omit<BundleItem, "products"> {
-  products?: CatalogProduct | null;
 }
 
 interface ProductInsertFields {

@@ -8,27 +8,16 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { Wallet, Search, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import type { CreditWithRelations, InvoiceWithClient } from "@/types/relations";
 
-interface CreditRecord {
-  id: string;
-  client_id: string;
-  receipt_id: string;
-  amount: number;
-  balance?: number;
-  status: string;
-  created_at: string;
-  clients?: { full_name: string; phone: string } | null;
-  receipts?: { receipt_number: string; receipt_date: string } | null;
-}
+/** El select real es `*, clients(full_name, phone)`. */
+type CreditRecord = CreditWithRelations;
 
-interface InvoiceRecord {
-  id: string;
-  invoice_number: string;
-  total: number;
-  balance_due: number;
-  status: string;
-  invoice_date: string;
-}
+/** Columnas que la pantalla necesita de cada factura. */
+type InvoiceRecord = Pick<
+  InvoiceWithClient,
+  "id" | "invoice_number" | "total" | "status" | "invoice_date"
+> & { balance_due: number };
 
 export default function CreditosPage() {
   const router = useRouter();

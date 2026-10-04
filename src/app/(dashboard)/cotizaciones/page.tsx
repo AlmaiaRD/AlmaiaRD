@@ -10,7 +10,7 @@ import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuote
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import { getProducts } from "@/services/products";
-import type { Product } from "@/types/database";
+import type { ProductWithRelations } from "@/types/relations";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getFollowupsByQuote } from "@/services/followups";
 import type { Client, Followup } from "@/types/database";
@@ -47,11 +47,6 @@ interface FormItem {
   itbis: boolean;
 }
 
-interface ProductWithRelations extends Product {
-  subbrands?: { name: string } | null;
-  categories?: { name: string } | null;
-}
-
 interface CatalogEntry {
   key: string;
   name: string;
@@ -60,8 +55,8 @@ interface CatalogEntry {
   price: number;
   apply_itbis: boolean;
   image_url?: string | null;
-  subbrand?: string;
-  category?: string;
+  subbrand?: string | null;
+  category?: string | null;
 }
 
 export default function CotizacionesPage() {
@@ -78,7 +73,7 @@ function CotizacionesContent() {
   const { user } = useAuth();
   const [quotes, setQuotes] = useState<QuoteWithClient[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -257,7 +252,7 @@ function CotizacionesContent() {
     return margin === 30 ? (item.price_30 ?? 0) : (item.price_35 ?? 0);
   }
 
-  async function addProduct(product: Product) {
+  async function addProduct(product: ProductWithRelations) {
     const price_30_ = product.price_30 ?? 0;
     const price_35_ = product.price_35 ?? 0;
     const base: FormItem = {

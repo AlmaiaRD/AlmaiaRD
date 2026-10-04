@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { getInvoices } from "@/services/invoices";
 import { getReceipts } from "@/services/receipts";
 import { getDashboardStats } from "@/services/dashboard";
-import type { Invoice, Receipt } from "@/types/database";
+
+import type { InvoiceWithClient, ReceiptWithRelations } from "@/types/relations";
 
 export interface DashboardStats {
   salesToday: number;
@@ -49,11 +50,8 @@ export interface PaymentMethodItem {
 export interface DashboardData {
   stats: DashboardStats | null;
   lowStock: LowStockItem[];
-  recentInvoices: (Invoice & { clients?: { full_name?: string | null } })[];
-  recentReceipts: (Receipt & {
-    clients?: { full_name?: string | null };
-    invoices?: { clients?: { full_name?: string | null } };
-  })[];
+  recentInvoices: InvoiceWithClient[];
+  recentReceipts: ReceiptWithRelations[];
   monthData: MonthDataItem[];
   dailySales: DailySalesItem[];
   paymentMethodData: PaymentMethodItem[];

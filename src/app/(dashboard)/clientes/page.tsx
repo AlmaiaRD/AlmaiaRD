@@ -20,12 +20,8 @@ import { getClientQuotes } from "@/services/quotes";
 import type { QuoteWithClient } from "@/services/quotes";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDebounce } from "@/hooks/useDebounce";
-import type { Client, Invoice } from "@/types/database";
-
-interface ClientWithBalances extends Omit<Client, "credit_balance"> {
-  pending_balance?: number;
-  credit_balance?: number;
-}
+import type { Invoice } from "@/types/database";
+import type { ClientWithBalances } from "@/types/relations";
 import { formatCurrency, formatDate, getLocalDateString } from "@/lib/utils";
 import {
   Users, Plus, Search, Edit2, Trash2, Phone, Mail, User, MessageSquare, Wallet, Briefcase, Archive, RotateCcw, ClipboardList,

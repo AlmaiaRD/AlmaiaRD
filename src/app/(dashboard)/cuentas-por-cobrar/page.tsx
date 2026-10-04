@@ -8,15 +8,13 @@ import { getCreditsSummary } from "@/services/credits";
 import Pagination from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Search, Phone, Wallet, ArrowUpRight } from "lucide-react";
+import type { InvoiceWithClient } from "@/types/relations";
 
-interface InvoiceRow {
-  id: string;
-  invoice_number: string;
-  status: string;
-  total: number;
-  amount_paid: number | null;
-  clients?: { full_name?: string | null; phone?: string | null } | null;
-}
+/** Solo se pintan estos campos; el tipo central ya cubre el resto. */
+type InvoiceRow = Pick<
+  InvoiceWithClient,
+  "id" | "invoice_number" | "status" | "total" | "amount_paid"
+> & { clients?: { full_name?: string | null; phone?: string | null } | null };
 
 export default function CuentasPorCobrarPage() {
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
