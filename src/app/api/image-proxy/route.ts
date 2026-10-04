@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { isAllowedUrl } from "@/lib/ssrf";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { imageProxySchema, validateQuery } from "@/lib/validation";
 
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -27,6 +28,18 @@ async function readBodyWithCap(response: Response): Promise<{ buffer: Buffer; to
 }
 
 export async function GET(request: NextRequest) {
+  // Cada peticion de aqui le baja una imagen de fuera a Vercel. Sin tope, un
+  // bucle de recarga en el catalogo se convierte en una factura de ancho de
+  // banda. 60 por minuto es de sobra para navegar con calma.
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const limit = await checkRateLimit(`image-proxy:${ip}`, 60, 60_000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Demasiadas solicitudes. Espera ${limit.retryAfter ?? 60}s.` },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter ?? 60) } }
+    );
+  }
+
   try {
     const cookieStore = await cookies();
     const authSupabase = createServerClient(

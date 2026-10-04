@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { validateBody } from "@/lib/validation";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const logSchema = z.object({
   level: z.enum(["log", "warn", "error", "info", "debug"]),
@@ -13,6 +14,18 @@ const logSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Cada envio acaba en los logs de Vercel y en Sentry. Sin tope, un bucle de
+  // errores en el navegador (o alguien probando) llena los dos y entierra los
+  // avisos de verdad. 30 por minuto es mas que cualquier error real.
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const limit = await checkRateLimit(`log:${ip}`, 30, 60_000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Demasiados registros enviados" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter ?? 60) } }
+    );
+  }
+
   try {
     await validateBody(logSchema)(req);
   } catch (error) {
