@@ -1,0 +1,40 @@
+# Dependabot configuration for automated dependency updates
+# Revisa PRs semanales y agrupa actualizaciones de patch/minor
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    groups:
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "prettier*"
+          - "typescript*"
+          - "vitest*"
+          - "@vitest/*"
+        update-types: ["minor", "patch"]
+      production-dependencies:
+        patterns:
+          - "next*"
+          - "react*"
+          - "supabase*"
+          - "zod*"
+          - "@supabase/*"
+        update-types: ["minor", "patch"]
+    # Ignora major updates automáticos (requieren revisión manual)
+    ignore:
+      - dependency-type: "direct"
+        update-type: "version-update:semver-major"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
