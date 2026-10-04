@@ -20,14 +20,15 @@ import { getBankAccounts } from "@/services/invoices";
 import type { BankAccount } from "@/types/database";
 import { getSettings } from "@/services/settings";
 import type { Settings } from "@/types/database";
-import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
+import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download, ChevronUp, ChevronDown } from "lucide-react";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
+import { VirtualTable, Column } from "@/components/ui/VirtualTable";
 import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 
-interface InventoryItem {
+interface InventoryItem extends Record<string, unknown> {
   id: string;
   product_id: string;
   stock: number;
@@ -841,6 +842,123 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
     CANCELLATION: "text-gray-500",
   };
 
+  // Sort state for virtual table
+  const [sortBy, setSortBy] = useState<string>("products.name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Stock columns for VirtualTable
+  const stockColumns: Column<InventoryItem>[] = useMemo(() => [
+    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</span> },
+    { key: "products.name", header: "Producto", minWidth: 200, sortable: true, render: (item) => (
+      <div className="flex flex-col">
+        <span className="text-sm text-[#5C3E35] font-medium">{item.products?.name || "—"}</span>
+        <span className="text-xs text-[#9C8A82]">{item.products?.code}</span>
+      </div>
+    )},
+    { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#5C3E35] text-right">{purchasedMap[item.product_id] || "—"}</span> },
+    { key: "sold", header: "Vendidas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#5C3E35] text-right">{soldMap[item.product_id]}</span> },
+    { key: "computedStock", header: "Stock", minWidth: 90, align: "right", sortable: true, render: (item) => {
+      const sold = soldMap[item.product_id] || 0;
+      const purchased = purchasedMap[item.product_id] || 0;
+      const computedStock = Math.max(0, purchased - sold);
+      return <span className="text-sm text-[#5C3E35] text-right font-medium">{computedStock}</span>;
+    }},
+    { key: "computedPending", header: "Pend. Dev.", minWidth: 90, align: "right", sortable: true, render: (item) => {
+      const sold = soldMap[item.product_id] || 0;
+      const purchased = purchasedMap[item.product_id] || 0;
+      const computedPending = Math.max(0, sold - purchased);
+      return <span className="text-sm text-[#D4A0A0] text-right font-medium">{computedPending}</span>;
+    }},
+    { key: "status", header: "Estado", minWidth: 100, align: "center", sortable: true, render: (item) => {
+      const sold = soldMap[item.product_id] || 0;
+      const purchased = purchasedMap[item.product_id] || 0;
+      const computedStock = Math.max(0, purchased - sold);
+      const status = getStockStatus(computedStock, item.minimum_stock);
+      return <Badge variant={status.variant}>{status.label}</Badge>;
+    }},
+    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#9C8A82] mx-auto" /> },
+    { key: "hide", header: "Ocultar", minWidth: 100, align: "center", render: (item) => (
+      <div className="flex items-center justify-center gap-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleHideStockProduct(item.product_id); }}
+          className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
+            hiddenStockIds.includes(item.product_id)
+              ? "bg-[#B8837E]/10 text-[#B8837E]"
+              : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+          }`}
+        >
+          <EyeOff size={12} className="inline mr-1" />
+          {hiddenStockIds.includes(item.product_id) ? "Mostrar" : "Ocultar"}
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowConfirmDeleteProduct(item.product_id); }}
+          className="p-1.5 text-[#D4A0A0] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+          title="Eliminar producto"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+    )},
+  ], [hiddenStockIds, purchasedMap, soldMap]);
+
+  const sortedFiltered = useMemo(() => {
+    if (!sortBy) return filtered;
+    return [...filtered].sort((a, b) => {
+      let aVal: unknown;
+      let bVal: unknown;
+
+      switch (sortBy) {
+        case "products.subbrands.name":
+          aVal = a.products?.subbrands?.name || "";
+          bVal = b.products?.subbrands?.name || "";
+          break;
+        case "products.name":
+          aVal = a.products?.name || "";
+          bVal = b.products?.name || "";
+          break;
+        case "purchased":
+          aVal = purchasedMap[a.product_id] || 0;
+          bVal = purchasedMap[b.product_id] || 0;
+          break;
+        case "sold":
+          aVal = soldMap[a.product_id] || 0;
+          bVal = soldMap[b.product_id] || 0;
+          break;
+        case "computedStock":
+          aVal = Math.max(0, (purchasedMap[a.product_id] || 0) - (soldMap[a.product_id] || 0));
+          bVal = Math.max(0, (purchasedMap[b.product_id] || 0) - (soldMap[b.product_id] || 0));
+          break;
+        case "computedPending":
+          aVal = Math.max(0, (soldMap[a.product_id] || 0) - (purchasedMap[a.product_id] || 0));
+          bVal = Math.max(0, (soldMap[b.product_id] || 0) - (purchasedMap[b.product_id] || 0));
+          break;
+        case "status":
+          const aStock = Math.max(0, (purchasedMap[a.product_id] || 0) - (soldMap[a.product_id] || 0));
+          const bStock = Math.max(0, (purchasedMap[b.product_id] || 0) - (soldMap[b.product_id] || 0));
+          const aStatus = getStockStatus(aStock, a.minimum_stock).label;
+          const bStatus = getStockStatus(bStock, b.minimum_stock).label;
+          aVal = aStatus;
+          bVal = bStatus;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal === bVal) return 0;
+      const comparison = String(aVal).localeCompare(String(bVal));
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+  }, [filtered, sortBy, sortOrder, soldMap, purchasedMap]);
+
+  const handleSort = (key: string) => {
+    if (sortBy === key) {
+      setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+  };
+
   return (
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
@@ -977,92 +1095,19 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
 
       {activeTab === "stock" && (
         <>
-          {loading ? (
-            <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
-              <Package size={40} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No hay productos en inventario</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-separate border-spacing-y-2">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Submarca</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Producto</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Compradas</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Vendidas</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Stock</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Pend. Dev.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Mov.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Ocultar</th>
-                  </tr>
-              </thead>
-              <tbody>
-                {filtered.map((item) => {
-                  const sold = soldMap[item.product_id] || 0;
-                  const purchased = purchasedMap[item.product_id] || 0;
-                  const computedStock = Math.max(0, purchased - sold);
-                  const computedPending = Math.max(0, sold - purchased);
-                  const status = getStockStatus(computedStock, item.minimum_stock);
-                  return (
-                    <tr
-                      key={item.id}
-                      className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => openDetail(item)}
-                    >
-                      <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] font-medium">
-                        {item.products?.name || "—"}
-                        <span className="ml-2 text-xs text-[#9C8A82]">{item.products?.code}</span>
-                      </td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{purchased || "—"}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right">{sold}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{computedStock}</td>
-                      <td className="px-4 py-3.5 text-sm text-[#D4A0A0] text-right font-medium">{computedPending}</td>
-                      <td className="px-4 py-3.5 text-center">
-                        <Badge variant={status.variant}>{status.label}</Badge>
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <History size={14} className="text-[#9C8A82] mx-auto" />
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleHideStockProduct(item.product_id);
-                            }}
-                            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
-                              hiddenStockIds.includes(item.product_id)
-                                ? "bg-[#B8837E]/10 text-[#B8837E]"
-                                : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
-                            }`}
-                          >
-                            <EyeOff size={12} className="inline mr-1" />
-                            {hiddenStockIds.includes(item.product_id) ? "Mostrar" : "Ocultar"}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowConfirmDeleteProduct(item.product_id);
-                            }}
-                            className="p-1.5 text-[#D4A0A0] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                            title="Eliminar producto"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            </div>
-          )}
+          <VirtualTable<InventoryItem>
+            data={sortedFiltered}
+            columns={stockColumns}
+            rowHeight={56}
+            height="600px"
+            loading={loading}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            onRowClick={openDetail}
+            emptyMessage="No hay productos en inventario"
+            emptyIcon={<Package size={40} className="mx-auto mb-3 opacity-40" />}
+          />
           <Pagination page={page} pageSize={pageSize} total={totalInventory} onPageChange={handlePageChange} />
         </>
       )}
