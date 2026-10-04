@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -17,6 +17,7 @@ import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import type { Client, BankAccount, Settings, Product, BundleItem, Invoice } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
+import VirtualTable, { type Column } from "@/components/ui/VirtualTable";
 import { buildInvoicePdfDoc } from "@/lib/pdf";
 import { computeInvoiceMath, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -150,6 +151,43 @@ export default function FacturacionPage() {
   const [page, setPage] = useState(1);
   const [totalInvoices, setTotalInvoices] = useState(0);
   const pageSize = 50;
+  const [sortBy, setSortBy] = useState("invoice_date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  function handleSort(key: string) {
+    setSortOrder((prev) => (sortBy === key ? (prev === "asc" ? "desc" : "asc") : "asc"));
+    setSortBy(key);
+  }
+
+  const visibleInvoices = useMemo(() => {
+    const filtered = invoices.filter((inv: InvoiceListRow) => {
+      if (filterMonth || filterYear) {
+        const d = new Date(inv.invoice_date);
+        if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
+        if (filterYear && String(d.getFullYear()) !== filterYear) return false;
+      }
+      if (filterStatus && inv.status !== filterStatus) return false;
+      if (filterClient && inv.client_id !== filterClient) return false;
+      return true;
+    });
+
+    const direction = sortOrder === "asc" ? 1 : -1;
+    const value = (inv: InvoiceListRow): string | number => {
+      switch (sortBy) {
+        case "invoice_number": return inv.invoice_number ?? "";
+        case "client": return inv.clients?.full_name ?? "";
+        case "total": return Number(inv.total ?? 0);
+        case "status": return inv.status ?? "";
+        default: return inv.invoice_date ?? "";
+      }
+    };
+    return filtered.sort((a, b) => {
+      const av = value(a);
+      const bv = value(b);
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * direction;
+      return String(av).localeCompare(String(bv)) * direction;
+    });
+  }, [invoices, filterMonth, filterYear, filterStatus, filterClient, sortBy, sortOrder]);
 
   const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch))));
 
@@ -768,6 +806,116 @@ export default function FacturacionPage() {
     { key: "f", ctrl: true, handler: () => searchInputRef.current?.focus() },
   ]);
 
+  // Los manejadores (handleDelete, handlePrintPdf, handlePrintJpg) se dejan
+  // fuera a proposito: se recrean en cada render y meterlos aqui haria que las
+  // columnas se reconstruyan siempre, que es justo lo que evita este useMemo.
+  const invoiceColumns: Column<InvoiceListRow>[] = useMemo(
+    () => [
+      {
+        key: "invoice_number",
+        header: "No. Factura",
+        minWidth: 150,
+        sortable: true,
+        render: (inv) => <span className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</span>,
+      },
+      {
+        key: "invoice_date",
+        header: "Fecha",
+        minWidth: 120,
+        sortable: true,
+        render: (inv) => <span className="text-sm text-[#9C8A82]">{formatDate(inv.invoice_date)}</span>,
+      },
+      {
+        key: "client",
+        header: "Cliente",
+        minWidth: 200,
+        sortable: true,
+        render: (inv) => <span className="text-sm text-[#5C3E35]">{inv.clients?.full_name || "—"}</span>,
+      },
+      {
+        key: "total",
+        header: "Total",
+        minWidth: 130,
+        align: "right",
+        sortable: true,
+        render: (inv) => <span className="text-sm font-medium text-[#5C3E35]">{formatCurrency(inv.total)}</span>,
+      },
+      {
+        key: "status",
+        header: "Estado",
+        minWidth: 120,
+        align: "center",
+        sortable: true,
+        render: (inv) => {
+          const s = statusMap[inv.status] || statusMap.PENDING;
+          return <Badge variant={s.variant}>{s.label}</Badge>;
+        },
+      },
+      {
+        key: "actions",
+        header: "Acciones",
+        minWidth: 170,
+        align: "center",
+        render: (inv) => (
+          <div className="relative flex items-center justify-center gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleViewDetail(inv); }}
+              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              title="Ver"
+            >
+              <Eye size={15} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenPrintId(openPrintId === inv.id ? null : inv.id);
+              }}
+              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              title="Descargar"
+            >
+              <Download size={15} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleEdit(inv); }}
+              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              title="Editar"
+            >
+              <Edit2 size={15} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleDelete(inv.id); }}
+              className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"
+              title="Eliminar"
+            >
+              <Trash2 size={15} />
+            </button>
+            {openPrintId === inv.id && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setOpenPrintId(null)} />
+                <div className="absolute right-0 top-full mt-1 z-20 min-w-[130px] rounded-xl border border-[#E8E0D8] bg-white py-1 shadow-lg">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handlePrintPdf(inv); }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                  >
+                    <FileText size={14} /> PDF
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handlePrintJpg(inv); }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                  >
+                    <Download size={14} /> JPG
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ),
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [openPrintId]
+  );
+
   return (
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
@@ -841,75 +989,21 @@ export default function FacturacionPage() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-y-2">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Factura</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Total</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices
-                .filter((inv: InvoiceListRow) => {
-                  if (filterMonth || filterYear) {
-                    const d = new Date(inv.invoice_date);
-                    if (filterMonth && String(d.getMonth() + 1).padStart(2, "0") !== filterMonth) return false;
-                    if (filterYear && String(d.getFullYear()) !== filterYear) return false;
-                  }
-                  if (filterStatus && inv.status !== filterStatus) return false;
-                  if (filterClient && inv.client_id !== filterClient) return false;
-                  return true;
-                })
-                .map((inv: InvoiceListRow) => {
-                const s = statusMap[inv.status] || statusMap.PENDING;
-                return (
-                  <tr key={inv.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
-                    <td className="px-4 py-3.5 text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{formatDate(inv.invoice_date)}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{inv.clients?.full_name || "—"}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{formatCurrency(inv.total)}</td>
-                    <td className="px-4 py-3.5 text-center"><Badge variant={s.variant}>{s.label}</Badge></td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-center gap-1 relative">
-                        <button onClick={() => handleViewDetail(inv)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="Ver"><Eye size={15} /></button>
-                        <div className="relative">
-                          <button
-                            onClick={() => setOpenPrintId(openPrintId === inv.id ? null : inv.id)}
-                            className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
-                            title="Descargar"
-                          >
-                            <Download size={15} />
-                          </button>
-                          {openPrintId === inv.id && (
-                            <>
-                              <div className="fixed inset-0 z-10" onClick={() => setOpenPrintId(null)} />
-                              <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-xl shadow-lg border border-[#E8E0D8] py-1 min-w-[130px]">
-                                <button onClick={() => handlePrintPdf(inv)} className="w-full text-left px-4 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0] flex items-center gap-2">
-                                  <FileText size={14} /> PDF
-                                </button>
-                                <button onClick={() => handlePrintJpg(inv)} className="w-full text-left px-4 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0] flex items-center gap-2">
-                                  <Download size={14} /> JPG
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <button onClick={() => handleEdit(inv)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="Editar"><Edit2 size={15} /></button>
-                        <button onClick={() => handleDelete(inv.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
+          <VirtualTable<InvoiceListRow>
+            data={visibleInvoices}
+            columns={invoiceColumns}
+            rowHeight={56}
+            height={600}
+            loading={loading}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            onRowClick={handleViewDetail}
+            getRowKey={(inv) => inv.id}
+            emptyMessage="No hay facturas que coincidan con el filtro"
+            emptyIcon={<FileText size={40} className="mx-auto mb-3 opacity-40" />}
+          />
+          <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
         </>
       )}
 

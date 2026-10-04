@@ -20,7 +20,7 @@ import { getBankAccounts } from "@/services/invoices";
 import type { BankAccount } from "@/types/database";
 import { getSettings } from "@/services/settings";
 import type { Settings } from "@/types/database";
-import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download, ChevronUp, ChevronDown } from "lucide-react";
+import { Package, Plus, Search, Save, Edit2, History, Eye, EyeOff, Trash2, Printer, Download } from "lucide-react";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { VirtualTable, Column } from "@/components/ui/VirtualTable";
 import { ITBIS_RATE } from "@/lib/constants";
@@ -28,7 +28,7 @@ import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 
-interface InventoryItem extends Record<string, unknown> {
+interface InventoryItem {
   id: string;
   product_id: string;
   stock: number;
@@ -847,6 +847,9 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Stock columns for VirtualTable
+  // toggleHideStockProduct se deja fuera a proposito: se recrea en cada render y
+  // meterla aqui haria que las columnas se reconstruyan siempre, que es
+  // justo lo que este useMemo evita.
   const stockColumns: Column<InventoryItem>[] = useMemo(() => [
     { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</span> },
     { key: "products.name", header: "Producto", minWidth: 200, sortable: true, render: (item) => (
@@ -899,7 +902,9 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
         </button>
       </div>
     )},
-  ], [hiddenStockIds, purchasedMap, soldMap]);
+  ],
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [hiddenStockIds, purchasedMap, soldMap]);
 
   const sortedFiltered = useMemo(() => {
     if (!sortBy) return filtered;
@@ -1099,12 +1104,13 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             data={sortedFiltered}
             columns={stockColumns}
             rowHeight={56}
-            height="600px"
+            height={600}
             loading={loading}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
             onRowClick={openDetail}
+            getRowKey={(item) => item.id}
             emptyMessage="No hay productos en inventario"
             emptyIcon={<Package size={40} className="mx-auto mb-3 opacity-40" />}
           />

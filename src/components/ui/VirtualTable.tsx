@@ -1,7 +1,7 @@
 "use client";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef, useMemo, useState } from "react";
+import { useRef } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 export interface Column<T> {
@@ -13,6 +13,7 @@ export interface Column<T> {
   align?: "left" | "center" | "right";
   render?: (row: T, index: number) => React.ReactNode;
   sortable?: boolean;
+  className?: string;
 }
 
 export interface VirtualTableProps<T> {
@@ -30,72 +31,73 @@ export interface VirtualTableProps<T> {
   stickyHeader?: boolean;
   className?: string;
   classNameHeader?: string;
-  classNameRow?: string;
   classNameCell?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   onSort?: (key: string) => void;
   loading?: boolean;
   loadingRows?: number;
-  rowKey?: keyof T | ((row: T) => string);
+  getRowKey: (row: T, index: number) => string;
 }
 
-function getValueByKey<T>(obj: T, key: string): unknown {
-  return (obj as Record<string, unknown>)[key];
-}
+const ALIGN_CLASS: Record<NonNullable<Column<unknown>["align"]>, string> = {
+  left: "",
+  center: "justify-center",
+  right: "justify-end",
+};
 
-function compareValues(a: unknown, b: unknown): number {
-  if (a === b) return 0;
-  if (a === null || a === undefined) return 1;
-  if (b === null || b === undefined) return -1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  if (typeof a === "string" && typeof b === "string") return a.localeCompare(b);
-  return String(a).localeCompare(String(b));
-}
-
-interface VirtualRowProps<T> {
-  row: T;
-  index: number;
-  columns: Column<any>[];
-  rowHeight: number;
-  onRowClick?: (row: any, index: number) => void;
-  striped?: boolean;
-  hoverable?: boolean;
+function cellStyle<T>(col: Column<T>): React.CSSProperties {
+  return {
+    width: col.width ? `${col.width}px` : undefined,
+    minWidth: col.minWidth ? `${col.minWidth}px` : "80px",
+    maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
+  };
 }
 
 function VirtualRow<T>({
   row,
   index,
+  offset,
   columns,
   rowHeight,
-  onRowClick,
   striped,
   hoverable,
-}: VirtualRowProps<any>) {
+  onRowClick,
+  classNameCell,
+}: {
+  row: T;
+  index: number;
+  offset: number;
+  columns: Column<T>[];
+  rowHeight: number;
+  striped: boolean;
+  hoverable: boolean;
+  onRowClick?: (row: T, index: number) => void;
+  classNameCell?: string;
+}) {
+  const stripe = striped && index % 2 === 1 ? "bg-[#FAF6F0]" : "";
+  const hover = hoverable && onRowClick ? "hover:bg-[#FAF6F0] cursor-pointer transition-colors" : "";
+
   return (
     <div
-      className={`flex ${index % 2 === 1 ? "bg-[#FAF6F0]" : ""} hover:bg-[#FAF6F0] transition-colors cursor-pointer`}
+      role="row"
+      className={`flex ${stripe} ${hover}`}
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         width: "100%",
         height: `${rowHeight}px`,
-        transform: `translateY(${index * rowHeight}px)`,
+        transform: `translateY(${offset}px)`,
       }}
-      role="row"
-      onClick={() => onRowClick && onRowClick(row, index)}
+      onClick={() => onRowClick?.(row, index)}
     >
-      {columns.map((col, colIndex) => (
+      {columns.map((col) => (
         <div
-          key={`${col.key}-${index}`}
-          className="flex items-center px-4"
-          style={{
-            width: col.width ? `${col.width}px` : undefined,
-            minWidth: col.minWidth ? `${col.minWidth}px` : "80px",
-            maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
-          }}
+          key={col.key}
           role="gridcell"
+          className={`flex items-center px-4 ${ALIGN_CLASS[col.align ?? "left"]} ${classNameCell ?? ""} ${col.className ?? ""}`}
+          style={cellStyle(col)}
         >
           {col.render ? (
             col.render(row, index)
@@ -110,12 +112,50 @@ function VirtualRow<T>({
   );
 }
 
-export function VirtualTable<T extends Record<string, unknown>>({
+function LoadingRow<T>({
+  offset,
+  columns,
+  rowHeight,
+}: {
+  offset: number;
+  columns: Column<T>[];
+  rowHeight: number;
+}) {
+  return (
+    <div
+      role="row"
+      aria-hidden="true"
+      className="flex"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: `${rowHeight}px`,
+        transform: `translateY(${offset}px)`,
+      }}
+    >
+      {columns.map((col) => (
+        <div key={col.key} className="flex items-center px-4" style={cellStyle(col)}>
+          <div className="h-4 w-3/4 rounded bg-[#E8E0D8] animate-pulse" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Tabla que solo dibuja las filas visibles. El ordenamiento NO lo hace este
+ * componente: la pagina que lo usa ordena sus datos y le pasa sortBy /
+ * sortOrder ya resueltos. Asi el ordenamiento vive en un solo lugar y aqui
+ * no hay que adivinar como se llama un campo anidado ("products.name").
+ */
+export function VirtualTable<T>({
   data,
   columns,
   rowHeight = 56,
   overscan = 5,
-  height = "600px",
+  height = 600,
   width = "100%",
   emptyMessage = "No hay datos para mostrar",
   emptyIcon,
@@ -125,69 +165,28 @@ export function VirtualTable<T extends Record<string, unknown>>({
   stickyHeader = true,
   className = "",
   classNameHeader = "",
-  classNameRow = "",
   classNameCell = "",
   sortBy,
-  sortOrder,
+  sortOrder = "asc",
   onSort,
   loading = false,
   loadingRows = 10,
-  rowKey = "id",
-}: VirtualTableProps<any>) {
+  getRowKey,
+}: VirtualTableProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
-  const [sortState, setSortState] = useState<{ by: string; order: "asc" | "desc" }>({
-    by: sortBy || "",
-    order: sortOrder || "asc",
-  });
-
-  const rowKeyFn = useMemo(() => {
-    if (typeof rowKey === "function") return rowKey;
-    return (row: any) => String((row as Record<string, unknown>)[rowKey as string] ?? "");
-  }, [rowKey]);
+  const rowCount = loading ? loadingRows : data.length;
 
   const virtualizer = useVirtualizer({
-    count: loading ? 10 : data.length,
+    count: rowCount,
     getScrollElement: () => parentRef.current,
     estimateSize: () => rowHeight,
     overscan,
-    paddingStart: 0,
-    paddingEnd: 0,
   });
 
-  const handleSort = (key: string) => {
-    if (!onSort) return;
-    if (sortState.by === key) {
-      onSort(key);
-      setSortState({ by: key, order: sortState.order === "asc" ? "desc" : "asc" });
-    } else {
-      onSort(key);
-      setSortState({ by: key, order: "asc" });
-    }
-  };
-
-  const getSortIcon = (key: string) => {
-    if (sortState.by !== key) return <ChevronUp className="w-4 h-4 text-[#9C8A82] opacity-50" />;
-    return sortState.order === "asc"
-      ? <ChevronUp className="w-4 h-4 text-[#B8837E]" />
-      : <ChevronDown className="w-4 h-4 text-[#B8837E]" />;
-  };
-
-  const sortedData = useMemo(() => {
-    if (!sortState.by || !onSort) return data;
-    return [...data].sort((a, b) => {
-      const aVal = (a as Record<string, unknown>)[sortState.by];
-      const bVal = (b as Record<string, unknown>)[sortState.by];
-      const comparison = compareValues(aVal, bVal);
-      return sortState.order === "asc" ? comparison : -comparison;
-    });
-  }, [data, sortState, onSort]);
-
-  const displayData = loading ? Array.from({ length: 10 }, (_, i) => ({})) : (sortState.by && onSort ? sortedData : data);
-
-  if (displayData.length === 0 && !loading) {
+  if (!loading && data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-[#9C8A82]">
-        {emptyIcon || (
+        {emptyIcon ?? (
           <svg className="w-16 h-16 opacity-40 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
@@ -197,68 +196,75 @@ export function VirtualTable<T extends Record<string, unknown>>({
     );
   }
 
-  const styleHeight = typeof height === "number" ? `${height}px` : height;
-  const styleWidth = typeof width === "number" ? `${width}px` : width;
-
   return (
     <div
       ref={parentRef}
       className={`relative overflow-auto ${className}`}
-      style={{ height: typeof height === "number" ? `${height}px` : height, width: typeof width === "number" ? `${width}px` : width }}
+      style={{
+        height: typeof height === "number" ? `${height}px` : height,
+        width: typeof width === "number" ? `${width}px` : width,
+      }}
       tabIndex={0}
+      role="grid"
+      aria-rowcount={rowCount}
+      aria-busy={loading || undefined}
     >
-      <div className="overflow-hidden">
-        <div
-          className={`flex border-b border-[#E8E0D8] bg-[#FCFAF7] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
-          role="row"
-        >
-          {columns.map((col, colIndex) => (
+      <div
+        role="row"
+        className={`flex border-b border-[#E8E0D8] bg-[#FCFAF7] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
+      >
+        {columns.map((col) => {
+          const active = sortBy === col.key;
+          return (
             <div
               key={col.key}
-              className={`flex items-center px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider ${col.align === "center" ? "justify-center" : col.align === "right" ? "justify-end" : ""} ${col.sortable ? "cursor-pointer select-none hover:text-[#5C3E35]" : ""} transition-colors`}
-              style={{
-                width: col.width ? `${col.width}px` : undefined,
-                minWidth: col.minWidth ? `${col.minWidth}px` : "80px",
-                maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
-              }}
-              onClick={() => col.sortable && handleSort(col.key)}
               role="columnheader"
-              aria-sort={
-                sortState.by === col.key
-                  ? sortState.order === "asc"
-                    ? "ascending"
-                    : "descending"
-                  : "none"
-              }
+              aria-sort={active ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
+              className={`flex items-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#9C8A82] ${ALIGN_CLASS[col.align ?? "left"]} ${col.sortable ? "cursor-pointer select-none hover:text-[#5C3E35] transition-colors" : ""}`}
+              style={cellStyle(col)}
+              onClick={() => col.sortable && onSort?.(col.key)}
             >
               <span className="flex items-center gap-1">{col.header}</span>
-              {col.sortable && <span className="ml-1">{getSortIcon(col.key)}</span>}
+              {col.sortable &&
+                (active ? (
+                  sortOrder === "asc" ? (
+                    <ChevronUp size={14} className="text-[#B8837E]" />
+                  ) : (
+                    <ChevronDown size={14} className="text-[#B8837E]" />
+                  )
+                ) : (
+                  <ChevronUp size={14} className="opacity-40" />
+                ))}
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        <div className="relative" style={{ height: `calc(100% - 44px)` }}>
-          <div
-            style={{
-              height: `${displayData.length * rowHeight}px`,
-              width: "100%",
-              position: "relative",
-            }}
-          >
-            {virtualizer.getVirtualItems().map((virtualRow) => (
-              <VirtualRow
-                key={loading ? virtualRow.index : displayData[virtualRow.index].id}
-                row={displayData[virtualRow.index]}
-                index={virtualRow.index}
-                columns={columns}
-                rowHeight={rowHeight}
-                onRowClick={onRowClick}
-              />
-            ))}
-          </div>
-        </div>
+      <div className="relative" style={{ height: `${rowCount * rowHeight}px` }}>
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const offset = virtualRow.start;
+          if (loading) {
+            return <LoadingRow key={virtualRow.key} offset={offset} columns={columns} rowHeight={rowHeight} />;
+          }
+          const row = data[virtualRow.index];
+          return (
+            <VirtualRow
+              key={getRowKey(row, virtualRow.index)}
+              row={row}
+              index={virtualRow.index}
+              offset={offset}
+              columns={columns}
+              rowHeight={rowHeight}
+              striped={striped}
+              hoverable={hoverable}
+              onRowClick={onRowClick}
+              classNameCell={classNameCell}
+            />
+          );
+        })}
       </div>
     </div>
   );
 }
 
+export default VirtualTable;
