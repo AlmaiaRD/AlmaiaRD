@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { recommendationsSchema, validateBody } from "@/lib/validation";
-
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+import { generateText, extractJsonArray } from "@/lib/ai";
+import { keywordRecommendations } from "@/lib/ai-keywords";
 
 export async function POST(req: NextRequest) {
+  let payload: z.infer<typeof recommendationsSchema>;
   try {
-    await validateBody(recommendationsSchema)(req);
+    payload = await validateBody(recommendationsSchema)(req);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
@@ -31,17 +33,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "OpenAI API key no configurada. Agrega OPENAI_API_KEY en .env.local" },
-      { status: 500 }
-    );
-  }
-
+  // Antes esta ruta devolvia 500 si no habia clave de OpenAI. Ahora la IA es
+  // opcional: si no hay ninguna configurada, se responde con las
+  // recomendaciones por palabras clave, que para un catalogo de 207 productos
+  // da resultados aprovechables.
   try {
-    const { query, season, type } = await req.json();
+    const { query, season, type } = payload;
 
     // Fetch products from Supabase
     const { data: products } = await supabase
@@ -104,48 +101,39 @@ Si no hay productos relevantes, responde con un array vacío: []`;
       ? `Recomienda productos para la temporada de ${season}. Catálogo disponible:\n${JSON.stringify(catalog)}`
       : `Necesidad del cliente: "${query}"\n\nCatálogo de productos disponible:\n${JSON.stringify(catalog)}`;
 
-    const response = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      signal: AbortSignal.timeout(30_000),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        temperature: 0.3,
-        max_tokens: 1500,
-      }),
+    const { text, provider } = await generateText({
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+      temperature: 0.3,
+      maxTokens: 1500,
     });
 
-    if (!response.ok) {
-      const err = await response.json();
-      return NextResponse.json(
-        { error: err.error?.message || "Error al conectar con OpenAI" },
-        { status: response.status }
-      );
+    const fromIA = text ? extractJsonArray(text) : null;
+    if (fromIA) {
+      return NextResponse.json({ recommendations: fromIA, provider, viaIA: true });
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "[]";
+    const fallback = keywordRecommendations(
+      products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        subbrand: (p.subbrands as { name?: string | null } | null)?.name || "",
+        category: (p.categories as { name?: string | null } | null)?.name || "",
+      })),
+      type === "seasonal" ? "" : query || "",
+      season,
+      8
+    );
 
-    // Parse JSON from response (handle markdown code blocks)
-    let jsonStr = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1];
-    }
-
-    try {
-      const recommendations = JSON.parse(jsonStr.trim());
-      return NextResponse.json({ recommendations: Array.isArray(recommendations) ? recommendations : [] });
-    } catch {
-      return NextResponse.json({ recommendations: [], error: "No se pudo procesar la respuesta de la IA" });
-    }
+    return NextResponse.json({
+      recommendations: fallback,
+      provider: null,
+      viaIA: false,
+      ...(fallback.length === 0 && type !== "seasonal"
+        ? { error: "No se encontraron productos que coincidan con la búsqueda." }
+        : {}),
+    });
   } catch {
     console.error("[recommendations] error");
     return NextResponse.json(

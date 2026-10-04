@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { aiRecommendationsSchema, validateBody } from "@/lib/validation";
+import { generateText, extractJsonArray } from "@/lib/ai";
+import { keywordRecommendations } from "@/lib/ai-keywords";
 
 interface ProductRec {
   product_id: string;
@@ -14,119 +17,13 @@ interface ProductRec {
   score: number;
 }
 
-interface CatalogRow {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  benefits: string | null;
-  subbrands?: Array<{ name?: string | null }> | { name?: string | null } | null;
-  categories?: Array<{ name?: string | null }> | { name?: string | null } | null;
-}
-
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
-async function callOpenAI(prompt: string): Promise<string | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const res = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "Eres un asesor de ventas experto de Almaia RD que devuelve SOLO JSON." },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 1500,
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch {
-    return null;
-  }
-}
-
-function keywordFallback(
-  products: CatalogRow[],
-  query: string,
-  season?: string
-): ProductRec[] {
-  const recommendations: ProductRec[] = [];
-  const words = query
-    .toLowerCase()
-    .split(/[\s,]+/)
-    .filter(Boolean);
-
-  const seasonKeywords: Record<string, string[]> = {
-    verano: ["protector solar", "sun", "spf", "hidratante", "fresco", "energia", "omega", "vitamina c", "antioxidante", "shampoo", "desodorante"],
-    invierno: ["nutrilite", "vitamina", "suplemento", "inmunidad", "omega", "proteina", "crema", "locion", "piel", "artistry", "hidratante", "jabon"],
-    primavera: ["limpieza", "detergente", "lavanderia", "desinfectante", "shampoo", "energia", "protein", "exfoliante"],
-    otoño: ["crema", "locion", "piel", "artistry", "hidratante", "nutrilite", "vitamina", "suplemento", "jabon", "shampoo"],
-  };
-
-  const extraKeywords = season ? seasonKeywords[season] || [] : [];
-
-  for (const product of products) {
-    const name = (product.name || "").toLowerCase();
-    const subbrand = ((product.subbrands as { name?: string | null } | null)?.name || "").toLowerCase();
-    const category = ((product.categories as { name?: string | null } | null)?.name || "").toLowerCase();
-    const desc = (product.description || "").toLowerCase();
-    const benefits = (product.benefits || "").toLowerCase();
-    const combined = `${name} ${subbrand} ${category} ${desc} ${benefits}`;
-
-    let score = 0;
-    let reason = "";
-    const allKeywords = [...words, ...extraKeywords];
-
-    for (const keyword of allKeywords) {
-      if (keyword.length < 2) continue;
-      if (name.includes(keyword)) {
-        const s = keyword.length > 4 ? 10 : 8;
-        if (s > score) { score = s; reason = `Nombre contiene "${keyword}"`; }
-      } else if (subbrand.includes(keyword)) {
-        const s = keyword.length > 4 ? 8 : 6;
-        if (s > score) { score = s; reason = `Submarca ${subbrand} relacionada`; }
-      } else if (category.includes(keyword)) {
-        if (6 > score) { score = 6; reason = `Categoría ${category} relacionada`; }
-      } else if (desc.includes(keyword) || benefits.includes(keyword)) {
-        if (6 > score) { score = 6; reason = `Descripción relacionada con "${keyword}"`; }
-      } else if (combined.includes(keyword)) {
-        if (4 > score) { score = 4; reason = `Relacionado con "${keyword}"`; }
-      }
-    }
-
-    if (score > 0) {
-      recommendations.push({
-        product_id: product.id,
-        product_name: product.name,
-        code: product.code,
-        subbrand: (product.subbrands as { name?: string | null } | null)?.name || "",
-        reason,
-        priority: score >= 8 ? "high" : score >= 6 ? "medium" : "low",
-        score,
-      });
-    }
-  }
-
-  return recommendations
-    .sort((a, b) => b.score - a.score)
-    .filter((r, i, self) => i === self.findIndex((x) => x.product_id === r.product_id))
-    .slice(0, 15);
-}
+// El respaldo por palabras clave vive ahora en `src/lib/ai-keywords.ts`,
+// compartido con las demas rutas de IA. Antes estaba duplicado aqui.
 
 export async function POST(req: NextRequest) {
+  let payload: z.infer<typeof aiRecommendationsSchema>;
   try {
-    await validateBody(aiRecommendationsSchema)(req);
+    payload = await validateBody(aiRecommendationsSchema)(req);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
@@ -150,7 +47,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { query, season } = await req.json();
+    const { query, season } = payload;
     if (!query || typeof query !== "string") {
       return NextResponse.json({ error: "Consulta requerida" }, { status: 400 });
     }
@@ -203,28 +100,40 @@ Instrucciones:
 - Ordena por score descendente (mejor primero).
 - Si ningún producto es relevante, devuelve []`;
 
-    const ollamaResponse = await callOpenAI(prompt);
-    let recommendations: ProductRec[] = [];
+    const { text, provider } = await generateText({
+      system: "Eres un asesor de ventas experto de Almaia RD que devuelve SOLO JSON.",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      maxTokens: 1500,
+    });
 
-    if (ollamaResponse) {
-      try {
-        const jsonMatch = ollamaResponse.match(/\[[\s\S]*?\]/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            recommendations = parsed;
-          }
-        }
-      } catch (e) {
-        console.error("[ai-recommendations] failed to parse OpenAI JSON", e);
+    let recommendations: ProductRec[] = [];
+    if (text) {
+      const parsed = extractJsonArray(text);
+      if (parsed && parsed.length > 0) {
+        recommendations = parsed as ProductRec[];
       }
     }
 
+    // Sin IA, o si la respuesta no era JSON valido, se busca por palabras
+    // clave: el usuario recibe resultados utiles en lugar de un error.
     if (!recommendations.length) {
-      recommendations = keywordFallback(products, query, season);
+      recommendations = keywordRecommendations(
+        products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          code: p.code,
+          description: p.description,
+          benefits: p.benefits,
+          subbrand: (p.subbrands as { name?: string | null } | null)?.name || "",
+          category: (p.categories as { name?: string | null } | null)?.name || "",
+        })),
+        query,
+        season
+      ) as ProductRec[];
     }
 
-    return NextResponse.json({ recommendations });
+    return NextResponse.json({ recommendations, provider, viaIA: Boolean(text && recommendations.length) });
   } catch {
     console.error("[ai-recommendations] error");
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

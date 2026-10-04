@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { parsePurchaseSchema, validateBody } from "@/lib/validation";
-
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+import { generateText } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
+  let payload: z.infer<typeof parsePurchaseSchema>;
   try {
-    await validateBody(parsePurchaseSchema)(req);
+    payload = await validateBody(parsePurchaseSchema)(req);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
@@ -32,27 +33,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "OPENAI_API_KEY no configurada en el servidor" },
-        { status: 500 }
-      );
-    }
-
-    const { images, catalog } = await req.json();
-
-    if (!Array.isArray(images) || images.length === 0) {
-      return NextResponse.json({ error: "No se recibieron imágenes del PDF" }, { status: 400 });
-    }
-    if (images.length > 10) {
-      return NextResponse.json({ error: "El PDF tiene más de 10 páginas. Máximo soportado: 10." }, { status: 400 });
-    }
-
-    const imageContent = images.slice(0, 10).map((img: string) => ({
-      type: "image_url",
-      image_url: { url: img },
-    }));
+    // Esta ruta SI necesita una IA con capacidad de ver imagenes: no hay forma de
+    // extraer una factura sin leerla. A diferencia de las otras, sin proveedor
+    // de vision configurado no hay alternativa local, asi que se explica con
+    // claridad en vez de devolver un error generico.
+    // El schema ya garantiza 1..10 imagenes; no se repite la comprobacion.
+    const { images, catalog } = payload;
 
     const systemPrompt = `Eres un asistente de inventario de Almaia RD, distribuidora autorizada Amway en República Dominicana.
 
@@ -89,43 +75,33 @@ ${JSON.stringify(catalog || [])}
 
 Extrae la compra completa en el JSON según el formato indicado.`;
 
-    const response = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      signal: AbortSignal.timeout(60_000),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: [{ type: "text", text: userMessage }, ...imageContent] },
-        ],
-        temperature: 0.1,
-        max_tokens: 4000,
-      }),
+    const { text: content, error } = await generateText({
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage, imageUrls: images.slice(0, 10) }],
+      temperature: 0.1,
+      maxTokens: 4000,
+      timeoutMs: 60_000,
     });
 
-    if (!response.ok) {
-      const err = await response.json();
+    if (!content) {
+      // 503 y no 500: la peticion es valida, lo que falta es un proveedor
+      // configurado en el servidor. No es culpa de quien la hizo.
+      const sinVision = error === "sin proveedor de IA configurado";
       return NextResponse.json(
-        { error: err.error?.message || "Error al conectar con OpenAI" },
-        { status: response.status }
+        {
+          error: sinVision
+            ? "La lectura automática de facturas necesita una IA que pueda ver imágenes. Configura GROQ_API_KEY en el servidor (es gratis) para activarla."
+            : "No se pudo leer la factura con el proveedor de IA configurado. Intenta de nuevo.",
+          ...(sinVision ? { code: "NO_VISION_PROVIDER" } : {}),
+        },
+        { status: 503 }
       );
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "{}";
-
-    let jsonStr = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1];
-    }
+    const jsonStr = content.replace(/```(?:json)?\s*([\s\S]*?)```/, "$1").trim();
 
     try {
-      const parsed = JSON.parse(jsonStr.trim());
+      const parsed = JSON.parse(jsonStr);
       const items = Array.isArray(parsed.items) ? parsed.items : [];
       return NextResponse.json({
         parsed: {

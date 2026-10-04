@@ -1,44 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { aiChatSchema, validateBody } from "@/lib/validation";
-
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
-async function callOpenAI(prompt: string): Promise<string | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const res = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "Eres un asesor de ventas experto y amable." },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.4,
-        max_tokens: 600,
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch {
-    return null;
-  }
-}
+import { generateText } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
+  let payload: z.infer<typeof aiChatSchema>;
   try {
-    await validateBody(aiChatSchema)(req);
+    payload = await validateBody(aiChatSchema)(req);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Validación fallida" }, { status: 400 });
   }
@@ -62,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { query } = await req.json();
+    const { query } = payload;
 
     const { data: products } = await supabase
       .from("products")
@@ -96,9 +67,18 @@ Cliente: "${query}"
 
 Asesor:`;
 
-    const response = await callOpenAI(prompt);
+    // `generateText` recorre los proveedores configurados (Groq, OpenRouter,
+    // Ollama, OpenAI) y devuelve el primero que responda. Sin ninguna clave
+    // devuelve `text: null` en vez de lanzar, de modo que esta ruta degrada a
+    // un mensaje útil en lugar de un 500.
+    const { text, provider } = await generateText({
+      system: "Eres un asesor de ventas experto y amable.",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+      maxTokens: 600,
+    });
 
-    if (!response) {
+    if (!text) {
       return NextResponse.json({
         response:
           "Lo siento, el asistente IA no está disponible en este momento. Intenta de nuevo o usa la búsqueda por palabras clave.",
@@ -106,7 +86,7 @@ Asesor:`;
       });
     }
 
-    return NextResponse.json({ response, offline: false });
+    return NextResponse.json({ response: text, offline: false, provider });
   } catch {
     console.error("[ai-chat] error");
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
