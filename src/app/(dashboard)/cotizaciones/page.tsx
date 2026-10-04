@@ -21,6 +21,7 @@ import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
 import jsPDF from "jspdf";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image as ImageIcon, Copy, Undo2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -1479,7 +1480,13 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                 <div key={entry.key} className="border border-[#E8E0D8] rounded-xl p-4 bg-white">
                   <div className="flex items-start gap-3 mb-3">
                     {entry.image_url ? (
-                      <img src={entry.image_url} alt={entry.name} className="w-16 h-16 rounded-lg object-cover border border-[#E8E0D8] flex-shrink-0" />
+                      <ProductImage
+                        src={entry.image_url}
+                        alt={entry.name}
+                        size={64}
+                        sizes="64px"
+                        className="w-16 h-16 rounded-lg object-cover border border-[#E8E0D8] flex-shrink-0"
+                      />
                     ) : (
                       <div className="w-16 h-16 rounded-lg bg-[#FAF6F0] border border-[#E8E0D8] flex items-center justify-center text-[#9C8A82] text-xs flex-shrink-0">Sin foto</div>
                     )}

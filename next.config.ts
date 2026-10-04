@@ -3,6 +3,27 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    // Solo el bucket publico de imagenes de producto.
+    //
+    // Deliberadamente estrecho: el optimizador de Next descarga la imagen
+    // DESDE EL SERVIDOR, asi que abrir el patron a cualquier host seria un
+    // agujero de SSRF (lo mismo que protege src/lib/ssrf.ts). Las fotos de
+    // producto son las unicas que pasan por aqui; el logo y la firma, cuyas
+    // URL pone la usuaria a mano, se quedan como <img> (ver ProductImage).
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/product-images/**",
+      },
+    ],
+    // Las miniaturas del catalogo van de 40 a 320 px. Con la lista por defecto
+    // el ancho mas pequeno que el optimizador ofrece es de 640, o sea que una
+    // foto de 40 px descargaba la version de 640: 16 veces mas de lo necesario.
+    imageSizes: [16, 32, 40, 48, 64, 96, 128, 160, 192, 256, 320, 384],
+    formats: ["image/webp"],
+  },
   async headers() {
     return [
       {

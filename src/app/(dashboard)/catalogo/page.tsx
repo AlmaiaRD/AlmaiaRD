@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/utils";
 import { ITBIS_RATE, ITBIS_MULTIPLIER } from "@/lib/constants";
 import { invoiceLineTotalForUnit, computeInvoiceMath } from "@/lib/invoiceMath";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { ProductImage } from "@/components/ui/ProductImage";
 import DescriptionReviewTool from "@/components/catalogo/DescriptionReviewTool";
 import { BookOpen, Plus, Search, Upload, Edit2, Filter, Save, Brain, Trash2, Settings as SettingsIcon, Archive, RotateCcw, Eye, NotebookPen, Boxes, PackagePlus, Minus, Download, Copy, RefreshCw, FileCheck2, FileDown } from "lucide-react";
 import toast from "react-hot-toast";
@@ -912,7 +913,13 @@ export default function CatalogoPage() {
                       <div className="relative w-24 h-24 rounded-xl bg-[#FAF6F0] flex items-center justify-center text-[#B8837E] flex-shrink-0 overflow-hidden border border-[#E8E0D8]">
                         {product.image_url ? (
                           <>
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain" />
+                            <ProductImage
+                              src={product.image_url}
+                              alt={product.name}
+                              size={96}
+                              sizes="96px"
+                              className="w-full h-full object-contain"
+                            />
                             <a
                               href={product.image_url}
                               target="_blank"
@@ -1001,7 +1008,13 @@ export default function CatalogoPage() {
                               <div className="flex items-center gap-3 p-3 bg-[#FAF6F0]/60 border-b border-[#E8E0D8]">
                                 <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
                                   {p.image_url ? (
-                                    <img src={p.image_url} alt={p.name} className="w-full h-full object-contain" />
+                                    <ProductImage
+                                      src={p.image_url}
+                                      alt={p.name}
+                                      size={48}
+                                      sizes="48px"
+                                      className="w-full h-full object-contain"
+                                    />
                                   ) : (
                                     <BookOpen size={20} className="opacity-40" />
                                   )}
@@ -1055,7 +1068,13 @@ export default function CatalogoPage() {
               <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200 flex flex-col">
                 {product.image_url ? (
                   <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#FAF6F0] cursor-pointer group">
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      size={144}
+                      sizes="(max-width: 768px) 100vw, 360px"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
                   </button>
                 ) : (
                   <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl mb-3 bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] cursor-pointer">
@@ -1371,7 +1390,11 @@ export default function CatalogoPage() {
                 bundlePickerResults.slice(0, 20).map((p) => (
                   <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#FAF6F0] transition-colors">
                     <div className="w-9 h-9 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
-                      {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-contain" /> : <BookOpen size={16} className="opacity-40" />}
+                      {p.image_url ? (
+                        <ProductImage src={p.image_url} alt="" size={40} sizes="40px" className="w-full h-full object-contain" />
+                      ) : (
+                        <BookOpen size={16} className="opacity-40" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-[#5C3E35] truncate">{p.name}</p>
@@ -1457,7 +1480,7 @@ export default function CatalogoPage() {
             <div className="rounded-xl border border-[#B8837E]/30 bg-[#FAF6F0] p-4 flex items-center gap-4">
               <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center overflow-hidden border border-[#E8E0D8] flex-shrink-0">
                 {bundleForm.image_url ? (
-                  <img src={bundleForm.image_url} alt="" className="w-full h-full object-contain" />
+                  <ProductImage src={bundleForm.image_url} alt="" size={128} sizes="128px" className="w-full h-full object-contain" />
                 ) : (
                   <Boxes size={28} className="text-[#9C8A82]" />
                 )}
@@ -1580,7 +1603,14 @@ export default function CatalogoPage() {
             {viewingProduct.image_url ? (
               <div>
                 <div className="w-full max-h-[360px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#FAF6F0] to-[#F3EAE3] flex items-center justify-center p-6">
-                <img src={viewingProduct.image_url} alt={viewingProduct.name} className="max-h-[320px] w-auto object-contain" />
+                <ProductImage
+                  src={viewingProduct.image_url}
+                  alt={viewingProduct.name}
+                  size={320}
+                  sizes="(max-width: 768px) 100vw, 320px"
+                  loading="eager"
+                  className="max-h-[320px] w-auto object-contain"
+                />
                 </div>
                 <a
                   href={viewingProduct.image_url}
@@ -1686,7 +1716,11 @@ export default function CatalogoPage() {
                         <div key={it.id} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
                           <div className="flex items-center gap-3 p-3 bg-[#FAF6F0]/60 border-b border-[#E8E0D8]">
                             <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
-                              {p.image_url ? <img src={p.image_url} alt={p.name} className="w-full h-full object-contain" /> : <BookOpen size={20} className="opacity-40" />}
+                              {p.image_url ? (
+                                <ProductImage src={p.image_url} alt={p.name} size={64} sizes="64px" className="w-full h-full object-contain" />
+                              ) : (
+                                <BookOpen size={20} className="opacity-40" />
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-[#5C3E35] line-clamp-2">{p.name}</p>
