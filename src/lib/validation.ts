@@ -67,10 +67,31 @@ export const clientSummarySchema = z.object({
   clientId: z.string().uuid(),
 });
 
-export const recommendationsSchema = z.object({
-  query: z.string().min(1).max(2000),
-  limit: z.number().int().min(1).max(20).optional(),
-});
+/**
+ * Cuerpo de POST /api/recommendations.
+ *
+ * Hay dos modos, y por eso `query` es opcional:
+ *   - type "need"     -> el cliente manda `query` (services/recommendations.ts)
+ *   - type "seasonal" -> el cliente manda solo `season`, sin texto del usuario.
+ *
+ * Antes `query` era obligatorio, así que el modo estacional fallaba siempre
+ * con 400 y la pestaña de recomendaciones por temporada no cargaba nada.
+ */
+export const recommendationsSchema = z
+  .object({
+    query: z.string().max(2000).optional().default(""),
+    season: z.enum(["verano", "invierno", "primavera", "otoño"]).optional(),
+    type: z.enum(["need", "seasonal"]).optional().default("need"),
+    limit: z.number().int().min(1).max(20).optional(),
+  })
+  .refine((v) => v.type !== "seasonal" || Boolean(v.season), {
+    message: "El modo estacional requiere 'season'",
+    path: ["season"],
+  })
+  .refine((v) => v.type !== "need" || v.query.trim().length > 0, {
+    message: "La búsqueda requiere 'query'",
+    path: ["query"],
+  });
 
 export const preferencesSchema = z.object({
   theme: z.enum(["light", "dark", "system"]).optional(),
@@ -83,17 +104,47 @@ export const backupSchema = z.object({
   includeStorage: z.boolean().optional(),
 });
 
+/**
+ * Cuerpo de POST /api/parse-purchase.
+ *
+ * Antes este schema pedía `text: string`, pero el cliente
+ * (components/purchases/PurchasePdfImport.tsx) envía `{ images, catalog }`.
+ * Toda importación de factura por PDF fallaba con 400 "Validación fallida"
+ * sin llegar a ejecutar nada. El schema debe describir lo que el cliente
+ * realmente manda.
+ *
+ * El limite de 10 imágenes y el tamaño máximo por imagen ya los comprobaba
+ * la ruta; aquí se fijan de nuevo para que la validación no dependa de que
+ * la ruta se lea.
+ */
 export const parsePurchaseSchema = z.object({
-  text: z.string().min(1).max(50000),
-  supplierId: z.string().uuid().optional(),
+  images: z
+    .array(z.string().min(1))
+    .min(1, "No se recibieron imágenes del PDF")
+    .max(10, "El PDF tiene más de 10 páginas. Máximo soportado: 10."),
+  catalog: z
+    .array(z.object({ id: z.string(), name: z.string().optional(), code: z.string().optional() }))
+    .optional()
+    .default([]),
 });
+
 
 export const guidesSchema = z.object({
   category: z.string().optional(),
   lang: z.enum(["es", "en"]).optional(),
 });
 
+/**
+ * Cuerpo de POST /api/ai-recommendations.
+ *
+ * Antes solo declaraba `clientId`/`productIds`/`type`, que esta ruta nunca
+ * lee: la ruta usa `query` y `season`. Zod no se queja de campos desconocidos,
+ * asi que la validacion pasaba sin comprobar nada y `query` podia llegar a
+ * ser `undefined`. Ahora el schema refleja lo que la ruta consume.
+ */
 export const aiRecommendationsSchema = z.object({
+  query: z.string().max(2000).optional().default(""),
+  season: z.enum(["verano", "invierno", "primavera", "otoño"]).optional(),
   clientId: z.string().uuid().optional(),
   productIds: z.array(z.string().uuid()).optional(),
   type: z.enum(["cross-sell", "upsell", "replenish"]).optional(),

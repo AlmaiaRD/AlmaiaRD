@@ -7,6 +7,7 @@ import { updateStageOnFirstPurchase, updateStageOnPayment } from "./pipeline";
 import { getLocalDateString } from "@/lib/utils";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
 import { notifyOwner } from "./telegram";
+import { auditLog } from "@/lib/audit";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -323,6 +324,21 @@ export async function createInvoice(invoice: Partial<Invoice>, items: Partial<In
 
   // Modelo A: aviso automático al dueño por Telegram (ni bloquea ni altera el flujo).
   notifyOwnerInvoices(invData, invoice.client_id, total).catch(() => {});
+
+  // Audit log
+  const inv = invData as Record<string, unknown>;
+  await auditLog('invoice.created', {
+    userId,
+    entityId: inv.id as string,
+    entityType: 'invoice',
+    newValue: {
+      invoice_number: inv.invoice_number,
+      client_id: invoice.client_id,
+      total,
+      status: inv.status,
+    },
+    metadata: { itemCount: items.length, pvTotal },
+  }).catch(() => {});
 
   return invData;
 }

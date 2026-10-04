@@ -3,6 +3,7 @@ import { nextSequenceNumber, SEQUENCE_DIGITS } from "@/lib/sequences";
 import type { Receipt } from "@/types/database";
 import { getSettings } from "./settings";
 import { updateStageOnPayment } from "./pipeline";
+import { auditLog } from "@/lib/audit";
 
 export async function getReceipts() {
   const { data, error } = await supabase
@@ -191,6 +192,22 @@ export async function createReceipt(receipt: Partial<Receipt>) {
   if (receipt.client_id) {
     await updateStageOnPayment(receipt.client_id);
   }
+
+  // Audit log
+  await auditLog('payment.received', {
+    userId,
+    entityId: data.id,
+    entityType: 'receipt',
+    newValue: {
+      receipt_number: data.receipt_number,
+      client_id: receipt.client_id,
+      amount: receipt.amount,
+      payment_method: receipt.payment_method,
+      invoice_id: receipt.invoice_id,
+      credit_excess: creditExcess,
+    },
+    metadata: { appliedToInvoice: !!receipt.invoice_id },
+  }).catch(() => {});
 
   return data as Receipt;
 }

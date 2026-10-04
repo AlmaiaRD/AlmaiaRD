@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { auditLog } from "@/lib/audit";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
 import { sanitizeImageUrl } from "@/lib/utils";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -148,6 +149,29 @@ export async function updateSettings(
   if (error) throw error;
   await invalidateCache("settings");
   const fresh = await getSettings(false, { client });
+
+  // Audit log
+  if (fresh) {
+    await auditLog('settings.updated', {
+      entityId: settings.id,
+      entityType: 'settings',
+      newValue: {
+        business_name: fresh.business_name,
+        invoice_prefix: fresh.invoice_prefix,
+        receipt_prefix: fresh.receipt_prefix,
+        smtp_host: fresh.smtp_host,
+        smtp_port: fresh.smtp_port,
+        smtp_user: fresh.smtp_user,
+        smtp_secure: fresh.smtp_secure,
+        default_margin: fresh.default_margin,
+        purchase_prefix: fresh.purchase_prefix,
+        quote_prefix: fresh.quote_prefix,
+        currency: fresh.currency,
+      },
+      metadata: { smtpChanged: !!settings.smtp_pass },
+    }).catch(() => {});
+  }
+
   return fresh as Settings;
 }
 

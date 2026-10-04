@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { auditLog } from "@/lib/audit";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
 import { addInventoryStock } from "./inventory";
 import { getBundleComponentMap, type BundleComponentInfo } from "./products";
@@ -124,6 +125,20 @@ export async function createReturn(
     .insert(returnItems);
 
   if (itemsError) throw itemsError;
+
+  // Audit log
+  await auditLog('return.created', {
+    entityId: data.id,
+    entityType: 'return',
+    newValue: {
+      return_number: data.return_number,
+      client_id: ret.client_id,
+      invoice_id: ret.invoice_id,
+      status: data.status,
+      total: ret.total,
+    },
+    metadata: { itemCount: items.length },
+  }).catch(() => {});
 
   return data as Return;
 }
