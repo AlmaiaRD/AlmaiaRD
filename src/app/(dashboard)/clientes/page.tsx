@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
-import { updateClient, deleteClient, searchClients, getArchivedClients, restoreClient, getClientsPaginated } from "@/services/clients";
+import { updateClient, deleteClient, getArchivedClients, restoreClient } from "@/services/clients";
+import { useClients, CLIENTS_PAGE_SIZE, type ClientsPage } from "@/lib/queries/clientes";
 import ClientFormModal, { type ClientFormValues } from "@/components/clients/ClientFormModal";
 import { getClientAllInvoices, getClientReceipts } from "@/services/receipts";
 import type { Receipt } from "@/types/database";
@@ -46,8 +48,6 @@ const statusColor: Record<string, "warning" | "info" | "success" | "danger"> = {
 
 export default function ClientesPage() {
   const searchParams = useSearchParams();
-  const [clients, setClients] = useState<ClientWithBalances[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -67,43 +67,36 @@ export default function ClientesPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [archivedClients, setArchivedClients] = useState<ClientWithBalances[]>([]);
   const [page, setPage] = useState(1);
-  const [totalClients, setTotalClients] = useState(0);
-  const pageSize = 50;
 
 const debouncedSearch = useDebounce(searchQuery, 500);
 
-  const load = useCallback(async (p?: number) => {
-    const currentPage = p ?? page;
-    try {
-      if (debouncedSearch) {
-        const data = await searchClients(debouncedSearch);
-        setClients(data);
-        setTotalClients(data.length);
-      } else {
-        const result = await getClientsPaginated(currentPage, pageSize);
-        setClients(result.data);
-        setTotalClients(result.total);
-      }
-    } catch (e) {
-      console.error("Error al cargar clientes:", e);
-      toast.error("Error al cargar clientes");
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, page]);
+  const { data: clientsData, isLoading, isError, refetch } = useClients(page, debouncedSearch);
+  const queryClient = useQueryClient();
+
+  const clients = (clientsData?.clients ?? []) as ClientWithBalances[];
+  const totalClients = clientsData?.total ?? 0;
+  const loading = isLoading;
+  const pageSize = CLIENTS_PAGE_SIZE;
+
+  const currentClientsKey = ["clients", { page, search: debouncedSearch.trim() }] as const;
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset intencional al cambiar la búsqueda; refactor de derivación en Fase B
+    if (isError) toast.error("Error al cargar clientes");
+  }, [isError]);
+
+  // Antes era una funcion que volvia a pedir los datos a mano. Aqui solo se le
+  // pide a React Query que refresque lo que ya tiene en cache.
+  const load = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Vuelve a la primera pagina cuando cambia la busqueda; intencional
     setPage(1);
-    setLoading(true);
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- load() se redefine por render; añadirla forzaría recargas infinitas
   }, [debouncedSearch]);
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
-    setLoading(true);
-    load(newPage);
   }
 
   useEffect(() => {
@@ -174,14 +167,19 @@ const debouncedSearch = useDebounce(searchQuery, 500);
 
   async function handleDelete(id: string, name: string) {
     if (!window.confirm(`¿Archivar a ${name}?`)) return;
-    const previous = clients;
-    setClients((prev) => prev.filter((c) => c.id !== id));
+    // Desaparece de la lista al instante, sin esperar al servidor. Si el
+    // archivado falla se vuelve a dejar la lista como estaba.
+    await queryClient.cancelQueries({ queryKey: currentClientsKey });
+    const previous = queryClient.getQueryData<ClientsPage>(currentClientsKey);
+    queryClient.setQueryData<ClientsPage>(currentClientsKey, (old) =>
+      old ? { ...old, clients: old.clients.filter((c) => c.id !== id), total: Math.max(0, old.total - 1) } : old
+    );
     toast.success("Cliente archivado. Puedes restaurarlo desde Archivos.", { duration: 4000 });
     try {
       await deleteClient(id);
-      load();
+      await refetch();
     } catch {
-      setClients(previous);
+      queryClient.setQueryData(currentClientsKey, previous);
       toast.error("Error al archivar cliente");
     }
   }

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
-import { getProducts, createProduct, updateProduct, searchProducts, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, getBundleItemsBatch, createBundle, updateBundle, removeProductImage } from "@/services/products";
+import { createProduct, updateProduct, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, createBundle, updateBundle, removeProductImage } from "@/services/products";
+import { useCatalog, catalogKey as catalogQueryKey } from "@/lib/queries/catalogo";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { createQuote, getQuotes } from "@/services/quotes";
 import type { QuoteWithClient } from "@/services/quotes";
@@ -75,10 +77,8 @@ interface ProductInsertFields {
 
 export default function CatalogoPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subbrands, setSubbrands] = useState<Subbrand[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
@@ -89,6 +89,48 @@ export default function CatalogoPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [filterBundles, setFilterBundles] = useState(false);
+
+  const {
+    data: productsData,
+    isLoading: loading,
+    isError: isErrorProducts,
+    refetch: refetchProducts,
+  } = useCatalog<CatalogProduct>({
+    search: searchQuery,
+    subbrandId: filterSubbrand,
+    categoryId: filterCategory,
+    bundlesOnly: filterBundles,
+    includeArchived: showArchived,
+  });
+  const queryClient = useQueryClient();
+
+  const catalogKey = useMemo(
+    () =>
+      catalogQueryKey({
+        search: searchQuery,
+        subbrandId: filterSubbrand,
+        categoryId: filterCategory,
+        bundlesOnly: filterBundles,
+        includeArchived: showArchived,
+      }),
+    [searchQuery, filterSubbrand, filterCategory, filterBundles, showArchived]
+  );
+
+  const products = productsData ?? [];
+
+  // Antes la lista vivia en un useState de la pagina y cada edicion la
+  // cambiaba a mano. Ahora se escribe en la cache de React Query, con la misma
+  // forma (valor, o funcion que recibe la lista anterior), asi que los cambios
+  // optimistas de mas abajo siguen funcionando sin tocarlos.
+  const setProducts = useCallback(
+    (next: CatalogProduct[] | ((prev: CatalogProduct[]) => CatalogProduct[])) => {
+      queryClient.setQueryData<CatalogProduct[]>(catalogKey, (old) => {
+        const prev = old ?? [];
+        return typeof next === "function" ? next(prev) : next;
+      });
+    },
+    [queryClient, catalogKey]
+  );
   const [showReviewTool, setShowReviewTool] = useState(false);
   const [showCatalogPdfModal, setShowCatalogPdfModal] = useState(false);
   const [catalogPdfSearch, setCatalogPdfSearch] = useState("");
@@ -142,67 +184,12 @@ export default function CatalogoPage() {
   }, []);
 
   async function loadProducts() {
-    setLoading(true);
-    try {
-      let data: CatalogProduct[];
-      if (searchQuery) {
-        data = await searchProducts(searchQuery);
-      } else {
-        data = await getProducts(true);
-      }
-      if (filterSubbrand) data = data.filter((p) => p.subbrand_id === filterSubbrand);
-      if (filterCategory) data = data.filter((p) => p.category_id === filterCategory);
-      data = await attachBundleItems(data);
-      setProducts(showArchived ? data.filter((p) => !p.active) : data.filter((p) => p.active));
-    } catch {
-      toast.error("Error al cargar productos");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function attachBundleItems(list: CatalogProduct[]): Promise<CatalogProduct[]> {
-    const bundles = list.filter((p) => p.is_bundle && !p.bundle_items);
-    if (bundles.length === 0) return list;
-    try {
-      const items = await getBundleItemsBatch(bundles.map((b) => b.id));
-      const grouped = new Map<string, CatalogBundleItem[]>();
-      for (const it of items) {
-        const arr = grouped.get(it.bundle_id) || [];
-        arr.push(it);
-        grouped.set(it.bundle_id, arr);
-      }
-      return list.map((p) => {
-        if (p.is_bundle && grouped.has(p.id)) p.bundle_items = grouped.get(p.id);
-        return p;
-      });
-    } catch {
-      return list;
-    }
+    await refetchProducts();
   }
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        let data: CatalogProduct[];
-        if (searchQuery) {
-          data = await searchProducts(searchQuery);
-        } else {
-          data = await getProducts(true);
-        }
-        if (filterSubbrand) data = data.filter((p) => p.subbrand_id === filterSubbrand);
-        if (filterCategory) data = data.filter((p) => p.category_id === filterCategory);
-        if (filterBundles) data = data.filter((p) => p.is_bundle);
-        data = await attachBundleItems(data);
-        setProducts(showArchived ? data.filter((p) => !p.active) : data.filter((p) => p.active));
-      } catch {
-        toast.error("Error al cargar productos");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [searchQuery, filterSubbrand, filterCategory, showArchived, filterBundles]);
+    if (isErrorProducts) toast.error("Error al cargar productos");
+  }, [isErrorProducts]);
 
   function resetForm() {
     setForm({ code: "", name: "", description: "", benefits: "", cost: 0, pv: 0, price_30: 0, price_35: 0, apply_itbis: true, category_id: "", subbrand_id: "", duracion_dias: null, image_url: null });
@@ -312,7 +299,11 @@ export default function CatalogoPage() {
     if (!confirm(`¿Archivar "${product.name}"?`)) return;
     try {
       await updateProduct(product.id, { active: false });
+      // Desaparece al instante y despues se confirma con la lista real: al
+      // archivar, el producto deja de cumplir el filtro activo y solo eso
+      // puede decirnos si tambien sale de la vista de archivados.
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      await loadProducts();
       toast.success("Producto archivado");
     } catch { toast.error("Error al archivar producto"); }
   }
@@ -320,7 +311,9 @@ export default function CatalogoPage() {
   async function handleRestoreProduct(product: CatalogProduct) {
     try {
       await updateProduct(product.id, { active: true });
-      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, active: true } : p)));
+      // Al restoring pasa lo contrario: sale de la vista de archivados y
+      // entra en la de productos, si es que estamos en esa.
+      await loadProducts();
       toast.success("Producto restaurado");
     } catch { toast.error("Error al restaurar producto"); }
   }
@@ -331,6 +324,7 @@ export default function CatalogoPage() {
       await deleteProduct(product.id);
       await removeProductImage(product.image_url);
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      await loadProducts();
       toast.success("Producto eliminado");
     } catch { toast.error("Error al eliminar producto"); }
     finally { setDeletingProduct(false); setConfirmDeleteProduct(null); }

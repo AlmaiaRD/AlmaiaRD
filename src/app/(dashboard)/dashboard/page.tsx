@@ -7,13 +7,8 @@ import PageContainer from "@/components/layout/PageContainer";
 import KpiCard from "@/components/ui/KpiCard";
 import { SkeletonCard, SkeletonTable } from "@/components/ui/Skeleton";
 import { formatCurrency } from "@/lib/utils";
-import { getInvoices } from "@/services/invoices";
-import type { Invoice } from "@/types/database";
-import { getReceipts } from "@/services/receipts";
-import type { Receipt } from "@/types/database";
-import { getDashboardStats } from "@/services/dashboard";
 import { getPreferences, updatePreferences } from "@/services/preferences";
-import { supabase } from "@/lib/supabase";
+import { useDashboard, EMPTY_DASHBOARD } from "@/lib/queries/dashboard";
 import {
   DollarSign,
   TrendingUp,
@@ -42,58 +37,22 @@ import {
   Line,
 } from "recharts";
 
-interface LowStockItem {
-  name: string;
-  stock: number;
-  status: string;
-}
-
-interface MonthDataItem {
-  mes: string;
-  ventas: number;
-  cobros: number;
-}
-
-interface DailySalesItem {
-  dia: string;
-  ventas: number;
-}
-
-interface PaymentMethodItem {
-  name: string;
-  value: number;
-}
-
 const PIE_COLORS = ["#86C7A3", "#B8837E", "#E8C87A"];
-const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [loadingData, setLoadingData] = useState(true);
+  const { data, isLoading: loadingData } = useDashboard(Boolean(user));
+  const {
+    stats,
+    lowStock,
+    recentInvoices,
+    recentReceipts,
+    monthData,
+    dailySales,
+    paymentMethodData,
+  } = data ?? EMPTY_DASHBOARD;
 
-  const [stats, setStats] = useState<{
-    salesToday: number;
-    salesMonth: number;
-    salesYear: number;
-    totalSales: number;
-    totalPending: number;
-    totalPaid: number;
-    inventoryValue: number;
-    totalStock: number;
-    lowStock: number;
-    outOfStock: number;
-    grossProfit: number;
-    realProfit: number;
-    pvMonth: number;
-    pvYear: number;
-  } | null>(null);
-  const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
-  const [recentInvoices, setRecentInvoices] = useState<(Invoice & { clients?: { full_name?: string | null } })[]>([]);
-  const [recentReceipts, setRecentReceipts] = useState<(Receipt & { clients?: { full_name?: string | null }; invoices?: { clients?: { full_name?: string | null } } })[]>([]);
-  const [monthData, setMonthData] = useState<MonthDataItem[]>([]);
-  const [dailySales, setDailySales] = useState<DailySalesItem[]>([]);
-  const [paymentMethodData, setPaymentMethodData] = useState<PaymentMethodItem[]>([]);
   const [monthlyGoal, setMonthlyGoal] = useState(0);
   const [goalInput, setGoalInput] = useState("");
   const defaultMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
@@ -145,101 +104,6 @@ export default function DashboardPage() {
           setMonthlyGoal(Number(savedGoal));
           setGoalInput(savedGoal);
         }
-      }
-    })();
-
-    (async () => {
-      try {
-        const today = new Date();
-        const monthStart = today.toISOString().split("T")[0].substring(0, 7) + "-01";
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-        sixMonthsAgo.setDate(1);
-        const cutoff = sixMonthsAgo.toISOString().split("T")[0];
-
-        const [s, inv, rec, monthRawRes, dailyRes, pmRes, invValRes] = await Promise.all([
-          getDashboardStats(),
-          getInvoices(),
-          getReceipts(),
-          supabase.from("invoices").select("created_at, total, amount_paid").gte("created_at", cutoff).not("status", "eq", "CANCELLED"),
-          supabase.from("invoices").select("created_at, total").gte("created_at", monthStart).not("status", "eq", "CANCELLED"),
-          supabase.from("receipts").select("payment_method, amount").gte("created_at", monthStart),
-          supabase.from("vw_inventory_value").select("product_name, stock, stock_status").in("stock_status", ["BAJO", "AGOTADO"]).limit(5),
-        ]);
-
-        setStats(s);
-        setRecentInvoices(inv.slice(0, 5));
-        setRecentReceipts(rec.slice(0, 5));
-
-        const monthRaw = monthRawRes.data || [];
-        const dailyRaw = dailyRes.data || [];
-        const pmRaw = pmRes.data || [];
-        const invVal = invValRes.data || [];
-
-        const monthly: Record<string, { ventas: number; cobros: number }> = {};
-        for (let i = 0; i < 6; i++) {
-          const d = new Date();
-          d.setMonth(d.getMonth() - (5 - i));
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          monthly[key] = { ventas: 0, cobros: 0 };
-        }
-        (monthRaw || []).forEach((inv: { created_at?: string; total?: number | null; amount_paid?: number | null }) => {
-          const key = inv.created_at?.substring(0, 7);
-          if (key && monthly[key]) {
-            monthly[key].ventas += Number(inv.total);
-            monthly[key].cobros += Number(inv.amount_paid || 0);
-          }
-        });
-        const monthEntries = Object.entries(monthly).slice(0, 6);
-        setMonthData(
-          monthEntries.map(([key, val]) => ({
-            mes: MONTHS[parseInt(key.split("-")[1]) - 1] || key,
-            ventas: val.ventas,
-            cobros: val.cobros,
-          }))
-        );
-
-        const daily: Record<string, number> = {};
-        (dailyRaw || []).forEach((inv: { created_at?: string; total?: number | null }) => {
-          const day = inv.created_at?.substring(8, 10);
-          if (day) daily[day] = (daily[day] || 0) + Number(inv.total);
-        });
-        const daysInMonth = today.getDate();
-        const startDay = Math.max(1, daysInMonth - 14);
-        const length = Math.min(15, daysInMonth);
-        setDailySales(
-          Array.from({ length }, (_, i) => ({
-            dia: `${startDay + i}`,
-            ventas: daily[String(startDay + i).padStart(2, "0")] || 0,
-          }))
-        );
-
-        const pm: Record<string, number> = {};
-        (pmRaw || []).forEach((r: { payment_method?: string; amount?: number | null }) => {
-          pm[r.payment_method || ""] = (pm[r.payment_method || ""] || 0) + Number(r.amount);
-        });
-        const totalPm = Object.values(pm).reduce((a, b) => a + b, 0) || 1;
-        const labels: Record<string, string> = {
-          CASH: "Efectivo",
-          TRANSFER: "Transferencia",
-          CARD: "Tarjeta",
-        };
-        setPaymentMethodData(
-          Object.entries(pm).map(([key, val]) => ({
-            name: labels[key] || key,
-            value: Math.round((val / totalPm) * 100),
-          }))
-        );
-
-        setLowStock((invVal || []).map((i: { product_name?: string; stock?: number | null; stock_status?: string | null }) => ({
-          name: i.product_name || "",
-          stock: i.stock || 0,
-          status: i.stock_status || "",
-        })));
-      } catch {
-        // fallback to defaults
-      } finally {
-        setLoadingData(false);
       }
     })();
   }, [user]);
@@ -545,7 +409,7 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-[#9C8A82] text-sm">Sin facturas recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
-                  {recentInvoices.map((inv: Invoice & { clients?: { full_name?: string | null } }) => (
+                  {recentInvoices.map((inv) => (
                     <div key={inv.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</p>
@@ -576,7 +440,7 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-[#9C8A82] text-sm">Sin recibos recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
-                  {recentReceipts.map((rec: Receipt & { clients?: { full_name?: string | null }; invoices?: { clients?: { full_name?: string | null } } }) => (
+                  {recentReceipts.map((rec) => (
                     <div key={rec.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
                         <p className="text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</p>
