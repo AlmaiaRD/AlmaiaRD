@@ -1,19 +1,31 @@
 import { describe, it, expect } from "vitest";
-import { computeInvoiceMath, roundToNearest50, invoiceLineTotalForUnit, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
+import { computeInvoiceMath, roundToNearest50, ceilToNearest50, invoiceLineTotalForUnit, computeLineProfit, computeNetProfit } from "@/lib/invoiceMath";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 describe("computeInvoiceMath", () => {
-  it("ejemplo del usuario: costo 360, precio 486 (margen 35%) → ITBIS sobre precio 87.48, total 550", () => {
+  it("ejemplo del usuario: costo 360, precio 486 (margen 35%) → ITBIS sobre precio 87.48, total 600", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 486, cost: 360, itbis: true }]);
     expect(r.lines[0].itbis_amount).toBe(round2(486 * 0.18)); // 87.48
-    expect(r.lines[0].adjustment).toBeCloseTo(-23.48, 1); // 486 - 87.48 = 398.52, redondeado a 550 - 87.48 = 462.52
-    expect(r.lines[0].line_total).toBe(round2(roundToNearest50(486 + 87.48) - 87.48));
+    expect(r.lines[0].adjustment).toBeCloseTo(26.52, 1); // techo a 600: 600 - 87.48 = 512.52, menos 486 = +26.52
+    expect(r.lines[0].line_total).toBe(round2(ceilToNearest50(486 + 87.48) - 87.48));
     expect(r.lines[0].unit_price).toBe(round2(r.lines[0].line_total));
     expect(r.subtotal).toBe(r.lines[0].line_total);
     expect(r.itbis_total).toBe(round2(486 * 0.18));
-    expect(r.total).toBe(roundToNearest50(486 + 87.48));
+    expect(r.total).toBe(ceilToNearest50(486 + 87.48));
     expect(r.total % 50).toBe(0);
+  });
+
+  it("el redondeo NUNCA resta ganancia: el ajuste es siempre >= 0", () => {
+    for (const price of [1, 49.99, 50, 137.4, 486, 999.99, 1930.5, 4200.13]) {
+      for (const q of [1, 2, 3, 5]) {
+        for (const itbis of [true, false]) {
+          const r = computeInvoiceMath([{ quantity: q, unit_price: price, cost: 0, itbis }]);
+          expect(r.lines[0].adjustment).toBeGreaterThanOrEqual(0);
+          expect(r.lines[0].adjustment).toBeLessThan(50);
+        }
+      }
+    }
   });
 
   it("el ITBIS SIEMPRE se calcula sobre el PRECIO DE VENTA, nunca sobre el costo", () => {
@@ -26,18 +38,18 @@ describe("computeInvoiceMath", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 1485 * 1.3, cost: 1485, itbis: true }]);
     const expectedItbis = round2(1930.5 * 0.18);
     expect(r.itbis_total).toBe(expectedItbis);
-    const target = roundToNearest50(1930.5 + expectedItbis);
+    const target = ceilToNearest50(1930.5 + expectedItbis);
     expect(r.lines[0].adjustment).toBe(round2(target - expectedItbis - 1930.5));
     expect(r.lines[0].line_total).toBe(round2(target - expectedItbis));
     expect(r.total).toBe(target);
   });
 
-  it("sin ITBIS la línea también se redondea al múltiplo de 50 más cercano", () => {
+  it("sin ITBIS la línea también se redondea HACIA ARRIBA al múltiplo de 50", () => {
     const r = computeInvoiceMath([{ quantity: 2, unit_price: 1650.55, cost: 1000, itbis: false }]);
-    expect(r.lines[0].line_total).toBe(3300);
+    expect(r.lines[0].line_total).toBe(3350);
     expect(r.lines[0].itbis_amount).toBe(0);
-    expect(r.lines[0].adjustment).toBe(-1.1);
-    expect(r.total).toBe(3300);
+    expect(r.lines[0].adjustment).toBe(48.9);
+    expect(r.total).toBe(3350);
     expect(r.total % 50).toBe(0);
   });
 
@@ -49,13 +61,13 @@ describe("computeInvoiceMath", () => {
     expect(r.total).toBe(3300);
   });
 
-  it("cantidades > 1 redondean la línea completa al múltiplo de 50 más cercano", () => {
+  it("cantidades > 1 redondean la línea completa HACIA ARRIBA al múltiplo de 50", () => {
     const r = computeInvoiceMath([{ quantity: 2, unit_price: 486, cost: 360, itbis: true }]);
     const expectedItbis = round2(486 * 2 * 0.18);
     expect(r.lines[0].itbis_amount).toBe(expectedItbis);
-    expect(r.lines[0].line_total).toBe(round2(roundToNearest50(486 * 2 + expectedItbis) - expectedItbis));
+    expect(r.lines[0].line_total).toBe(round2(ceilToNearest50(486 * 2 + expectedItbis) - expectedItbis));
     expect(r.lines[0].unit_price).toBe(round2(r.lines[0].line_total / 2));
-    expect(r.total).toBe(roundToNearest50(486 * 2 + expectedItbis));
+    expect(r.total).toBe(ceilToNearest50(486 * 2 + expectedItbis));
     expect(r.total % 50).toBe(0);
   });
 
@@ -88,7 +100,7 @@ describe("computeInvoiceMath", () => {
   it("el descuento se resta del total ya redondeado", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 486, cost: 360, itbis: true }], 100);
     const expectedItbis = round2(486 * 0.18);
-    expect(r.subtotal).toBe(round2(roundToNearest50(486 + expectedItbis) - expectedItbis));
+    expect(r.subtotal).toBe(round2(ceilToNearest50(486 + expectedItbis) - expectedItbis));
     expect(r.itbis_total).toBe(expectedItbis);
     expect(r.discount).toBe(100);
     expect(r.total).toBe(round2(r.subtotal + r.itbis_total - 100));
@@ -104,7 +116,9 @@ describe("computeInvoiceMath", () => {
         expect(r.total).toBe(r.subtotal + r.itbis_total);
         expect(r.rounding).toBe(0);
         for (const l of r.lines) {
-          expect(Math.abs(l.adjustment)).toBeLessThanOrEqual(26);
+          // con el techo al múltiplo de 50 el ajuste solo puede ir de 0 a menos de 50
+          expect(l.adjustment).toBeGreaterThanOrEqual(0);
+          expect(l.adjustment).toBeLessThan(50);
         }
         // Idempotencia con precio de catálogo original
         const again = computeInvoiceMath([{ quantity: q, unit_price: price, cost, itbis: true }]);
@@ -122,7 +136,8 @@ describe("computeInvoiceMath", () => {
         const price = round2(cost * 1.35);
         const r = computeInvoiceMath([{ quantity: q, unit_price: price, cost, itbis: false }]);
         expect(r.lines[0].line_total % 50).toBe(0);
-        expect(Math.abs(r.lines[0].adjustment)).toBeLessThanOrEqual(26);
+        expect(r.lines[0].adjustment).toBeGreaterThanOrEqual(0);
+        expect(r.lines[0].adjustment).toBeLessThan(50);
         expect(r.total % 50).toBe(0);
         const again = computeInvoiceMath([{ quantity: q, unit_price: r.lines[0].unit_price, cost, itbis: false }]);
         expect(again.lines[0].line_total).toBe(r.lines[0].line_total);
@@ -145,21 +160,42 @@ describe("roundToNearest50", () => {
   });
 });
 
+describe("ceilToNearest50", () => {
+  it("redondea SIEMPRE hacia arriba, nunca hacia abajo", () => {
+    expect(ceilToNearest50(1947)).toBe(1950);
+    expect(ceilToNearest50(1920)).toBe(1950); // el más cercano daría 1900
+    expect(ceilToNearest50(1950)).toBe(1950);
+    expect(ceilToNearest50(1950.01)).toBe(2000);
+    expect(ceilToNearest50(573.48)).toBe(600);
+    expect(ceilToNearest50(1)).toBe(50);
+    expect(ceilToNearest50(0)).toBe(0);
+  });
+});
+
 describe("invoiceLineTotalForUnit", () => {
-  it("coincide con la factura de una sola unidad (ITBIS sobre precio + redondeo al más cercano)", () => {
-    expect(invoiceLineTotalForUnit(486, 360, true)).toBe(roundToNearest50(486 + round2(486 * 0.18)));
-    expect(invoiceLineTotalForUnit(1930.5, 1485, true)).toBe(roundToNearest50(1930.5 + round2(1930.5 * 0.18)));
+  it("coincide con la factura de una sola unidad (ITBIS sobre precio + techo al múltiplo de 50)", () => {
+    expect(invoiceLineTotalForUnit(486, 360, true)).toBe(ceilToNearest50(486 + round2(486 * 0.18)));
+    expect(invoiceLineTotalForUnit(1930.5, 1485, true)).toBe(ceilToNearest50(1930.5 + round2(1930.5 * 0.18)));
     expect(invoiceLineTotalForUnit(1650, 1000, false)).toBe(1650);
-    expect(invoiceLineTotalForUnit(486, 0, true)).toBe(roundToNearest50(486 + round2(486 * 0.18)));
+    expect(invoiceLineTotalForUnit(486, 0, true)).toBe(ceilToNearest50(486 + round2(486 * 0.18)));
+  });
+
+  it("nunca devuelve menos que el precio con ITBIS exacto", () => {
+    for (const price of [1, 49.99, 137.4, 486, 999.99, 1930.5, 4200.13]) {
+      for (const itbis of [true, false]) {
+        const exacto = round2(price + (itbis ? round2(price * 0.18) : 0));
+        expect(invoiceLineTotalForUnit(price, 0, itbis)).toBeGreaterThanOrEqual(exacto);
+      }
+    }
   });
 });
 
 describe("computeLineProfit", () => {
   it("ganancia = monto cobrado (sin ITBIS) − costo × cantidad", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 486, cost: 360, itbis: true }]);
-    // Con ITBIS sobre precio: line_total = 462.52, ganancia = 462.52 - 360 = 102.52
-    expect(computeLineProfit(r.lines[0].line_total, 360, 1)).toBeCloseTo(102.52, 1);
-    expect(computeLineProfit(r.lines[0].line_total * 2, 360, 2)).toBeCloseTo(205.04, 1);
+    // Con ITBIS sobre precio: line_total = 512.52, ganancia = 512.52 - 360 = 152.52
+    expect(computeLineProfit(r.lines[0].line_total, 360, 1)).toBeCloseTo(152.52, 1);
+    expect(computeLineProfit(r.lines[0].line_total * 2, 360, 2)).toBeCloseTo(305.04, 1);
     expect(computeLineProfit(3300, 1000, 2)).toBe(1300);
   });
 
@@ -184,20 +220,20 @@ describe("computeNetProfit", () => {
       { line_total: r.lines[0].line_total, cost: 360, quantity: 1 },
       { line_total: 500, cost: 0, quantity: 1 },
     ], 100);
-    // Ganancia línea 1: 462.52 - 360 = 102.52; -100 descuento = 2.52
-    expect(net).toBeCloseTo(2.52, 1);
+    // Ganancia línea 1: 512.52 - 360 = 152.52; -100 descuento = 52.52
+    expect(net).toBeCloseTo(52.52, 1);
   });
 
   it("sin descuento la ganancia neta es la suma de las líneas con costo", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 486, cost: 360, itbis: true }]);
-    // Ganancia = 462.52 - 360 = 102.52
-    expect(computeNetProfit([{ line_total: r.lines[0].line_total, cost: 360, quantity: 1 }])).toBeCloseTo(102.52, 1);
+    // Ganancia = 512.52 - 360 = 152.52
+    expect(computeNetProfit([{ line_total: r.lines[0].line_total, cost: 360, quantity: 1 }])).toBeCloseTo(152.52, 1);
   });
 
   it("el descuento puede superar la ganancia (resultado negativo)", () => {
     const r = computeInvoiceMath([{ quantity: 1, unit_price: 486, cost: 360, itbis: true }]);
-    // Ganancia 102.52 - 200 = -97.48
-    expect(computeNetProfit([{ line_total: r.lines[0].line_total, cost: 360, quantity: 1 }], 200)).toBeCloseTo(-97.48, 1);
+    // Ganancia 152.52 - 200 = -47.48
+    expect(computeNetProfit([{ line_total: r.lines[0].line_total, cost: 360, quantity: 1 }], 200)).toBeCloseTo(-47.48, 1);
   });
 
   it("lista vacía devuelve 0", () => {

@@ -39,12 +39,13 @@ export interface InvoiceMathResult {
 
 /**
  * Total por línea de una sola unidad: precio + ITBIS (18% del precio),
- * redondeado al múltiplo de 50 MÁS CERCANO. El ITBIS se calcula sobre
+ * redondeado HACIA ARRIBA al múltiplo de 50 (techo, nunca hacia abajo, para
+ * que el redondeo nunca se coma ganancia). El ITBIS se calcula sobre
  * el precio de venta (unit_price * quantity), según normativa DGII.
  */
 export function invoiceLineTotalForUnit(unitPrice: number, cost: number, itbis: boolean): number {
   const itbisAmount = itbis ? round2(round2(Number(unitPrice) || 0) * ITBIS_RATE) : 0;
-  return roundToNearest50(round2(round2(Number(unitPrice) || 0) + itbisAmount));
+  return ceilToNearest50(round2(round2(Number(unitPrice) || 0) + itbisAmount));
 }
 
 /**
@@ -77,15 +78,16 @@ export function computeNetProfit(
  *    (18% exacto), según normativa DGII. El ITBIS se calcula sobre el precio
  *    de catálogo original y queda FIJO durante el redondeo (no cambia al ajustar
  *    el precio de cobro para llegar a múltiplo de 50).
- *  - El total de CADA línea se redondea al múltiplo de 50 MÁS CERCANO; la
- *    diferencia se absorbe ajustando el precio de cobro (el ITBIS queda
- *    intacto, sin tocar el precio del catálogo).
- *  - El total FINAL se redondea al múltiplo de 50 SUPERIOR (ceiling); la
- *    diferencia se absorbe como ganancia adicional (campo `rounding`).
+ *  - El total de CADA línea se redondea HACIA ARRIBA al múltiplo de 50 (techo);
+ *    la diferencia se absorbe ajustando el precio de cobro (el ITBIS queda
+ *    intacto, sin tocar el precio del catálogo). El techo garantiza que la
+ *    diferencia NUNCA sea negativa: el redondeo no puede restar ganancia.
+ *  - El total FINAL también se redondea al múltiplo de 50 SUPERIOR (ceiling);
+ *    la diferencia se absorbe como ganancia adicional (campo `rounding`).
  *
  * Ejemplo: costo 360, precio 486 (margen 35%), qty 1:
- *   ITBIS = 486 × 0.18 = 87.48 (fijo sobre precio catálogo); 486 + 87.48 = 573.48 → total 550
- *   (múltiplo de 50 más cercano); ajuste −23.48 → precio de cobro 462.52.
+ *   ITBIS = 486 × 0.18 = 87.48 (fijo sobre precio catálogo); 486 + 87.48 = 573.48 → total 600
+ *   (techo al múltiplo de 50); ajuste +26.52 → precio de cobro 512.52.
  *
  * Ejemplo total final: rawTotal = 4,199.04 → total = 4,200 (ceiling) → rounding = +0.96.
  */
@@ -98,10 +100,10 @@ export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): Invo
     const itbisAmount = item.itbis && catalogPrice > 0 && quantity > 0 ? round2(catalogPrice * quantity * ITBIS_RATE) : 0;
     const rawTotal = round2(rawPrice + itbisAmount);
 
-    // El total de la línea SIEMPRE se redondea al múltiplo de 50 más cercano.
+    // El total de la línea SIEMPRE se redondea HACIA ARRIBA al múltiplo de 50.
     // Con ITBIS: line_total = target − itbis (el ITBIS queda intacto).
     // Sin ITBIS: line_total = target.
-    const target = quantity > 0 ? Math.max(roundToNearest50(rawTotal), itbisAmount) : 0;
+    const target = quantity > 0 ? Math.max(ceilToNearest50(rawTotal), itbisAmount) : 0;
     const lineTotal = quantity > 0 ? round2(target - itbisAmount) : 0;
     let displayPrice = quantity > 0 ? round2(lineTotal / quantity) : 0;
 
@@ -113,7 +115,7 @@ export function computeInvoiceMath(items: InvoiceMathItem[], discount = 0): Invo
     const checkTotal = (lt: number) => lt + itbisAmount;
     let guard = 0;
     while (guard < 500) {
-      const recomputed = roundToNearest50(checkTotal(round2(displayPrice * quantity)));
+      const recomputed = ceilToNearest50(checkTotal(round2(displayPrice * quantity)));
       if (recomputed === target) break;
       displayPrice = round2((displayPrice * 100 + (recomputed > target ? -1 : 1)) / 100);
       guard++;
