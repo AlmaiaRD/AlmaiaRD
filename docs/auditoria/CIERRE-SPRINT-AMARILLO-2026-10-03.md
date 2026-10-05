@@ -315,8 +315,24 @@ requieran mirar dos veces:
 
 ### 8.6 Pendiente
 
-- **Usuario de prueba para la prueba E2E.** Necesita `service_role` de Supabase,
-  o un token de gestión con permiso de `Database → Read-write`.
+- **La prueba E2E del camino crítico no se puede correr contra producción, por
+  diseño.** No es que falten credenciales: el propio archivo lo dice en su
+  cabecera. Escribiría un cliente, una factura y un recibo de mentira en la base
+  de datos real, y la limpieza depende de permisos que en producción son más
+  estrictos. Hace falta **un proyecto de Supabase aparte para pruebas**.
+
+  Lo que sí se averiguó el 5 de octubre:
+
+  - El usuario de prueba **ya existe** en producción (creado el 1 de septiembre,
+    rol `assistant`, confirmado). Solo faltan las credenciales.
+  - La contraseña que se filtró en el historial de git (8 caracteres, estaba
+    escrita a mano en cuatro archivos `e2e/*.spec.ts` antes de la remediación
+    `45ce2f0`) **ya no abre ninguna cuenta de producción**. Se comprobó una por
+    una contra las tres. No hay ningún hueco vivo por ese lado.
+  - Aun así, esa contraseña **sigue visible en el historial de git**. Cambiarla
+    no basta: hay que cambiar la clave de todos los usuarios que alguna vez la
+    usaron, o reescribir el historial.
+
 - **Revocar los tokens.** Quedaron al descubierto en la conversación: cuatro
   tokens de GitHub anteriores, el token de GitHub del 5 de octubre (`ghp_fytV…`)
   y dos tokens de gestión de Supabase (`sbp_fc1e…`, `sbp_fc4e…`). Hay que
