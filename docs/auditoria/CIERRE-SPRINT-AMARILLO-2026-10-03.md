@@ -1,5 +1,8 @@
 # Cierre del Sprint Amarillo — 3 de octubre de 2026
 
+> **ACTUALIZADO el 5 de octubre de 2026.** Este informe se escribió cuando el
+> trabajo **aún no estaba publicado**. Ya lo está. Ver §8 al final.
+
 AlmaiaRD · Next.js 16 + Supabase · producción: https://almaia-rd.vercel.app
 
 ---
@@ -11,6 +14,10 @@ para poder deshacerlo por separado, y las cuatro puertas de calidad
 (comprobación de tipos, análisis de código, pruebas y compilación) quedan en
 verde. **Nada de esto está publicado todavía**: está guardado en este
 computador, pendiente de subir a GitHub y de desplegar.
+
+> ⚠️ Este párrafo quedó desactualizado el 5 de octubre: **sí se publicó**, junto
+> con las 9 migraciones de base de datos. Los detalles están en §8. Se conserva
+> el texto original para que quede claro qué se sabía el 3 de octubre.
 
 ---
 
@@ -105,6 +112,9 @@ Nada de esto está en manos del código; son decisiones y pasos de configuració
 
 ### 5.1 Subir a GitHub — requiere un clic tuyo
 
+> ✅ **Resuelto el 5 de octubre.** Se creó un token con permiso `workflow` y los
+> commits se subieron. Ver §8.1. El texto de abajo se conserva como está.
+
 Los 16 commits están guardados y comprobados en este computador, pero GitHub no
 los acepta con la llave actual:
 
@@ -145,6 +155,10 @@ sección 5.1.
 
 ### 5.3 Las 9 migraciones de la base de datos siguen sin aplicar
 
+> ✅ **Resuelto el 5 de octubre.** Las 9 migraciones se aplicaron en producción
+> (98 sentencias) y se verificaron una por una: 10 de 10 comprobaciones OK.
+> Ver §8.1 y §8.4. El texto de abajo se conserva como está.
+
 El archivo `MIGRACIONES-PENDIENTES-2026-10-02.sql` (9 migraciones) está listo
 para pegar en una sola vez en el **SQL Editor** de Supabase. Mientras no se
 aplique, la base de producción no tiene los índices nuevos ni las reglas de
@@ -155,7 +169,9 @@ integridad que describía la auditoría.
 - **5 vulnerabilidades "altas"** que reporta `npm audit`: todas están en
   herramientas de desarrollo (el revisor de código), no en la aplicación que
   usa la usuaria. Una de ellas no tiene arreglo disponible y la otra obligaría
-  a bajar la versión del revisor. **No se tocó nada.**
+  a bajar la versión del revisor. **No se tocó nada.** (El 5 de octubre la CI
+  se reconfiguró para que estas solo avisen y no bloqueen; las de producción sí
+  bloquean y dan 0. Ver §8.2.)
 - **Un aviso de Sentry**: la forma de importar su configuración va a dejar de
   funcionar en la próxima versión mayor. El arreglo oficial ya está instalado y
   es cambiar una línea en `next.config.ts`. No es urgente (solo afectaría al
@@ -168,9 +184,8 @@ integridad que describía la auditoría.
 
 Tres cosas que conviene saber antes de dar el sprint por bueno del todo:
 
-1. **Nada está publicado.** La web en producción sigue con el código de antes.
-   Hasta que se suban los commits y Vercel despliegue, la usuaria no ve ninguno
-   de estos cambios.
+1. ~~**Nada está publicado.** La web en producción sigue con el código de antes.~~
+   **Desmentido el 5 de octubre: ya está publicado y desplegado.** Ver §8.
 
 2. **La prueba nueva del camino principal nunca se ha ejecutado de principio a
    fin**, porque no hay credenciales de prueba configuradas en este computador.
@@ -208,3 +223,103 @@ d793aff  fix(canvas): crossOrigin=anonymous en firma digital
 45ce2f0  fix(app): remediacion de 5 CRITICAL, 11 HIGH y 9 MEDIUM en codigo y tests
 d6b9ad9  fix(db): 9 migraciones de remediacion de la auditoria 2026-10-02
 ```
+
+---
+
+## 8. Actualización del 5 de octubre de 2026
+
+Lo anterior se escribió antes de publicar. Esto es lo que pasó después.
+
+### 8.1 Sí se publicó
+
+- Los **18 commits** del sprint están en `AlmaiaRD/AlmaiaRD`, rama `main`.
+  Local y remoto coinciden en `3a7aab1`; después se añadieron dos más
+  (`379dc99` para CI y `9caba86` para la migración 10 de esta misma fecha).
+- **Vercel desplegó el código nuevo.** No se comprobó por identificador de
+  compilación (el identificador local nunca puede coincidir con el de Vercel, así
+  que habría sido una prueba sin valor). Se comprobó por contenido: el código
+  viejo tenía el correo real `rdalmaia@gmail.com` escrito a mano en el campo de
+  contraseña del login, y el nuevo tiene `correo@ejemplo.com`. El HTML que
+  sirve producción ya no contiene el correo real.
+- **Las 9 migraciones de base de datos están aplicadas en producción**, las 98
+  sentencias. Se aplicaron desde el SQL Editor de Supabase.
+
+### 8.2 La CI se arregló (no la rompimos)
+
+La CI empezó a fallar por un aviso de seguridad de una dependencia transitiva
+(`braces`), publicado el **18 de septiembre**. La última corrida verde era del
+**8 de septiembre**. El aviso **no lo causó el push**: el árbol de dependencias
+es idéntico y el paso `npm audit --audit-level=high` ya existía en el workflow
+anterior. Además `first_patched_version: null`: no hay arreglo publicado aguas
+arriba.
+
+Quedaron dos puertas separadas:
+
+- `npm audit --omit=dev --audit-level=high` → **bloquea** (0 vulnerabilidades)
+- `npm audit --audit-level=high` → **solo avisa**, no bloquea
+
+### 8.3 Migración 10: se cerraron tres funciones muertas
+
+`20261005_revoke_dead_inventory_overloads.sql`
+
+Había **seis** funciones de inventario en vez de tres: las tres "largas" (con
+`p_movement_type`, `p_reference_type`, `p_reference_id`), que son las que usa la
+aplicación, y tres **cortas** que quedaron huérfanas desde el commit `d37f94c`.
+Nadie las llama: ni la app actual, ni el historial de Git, ni ningún trigger.
+
+Las cortas son `SECURITY INVOKER` y **no tienen comprobación de rol**. Hoy **no
+son explotables**, y esto está comprobado, no supuesto:
+
+```
+tabla                rol            SELECT  INSERT  UPDATE  DELETE
+inventory            anon           True    False   False   False
+inventory            authenticated  True    True    True    True
+```
+
+Un visitante anónimo puede *invocar* la función, pero al intentar escribir
+recibe `permission denied` y no cambia nada. Aun así se cerraron, porque son una
+mina enterrada: en cuanto alguien regalara permiso de escritura a `anon` por
+error, se convertirían en un agujero que nadie notaría. Se les quitó `EXECUTE` a
+`PUBLIC` y a `anon`, y se dejó intacto para `authenticated` (por si hubiera
+alguna versión antigua desplegada). **No se borraron**: siguen ahí por si acaso.
+
+### 8.4 Lo que se verificó y cómo
+
+14 de 14 comprobaciones contra producción, después de aplicar la migración 10:
+las 3 largas intactas y utilizables, las 3 cortas cerradas, las 5 funciones
+nuevas presentes, las 7 vistas cerradas para anónimos, `smtp_pass` sigue sin
+leerse, el disparador de crédito sigue puesto, y los datos sin tocar (207
+productos, 33 clientes, 23 facturas, 16 recibos, 25 inventario, 3 usuarios).
+Las cuatro puertas en verde: 198 pruebas en 18 archivos, 0 errores de lint,
+compilación correcta.
+
+### 8.5 Errores propios que hay que tener en cuenta
+
+Se documentan porque son la razón de que algunas cifras de este informe
+requieran mirar dos veces:
+
+1. **La primera verificación de funciones daba 2 falsos positivos.** La función
+   `oidvectortypes()` de PostgreSQL separa los tipos con coma **y espacio**, y
+   los valores esperados se escribieron sin el espacio. Solo fallaban las dos
+   funciones con parámetros, lo que encajaba exactamente con el error.
+2. **El primer script de verificación aprobó comprobaciones que nunca se
+   ejecutaron.** La API de gestión de Supabase responde `201` en éxito, no
+   `200`; el script solo aceptaba `200`, así que convertía errores en "cero
+   filas" y contaba cero violaciones como aprobado. Se detectó porque una
+   consulta que debía devolver 5 filas devolvió 0, y se corrigió antes de
+   informar nada.
+3. **Las advertencias 2 y 3 de la §6 siguen en pie.** La prueba E2E del camino
+   principal todavía no se ha ejecutado de principio a fin (no hay credenciales
+   de prueba), y los cambios de las pantallas se validaron con las cuatro
+   puertas, no navegando con datos reales.
+
+### 8.6 Pendiente
+
+- **Usuario de prueba para la prueba E2E.** Necesita `service_role` de Supabase,
+  o un token de gestión con permiso de `Database → Read-write`.
+- **Revocar los tokens.** Quedaron al descubierto en la conversación: cuatro
+  tokens de GitHub anteriores, el token de GitHub del 5 de octubre (`ghp_fytV…`)
+  y dos tokens de gestión de Supabase (`sbp_fc1e…`, `sbp_fc4e…`). Hay que
+  revocarlos en https://github.com/settings/tokens y en el panel de Supabase.
+- **El correo real sigue en el historial de Git.** Ya no está en el código, pero
+  `rdalmaia@gmail.com` se puede leer en commits antiguos.
