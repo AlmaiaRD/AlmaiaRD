@@ -51,7 +51,7 @@ export default function LoginPage() {
               <Flower2 size={22} className="text-[#B8837E]" />
             </div>
             <div>
-              <h1 className="text-[21px] font-marca font-bold text-[#5C3E35] leading-tight">ALMAIA</h1>
+              <h1 className="text-[21px] font-marca text-[#5C3E35] leading-tight">ALMAIA</h1>
               <p className="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight">Bienestar & Salud</p>
             </div>
           </Link>

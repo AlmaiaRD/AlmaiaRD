@@ -889,7 +889,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Cotizaciones</h1>
+          <h1 className="text-[27px] font-marca text-[#5C3E35]">Cotizaciones</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Crea, envía y da seguimiento a tus cotizaciones</p>
         </div>
         <button

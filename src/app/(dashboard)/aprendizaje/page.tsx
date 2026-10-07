@@ -96,7 +96,7 @@ export default function AprendizajePage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Notas de Aprendizaje</h1>
+          <h1 className="text-[27px] font-marca text-[#5C3E35]">Notas de Aprendizaje</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Lecciones aprendidas, errores que no repetir, ideas</p>
         </div>
         <button

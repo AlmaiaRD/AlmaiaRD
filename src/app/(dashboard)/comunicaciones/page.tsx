@@ -121,7 +121,7 @@ export default function ComunicacionesPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Centro de Comunicaciones</h1>
+          <h1 className="text-[27px] font-marca text-[#5C3E35]">Centro de Comunicaciones</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Gestiona tus mensajes y comunicaciones</p>
         </div>
       </div>
