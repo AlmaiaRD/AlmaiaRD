@@ -22,7 +22,7 @@ export default function LandingPage() {
               <Flower2 size={22} className="text-[#B8837E]" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-[#5C3E35] leading-tight">ALMAIA</h1>
+              <h1 className="text-lg font-marca text-[#5C3E35] leading-tight">ALMAIA</h1>
               <p className="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight">Bienestar & Salud</p>
             </div>
           </div>
@@ -42,7 +42,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 bg-[#B8837E]/10 text-[#B8837E] px-4 py-1.5 rounded-full text-sm font-medium mb-6">
             <Shield size={14} /> Sistema de Gestión Comercial
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-[#5C3E35] leading-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-marca text-[#5C3E35] leading-tight mb-4">
             Tu negocio Amway,{" "}
             <span className="text-[#B8837E]">simplificado</span>
           </h1>

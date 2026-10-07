@@ -537,7 +537,9 @@ export default function CatalogoPage() {
     setGeneratingCatalog(true);
     try {
       const { jsPDF } = await import("jspdf");
+      const { registerItaliana } = await import("@/lib/fonts/italiana");
       const doc = new jsPDF({ unit: "mm", format: "letter" });
+      registerItaliana(doc);
       const PW = doc.internal.pageSize.getWidth();
       const PH = doc.internal.pageSize.getHeight();
       const M = 12;
@@ -585,8 +587,8 @@ export default function CatalogoPage() {
 
       const drawFooter = () => {
         let fy = PH - 20;
-        sc("#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-        doc.text(bizName, PW / 2, fy, { align: "center" });
+        sc("#5C3E35"); doc.setFont("Italiana", "normal"); doc.setFontSize(8);
+        doc.text(bizName.toUpperCase(), PW / 2, fy, { align: "center" });
         fy += 4;
         sc("#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
         doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, fy, { align: "center" });
@@ -611,8 +613,8 @@ export default function CatalogoPage() {
         } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
         const hCenterY = hTop + hLogoH / 2;
         const hTextX = M + hLogoW + 4;
-        sc("#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
-        doc.text(bizName, hTextX, hCenterY);
+        sc("#5C3E35"); doc.setFont("Italiana", "normal"); doc.setFontSize(22);
+        doc.text(bizName.toUpperCase(), hTextX, hCenterY);
         sc("#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
         const hy = hLogoBottom + 7;
@@ -764,7 +766,7 @@ export default function CatalogoPage() {
     <PageContainer>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-[#5C3E35]">Catálogo de Productos</h1>
+          <h1 className="text-2xl font-marca text-[#5C3E35]">Catálogo de Productos</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Base de datos de productos Amway</p>
         </div>
         <div className="flex flex-wrap gap-3">

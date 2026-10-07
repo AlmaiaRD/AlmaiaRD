@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Great_Vibes } from "next/font/google";
+import { Montserrat, Italiana, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import KillServiceWorker from "@/components/KillServiceWorker";
@@ -8,9 +8,16 @@ import ToastProvider from "@/components/ui/ToastProvider";
 
 
 
-const jakarta = Plus_Jakarta_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const italiana = Italiana({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -54,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${jakarta.variable} ${greatVibes.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${italiana.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <KillServiceWorker />

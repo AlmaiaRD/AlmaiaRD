@@ -71,7 +71,7 @@ export default function CuentasPorCobrarPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-[#5C3E35]">Cuentas por Cobrar</h1>
+        <h1 className="text-2xl font-marca text-[#5C3E35]">Cuentas por Cobrar</h1>
         <p className="text-sm text-[#9C8A82] mt-1">Saldos pendientes de clientes</p>
       </div>
 

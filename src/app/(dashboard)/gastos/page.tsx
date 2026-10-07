@@ -490,7 +490,7 @@ export default function GastosPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-[#5C3E35]">Gastos</h1>
+          <h1 className="text-2xl font-marca text-[#5C3E35]">Gastos</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Registro de gastos operativos</p>
         </div>
         <button onClick={() => { resetForm(); setShowCreate(true); }}
@@ -747,7 +747,7 @@ export default function GastosPage() {
             <div className="flex items-center justify-center gap-2 border-b border-[#E8E0D8] pb-4 mb-6">
               <Flower2 size={22} className="text-[#B8837E]" />
               <div>
-                <h1 style={{ fontSize: "22px", fontWeight: "bold", color: "#5C3E35", margin: 0 }}>{settings?.business_name || "Almaia RD"}</h1>
+                <h1 style={{ fontSize: "22px", fontWeight: 400, color: "#5C3E35", margin: 0, fontFamily: "var(--font-display), serif", textTransform: "uppercase" }}>{settings?.business_name || "Almaia RD"}</h1>
                 <p style={{ fontSize: "12px", color: "#9C8A82", margin: "2px 0 0" }}>Comprobante de Gasto</p>
               </div>
             </div>

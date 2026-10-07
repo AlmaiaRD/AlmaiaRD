@@ -345,7 +345,7 @@ export default function FacturacionPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:700;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <h2 style="font-size:24px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
             <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
@@ -863,7 +863,7 @@ export default function FacturacionPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-[#5C3E35]">Facturación</h1>
+          <h1 className="text-2xl font-marca text-[#5C3E35]">Facturación</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Gestión de facturas y ventas</p>
         </div>
         <button
@@ -961,7 +961,7 @@ export default function FacturacionPage() {
                   <Flower2 size={28} className="text-[#B8837E]" />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
+                    <h2 className="text-2xl font-marca uppercase text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
                     <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
                     <p className="text-sm font-bold text-[#5C3E35] mt-2">Distribuidor Independiente Amway</p>
                     <p className="text-xs text-[#9C8A82] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
@@ -1621,7 +1621,7 @@ export default function FacturacionPage() {
                   <Flower2 size={28} className="text-[#B8837E]" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
+                  <h2 className="text-2xl font-marca uppercase text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
                   <p className="text-sm font-bold text-[#5C3E35] mt-2">Distribuidor Independiente Amway</p>
                   <p className="text-xs text-[#9C8A82] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>

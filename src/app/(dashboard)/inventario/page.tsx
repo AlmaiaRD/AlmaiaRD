@@ -968,7 +968,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-[#5C3E35]">Inventario</h1>
+          <h1 className="text-2xl font-marca text-[#5C3E35]">Inventario</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Control de existencias y stock</p>
         </div>
         <button

@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
+import { registerItaliana } from "./fonts/italiana";
 export type PDFDoc = InstanceType<typeof jsPDF>;
 
 interface InvoiceItemData {
@@ -150,6 +151,7 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
 
 export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  registerItaliana(doc);
   const PW = doc.internal.pageSize.getWidth();
   let y = M;
   const bizName = invoice.business_name || "Almaia RD";
@@ -177,15 +179,15 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
       drawFlowerIcon(doc, M + 10, y + 10, 20);
       setTextColor(doc, DARK);
       doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text(bizName, M + 22, y + 6);
+      doc.setFont("Italiana", "normal");
+      doc.text(bizName.toUpperCase(), M + 22, y + 6);
     }
   } else {
     drawFlowerIcon(doc, M + 10, y + 10, 20);
     setTextColor(doc, DARK);
     doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + 22, y + 6);
+    doc.setFont("Italiana", "normal");
+    doc.text(bizName.toUpperCase(), M + 22, y + 6);
   }
 
   // Subtitle (spaced out)
@@ -540,6 +542,7 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 
 export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  registerItaliana(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = margin;
@@ -577,15 +580,15 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       drawFlowerIcon(doc, margin + 9, y + 9, 18);
       setColor(dark);
       doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text(bizName, margin + 20, y);
+      doc.setFont("Italiana", "normal");
+      doc.text(bizName.toUpperCase(), margin + 20, y);
     }
   } else {
     drawFlowerIcon(doc, margin + 9, y + 9, 18);
     setColor(dark);
     doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text(bizName, margin + 20, y);
+    doc.setFont("Italiana", "normal");
+    doc.text(bizName.toUpperCase(), margin + 20, y);
   }
 
   setColor(gray);
@@ -698,6 +701,7 @@ interface ExpenseData {
 
 export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  registerItaliana(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = margin;
@@ -731,15 +735,15 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
       drawFlowerIcon(doc, margin + 9, y + 9, 18);
       setColor(dark);
       doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text(bizName, margin + 20, y);
+      doc.setFont("Italiana", "normal");
+      doc.text(bizName.toUpperCase(), margin + 20, y);
     }
   } else {
     drawFlowerIcon(doc, margin + 9, y + 9, 18);
     setColor(dark);
     doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text(bizName, margin + 20, y);
+    doc.setFont("Italiana", "normal");
+    doc.text(bizName.toUpperCase(), margin + 20, y);
   }
 
   setColor(gray);
@@ -863,6 +867,7 @@ interface QuoteData {
 
 export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  registerItaliana(doc);
   await drawQuotePdfContent(doc, quote);
   return doc;
 }
@@ -906,8 +911,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       drawFlowerIcon(doc, M + 8, hy + 8, 16);
     }
     const nameBaseY = hy + logoH / 2;
-    setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-    doc.text(bizName, M + logoW + 4, nameBaseY);
+    setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("Italiana", "normal");
+    doc.text(bizName.toUpperCase(), M + logoW + 4, nameBaseY);
 
     setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
     doc.text("BIENESTAR & SALUD", M + logoW + 4, nameBaseY + 5);
@@ -1093,8 +1098,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     drawFlowerIcon(doc, M + 8, y + 8, 16);
   }
   const lastCenterY = y + lastLogoH / 2;
-  setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("helvetica", "bold");
-  doc.text(bizName, M + lastLogoW + 4, lastCenterY);
+  setTextColor(doc, DARK); doc.setFontSize(22); doc.setFont("Italiana", "normal");
+  doc.text(bizName.toUpperCase(), M + lastLogoW + 4, lastCenterY);
 
   setTextColor(doc, PRIMARY); doc.setFontSize(7); doc.setFont("helvetica", "normal");
   doc.text("BIENESTAR & SALUD", M + lastLogoW + 4, lastCenterY + 5);
