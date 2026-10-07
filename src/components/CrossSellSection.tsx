@@ -48,8 +48,8 @@ export default function CrossSellSection({ clientId, topProducts }: Props) {
     return () => { cancelled = true; };
   }, [clientId, topProducts]);
 
-  if (loading) return <div className="text-xs text-[#5F6B72] py-2">Buscando productos complementarios...</div>;
-  if (suggestions.length === 0) return <div className="text-xs text-[#5F6B72] py-2">No hay sugerencias disponibles</div>;
+  if (loading) return <div className="text-xs text-[#4C5760] py-2">Buscando productos complementarios...</div>;
+  if (suggestions.length === 0) return <div className="text-xs text-[#4C5760] py-2">No hay sugerencias disponibles</div>;
 
   return (
     <div className="flex flex-wrap gap-2">

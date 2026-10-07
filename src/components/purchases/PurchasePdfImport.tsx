@@ -221,7 +221,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
               <Upload size={24} className="text-[#BA4A3A]" />
               <div className="text-left">
                 <div className="text-sm font-medium text-[#39484F]">Subir factura de compra (PDF)</div>
-                <div className="text-xs text-[#5F6B72]">La IA extrae productos, cantidades y precios automáticamente</div>
+                <div className="text-xs text-[#4C5760]">La IA extrae productos, cantidades y precios automáticamente</div>
               </div>
             </>
           )}
@@ -257,7 +257,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Proveedor</label>
+              <label className="block text-xs font-medium text-[#4C5760] mb-1">Proveedor</label>
               <input
                 type="text"
                 value={preview.parsed.supplier_name}
@@ -266,7 +266,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Fecha</label>
+              <label className="block text-xs font-medium text-[#4C5760] mb-1">Fecha</label>
               <input
                 type="date"
                 value={preview.parsed.purchase_date}
@@ -279,7 +279,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-[#39484F]">Productos detectados</label>
-              <span className="text-xs text-[#5F6B72]">Valida y corrige antes de continuar</span>
+              <span className="text-xs text-[#4C5760]">Valida y corrige antes de continuar</span>
             </div>
             <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
               {preview.parsed.items.map((item, i) => {
@@ -297,7 +297,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
                           <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
                       </select>
-                      <div className="text-[10px] text-[#5F6B72] mt-0.5 truncate">PDF: {item.name}{item.code ? ` (${item.code})` : ""}</div>
+                      <div className="text-[10px] text-[#4C5760] mt-0.5 truncate">PDF: {item.name}{item.code ? ` (${item.code})` : ""}</div>
                     </div>
                     <input
                       type="number" min={1} value={item.quantity}
@@ -321,7 +321,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
             <button
               type="button"
               onClick={() => { setPreview(null); setError(null); }}
-              className="text-sm text-[#5F6B72] hover:text-[#39484F] transition-colors flex items-center gap-1"
+              className="text-sm text-[#4C5760] hover:text-[#39484F] transition-colors flex items-center gap-1"
             >
               <FileText size={14} /> Cambiar PDF
             </button>

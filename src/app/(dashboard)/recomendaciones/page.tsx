@@ -218,7 +218,7 @@ export default function RecommendationsPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <button onClick={() => router.push("/catalogo")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
+        <button onClick={() => router.push("/catalogo")} className="flex items-center gap-2 text-sm text-[#4C5760] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver al Catálogo
         </button>
         <div className="flex items-center gap-3">
@@ -227,7 +227,7 @@ export default function RecommendationsPage() {
           </div>
           <div>
             <h1 className="text-[30px] font-marca text-[#39484F]">Recomendaciones IA</h1>
-            <p className="text-sm text-[#5F6B72]">Sugerencias inteligentes para tu negocio</p>
+            <p className="text-sm text-[#4C5760]">Sugerencias inteligentes para tu negocio</p>
           </div>
         </div>
       </div>
@@ -240,7 +240,7 @@ export default function RecommendationsPage() {
             { key: "seasonal", label: "Temporada", icon: Sun },
           ].map((tab) => (
           <button key={tab.key} onClick={() => { setActiveTab(tab.key as "products" | "seasonal" | "needs"); setSearchFilter(""); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.key ? "bg-[#BA4A3A]/10 text-[#BA4A3A]" : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"}`}>
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.key ? "bg-[#BA4A3A]/10 text-[#BA4A3A]" : "text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF]"}`}>
             <tab.icon size={16} /> {tab.label}
           </button>
         ))}
@@ -254,22 +254,22 @@ export default function RecommendationsPage() {
           {activeTab === "products" && (
             <div className="space-y-4">
               <div className="relative">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                 <input type="text" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)}
                   placeholder="Buscar productos recomendados..."
                   className="w-full h-12 pl-12 pr-10 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
-                {searchFilter && <button onClick={() => setSearchFilter("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F6B72] hover:text-[#39484F]"><X size={16} /></button>}
+                {searchFilter && <button onClick={() => setSearchFilter("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4C5760] hover:text-[#39484F]"><X size={16} /></button>}
               </div>
               {productRecsLoading ? (
                 <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-16 text-[#5F6B72]"><Sparkles size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">{searchFilter ? "No se encontraron resultados" : "No hay recomendaciones"}</p></div>
+                <div className="text-center py-16 text-[#4C5760]"><Sparkles size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">{searchFilter ? "No se encontraron resultados" : "No hay recomendaciones"}</p></div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredProducts.map((rec) => (
                     <div key={rec.product_id} className={`bg-white rounded-2xl p-5 shadow-sm border transition-all hover:shadow-md ${getPriorityColor(rec.priority)}`}>
                       <div className="flex items-start justify-between mb-3">
-                        <div><p className="font-medium text-[#39484F]">{rec.product_name}</p><p className="text-xs text-[#5F6B72]">{rec.code} · {rec.subbrand}</p></div>
+                        <div><p className="font-medium text-[#39484F]">{rec.product_name}</p><p className="text-xs text-[#4C5760]">{rec.code} · {rec.subbrand}</p></div>
                         <span className={`text-xs px-2 py-1 rounded-full ${rec.priority === "high" ? "bg-red-100 text-red-700" : rec.priority === "medium" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
                           {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Media" : "Baja"}
                         </span>
@@ -300,12 +300,12 @@ export default function RecommendationsPage() {
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <SeasonIcon size={18} className={selectedSeason === season.key ? season.color : "text-[#5F6B72]"} />
-                        <span className={`text-sm font-semibold ${selectedSeason === season.key ? "text-[#39484F]" : "text-[#5F6B72]"}`}>
+                        <SeasonIcon size={18} className={selectedSeason === season.key ? season.color : "text-[#4C5760]"} />
+                        <span className={`text-sm font-semibold ${selectedSeason === season.key ? "text-[#39484F]" : "text-[#4C5760]"}`}>
                           {season.label}
                         </span>
                       </div>
-                      <p className="text-xs text-[#5F6B72]">{season.description}</p>
+                      <p className="text-xs text-[#4C5760]">{season.description}</p>
                     </button>
                   );
                 })}
@@ -313,7 +313,7 @@ export default function RecommendationsPage() {
 
               {/* Search */}
               <div className="relative">
-                <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                 <input type="text" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)}
                   placeholder="Filtrar productos..."
                   className="w-full h-11 px-4 pr-10 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -322,7 +322,7 @@ export default function RecommendationsPage() {
               {seasonalRecsLoading ? (
                 <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
               ) : filteredSeasonal.length === 0 ? (
-                <div className="text-center py-16 text-[#5F6B72]">
+                <div className="text-center py-16 text-[#4C5760]">
                   <Sparkles size={40} className="mx-auto mb-3 opacity-40" />
                   <p className="text-sm">No hay recomendaciones para esta temporada</p>
                   <p className="text-xs mt-1">Intenta seleccionar otra estación</p>
@@ -332,7 +332,7 @@ export default function RecommendationsPage() {
                   {filteredSeasonal.map((rec) => (
                     <div key={rec.product_id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                       <div className="flex items-start justify-between mb-3">
-                        <div><p className="font-medium text-[#39484F]">{rec.product_name}</p><p className="text-xs text-[#5F6B72]">{rec.code} · {rec.subbrand}</p></div>
+                        <div><p className="font-medium text-[#39484F]">{rec.product_name}</p><p className="text-xs text-[#4C5760]">{rec.code} · {rec.subbrand}</p></div>
                       </div>
                       <p className="text-sm text-[#39484F]">{rec.reason}</p>
                     </div>
@@ -353,11 +353,11 @@ export default function RecommendationsPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#39484F]">Asistente IA</p>
-                    <p className="text-xs text-[#5F6B72]">Describe tu situación y recibe recomendaciones</p>
+                    <p className="text-xs text-[#4C5760]">Describe tu situación y recibe recomendaciones</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {chatMessages.length > 0 && (
-                      <button onClick={clearChat} className="p-1.5 text-[#5F6B72] hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg" title="Borrar historial">
+                      <button onClick={clearChat} className="p-1.5 text-[#4C5760] hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg" title="Borrar historial">
                         <Trash2 size={15} />
                       </button>
                     )}
@@ -369,8 +369,8 @@ export default function RecommendationsPage() {
                   {chatMessages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
                       <MessageCircle size={40} className="text-[#E0DAD3] mb-3" />
-                      <p className="text-sm text-[#5F6B72] mb-1">¿En qué puedo ayudarte?</p>
-                      <p className="text-xs text-[#5F6B72]/60">
+                      <p className="text-sm text-[#4C5760] mb-1">¿En qué puedo ayudarte?</p>
+                      <p className="text-xs text-[#4C5760]/60">
                         Ej: &quot;Una madre lactante con estrés, ¿qué suplementos ofrecerle?&quot;
                       </p>
                     </div>
@@ -404,7 +404,7 @@ export default function RecommendationsPage() {
                                     </div>
                                     <div className="min-w-0">
                                       <p className="text-sm font-medium text-[#39484F] truncate">{rec.product_name}</p>
-                                      <p className="text-[10px] text-[#5F6B72] truncate">{rec.code} · {rec.subbrand}</p>
+                                      <p className="text-[10px] text-[#4C5760] truncate">{rec.code} · {rec.subbrand}</p>
                                     </div>
                                   </div>
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ${
@@ -414,7 +414,7 @@ export default function RecommendationsPage() {
                                     {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Media" : "Baja"}
                                   </span>
                                 </div>
-                                <p className="text-[11px] text-[#5F6B72] mt-1.5 leading-relaxed">{rec.reason}</p>
+                                <p className="text-[11px] text-[#4C5760] mt-1.5 leading-relaxed">{rec.reason}</p>
                               </div>
                             ))}
                           </div>
@@ -452,7 +452,7 @@ export default function RecommendationsPage() {
                     <div className="flex flex-wrap gap-1.5">
                       {SUGGESTED_NEEDS.slice(0, 6).map((need) => (
                         <button key={need} onClick={() => handleChatSend(need)}
-                          className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#F1E9DF] text-[#5F6B72] hover:bg-[#BA4A3A]/10 hover:text-[#BA4A3A] transition-all">
+                          className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#F1E9DF] text-[#4C5760] hover:bg-[#BA4A3A]/10 hover:text-[#BA4A3A] transition-all">
                           {need}
                         </button>
                       ))}
@@ -462,7 +462,7 @@ export default function RecommendationsPage() {
                     <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !chatLoading && handleChatSend()}
                       placeholder="Describe tu situación..."
-                      className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                      className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                     <button onClick={() => handleChatSend()} disabled={!chatInput.trim() || chatLoading}
                       className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">
                       <Send size={16} />

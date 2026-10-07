@@ -15,7 +15,7 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#F5EFE9] flex flex-col">
+    <div className="min-h-screen bg-[#D8CBBF] flex flex-col">
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -24,7 +24,7 @@ export default function LandingPage() {
             </div>
             <Wordmark
               h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
-              pClassName="text-[10px] text-[#5F6B72] tracking-widest uppercase leading-tight"
+              pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -40,14 +40,14 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
-          <div className="inline-flex items-center gap-2 bg-[#BA4A3A]/10 text-[#BA4A3A] px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#39484F]/10 text-[#39484F] px-4 py-1.5 rounded-full text-sm font-medium mb-6">
             <Shield size={14} /> Sistema de Gestión Comercial
           </div>
           <h1 className="text-[39px] md:text-[51px] font-marca text-[#39484F] leading-tight mb-4">
             Tu negocio Amway,{" "}
-            <span className="text-[#BA4A3A]">simplificado</span>
+            <span className="text-[#39484F]">simplificado</span>
           </h1>
-          <p className="text-lg text-[#5F6B72] max-w-2xl mx-auto mb-8">
+          <p className="text-lg text-[#4C5760] max-w-2xl mx-auto mb-8">
             Administra facturación, inventario, clientes y más en un solo lugar.
             Diseñado para distribuidores Amway en República Dominicana.
           </p>
@@ -64,11 +64,11 @@ export default function LandingPage() {
               const Icon = f.icon;
               return (
                 <div key={f.label} className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-[#BA4A3A]/10 flex items-center justify-center mb-4">
-                    <Icon size={20} className="text-[#BA4A3A]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#39484F]/10 flex items-center justify-center mb-4">
+                    <Icon size={20} className="text-[#39484F]" />
                   </div>
                   <h3 className="text-sm font-semibold text-[#39484F] mb-1">{f.label}</h3>
-                  <p className="text-sm text-[#5F6B72]">{f.desc}</p>
+                  <p className="text-sm text-[#4C5760]">{f.desc}</p>
                 </div>
               );
             })}
@@ -78,7 +78,7 @@ export default function LandingPage() {
         <section className="bg-white border-t border-[#E0DAD3] py-12">
           <div className="max-w-6xl mx-auto px-6 text-center">
             <h2 className="text-xl font-bold text-[#39484F] mb-8">¿Necesitas ayuda?</h2>
-            <div className="flex items-center justify-center gap-8 text-sm text-[#5F6B72]">
+            <div className="flex items-center justify-center gap-8 text-sm text-[#4C5760]">
               <span>Documentación</span>
               <span>Soporte Técnico</span>
               <span>Contacto</span>
@@ -87,8 +87,8 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="px-6 py-4 border-t border-[#E0DAD3] bg-white">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#5F6B72]">
+      <footer className="px-6 py-4 border-t border-[#2C363D] bg-[#39484F]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#D8CBBF]">
           <span>&copy; {new Date().getFullYear()} ALMAIA RD — Distribuidora Autorizada Amway</span>
           <span>Versión 1.0.0</span>
         </div>

@@ -373,7 +373,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       <div className="space-y-5">
         {/* Type Selector */}
         <div>
-          <label className="block text-xs font-medium text-[#5F6B72] mb-2">Tipo de Mensaje</label>
+          <label className="block text-xs font-medium text-[#4C5760] mb-2">Tipo de Mensaje</label>
           <div className="relative">
             <button
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
@@ -383,10 +383,10 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                 <currentTemplate.icon size={18} className="text-[#BA4A3A]" />
                 <div className="text-left">
                   <div className="font-medium">{currentTemplate.label}</div>
-                  <div className="text-xs text-[#5F6B72]">{currentTemplate.description}</div>
+                  <div className="text-xs text-[#4C5760]">{currentTemplate.description}</div>
                 </div>
               </div>
-              <ChevronDown size={18} className={`text-[#5F6B72] transition-transform ${showTypeDropdown ? "rotate-180" : ""}`} />
+              <ChevronDown size={18} className={`text-[#4C5760] transition-transform ${showTypeDropdown ? "rotate-180" : ""}`} />
             </button>
 
             {showTypeDropdown && (
@@ -409,7 +409,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                       <Icon size={18} className="text-[#BA4A3A]" />
                       <div className="text-left">
                         <div className="text-sm font-medium text-[#39484F]">{type.label}</div>
-                        <div className="text-xs text-[#5F6B72]">{type.description}</div>
+                        <div className="text-xs text-[#4C5760]">{type.description}</div>
                       </div>
                     </button>
                   );
@@ -421,7 +421,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
 
         {/* Channel Selector */}
         <div>
-          <label className="block text-xs font-medium text-[#5F6B72] mb-2">Canal</label>
+          <label className="block text-xs font-medium text-[#4C5760] mb-2">Canal</label>
           <div className="flex gap-3">
             <button
               onClick={() => setChannel("email")}
@@ -449,7 +449,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Client Selection with New Client Button */}
         {currentTemplate.fields.some(f => f.type === "client") && (
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-2">Cliente</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-2">Cliente</label>
             <div className="flex gap-2">
               <select
                 value={selectedClientId}
@@ -479,11 +479,11 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {currentTemplate.fields.some(f => f.type === "invoice") && selectedClientId && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-medium text-[#5F6B72]">Factura</label>
+              <label className="block text-xs font-medium text-[#4C5760]">Factura</label>
               <button
                 type="button"
                 onClick={() => setShowInvoice(!showInvoice)}
-                className="flex items-center gap-1.5 text-xs text-[#5F6B72] hover:text-[#39484F]"
+                className="flex items-center gap-1.5 text-xs text-[#4C5760] hover:text-[#39484F]"
               >
                 {showInvoice ? <ToggleRight size={18} className="text-[#86C7A3]" /> : <ToggleLeft size={18} />}
                 {showInvoice ? "Visible en mensaje" : "Oculta en mensaje"}
@@ -505,20 +505,20 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Product Selection */}
         {currentTemplate.fields.some(f => f.type === "product") && (
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-2">Productos</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-2">Productos</label>
             {selectedInvoiceId && showInvoice ? (
               <div className="bg-[#F1E9DF] rounded-xl p-3 space-y-1">
                 {invoiceProducts.map((p, i: number) => (
                   <div key={i} className="flex items-center justify-between text-sm text-[#39484F]">
                     <span>• {p.name}</span>
-                    <span className="text-[#5F6B72]">x{p.quantity}</span>
+                    <span className="text-[#4C5760]">x{p.quantity}</span>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="space-y-2">
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
                     type="text"
                     value={productSearch}
@@ -577,7 +577,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Subject (Email only) */}
         {channel === "email" && (
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Asunto</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
             <input
               type="text"
               value={subject}
@@ -590,7 +590,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
 
         {/* Message Body */}
         <div>
-          <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
+          <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -598,7 +598,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
             placeholder="Escribe tu mensaje aquí..."
             className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 whitespace-pre-wrap"
           />
-          <p className="text-xs text-[#5F6B72] mt-1">
+          <p className="text-xs text-[#4C5760] mt-1">
             Variables disponibles: {"{{nombre_cliente}}"}, {"{{numero_factura}}"}, {"{{monto_total}}"}, {"{{empresa}}"}, {"{{nombre_vendedor}}"}
           </p>
         </div>

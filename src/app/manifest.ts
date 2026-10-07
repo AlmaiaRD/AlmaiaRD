@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "Sistema integral de gestión comercial para distribución Amway en República Dominicana",
     start_url: "/",
     display: "standalone",
-    background_color: "#F5EFE9",
+    background_color: "#D8CBBF",
     theme_color: "#BA4A3A",
     orientation: "portrait-primary",
     categories: ["business", "finance"],

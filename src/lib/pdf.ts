@@ -63,7 +63,7 @@ const M = 15;
 const CW = 215.9 - M * 2;
 const PRIMARY = "#BA4A3A";
 const DARK = "#39484F";
-const GRAY = "#5F6B72";
+const GRAY = "#4C5760";
 
 function setTextColor(doc: jsPDF, hex: string) {
   const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -555,7 +555,7 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
 
   const primary = "#BA4A3A";
   const dark = "#39484F";
-  const gray = "#5F6B72";
+  const gray = "#4C5760";
 
   function setColor(hex: string) {
     const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -728,7 +728,7 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
 
   const primary = "#BA4A3A";
   const dark = "#39484F";
-  const gray = "#5F6B72";
+  const gray = "#4C5760";
 
   function setColor(hex: string) {
     const r = Number.parseInt(hex.slice(1, 3), 16);

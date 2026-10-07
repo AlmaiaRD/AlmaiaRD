@@ -348,23 +348,23 @@ export default function FacturacionPage() {
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#39484F;margin:8px 0 0;">Distribuidor Independiente Amway</p>
-            <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
-            <p style="font-size:12px;color:#5F6B72;margin:0;">Rep\u00fablica Dominicana</p>
+            <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
+            <p style="font-size:12px;color:#4C5760;margin:0;">Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0EBE3;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
           <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.invoice_number)}</p>
-          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
+          <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
-          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Tel\u00e9fono:</span> ${sanitizeHtml(data.clients?.phone) || "\u2014"}</p>
-          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Tel\u00e9fono:</span> ${sanitizeHtml(data.clients?.phone) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
@@ -380,11 +380,11 @@ export default function FacturacionPage() {
         <tbody>
           ${(data.invoice_items || []).map((item: InvoiceLineWithProduct) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:11px;color:#5F6B72;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
+              <td style="padding:10px 12px;font-size:11px;color:#4C5760;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
               <td style="padding:10px 12px;font-size:13px;color:#39484F;">
                 ${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}
                 ${(item.bundle_items || []).map((bi: BundleItem) => `
-                  <div style="font-size:10px;color:#5F6B72;margin-top:2px;">\u2014 ${sanitizeHtml(bi.products?.name || "Producto")} x${bi.quantity}</div>
+                  <div style="font-size:10px;color:#4C5760;margin-top:2px;">\u2014 ${sanitizeHtml(bi.products?.name || "Producto")} x${bi.quantity}</div>
                 `).join("")}
               </td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${item.quantity}</td>
@@ -395,12 +395,12 @@ export default function FacturacionPage() {
         </tbody>
       </table>
       ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
-        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:flex;white-space:nowrap;gap:0 24px;font-size:13px;margin-bottom:10px;">
-            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
-            ${bankAccounts[0].id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">C\u00e9dula/RNC:</span> ${sanitizeHtml(bankAccounts[0].id_number)}</p>` : ""}
-            ${bankAccounts[0].email ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Correo:</span> ${sanitizeHtml(bankAccounts[0].email)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
+            ${bankAccounts[0].id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#4C5760;">C\u00e9dula/RNC:</span> ${sanitizeHtml(bankAccounts[0].id_number)}</p>` : ""}
+            ${bankAccounts[0].email ? `<p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Correo:</span> ${sanitizeHtml(bankAccounts[0].email)}</p>` : ""}
           </div>
           <div style="margin-top:10px;border-top:1px solid #E0DAD3;padding-top:10px;">
             ${bankAccounts.map((b) => `
@@ -413,25 +413,25 @@ export default function FacturacionPage() {
           </div>
         </div>
       ` : "") : data.bank_accounts ? `
-        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
-            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">C\u00e9dula/RNC:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
-            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Banco:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).bank_name)}</p>
-            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Tipo de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_type)}</p>
-            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">No. de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_number)}</p>
-            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Correo:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
+            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#4C5760;">C\u00e9dula/RNC:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Banco:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).bank_name)}</p>
+            <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Tipo de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_type)}</p>
+            <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">No. de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_number)}</p>
+            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Correo:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
           </div>
         </div>
       ` : ""}
       <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#4C5760;margin-bottom:4px;">
           <span>Subtotal</span>
           <span>${sanitizeHtml(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#4C5760;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
             <span>${sanitizeHtml(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
@@ -462,11 +462,11 @@ export default function FacturacionPage() {
       <div style="border-top:1px solid #E0DAD3;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
           <p style="font-size:11px;font-style:italic;color:#BA4A3A;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${sanitizeHtml(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
-          <p style="font-size:11px;color:#5F6B72;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
+          <p style="font-size:11px;color:#4C5760;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
           ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;color:#39484F;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
-          <p style="font-size:9px;color:#5F6B72;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+          <p style="font-size:9px;color:#4C5760;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
     `;
@@ -766,7 +766,7 @@ export default function FacturacionPage() {
         header: "Fecha",
         minWidth: 120,
         sortable: true,
-        render: (inv) => <span className="text-sm text-[#5F6B72]">{formatDate(inv.invoice_date)}</span>,
+        render: (inv) => <span className="text-sm text-[#4C5760]">{formatDate(inv.invoice_date)}</span>,
       },
       {
         key: "client",
@@ -803,7 +803,7 @@ export default function FacturacionPage() {
           <div className="relative flex items-center justify-center gap-1">
             <button
               onClick={(e) => { e.stopPropagation(); handleViewDetail(inv); }}
-              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
+              className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg"
               title="Ver"
             >
               <Eye size={15} />
@@ -813,14 +813,14 @@ export default function FacturacionPage() {
                 e.stopPropagation();
                 setOpenPrintId(openPrintId === inv.id ? null : inv.id);
               }}
-              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
+              className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg"
               title="Descargar"
             >
               <Download size={15} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleEdit(inv); }}
-              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
+              className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg"
               title="Editar"
             >
               <Edit2 size={15} />
@@ -864,7 +864,7 @@ export default function FacturacionPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Facturación</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Gestión de facturas y ventas</p>
+          <p className="text-sm text-[#4C5760] mt-1">Gestión de facturas y ventas</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
@@ -876,14 +876,14 @@ export default function FacturacionPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input
           ref={searchInputRef}
           type="text"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Buscar factura por número o cliente..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
         />
       </div>
 
@@ -917,7 +917,7 @@ export default function FacturacionPage() {
           ))}
         </select>
         {(filterMonth || filterYear || filterStatus || filterClient) && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus(""); setFilterClient(""); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus(""); setFilterClient(""); }} className="text-xs text-[#4C5760] hover:text-[#39484F] px-3">Limpiar filtros</button>
         )}
       </div>
 
@@ -926,7 +926,7 @@ export default function FacturacionPage() {
           <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : invoices.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <FileText size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay facturas registradas</p>
         </div>
@@ -964,14 +964,14 @@ export default function FacturacionPage() {
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                     <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
                     <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
-                    <p className="text-xs text-[#5F6B72] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
-                    <p className="text-xs text-[#5F6B72]">República Dominicana</p>
+                    <p className="text-xs text-[#4C5760] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
+                    <p className="text-xs text-[#4C5760]">República Dominicana</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
                   <p className="text-lg font-bold text-[#39484F] mt-3">{selectedInvoice.invoice_number}</p>
-                  <p className="text-xs text-[#5F6B72] mt-0.5">Fecha: {formatDate(selectedInvoice.invoice_date)}</p>
+                  <p className="text-xs text-[#4C5760] mt-0.5">Fecha: {formatDate(selectedInvoice.invoice_date)}</p>
                   <div className="mt-2">
                     <Badge variant={(statusMap[selectedInvoice.status] || statusMap.PENDING).variant}>
                       {(statusMap[selectedInvoice.status] || statusMap.PENDING).label}
@@ -983,14 +983,14 @@ export default function FacturacionPage() {
               <div className="border-t border-[#E0DAD3] mb-5" />
 
               {/* B. CLIENTE / ADQUIRIENTE */}
-              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+              <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Nombre:</span> {selectedInvoice.clients?.full_name}</p>
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Teléfono:</span> {selectedInvoice.clients?.phone || "—"}</p>
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Email:</span> {selectedInvoice.clients?.email || "N/D"}</p>
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Nombre:</span> {selectedInvoice.clients?.full_name}</p>
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Teléfono:</span> {selectedInvoice.clients?.phone || "—"}</p>
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Email:</span> {selectedInvoice.clients?.email || "N/D"}</p>
                   {selectedInvoice.clients?.id_number && (
-                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula:</span> {selectedInvoice.clients.id_number}</p>
+                    <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula:</span> {selectedInvoice.clients.id_number}</p>
                   )}
                 </div>
               </div>
@@ -1010,7 +1010,7 @@ export default function FacturacionPage() {
                   {(selectedInvoice.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => {
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
-                        <td className="py-2.5 px-3 text-xs text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</td>
+                        <td className="py-2.5 px-3 text-xs text-[#4C5760]">{item.products?.subbrands?.name || "—"}</td>
                         <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
@@ -1023,14 +1023,14 @@ export default function FacturacionPage() {
 
               {/* D. PAYMENT DATA */}
               {(selectedInvoice.show_all_bank_accounts ? bankAccounts.length > 0 : selectedInvoice.bank_accounts) && (
-                <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+                <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
                   <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                   {selectedInvoice.show_all_bank_accounts ? (
                     <>
                       <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
-                        <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
-                        {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
-                        {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {bankAccounts[0].email}</p>}
+                        <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                        {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                        {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {bankAccounts[0].email}</p>}
                       </div>
                       <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                         {bankAccounts.map((b) => (
@@ -1044,12 +1044,12 @@ export default function FacturacionPage() {
                     </>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {(selectedInvoice.bank_accounts as BankAccountRef).holder_name}</p>
-                      {(selectedInvoice.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {(selectedInvoice.bank_accounts as BankAccountRef).id_number}</p>}
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {(selectedInvoice.bank_accounts as BankAccountRef).bank_name}</p>
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_type}</p>
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_number}</p>
-                      {(selectedInvoice.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {(selectedInvoice.bank_accounts as BankAccountRef).email}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {(selectedInvoice.bank_accounts as BankAccountRef).holder_name}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {(selectedInvoice.bank_accounts as BankAccountRef).id_number}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">Banco:</span> {(selectedInvoice.bank_accounts as BankAccountRef).bank_name}</p>
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">Tipo de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_type}</p>
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">No. de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_number}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {(selectedInvoice.bank_accounts as BankAccountRef).email}</p>}
                     </div>
                   )}
                 </div>
@@ -1057,12 +1057,12 @@ export default function FacturacionPage() {
 
               {/* E. SUMMARY */}
               <div className="border-t border-[#E0DAD3] pt-3 mb-5">
-                <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
+                <div className="flex justify-between text-sm text-[#4C5760] mb-1">
                   <span>Subtotal</span>
                   <span>{formatCurrency(Number(selectedInvoice.subtotal))}</span>
                 </div>
                 {Number(selectedInvoice.itbis_total) > 0 && (
-                  <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
+                  <div className="flex justify-between text-sm text-[#4C5760] mb-1">
                     <span>ITBIS (18%)</span>
                     <span>{formatCurrency(Number(selectedInvoice.itbis_total))}</span>
                   </div>
@@ -1094,7 +1094,7 @@ export default function FacturacionPage() {
               {/* Notes */}
               {selectedInvoice.notes && (
                 <div className="bg-[#FFF8F0] border border-[#E0DAD3] rounded-xl p-3 mb-2">
-                  <p className="text-xs text-[#5F6B72] mb-1">Notas:</p>
+                  <p className="text-xs text-[#4C5760] mb-1">Notas:</p>
                   <p className="text-sm text-[#39484F]">{selectedInvoice.notes}</p>
                 </div>
               )}
@@ -1103,7 +1103,7 @@ export default function FacturacionPage() {
               <div className="border-t border-[#E0DAD3] pt-2 flex justify-between items-end">
                 <div>
                   <p className="text-xs italic text-[#BA4A3A]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
-                  <p className="text-xs text-[#5F6B72] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
+                  <p className="text-xs text-[#4C5760] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
                 </div>
                 <div className="text-center">
                   {settings?.signature_url ? (
@@ -1111,7 +1111,7 @@ export default function FacturacionPage() {
                   ) : (
                     <p className="text-base text-[#39484F]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
                   )}
-                  <p className="text-[9px] text-[#5F6B72] mt-0.5">FIRMA AUTORIZADA</p>
+                  <p className="text-[9px] text-[#4C5760] mt-0.5">FIRMA AUTORIZADA</p>
                 </div>
               </div>
             </div>
@@ -1238,7 +1238,7 @@ export default function FacturacionPage() {
                 <select
                   value={selectedClient}
                   onChange={(e) => setSelectedClient(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clients.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
@@ -1256,7 +1256,7 @@ export default function FacturacionPage() {
               <select
                 value={margin}
                 onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               >
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
@@ -1269,7 +1269,7 @@ export default function FacturacionPage() {
             <input
               type="date" value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
 
@@ -1296,19 +1296,19 @@ export default function FacturacionPage() {
               <div className="mb-4 bg-[#F1E9DF] rounded-xl overflow-hidden">
                 <div className="p-2">
                   <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                     <input
                       type="text"
                       placeholder="Buscar producto..."
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                       autoFocus
                     />
                   </div>
                 </div>
                 <div className="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
                   {productFiltered.length === 0 ? (
-                    <p className="text-sm text-[#5F6B72] py-3 text-center">Sin resultados</p>
+                    <p className="text-sm text-[#4C5760] py-3 text-center">Sin resultados</p>
                   ) : productFiltered.map((p) => (
                     <button
                       key={p.id}
@@ -1319,7 +1319,7 @@ export default function FacturacionPage() {
                         <span className="truncate">{p.name}</span>
                         {p.is_bundle && <Badge variant="warning">BUNDLE</Badge>}
                       </span>
-                      <span className="text-[#5F6B72] text-xs flex-shrink-0">
+                      <span className="text-[#4C5760] text-xs flex-shrink-0">
                         <span className={margin === 30 ? "font-semibold text-[#39484F]" : ""}>30%: {formatCurrency(p.price_30)}</span>
                         {" | "}
                         <span className={margin === 35 ? "font-semibold text-[#39484F]" : ""}>35%: {formatCurrency(p.price_35)}</span>
@@ -1339,7 +1339,7 @@ export default function FacturacionPage() {
                     value={manualProduct.name}
                     onChange={(e) => setManualProduct({ ...manualProduct, name: e.target.value })}
                     placeholder="Ej: Envío, flete, cargo adicional..."
-                    className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                    className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     autoFocus
                   />
                 </div>
@@ -1401,7 +1401,7 @@ export default function FacturacionPage() {
             )}
 
             {items.length === 0 ? (
-              <p className="text-sm text-[#5F6B72] py-3">No hay productos agregados</p>
+              <p className="text-sm text-[#4C5760] py-3">No hay productos agregados</p>
             ) : (
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {items.map((item, i) => {
@@ -1469,7 +1469,7 @@ export default function FacturacionPage() {
                           >
                             <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
                           </button>
-                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#39484F]" : "text-[#5F6B72]"}`}>
+                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#39484F]" : "text-[#4C5760]"}`}>
                             {formatCurrency(lineAmount)}
                           </span>
                           <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
@@ -1483,7 +1483,7 @@ export default function FacturacionPage() {
                           {item.bundle_items?.map((bi: BundleItem) => (
                             <div key={bi.id} className="flex items-center justify-between text-xs">
                               <span className="text-[#39484F] truncate pr-3">{bi.products?.name || "Producto"}</span>
-                              <span className="text-[#5F6B72] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
+                              <span className="text-[#4C5760] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
                             </div>
                           ))}
                         </div>
@@ -1501,7 +1501,7 @@ export default function FacturacionPage() {
               <input
                 type="number" value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
             <div>
@@ -1509,7 +1509,7 @@ export default function FacturacionPage() {
               <input
                 type="number" value={discountAmount}
                 onChange={(e) => { setDiscountAmount(Number(e.target.value)); setDiscountPercent(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
           </div>
@@ -1521,7 +1521,7 @@ export default function FacturacionPage() {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Notas adicionales para la factura..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm placeholder:text-[#A99B90] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm placeholder:text-[#A99B90] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
             />
           </div>
 
@@ -1530,7 +1530,7 @@ export default function FacturacionPage() {
             <select
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option value="">Seleccionar banco...</option>
               <option value="ALL">Todas las cuentas</option>
@@ -1544,14 +1544,14 @@ export default function FacturacionPage() {
                 return (
                   <div className="mt-2 bg-[#F1E9DF] rounded-lg p-3 text-sm space-y-1">
                     {first && <>
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {first.holder_name}</p>
-                      {first.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {first.id_number}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {first.holder_name}</p>
+                      {first.id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {first.id_number}</p>}
                     </>}
-                    {bankAccounts.length === 0 && <p className="text-[#5F6B72] text-xs">No hay cuentas registradas.</p>}
+                    {bankAccounts.length === 0 && <p className="text-[#4C5760] text-xs">No hay cuentas registradas.</p>}
                     {bankAccounts.map((b) => (
-                      <p key={b.id} className="text-[#39484F] text-xs"><span className="text-[#5F6B72]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
+                      <p key={b.id} className="text-[#39484F] text-xs"><span className="text-[#4C5760]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
                     ))}
-                    {first?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {first.email}</p>}
+                    {first?.email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {first.email}</p>}
                   </div>
                 );
               }
@@ -1559,25 +1559,25 @@ export default function FacturacionPage() {
               if (!selected) return null;
               return (
                 <div className="mt-2 bg-[#F1E9DF] rounded-lg p-3 text-sm space-y-1">
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {selected.holder_name}</p>
-                  {selected.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {selected.id_number}</p>}
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {selected.bank_name}</p>
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo:</span> {selected.account_type}</p>
-                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. Cuenta:</span> {selected.account_number}</p>
-                  {selected.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {selected.email}</p>}
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {selected.holder_name}</p>
+                  {selected.id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {selected.id_number}</p>}
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Banco:</span> {selected.bank_name}</p>
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">Tipo:</span> {selected.account_type}</p>
+                  <p className="text-[#39484F]"><span className="text-[#4C5760]">No. Cuenta:</span> {selected.account_number}</p>
+                  {selected.email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {selected.email}</p>}
                 </div>
               );
             })()}
           </div>
 
           <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-1 text-sm">
-            <div className="flex justify-between"><span className="text-[#5F6B72]">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-[#4C5760]">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             {itbisTotal > 0 && (
-              <div className="flex justify-between"><span className="text-[#5F6B72]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
+              <div className="flex justify-between"><span className="text-[#4C5760]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
             )}
-            <div className="flex justify-between"><span className="text-[#5F6B72]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
+            <div className="flex justify-between"><span className="text-[#4C5760]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
             {items.length > 0 && (
-              <div className="flex justify-between"><span className="text-[#5F6B72]">Ganancia neta</span><span className={`font-medium ${netProfit >= 0 ? "text-green-600" : "text-red-500"}`}>{formatCurrency(netProfit)}</span></div>
+              <div className="flex justify-between"><span className="text-[#4C5760]">Ganancia neta</span><span className={`font-medium ${netProfit >= 0 ? "text-green-600" : "text-red-500"}`}>{formatCurrency(netProfit)}</span></div>
             )}
             <div className="flex justify-between text-base font-bold pt-1 border-t border-[#E0DAD3]"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
@@ -1624,23 +1624,23 @@ export default function FacturacionPage() {
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
                   <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
-                  <p className="text-xs text-[#5F6B72] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
-                  <p className="text-xs text-[#5F6B72]">República Dominicana</p>
+                  <p className="text-xs text-[#4C5760] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
+                  <p className="text-xs text-[#4C5760]">República Dominicana</p>
                 </div>
               </div>
               <div className="text-right">
                 <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
                 <p className="text-lg font-bold text-[#39484F] mt-3">{jpgData.invoice_number}</p>
-                <p className="text-xs text-[#5F6B72] mt-0.5">Fecha: {formatDate(jpgData.invoice_date)}</p>
+                <p className="text-xs text-[#4C5760] mt-0.5">Fecha: {formatDate(jpgData.invoice_date)}</p>
               </div>
             </div>
             <div className="border-t border-[#E0DAD3] mb-5" />
-            <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+            <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
               <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Nombre:</span> {jpgData.clients?.full_name}</p>
-                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Teléfono:</span> {jpgData.clients?.phone || "—"}</p>
-                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Email:</span> {jpgData.clients?.email || "N/D"}</p>
+                <p className="text-[#39484F]"><span className="text-[#4C5760]">Nombre:</span> {jpgData.clients?.full_name}</p>
+                <p className="text-[#39484F]"><span className="text-[#4C5760]">Teléfono:</span> {jpgData.clients?.phone || "—"}</p>
+                <p className="text-[#39484F]"><span className="text-[#4C5760]">Email:</span> {jpgData.clients?.email || "N/D"}</p>
               </div>
             </div>
             <table className="w-full text-sm mb-5">
@@ -1656,7 +1656,7 @@ export default function FacturacionPage() {
               <tbody>
                   {(jpgData.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => (
                     <tr key={i} className="border-b border-[#F0EBE3]">
-                      <td className="py-2.5 px-3 text-xs text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</td>
+                      <td className="py-2.5 px-3 text-xs text-[#4C5760]">{item.products?.subbrands?.name || "—"}</td>
                       <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
                       <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
                       <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
@@ -1666,14 +1666,14 @@ export default function FacturacionPage() {
               </tbody>
             </table>
             {(jpgData.show_all_bank_accounts ? bankAccounts.length > 0 : jpgData.bank_accounts) && (
-              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+              <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                 {jpgData.show_all_bank_accounts ? (
                   <>
                     <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
-                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
-                      {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
-                      {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {bankAccounts[0].email}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                      {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                      {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {bankAccounts[0].email}</p>}
                     </div>
                     <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                       {bankAccounts.map((b) => (
@@ -1687,23 +1687,23 @@ export default function FacturacionPage() {
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {(jpgData.bank_accounts as BankAccountRef).holder_name}</p>
-                    {(jpgData.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {(jpgData.bank_accounts as BankAccountRef).id_number}</p>}
-                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {(jpgData.bank_accounts as BankAccountRef).bank_name}</p>
-                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_type}</p>
-                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_number}</p>
-                    {(jpgData.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {(jpgData.bank_accounts as BankAccountRef).email}</p>}
+                    <p className="text-[#39484F]"><span className="text-[#4C5760]">Beneficiario:</span> {(jpgData.bank_accounts as BankAccountRef).holder_name}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#4C5760]">Cédula/RNC:</span> {(jpgData.bank_accounts as BankAccountRef).id_number}</p>}
+                    <p className="text-[#39484F]"><span className="text-[#4C5760]">Banco:</span> {(jpgData.bank_accounts as BankAccountRef).bank_name}</p>
+                    <p className="text-[#39484F]"><span className="text-[#4C5760]">Tipo de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_type}</p>
+                    <p className="text-[#39484F]"><span className="text-[#4C5760]">No. de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_number}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#4C5760]">Correo:</span> {(jpgData.bank_accounts as BankAccountRef).email}</p>}
                   </div>
                 )}
               </div>
             )}
             <div className="border-t border-[#E0DAD3] pt-3 mb-5">
-              <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
+              <div className="flex justify-between text-sm text-[#4C5760] mb-1">
                 <span>Subtotal</span>
                 <span>{formatCurrency(Number(jpgData.subtotal))}</span>
               </div>
               {Number(jpgData.itbis_total) > 0 && (
-                <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
+                <div className="flex justify-between text-sm text-[#4C5760] mb-1">
                   <span>ITBIS (18%)</span>
                   <span>{formatCurrency(Number(jpgData.itbis_total))}</span>
                 </div>
@@ -1734,7 +1734,7 @@ export default function FacturacionPage() {
             <div className="border-t border-[#E0DAD3] pt-4 flex justify-between items-end">
               <div>
                 <p className="text-xs italic text-[#BA4A3A]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
-                <p className="text-xs text-[#5F6B72] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
+                <p className="text-xs text-[#4C5760] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
               </div>
               <div className="text-center">
                 {settings?.signature_url ? (
@@ -1742,7 +1742,7 @@ export default function FacturacionPage() {
                 ) : (
                   <p className="text-base text-[#39484F]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
                 )}
-                <p className="text-[9px] text-[#5F6B72] mt-0.5">FIRMA AUTORIZADA</p>
+                <p className="text-[9px] text-[#4C5760] mt-0.5">FIRMA AUTORIZADA</p>
               </div>
             </div>
           </div>

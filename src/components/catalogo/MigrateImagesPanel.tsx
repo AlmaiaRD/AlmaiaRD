@@ -107,7 +107,7 @@ export default function MigrateImagesPanel() {
       <div className="max-w-md mx-auto text-center py-12">
         <AlertTriangle size={40} className="mx-auto text-amber-500 mb-4" />
         <h1 className="text-lg font-bold text-[#39484F] mb-2">Acceso restringido</h1>
-        <p className="text-[#5F6B72] text-sm">Solo los administradores pueden migrar imágenes.</p>
+        <p className="text-[#4C5760] text-sm">Solo los administradores pueden migrar imágenes.</p>
       </div>
     );
   }
@@ -175,7 +175,7 @@ export default function MigrateImagesPanel() {
             <div className="font-semibold text-[#39484F]">
               {loadingProducts ? "Cargando productos..." : `${products.length} productos con imagen de amway`}
             </div>
-            <p className="text-xs text-[#5F6B72]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
+            <p className="text-xs text-[#4C5760]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
           </div>
           {!loadingProducts && (
             <button onClick={loadPending} className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] hover:bg-[#F1E9DF]">
@@ -198,7 +198,7 @@ export default function MigrateImagesPanel() {
 
         {running && current && (
           <div className="mt-4 p-3 rounded-xl bg-[#F1E9DF] text-sm text-[#39484F]">
-            <span className="text-[#5F6B72]">Procesando:</span> {current.code} — {current.name}
+            <span className="text-[#4C5760]">Procesando:</span> {current.code} — {current.name}
           </div>
         )}
       </div>
@@ -208,15 +208,15 @@ export default function MigrateImagesPanel() {
           <div className="flex gap-6 mb-4">
             <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={16} /> {okCount} migradas</span>
             <span className="text-sm font-semibold text-red-500 flex items-center gap-1.5"><XCircle size={16} /> {errCount} con error</span>
-            <span className="text-sm text-[#5F6B72] ml-auto">{logs.length} registros</span>
+            <span className="text-sm text-[#4C5760] ml-auto">{logs.length} registros</span>
           </div>
           <div className="max-h-96 overflow-y-auto space-y-1">
             {logs.map((l, idx) => (
               <div key={idx} className={`flex items-start gap-2 text-sm p-2 rounded-lg ${l.status === "ok" ? "bg-emerald-50" : l.status === "err" ? "bg-red-50" : "bg-gray-50"}`}>
                 {l.status === "ok" ? <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" /> : <XCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />}
                 <div>
-                  <span className="font-medium text-[#39484F]">{l.code}</span> <span className="text-[#5F6B72]">— {l.name}</span>
-                  <div className="text-xs text-[#5F6B72]">{l.message}</div>
+                  <span className="font-medium text-[#39484F]">{l.code}</span> <span className="text-[#4C5760]">— {l.name}</span>
+                  <div className="text-xs text-[#4C5760]">{l.message}</div>
                 </div>
               </div>
             ))}

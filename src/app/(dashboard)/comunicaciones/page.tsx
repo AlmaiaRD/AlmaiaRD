@@ -122,7 +122,7 @@ export default function ComunicacionesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Centro de Comunicaciones</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Gestiona tus mensajes y comunicaciones</p>
+          <p className="text-sm text-[#4C5760] mt-1">Gestiona tus mensajes y comunicaciones</p>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export default function ComunicacionesPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[#39484F]">WhatsApp Business</p>
-            <p className="text-xs text-[#5F6B72]">Enviar mensajes, plantillas y recordatorios</p>
+            <p className="text-xs text-[#4C5760]">Enviar mensajes, plantillas y recordatorios</p>
           </div>
         </button>
         <button
@@ -149,7 +149,7 @@ export default function ComunicacionesPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[#39484F]">Telegram</p>
-            <p className="text-xs text-[#5F6B72]">Avisos y mensajes gratuitos</p>
+            <p className="text-xs text-[#4C5760]">Avisos y mensajes gratuitos</p>
           </div>
         </button>
       </div>
@@ -161,7 +161,7 @@ export default function ComunicacionesPage() {
           className={`pb-3 px-4 text-sm font-medium transition-colors border-b-2 ${
             activeTab === "historial"
               ? "text-[#BA4A3A] border-[#BA4A3A]"
-              : "text-[#5F6B72] border-transparent hover:text-[#39484F]"
+              : "text-[#4C5760] border-transparent hover:text-[#39484F]"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export default function ComunicacionesPage() {
           className={`pb-3 px-4 text-sm font-medium transition-colors border-b-2 ${
             activeTab === "componer"
               ? "text-[#BA4A3A] border-[#BA4A3A]"
-              : "text-[#5F6B72] border-transparent hover:text-[#39484F]"
+              : "text-[#4C5760] border-transparent hover:text-[#39484F]"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -189,12 +189,12 @@ export default function ComunicacionesPage() {
         <>
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
               <input
                 type="text" value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Buscar por cliente o asunto..."
-                className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               />
             </div>
             <select value={filterType} onChange={e => setFilterType(e.target.value)}
@@ -208,7 +208,7 @@ export default function ComunicacionesPage() {
           {loading ? (
             <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-16 text-[#5F6B72]">
+            <div className="text-center py-16 text-[#4C5760]">
               <Mail size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay comunicaciones registradas</p>
             </div>
@@ -228,22 +228,22 @@ export default function ComunicacionesPage() {
                           <span className="text-sm font-semibold text-[#39484F] capitalize">{c.type}</span>
                           <Badge variant={s.variant}>{s.label}</Badge>
                           {c.document_type && (
-                            <span className="text-xs text-[#5F6B72]">{c.document_type === "invoice" ? "Factura" : "Recibo"}</span>
+                            <span className="text-xs text-[#4C5760]">{c.document_type === "invoice" ? "Factura" : "Recibo"}</span>
                           )}
                         </div>
                         <p className="text-sm text-[#39484F] font-medium truncate">{c.clients?.full_name || "—"}</p>
-                        {c.subject && <p className="text-xs text-[#5F6B72] mt-0.5 truncate">{c.subject}</p>}
-                        {c.body && <p className="text-xs text-[#5F6B72] mt-1 line-clamp-2">{c.body}</p>}
-                        <div className="flex items-center gap-3 mt-2 text-[10px] text-[#5F6B72]">
+                        {c.subject && <p className="text-xs text-[#4C5760] mt-0.5 truncate">{c.subject}</p>}
+                        {c.body && <p className="text-xs text-[#4C5760] mt-1 line-clamp-2">{c.body}</p>}
+                        <div className="flex items-center gap-3 mt-2 text-[10px] text-[#4C5760]">
                           <span>Creado: {formatDate(c.created_at)}</span>
                           {c.sent_at && <span>Enviado: {formatDate(c.sent_at)}</span>}
                         </div>
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                         <button onClick={() => openDetail(c)}
-                          className="p-1.5 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg"><Eye size={15} /></button>
+                          className="p-1.5 text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg"><Eye size={15} /></button>
                         <button onClick={() => handleDelete(c.id)}
-                          className="p-1.5 text-[#5F6B72] hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={15} /></button>
+                          className="p-1.5 text-[#4C5760] hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={15} /></button>
                       </div>
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export default function ComunicacionesPage() {
       ) : (
         <div className="text-center py-16">
           <Sparkles size={40} className="mx-auto mb-4 text-[#BA4A3A] opacity-40" />
-          <p className="text-sm text-[#5F6B72] mb-4">Crea mensajes personalizados para tus clientes</p>
+          <p className="text-sm text-[#4C5760] mb-4">Crea mensajes personalizados para tus clientes</p>
           <button
             onClick={() => setShowComposer(true)}
             className="inline-flex items-center gap-2 bg-[#BA4A3A] text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm"
@@ -288,17 +288,17 @@ export default function ComunicacionesPage() {
                 {(statusMap[detailComm.status] || statusMap.draft).label}
               </Badge>
               {detailComm.document_type && (
-                <span className="text-xs text-[#5F6B72]">
+                <span className="text-xs text-[#4C5760]">
                   {detailComm.document_type === "invoice" ? "Factura" : "Recibo"}
                 </span>
               )}
-              <span className="text-xs text-[#5F6B72]">Creado: {formatDate(detailComm.created_at)}</span>
-              {detailComm.sent_at && <span className="text-xs text-[#5F6B72]">Enviado: {formatDate(detailComm.sent_at)}</span>}
+              <span className="text-xs text-[#4C5760]">Creado: {formatDate(detailComm.created_at)}</span>
+              {detailComm.sent_at && <span className="text-xs text-[#4C5760]">Enviado: {formatDate(detailComm.sent_at)}</span>}
             </div>
 
             {detailComm.type === "email" && (
               <div>
-                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Asunto</label>
+                <label className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
                 <input type="text" value={editSubject}
                   onChange={e => setEditSubject(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -306,7 +306,7 @@ export default function ComunicacionesPage() {
             )}
 
             <div>
-              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
+              <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
               <textarea value={editBody} rows={12}
                 onChange={e => setEditBody(e.target.value)}
                 className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 whitespace-pre-wrap" />

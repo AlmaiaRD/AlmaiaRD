@@ -185,7 +185,7 @@ export function VirtualTable<T>({
 
   if (!loading && data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-[#5F6B72]">
+      <div className="flex flex-col items-center justify-center py-16 text-[#4C5760]">
         {emptyIcon ?? (
           <svg className="w-16 h-16 opacity-40 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -211,7 +211,7 @@ export function VirtualTable<T>({
     >
       <div
         role="row"
-        className={`flex border-b border-[#E0DAD3] bg-[#F5EFE9] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
+        className={`flex border-b border-[#E0DAD3] bg-[#D8CBBF] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
       >
         {columns.map((col) => {
           const active = sortBy === col.key;
@@ -220,7 +220,7 @@ export function VirtualTable<T>({
               key={col.key}
               role="columnheader"
               aria-sort={active ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
-              className={`flex items-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#5F6B72] ${ALIGN_CLASS[col.align ?? "left"]} ${col.sortable ? "cursor-pointer select-none hover:text-[#39484F] transition-colors" : ""}`}
+              className={`flex items-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#4C5760] ${ALIGN_CLASS[col.align ?? "left"]} ${col.sortable ? "cursor-pointer select-none hover:text-[#39484F] transition-colors" : ""}`}
               style={cellStyle(col)}
               onClick={() => col.sortable && onSort?.(col.key)}
             >

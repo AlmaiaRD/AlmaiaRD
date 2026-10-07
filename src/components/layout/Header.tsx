@@ -20,15 +20,15 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white border-b border-border px-4 sm:px-6 py-3">
+    <header className="bg-[#39484F] border-b border-[#2C363D] px-4 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
         <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Flower2 size={22} className="sm:w-7 sm:h-7 text-primary" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+            <Flower2 size={22} className="sm:w-7 sm:h-7 text-[#D8CBBF]" />
           </div>
           <Wordmark
-            h1ClassName="text-[24px] sm:text-[26px] font-marca text-foreground leading-tight tracking-wide"
-            pClassName="text-[10px] sm:text-[11px] text-text-muted tracking-widest uppercase leading-tight font-medium"
+            h1ClassName="text-[24px] sm:text-[26px] font-marca text-[#F5EFE9] leading-tight tracking-wide"
+            pClassName="text-[10px] sm:text-[11px] text-[#E0DAD3] tracking-widest uppercase leading-tight font-medium"
           />
         </Link>
 
@@ -43,7 +43,7 @@ export default function Header() {
           </Link>
           <Link
             href="/cotizaciones?nueva=true"
-            className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 border border-[#E0DAD3]/50 text-[#F5EFE9] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/10 transition-all duration-200"
           >
             <Plus size={18} />
             Crear Cotización
@@ -57,7 +57,7 @@ export default function Header() {
           </Link>
           <Link
             href="/inventario?nueva-compra=true"
-            className="flex items-center gap-2 bg-[#C9A89C] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 border border-[#E0DAD3]/50 text-[#F5EFE9] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/10 transition-all duration-200"
           >
             <Plus size={18} />
             Registrar Compra
@@ -71,14 +71,14 @@ export default function Header() {
           </Link>
           <button
             onClick={toggleDark}
-            className="flex items-center gap-2 border border-border text-text-muted px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-secondary-bg hover:text-foreground transition-all duration-200"
+            className="flex items-center gap-2 border border-[#E0DAD3]/50 text-[#E0DAD3] px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-white/10 hover:text-white transition-all duration-200"
             title={dark ? "Modo claro" : "Modo oscuro"}
           >
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 border border-border text-text-muted px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all duration-200"
+            className="flex items-center gap-2 border border-[#E0DAD3]/50 text-[#E0DAD3] px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-white/10 hover:text-red-300 hover:border-red-400/50 transition-all duration-200"
             title="Cerrar sesión"
           >
             <LogOut size={18} />
@@ -114,8 +114,8 @@ export default function Header() {
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-secondary-bg transition-colors border-b border-border"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#C9A89C]/10 flex items-center justify-center">
-                    <ClipboardList size={16} className="text-[#C9A89C]" />
+                  <div className="w-8 h-8 rounded-lg bg-[#39484F]/10 flex items-center justify-center">
+                    <ClipboardList size={16} className="text-[#39484F]" />
                   </div>
                   <span className="text-sm text-foreground font-medium">Crear Cotización</span>
                 </Link>
@@ -134,8 +134,8 @@ export default function Header() {
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-secondary-bg transition-colors border-b border-border"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#C9A89C]/10 flex items-center justify-center">
-                    <ShoppingCart size={16} className="text-[#C9A89C]" />
+                  <div className="w-8 h-8 rounded-lg bg-[#39484F]/10 flex items-center justify-center">
+                    <ShoppingCart size={16} className="text-[#39484F]" />
                   </div>
                   <span className="text-sm text-foreground font-medium">Registrar Compra</span>
                 </Link>

@@ -15,7 +15,7 @@ const Pagination = memo(function Pagination({ page, pageSize, total, onPageChang
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between pt-4 text-sm text-[#5F6B72]">
+    <div className="flex items-center justify-between pt-4 text-sm text-[#4C5760]">
       <span>
         {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} de {total}
       </span>

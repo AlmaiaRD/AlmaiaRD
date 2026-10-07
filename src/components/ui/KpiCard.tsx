@@ -19,7 +19,7 @@ export default function KpiCard({
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow duration-200">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-[#5F6B72]">{title}</span>
+        <span className="text-sm font-medium text-[#4C5760]">{title}</span>
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorMap[color]}`}>
           <Icon size={20} />
         </div>

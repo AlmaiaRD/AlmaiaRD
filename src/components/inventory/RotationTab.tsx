@@ -114,7 +114,7 @@ export default function RotationTab({
         {rotationLoading ? (
           <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
         ) : rotationData.length === 0 ? (
-          <div className="text-center py-16 text-[#5F6B72]">
+          <div className="text-center py-16 text-[#4C5760]">
             <Package size={40} className="mx-auto mb-3 opacity-40" />
             <p className="text-sm">No hay datos de rotación</p>
           </div>
@@ -123,29 +123,29 @@ export default function RotationTab({
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">Total Productos</p>
+                <p className="text-xs text-[#4C5760] mb-1">Total Productos</p>
                 <p className="text-xl font-bold text-[#39484F]">{rotationData.length}</p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">Rotación Alta (&lt; 15d)</p>
+                <p className="text-xs text-[#4C5760] mb-1">Rotación Alta (&lt; 15d)</p>
                 <p className="text-xl font-bold text-[#86C7A3]">
                   {rotationData.filter((d) => d.diasEnInventario < 15 && d.diasEnInventario < 999).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">Rotación Media (15-60d)</p>
+                <p className="text-xs text-[#4C5760] mb-1">Rotación Media (15-60d)</p>
                 <p className="text-xl font-bold text-[#E8C87A]">
                   {rotationData.filter((d) => d.diasEnInventario >= 15 && d.diasEnInventario <= 60).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">{'Rotación Baja (> 60d)'}</p>
+                <p className="text-xs text-[#4C5760] mb-1">{'Rotación Baja (> 60d)'}</p>
                 <p className="text-xl font-bold text-[#D4A0A0]">
                   {rotationData.filter((d) => d.diasEnInventario > 60 && d.diasEnInventario < 999).length}
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">Próximos a agotarse</p>
+                <p className="text-xs text-[#4C5760] mb-1">Próximos a agotarse</p>
                 <p className="text-xl font-bold text-red-500">
                   {rotationData.filter((d) => {
                     if (d.sold <= 0 || d.stock <= 0) return false;
@@ -158,7 +158,7 @@ export default function RotationTab({
             {/* Capital Inmovilizado Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">{'Inmovilizado > 30 días'}</p>
+                <p className="text-xs text-[#4C5760] mb-1">{'Inmovilizado > 30 días'}</p>
                 <p className="text-lg font-bold text-[#E8C87A]">
                   {rotationData
                     .filter((d) => d.diasEnInventario > 30 && d.diasEnInventario < 999)
@@ -167,7 +167,7 @@ export default function RotationTab({
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">{'Inmovilizado > 60 días'}</p>
+                <p className="text-xs text-[#4C5760] mb-1">{'Inmovilizado > 60 días'}</p>
                 <p className="text-lg font-bold text-[#D4A0A0]">
                   {rotationData
                     .filter((d) => d.diasEnInventario > 60 && d.diasEnInventario < 999)
@@ -176,7 +176,7 @@ export default function RotationTab({
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-                <p className="text-xs text-[#5F6B72] mb-1">{'Inmovilizado > 90 días'}</p>
+                <p className="text-xs text-[#4C5760] mb-1">{'Inmovilizado > 90 días'}</p>
                 <p className="text-lg font-bold text-red-600">
                   {rotationData
                     .filter((d) => d.diasEnInventario > 90 && d.diasEnInventario < 999)
@@ -206,7 +206,7 @@ export default function RotationTab({
                         <div className="flex items-center gap-3">
                           <TrendingDown size={16} className="text-[#D4A0A0]" />
                           <span className="text-sm text-[#39484F]">{d.name}</span>
-                          <span className="text-xs text-[#5F6B72]">{d.code}</span>
+                          <span className="text-xs text-[#4C5760]">{d.code}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Badge variant="danger">{d.diasEnInventario} días sin vender</Badge>
@@ -219,7 +219,7 @@ export default function RotationTab({
                         <div className="flex items-center gap-3">
                           <TrendingUp size={16} className="text-[#86C7A3]" />
                           <span className="text-sm text-[#39484F]">{d.name}</span>
-                          <span className="text-xs text-[#5F6B72]">{d.code}</span>
+                          <span className="text-xs text-[#4C5760]">{d.code}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Badge variant="danger">Stock bajo</Badge>
@@ -270,7 +270,7 @@ export default function RotationTab({
                 </div>
               )}
               {!rotationAiAnalysis && !rotationAiLoading && (
-                <p className="text-xs text-[#5F6B72]">Haz clic en &quot;Analizar con IA&quot; para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
+                <p className="text-xs text-[#4C5760]">Haz clic en &quot;Analizar con IA&quot; para obtener recomendaciones inteligentes sobre la rotación de inventario.</p>
               )}
             </div>
 
@@ -310,7 +310,7 @@ export default function RotationTab({
               {(rotationFilterSubbrand || rotationFilterDays || rotationFilterStatus) && (
                 <button
                   onClick={() => { setRotationFilterSubbrand(""); setRotationFilterDays(""); setRotationFilterStatus(""); }}
-                  className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3"
+                  className="text-xs text-[#4C5760] hover:text-[#39484F] px-3"
                 >
                   Limpiar filtros
                 </button>
@@ -429,17 +429,17 @@ export default function RotationTab({
               <table className="w-full border-separate border-spacing-y-2">
                 <thead>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Submarca</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Producto</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Stock</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Días en Inv.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Velocidad</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Proy. Agot.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Última Ref.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Recom.</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Capital</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Ocultar</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Submarca</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Producto</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Stock</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Días en Inv.</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Velocidad</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Proy. Agot.</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Última Ref.</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Recom.</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Estado</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Capital</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Ocultar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -467,7 +467,7 @@ export default function RotationTab({
                         const proyAgot = item.velocidadDias > 0 && item.stock > 0
                           ? Math.round(item.velocidadDias * item.stock)
                           : null;
-                        const proyColor = proyAgot === null ? "text-[#5F6B72]" :
+                        const proyColor = proyAgot === null ? "text-[#4C5760]" :
                           proyAgot < 30 ? "text-red-500" :
                           proyAgot < 60 ? "text-[#E8C87A]" : "text-[#86C7A3]";
                         const capital = ((item.costoPromedio || 0) * (item.stock || 0));
@@ -502,24 +502,24 @@ export default function RotationTab({
                               }
                             }}
                           >
-                            <td className="px-4 py-3.5 text-sm text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</td>
+                            <td className="px-4 py-3.5 text-sm text-[#4C5760]">{item.products?.subbrands?.name || "—"}</td>
                             <td className="px-4 py-3.5 text-sm text-[#39484F] font-medium">
                               {item.products?.name || "—"}
-                              <span className="ml-2 text-xs text-[#5F6B72]">{item.products?.code}</span>
+                              <span className="ml-2 text-xs text-[#4C5760]">{item.products?.code}</span>
                             </td>
                             <td className="px-4 py-3.5 text-sm text-[#39484F] text-center">{item.stock || 0}</td>
                             <td className="px-4 py-3.5 text-sm text-[#39484F] text-center font-medium">
                               {item.diasEnInventario >= 999 ? "—" : item.diasEnInventario}
                             </td>
-                            <td className="px-4 py-3.5 text-sm text-[#5F6B72] text-center">{velocidad}</td>
+                            <td className="px-4 py-3.5 text-sm text-[#4C5760] text-center">{velocidad}</td>
                             <td className={`px-4 py-3.5 text-sm text-center font-medium ${proyColor}`}>
                               {proyAgot === null ? "—" : `${proyAgot} días`}
                             </td>
-                            <td className="px-4 py-3.5 text-sm text-[#5F6B72] text-center">{item.ultimaReferencia}</td>
+                            <td className="px-4 py-3.5 text-sm text-[#4C5760] text-center">{item.ultimaReferencia}</td>
                             <td className="px-4 py-3.5 text-center">
                               <div className="flex flex-wrap gap-1 justify-center">
                                 {recoms.length === 0 ? (
-                                  <span className="text-xs text-[#5F6B72]">—</span>
+                                  <span className="text-xs text-[#4C5760]">—</span>
                                 ) : recoms.map((r, i) => (
                                   <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                                     r.variant === "danger" ? "bg-red-50 text-red-600" :
@@ -542,7 +542,7 @@ export default function RotationTab({
                                 className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
                                   hiddenRotationIds.includes(item.product_id)
                                     ? "bg-[#BA4A3A]/10 text-[#BA4A3A]"
-                                    : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"
+                                    : "text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF]"
                                 }`}
                               >
                                 <EyeOff size={12} className="inline mr-1" />
@@ -571,28 +571,28 @@ export default function RotationTab({
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#5F6B72]">Stock actual</p>
+                    <p className="text-xs text-[#4C5760]">Stock actual</p>
                     <p className="text-xl font-bold text-[#39484F]">{rotationDetailItem.stock || 0}</p>
                   </div>
                   <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#5F6B72]">Días en inventario</p>
+                    <p className="text-xs text-[#4C5760]">Días en inventario</p>
                     <p className="text-xl font-bold text-[#39484F]">
                       {rotationDetailItem.diasEnInventario >= 999 ? "—" : rotationDetailItem.diasEnInventario}
                     </p>
                   </div>
                   <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#5F6B72]">Velocidad de venta</p>
+                    <p className="text-xs text-[#4C5760]">Velocidad de venta</p>
                     <p className="text-xl font-bold text-[#39484F]">
                       {rotationDetailItem.velocidadDias > 0 ? `${rotationDetailItem.velocidadDias} días` : "—"}
                     </p>
                   </div>
                   <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                    <p className="text-xs text-[#5F6B72]">Proy. agotamiento</p>
+                    <p className="text-xs text-[#4C5760]">Proy. agotamiento</p>
                     <p className={`text-xl font-bold ${
                       rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
                         ? Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock) < 30
                           ? "text-red-500" : "text-[#86C7A3]"
-                        : "text-[#5F6B72]"
+                        : "text-[#4C5760]"
                     }`}>
                       {rotationDetailItem.velocidadDias > 0 && rotationDetailItem.stock > 0
                         ? `${Math.round(rotationDetailItem.velocidadDias * rotationDetailItem.stock)} días`
@@ -604,37 +604,37 @@ export default function RotationTab({
                 {/* Timeline info */}
                 <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[#5F6B72]">Última referencia</span>
+                    <span className="text-[#4C5760]">Última referencia</span>
                     <span className="text-[#39484F] font-medium">{rotationDetailItem.ultimaReferencia}</span>
                   </div>
                   {rotationDetailItem.firstPurchase && (
                     <div className="flex justify-between">
-                      <span className="text-[#5F6B72]">Primera compra</span>
+                      <span className="text-[#4C5760]">Primera compra</span>
                       <span className="text-[#39484F] font-medium">{formatDate(rotationDetailItem.firstPurchase)}</span>
                     </div>
                   )}
                   {rotationDetailItem.last_purchase && (
                     <div className="flex justify-between">
-                      <span className="text-[#5F6B72]">Última compra</span>
+                      <span className="text-[#4C5760]">Última compra</span>
                       <span className="text-[#39484F] font-medium">{formatDate(rotationDetailItem.last_purchase)}</span>
                     </div>
                   )}
                   {rotationDetailItem.last_sale && (
                     <div className="flex justify-between">
-                      <span className="text-[#5F6B72]">Última venta</span>
+                      <span className="text-[#4C5760]">Última venta</span>
                       <span className="text-[#39484F] font-medium">{formatDate(rotationDetailItem.last_sale)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-[#5F6B72]">Total vendido</span>
+                    <span className="text-[#4C5760]">Total vendido</span>
                     <span className="text-[#39484F] font-medium">{rotationDetailItem.sold || 0} unidades</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#5F6B72]">Total comprado</span>
+                    <span className="text-[#4C5760]">Total comprado</span>
                     <span className="text-[#39484F] font-medium">{rotationDetailItem.purchased || 0} unidades</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#5F6B72]">Capital inmovilizado</span>
+                    <span className="text-[#4C5760]">Capital inmovilizado</span>
                     <span className="text-[#39484F] font-medium">{((rotationDetailItem.costoPromedio || 0) * (rotationDetailItem.stock || 0)).toLocaleString()} RD$</span>
                   </div>
                 </div>
@@ -645,7 +645,7 @@ export default function RotationTab({
             <div>
               <h4 className="text-sm font-semibold text-[#39484F] mb-3">Movimientos de inventario</h4>
               {rotationDetailMovements.length === 0 ? (
-                <p className="text-sm text-[#5F6B72] py-4 text-center">Sin movimientos registrados</p>
+                <p className="text-sm text-[#4C5760] py-4 text-center">Sin movimientos registrados</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {rotationDetailMovements.map((m) => (
@@ -654,14 +654,14 @@ export default function RotationTab({
                         <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
                           {movementLabel[m.movement_type] || m.movement_type}
                         </p>
-                        {m.notes && <p className="text-xs text-[#5F6B72]">{m.notes}</p>}
+                        {m.notes && <p className="text-xs text-[#4C5760]">{m.notes}</p>}
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-[#39484F]">
                           {m.movement_type === "PURCHASE" ? "+" : m.movement_type === "SALE" ? "-" : ""}
                           {m.quantity}
                         </p>
-                        <p className="text-xs text-[#5F6B72]">{formatDate(m.created_at)}</p>
+                        <p className="text-xs text-[#4C5760]">{formatDate(m.created_at)}</p>
                       </div>
                     </div>
                   ))}

@@ -76,7 +76,7 @@ export default function ProveedoresPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Proveedores</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Registro de proveedores y distribuidores</p>
+          <p className="text-sm text-[#4C5760] mt-1">Registro de proveedores y distribuidores</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
@@ -87,18 +87,18 @@ export default function ProveedoresPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input
           type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por nombre o contacto..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
         />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <p className="text-sm">{searchQuery ? "No se encontraron proveedores" : "No hay proveedores registrados"}</p>
         </div>
       ) : (
@@ -108,11 +108,11 @@ export default function ProveedoresPage() {
               <div className="flex items-start justify-between mb-3">
                 <h3 className="text-[#39484F] font-semibold">{p.name}</h3>
                 <div className="flex gap-1">
-                  <button onClick={() => { setEditingId(p.id); setForm({ name: p.name, contact_person: p.contact_person || "", phone: p.phone || "", email: p.email || "", city: p.city || "", notes: p.notes || "" }); setShowForm(true); }} className="p-1.5 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"><Edit2 size={14} /></button>
+                  <button onClick={() => { setEditingId(p.id); setForm({ name: p.name, contact_person: p.contact_person || "", phone: p.phone || "", email: p.email || "", city: p.city || "", notes: p.notes || "" }); setShowForm(true); }} className="p-1.5 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg"><Edit2 size={14} /></button>
                   <button onClick={() => setShowConfirmDelete(p.id)} className="p-1.5 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={14} /></button>
                 </div>
               </div>
-              <div className="space-y-1.5 text-sm text-[#5F6B72]">
+              <div className="space-y-1.5 text-sm text-[#4C5760]">
                 {p.phone && <div className="flex items-center gap-2"><Phone size={14} /><span>{p.phone}</span></div>}
                 {p.email && <div className="flex items-center gap-2"><Mail size={14} /><span>{p.email}</span></div>}
                 {p.city && <div className="flex items-center gap-2"><MapPin size={14} /><span>{p.city}</span></div>}
@@ -140,7 +140,7 @@ export default function ProveedoresPage() {
                 type={type}
                 value={form[key]}
                 onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
           ))}
@@ -150,7 +150,7 @@ export default function ProveedoresPage() {
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">

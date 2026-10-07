@@ -97,7 +97,7 @@ export default function AprendizajePage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Notas de Aprendizaje</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Lecciones aprendidas, errores que no repetir, ideas</p>
+          <p className="text-sm text-[#4C5760] mt-1">Lecciones aprendidas, errores que no repetir, ideas</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
@@ -109,13 +109,13 @@ export default function AprendizajePage() {
 
       <div className="flex items-center gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar en notas..."
-            className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
           />
         </div>
         {allTags.length > 0 && (
@@ -131,7 +131,7 @@ export default function AprendizajePage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <Lightbulb size={48} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">{searchQuery || filterTag ? "Sin resultados" : "No hay notas aún. ¡Crea tu primera lección aprendida!"}</p>
         </div>
@@ -142,7 +142,7 @@ export default function AprendizajePage() {
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="text-sm font-semibold text-[#39484F] line-clamp-2">{note.title}</h3>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => openEdit(note)} className="p-1.5 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"><Edit3 size={14} /></button>
+                  <button onClick={() => openEdit(note)} className="p-1.5 text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"><Edit3 size={14} /></button>
                   <button onClick={() => handleDelete(note.id)} className="p-1.5 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg transition-all"><Trash2 size={14} /></button>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function AprendizajePage() {
                     </span>
                   )) : null}
                 </div>
-                <span className="text-[10px] text-[#5F6B72]">{formatDate(note.updated_at)}</span>
+                <span className="text-[10px] text-[#4C5760]">{formatDate(note.updated_at)}</span>
               </div>
             </div>
           ))}
@@ -168,24 +168,24 @@ export default function AprendizajePage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingNote ? "Editar Nota" : "Nueva Nota"} subtitle="Registra lo que has aprendido">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Título *</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-1">Título *</label>
             <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Ej: No olvidar verificar ITBIS en facturas"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Nota / Lección</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nota / Lección</label>
             <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6}
               placeholder="Describe lo que aprendiste, el error que cometiste, o la idea que quieres recordar..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Etiquetas (separadas por coma)</label>
+            <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiquetas (separadas por coma)</label>
             <div className="relative">
-              <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+              <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
               <input type="text" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="facturas, ITBIS, clientes"
-                className="w-full h-11 pl-9 pr-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                className="w-full h-11 pl-9 pr-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">

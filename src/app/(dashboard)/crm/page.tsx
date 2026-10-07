@@ -332,7 +332,7 @@ export default function CrmPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">CRM y Seguimiento</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Calendario de actividades comerciales</p>
+          <p className="text-sm text-[#4C5760] mt-1">Calendario de actividades comerciales</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -353,7 +353,7 @@ export default function CrmPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[#39484F]">Créditos</p>
-            <p className="text-xs text-[#5F6B72]">Saldos a favor de clientes</p>
+            <p className="text-xs text-[#4C5760]">Saldos a favor de clientes</p>
           </div>
         </button>
         <button
@@ -365,7 +365,7 @@ export default function CrmPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[#39484F]">WhatsApp Business</p>
-            <p className="text-xs text-[#5F6B72]">Enviar mensajes y facturas</p>
+            <p className="text-xs text-[#4C5760]">Enviar mensajes y facturas</p>
           </div>
         </button>
         <button
@@ -377,7 +377,7 @@ export default function CrmPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[#39484F]">Telegram</p>
-            <p className="text-xs text-[#5F6B72]">Avisos y mensajes gratuitos</p>
+            <p className="text-xs text-[#4C5760]">Avisos y mensajes gratuitos</p>
           </div>
         </button>
       </div>
@@ -385,19 +385,19 @@ export default function CrmPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
           <p className="text-2xl font-bold text-[#39484F]">{followups.length}</p>
-          <p className="text-xs text-[#5F6B72] mt-1">Total actividades</p>
+          <p className="text-xs text-[#4C5760] mt-1">Total actividades</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
           <p className="text-2xl font-bold text-yellow-600">{pending}</p>
-          <p className="text-xs text-[#5F6B72] mt-1">Pendientes</p>
+          <p className="text-xs text-[#4C5760] mt-1">Pendientes</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
           <p className="text-2xl font-bold text-green-600">{completed}</p>
-          <p className="text-xs text-[#5F6B72] mt-1">Completadas</p>
+          <p className="text-xs text-[#4C5760] mt-1">Completadas</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
           <p className="text-2xl font-bold text-red-600">{overdue}</p>
-          <p className="text-xs text-[#5F6B72] mt-1">Vencidas</p>
+          <p className="text-xs text-[#4C5760] mt-1">Vencidas</p>
         </div>
       </div>
 
@@ -407,13 +407,13 @@ export default function CrmPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-[#F1E9DF] text-[#5F6B72] transition-all">
+                <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-[#F1E9DF] text-[#4C5760] transition-all">
                   <ChevronLeft size={20} />
                 </button>
                 <h2 className="text-base font-semibold text-[#39484F] min-w-[160px] text-center">
                   {MONTHS[calMonth]} {calYear}
                 </h2>
-                <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-[#F1E9DF] text-[#5F6B72] transition-all">
+                <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-[#F1E9DF] text-[#4C5760] transition-all">
                   <ChevronRight size={20} />
                 </button>
               </div>
@@ -427,7 +427,7 @@ export default function CrmPage() {
 
             <div className="grid grid-cols-7 mb-1">
               {DAYS.map((d) => (
-                <div key={d} className="text-center text-xs font-medium text-[#5F6B72] py-2">{d}</div>
+                <div key={d} className="text-center text-xs font-medium text-[#4C5760] py-2">{d}</div>
               ))}
             </div>
 
@@ -479,7 +479,7 @@ export default function CrmPage() {
                 <h3 className="text-sm font-semibold text-[#39484F]">
                   Actividades del {formatDate(selectedDate)}
                 </h3>
-                <span className="text-xs text-[#5F6B72]">{dayActivities.length} actividad(es)</span>
+                <span className="text-xs text-[#4C5760]">{dayActivities.length} actividad(es)</span>
               </div>
               {(() => {
                 const dayRepurchases = Object.entries(repurchaseMap).filter(([, date]) => date === selectedDate);
@@ -503,7 +503,7 @@ export default function CrmPage() {
                 );
               })()}
               {dayActivities.length === 0 ? (
-                <p className="text-center py-6 text-sm text-[#5F6B72]">No hay actividades en esta fecha</p>
+                <p className="text-center py-6 text-sm text-[#4C5760]">No hay actividades en esta fecha</p>
               ) : (
                 <div className="space-y-2">
                   {dayActivities.map((f) => {
@@ -520,7 +520,7 @@ export default function CrmPage() {
                             {f.client_id && repurchaseMap[f.client_id] && (
                               <p className="text-[10px] text-[#86C7A3] font-medium">⚡ Recompra: {formatDate(repurchaseMap[f.client_id])}</p>
                             )}
-                            <p className="text-xs text-[#5F6B72] truncate">{f.comments}</p>
+                            <p className="text-xs text-[#4C5760] truncate">{f.comments}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
@@ -546,17 +546,17 @@ export default function CrmPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#39484F]">Todas las actividades</h3>
-              <span className="text-xs text-[#5F6B72]">{filtered.length} registros</span>
+              <span className="text-xs text-[#4C5760]">{filtered.length} registros</span>
             </div>
 
             <div className="relative mb-4">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar..."
-                className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-xs focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-xs focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               />
             </div>
 
@@ -566,7 +566,7 @@ export default function CrmPage() {
                   key={s}
                   onClick={() => setFilterStatus(s)}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    filterStatus === s ? "bg-[#BA4A3A]/10 text-[#BA4A3A]" : "text-[#5F6B72] hover:text-[#39484F]"
+                    filterStatus === s ? "bg-[#BA4A3A]/10 text-[#BA4A3A]" : "text-[#4C5760] hover:text-[#39484F]"
                   }`}
                 >
                   {s === "ALL" ? "Todas" : s === "PENDING" ? "Pendientes" : s === "COMPLETED" ? "Completadas" : "Vencidas"}
@@ -575,9 +575,9 @@ export default function CrmPage() {
             </div>
 
             {loading ? (
-              <div className="text-center py-10 text-[#5F6B72] text-xs">Cargando...</div>
+              <div className="text-center py-10 text-[#4C5760] text-xs">Cargando...</div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-10 text-[#5F6B72]">
+              <div className="text-center py-10 text-[#4C5760]">
                 <MessageSquare size={32} className="mx-auto mb-2 opacity-30" />
                 <p className="text-xs">Sin resultados</p>
               </div>
@@ -595,7 +595,7 @@ export default function CrmPage() {
                           )}
                         </div>
                         <p className="text-xs text-[#39484F] mt-1 leading-relaxed line-clamp-2">{f.comments}</p>
-                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#5F6B72]">
+                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#4C5760]">
                           <span>{formatDate(f.contact_date)}</span>
                           {f.next_followup && <span>→ {formatDate(f.next_followup)}</span>}
                         </div>
@@ -603,7 +603,7 @@ export default function CrmPage() {
                       <div className="relative flex-shrink-0">
                         <button
                           onClick={() => setMenuOpen(menuOpen === f.id ? null : f.id)}
-                          className="p-1 rounded-lg hover:bg-[#F5F0EB] text-[#5F6B72]"
+                          className="p-1 rounded-lg hover:bg-[#F5F0EB] text-[#4C5760]"
                         >
                           <MoreVertical size={14} />
                         </button>
@@ -683,13 +683,13 @@ export default function CrmPage() {
           <div>
             <label className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
             <textarea value={createForm.comments} onChange={(e) => setCreateForm({ ...createForm, comments: e.target.value })} rows={3}
-              placeholder="Detalles de la actividad..." className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
+              placeholder="Detalles de la actividad..." className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs font-medium text-[#39484F]">Estado:</label>
             {(["PENDING", "COMPLETED"] as const).map((s) => (
               <button key={s} onClick={() => setCreateForm({ ...createForm, status: s })}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${createForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#5F6B72]"}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${createForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#4C5760]"}`}>
                 {s === "COMPLETED" ? "Completada" : "Pendiente"}
               </button>
             ))}
@@ -731,13 +731,13 @@ export default function CrmPage() {
           <div>
             <label className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
             <textarea value={editForm.comments} onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })} rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs font-medium text-[#39484F]">Estado:</label>
             {(["PENDING", "COMPLETED", "OVERDUE"] as const).map((s) => (
               <button key={s} onClick={() => setEditForm({ ...editForm, status: s })}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${editForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : s === "OVERDUE" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#5F6B72]"}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${editForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : s === "OVERDUE" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#4C5760]"}`}>
                 {s === "COMPLETED" ? "Completada" : s === "OVERDUE" ? "Vencida" : "Pendiente"}
               </button>
             ))}
@@ -757,7 +757,7 @@ export default function CrmPage() {
           <p className="text-sm text-[#39484F]">
             ¿Estás seguro de eliminar esta actividad de <strong>{showDelete?.clients?.full_name}</strong>?
           </p>
-          <p className="text-xs text-[#5F6B72] bg-[#F1E9DF] p-3 rounded-xl">{showDelete?.comments}</p>
+          <p className="text-xs text-[#4C5760] bg-[#F1E9DF] p-3 rounded-xl">{showDelete?.comments}</p>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={() => setShowDelete(null)} className="px-5 h-11 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] hover:bg-[#F1E9DF] transition-all">Cancelar</button>
             <button onClick={handleDelete} disabled={saving} className="px-5 h-11 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-all disabled:opacity-50">

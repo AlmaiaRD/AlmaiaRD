@@ -109,23 +109,23 @@ export default function CreditosPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
+        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#4C5760] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver a CRM
         </button>
         <h1 className="text-[30px] font-marca text-[#39484F]">Saldos a Favor</h1>
-        <p className="text-sm text-[#5F6B72] mt-1">Abonos y créditos disponibles de clientes</p>
+        <p className="text-sm text-[#4C5760] mt-1">Abonos y créditos disponibles de clientes</p>
       </div>
 
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] mb-6">
-        <p className="text-xs text-[#5F6B72] mb-1">Total Disponible</p>
+        <p className="text-xs text-[#4C5760] mb-1">Total Disponible</p>
         <p className="text-2xl font-bold text-[#86C7A3]">{formatCurrency(totalAvailable)}</p>
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por cliente o recibo..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all" />
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all" />
       </div>
 
       {loading ? (
@@ -133,7 +133,7 @@ export default function CreditosPage() {
           <div className="w-8 h-8 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <Wallet size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">{searchQuery ? "Sin resultados" : "No hay saldos a favor registrados"}</p>
         </div>
@@ -144,13 +144,13 @@ export default function CreditosPage() {
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="text-sm font-medium text-[#39484F]">{c.clients?.full_name || "Sin cliente"}</p>
-                  <p className="text-xs text-[#5F6B72]">{c.receipts?.receipt_number || "—"} &middot; {formatDate(c.created_at)}</p>
+                  <p className="text-xs text-[#4C5760]">{c.receipts?.receipt_number || "—"} &middot; {formatDate(c.created_at)}</p>
                 </div>
                 <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">Disponible</span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-[#5F6B72]">Disponible:</span>
+                  <span className="text-xs text-[#4C5760]">Disponible:</span>
                   <span className="text-sm text-[#39484F] ml-1">{formatCurrency(Number(c.balance ?? c.amount))}</span>
                 </div>
                 <button onClick={() => openApply(c)} className="flex items-center gap-1 text-xs text-[#86C7A3] hover:underline">
@@ -165,7 +165,7 @@ export default function CreditosPage() {
                       <div className="w-6 h-6 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" />
                     </div>
                   ) : invoices.length === 0 ? (
-                    <p className="text-sm text-[#5F6B72]">No hay facturas pendientes para este cliente</p>
+                    <p className="text-sm text-[#4C5760]">No hay facturas pendientes para este cliente</p>
                   ) : (
                     <>
                       <div className="relative">
@@ -181,7 +181,7 @@ export default function CreditosPage() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F6B72] pointer-events-none" size={18} />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4C5760] pointer-events-none" size={18} />
                       </div>
                       <div className="flex items-center gap-3">
                         <input type="number" value={applyAmount} max={Number(c.balance ?? c.amount)}
@@ -191,7 +191,7 @@ export default function CreditosPage() {
                           className="h-10 px-4 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50">
                           {saving ? "Aplicando..." : "Aplicar a Factura"}
                         </button>
-                        <button onClick={() => { setSelectedId(null); setSelectedInvoiceId(null); setApplyAmount(0); }} className="text-xs text-[#5F6B72] hover:text-[#39484F]">Cancelar</button>
+                        <button onClick={() => { setSelectedId(null); setSelectedInvoiceId(null); setApplyAmount(0); }} className="text-xs text-[#4C5760] hover:text-[#39484F]">Cancelar</button>
                       </div>
                     </>
                   )}

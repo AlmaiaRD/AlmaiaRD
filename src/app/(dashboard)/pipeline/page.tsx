@@ -133,7 +133,7 @@ function KanbanCard({
           <div className="min-w-0">
             <h4 className="text-sm font-semibold text-[#39484F] truncate">{client.full_name}</h4>
             {client.phone && (
-              <a href={`https://wa.me/1${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#5F6B72] hover:text-[#86C7A3] flex items-center gap-1">
+              <a href={`https://wa.me/1${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#4C5760] hover:text-[#86C7A3] flex items-center gap-1">
                 <Phone size={10} /> {client.phone}
               </a>
             )}
@@ -143,7 +143,7 @@ function KanbanCard({
           {isStagnant && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E8C87A]/20 text-[#B8860B] font-medium whitespace-nowrap">⚠ {client.days_in_stage}d</span>}
           <button
             onClick={e => { e.stopPropagation(); setEditingNote(!editingNote); }}
-            className="p-1 rounded hover:bg-[#F1E9DF] text-[#5F6B72] hover:text-[#BA4A3A] transition-colors"
+            className="p-1 rounded hover:bg-[#F1E9DF] text-[#4C5760] hover:text-[#BA4A3A] transition-colors"
             title={client.notes ? "Editar nota" : "Agregar nota"}
           >
             <Edit2 size={12} />
@@ -164,9 +164,9 @@ function KanbanCard({
             }}
             placeholder="Escribe una nota..."
             rows={3}
-            className="w-full px-2 py-1.5 text-xs text-[#39484F] bg-[#F5EFE9] border border-[#BA4A3A]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#BA4A3A] resize-none"
+            className="w-full px-2 py-1.5 text-xs text-[#39484F] bg-[#D8CBBF] border border-[#BA4A3A]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#BA4A3A] resize-none"
           />
-          <p className="text-[9px] text-[#5F6B72] mt-1">Enter para guardar · Esc para cancelar</p>
+          <p className="text-[9px] text-[#4C5760] mt-1">Enter para guardar · Esc para cancelar</p>
         </div>
       ) : (
         client.notes && (
@@ -176,7 +176,7 @@ function KanbanCard({
         )
       )}
 
-      <div className="flex items-center gap-2 text-[10px] text-[#5F6B72] mt-2">
+      <div className="flex items-center gap-2 text-[10px] text-[#4C5760] mt-2">
         {ct === "comprador" && (
           <>
             <span className="flex items-center gap-0.5"><DollarSign size={10} /> {formatCurrency(client.total_spent)}</span>
@@ -414,7 +414,7 @@ export default function PipelinePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Pipeline Comercial</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Arrastra clientes entre etapas</p>
+          <p className="text-sm text-[#4C5760] mt-1">Arrastra clientes entre etapas</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
@@ -426,7 +426,7 @@ export default function PipelinePage() {
               {SALES_STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           )}
-          <button onClick={() => { setBatchMode(!batchMode); setSelectedIds(new Set()); }} className={`px-3 py-2 rounded-lg border text-xs font-medium ${batchMode ? "border-[#BA4A3A] bg-[#BA4A3A]/10 text-[#BA4A3A]" : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"}`}>
+          <button onClick={() => { setBatchMode(!batchMode); setSelectedIds(new Set()); }} className={`px-3 py-2 rounded-lg border text-xs font-medium ${batchMode ? "border-[#BA4A3A] bg-[#BA4A3A]/10 text-[#BA4A3A]" : "border-[#E0DAD3] text-[#4C5760] hover:text-[#39484F]"}`}>
             {batchMode ? "Cancelar" : "Seleccionar"}
           </button>
         </div>
@@ -434,8 +434,8 @@ export default function PipelinePage() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
-          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscar cliente..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
+          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscar cliente..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
         </div>
         <div className="flex flex-wrap gap-2">
           {(["", "comprador", "negocio"] as const).map(type => {
@@ -461,7 +461,7 @@ export default function PipelinePage() {
               <div className="flex items-center gap-2 mb-4">
                 <CartIcon size={18} className="text-[#86C7A3]" />
                 <h2 className="text-sm font-semibold text-[#39484F]">Clientes Compradores</h2>
-                <span className="text-xs text-[#5F6B72]">({Object.values(buyersByStage).flat().length})</span>
+                <span className="text-xs text-[#4C5760]">({Object.values(buyersByStage).flat().length})</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {SALES_STAGES.map(stage => {
@@ -499,7 +499,7 @@ export default function PipelinePage() {
                           />
                         ))}
                         {stageClients.length === 0 && (
-                          <div className="text-center py-8 text-[10px] text-[#5F6B72]">Sin clientes</div>
+                          <div className="text-center py-8 text-[10px] text-[#4C5760]">Sin clientes</div>
                         )}
                       </div>
                     </div>
@@ -515,7 +515,7 @@ export default function PipelinePage() {
               <div className="flex items-center gap-2 mb-4">
                 <BriefcaseIcon size={18} className="text-purple-500" />
                 <h2 className="text-sm font-semibold text-[#39484F]">Prospectos de Negocio</h2>
-                <span className="text-xs text-[#5F6B72]">({Object.values(prospectsByStage).flat().length})</span>
+                <span className="text-xs text-[#4C5760]">({Object.values(prospectsByStage).flat().length})</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {RECRUITMENT_STAGES.map(stage => {
@@ -553,7 +553,7 @@ export default function PipelinePage() {
                           />
                         ))}
                         {stageClients.length === 0 && (
-                          <div className="text-center py-8 text-[10px] text-[#5F6B72]">Sin clientes</div>
+                          <div className="text-center py-8 text-[10px] text-[#4C5760]">Sin clientes</div>
                         )}
                       </div>
                     </div>
@@ -599,11 +599,11 @@ export default function PipelinePage() {
                   <Briefcase size={14} className="text-[#BA4A3A]" />
                 </div>
                 <div>
-                  <p className="text-xs text-[#5F6B72]">
+                  <p className="text-xs text-[#4C5760]">
                     Fue {selectedClient.previous_client_type === "comprador" ? "Cliente Comprador" : "Prospecto de Negocio"} por{" "}
                     {Math.floor((new Date(selectedClient.client_type_changed_at).getTime() - new Date(selectedClient.created_at).getTime()) / (1000 * 60 * 60 * 24))} días
                   </p>
-                  <p className="text-xs text-[#5F6B72]">
+                  <p className="text-xs text-[#4C5760]">
                     Convertido el {formatDate(selectedClient.client_type_changed_at)}
                   </p>
                 </div>
@@ -612,11 +612,11 @@ export default function PipelinePage() {
 
             {selectedClient.stage === "calificacion" && selectedClient.client_type === "comprador" && (
               <div className="bg-[#F1E9DF] rounded-xl p-4">
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-2">Nivel de calificación</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-2">Nivel de calificación</h4>
                 <div className="flex flex-wrap gap-2">
                   {QUALIFICATION_OPTIONS.map(q => (
                     <button key={q.key} onClick={() => handleStageChange(selectedClient.id, "calificacion", { qualification_level: q.key })}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.qualification_level === q.key ? `${q.bg} ${q.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#5F6B72] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.qualification_level === q.key ? `${q.bg} ${q.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#4C5760] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
                       {q.label}
                     </button>
                   ))}
@@ -626,11 +626,11 @@ export default function PipelinePage() {
 
             {selectedClient.stage === "cierre" && (
               <div className="bg-[#F1E9DF] rounded-xl p-4">
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-2">Resultado del cierre</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-2">Resultado del cierre</h4>
                 <div className="flex flex-wrap gap-2">
                   {CLOSURE_RESULTS.map(cr => (
                     <button key={cr.key} onClick={() => handleStageChange(selectedClient.id, "cierre", { closure_result: cr.key })}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.closure_result === cr.key ? `${cr.bg} ${cr.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#5F6B72] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.closure_result === cr.key ? `${cr.bg} ${cr.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#4C5760] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
                       {cr.label}
                     </button>
                   ))}
@@ -640,11 +640,11 @@ export default function PipelinePage() {
 
             {selectedClient.stage === "inscripcion" && (
               <div className="bg-[#F1E9DF] rounded-xl p-4">
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-2">Resultado de inscripción</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-2">Resultado de inscripción</h4>
                 <div className="flex flex-wrap gap-2">
                   {ENROLLMENT_RESULTS.map(er => (
                     <button key={er.key} onClick={() => handleStageChange(selectedClient.id, "inscripcion", { closure_result: er.key })}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.closure_result === er.key ? `${er.bg} ${er.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#5F6B72] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedClient.closure_result === er.key ? `${er.bg} ${er.color} ring-2 ring-offset-1 ring-current` : "bg-white text-[#4C5760] border border-[#E0DAD3] hover:bg-[#F1E9DF]"}`}>
                       {er.label}
                     </button>
                   ))}
@@ -657,31 +657,31 @@ export default function PipelinePage() {
                 <AlertTriangle size={18} className="text-[#E8C87A]" />
                 <div>
                   <p className="text-sm font-semibold text-[#B8860B]">Cliente estancado</p>
-                  <p className="text-xs text-[#5F6B72]">Lleva {selectedClient.days_in_stage} días en esta etapa sin movimiento</p>
+                  <p className="text-xs text-[#4C5760]">Lleva {selectedClient.days_in_stage} días en esta etapa sin movimiento</p>
                 </div>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Contacto</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Contacto</h4>
                 {selectedClient.phone && (
                   <p className="text-sm text-[#39484F] flex items-center gap-2">
-                    <Phone size={14} className="text-[#5F6B72]" /> {selectedClient.phone}
+                    <Phone size={14} className="text-[#4C5760]" /> {selectedClient.phone}
                     <a href={`https://wa.me/1${selectedClient.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-[#86C7A3] hover:underline text-xs"><MessageSquare size={12} /> WhatsApp</a>
                   </p>
                 )}
-                {selectedClient.email && <p className="text-sm text-[#39484F] flex items-center gap-2"><Mail size={14} className="text-[#5F6B72]" /> {selectedClient.email}</p>}
-                {selectedClient.lead_source && <p className="text-sm text-[#39484F] flex items-center gap-2"><UserPlus size={14} className="text-[#5F6B72]" /> Llegó por: {selectedClient.lead_source}</p>}
-                {selectedClient.interest && <p className="text-sm text-[#39484F] flex items-center gap-2"><Tag size={14} className="text-[#5F6B72]" /> Interés: {selectedClient.interest}</p>}
-                {selectedClient.ibo_number && <p className="text-sm text-[#39484F] flex items-center gap-2"><UserCheck size={14} className="text-[#5F6B72]" /> IBO: {selectedClient.ibo_number}</p>}
+                {selectedClient.email && <p className="text-sm text-[#39484F] flex items-center gap-2"><Mail size={14} className="text-[#4C5760]" /> {selectedClient.email}</p>}
+                {selectedClient.lead_source && <p className="text-sm text-[#39484F] flex items-center gap-2"><UserPlus size={14} className="text-[#4C5760]" /> Llegó por: {selectedClient.lead_source}</p>}
+                {selectedClient.interest && <p className="text-sm text-[#39484F] flex items-center gap-2"><Tag size={14} className="text-[#4C5760]" /> Interés: {selectedClient.interest}</p>}
+                {selectedClient.ibo_number && <p className="text-sm text-[#39484F] flex items-center gap-2"><UserCheck size={14} className="text-[#4C5760]" /> IBO: {selectedClient.ibo_number}</p>}
               </div>
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Comercial</h4>
-                <p className="text-sm text-[#39484F] flex items-center gap-2"><DollarSign size={14} className="text-[#5F6B72]" /> Total gastado: <strong>{formatCurrency(selectedClient.total_spent)}</strong></p>
-                <p className="text-sm text-[#39484F] flex items-center gap-2"><ShoppingCart size={14} className="text-[#5F6B72]" /> Compras: <strong>{selectedClient.num_purchases}</strong></p>
-                <p className="text-sm text-[#39484F] flex items-center gap-2"><BarChart3 size={14} className="text-[#5F6B72]" /> PV total: <strong>{selectedClient.pv_total.toFixed(2)}</strong></p>
-                <p className="text-sm text-[#39484F] flex items-center gap-2"><TrendingUp size={14} className="text-[#5F6B72]" /> Ticket promedio: <strong>{formatCurrency(selectedClient.avg_ticket)}</strong></p>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Comercial</h4>
+                <p className="text-sm text-[#39484F] flex items-center gap-2"><DollarSign size={14} className="text-[#4C5760]" /> Total gastado: <strong>{formatCurrency(selectedClient.total_spent)}</strong></p>
+                <p className="text-sm text-[#39484F] flex items-center gap-2"><ShoppingCart size={14} className="text-[#4C5760]" /> Compras: <strong>{selectedClient.num_purchases}</strong></p>
+                <p className="text-sm text-[#39484F] flex items-center gap-2"><BarChart3 size={14} className="text-[#4C5760]" /> PV total: <strong>{selectedClient.pv_total.toFixed(2)}</strong></p>
+                <p className="text-sm text-[#39484F] flex items-center gap-2"><TrendingUp size={14} className="text-[#4C5760]" /> Ticket promedio: <strong>{formatCurrency(selectedClient.avg_ticket)}</strong></p>
                 {selectedClient.repurchase_date && (
                   <p className="text-sm text-[#39484F] flex items-center gap-2"><Zap size={14} className="text-[#86C7A3]" /> Recompra: <strong>{formatDate(selectedClient.repurchase_date)}</strong></p>
                 )}
@@ -696,7 +696,7 @@ export default function PipelinePage() {
 
             {selectedClient.top_products.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-2">Productos favoritos</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-2">Productos favoritos</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedClient.top_products.map((p, i) => (
                     <span key={i} className="text-xs px-3 py-1.5 rounded-full bg-[#F1E9DF] text-[#39484F] border border-[#E0DAD3]">{p.name} ({p.count}x)</span>
@@ -744,7 +744,7 @@ export default function PipelinePage() {
               {aiSummary && (
                 <div className="mt-3 space-y-3">
                   <div className="bg-[#F1E9DF] rounded-xl p-4">
-                    <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-2">Resumen IA</h4>
+                    <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-2">Resumen IA</h4>
                     <p className="text-sm text-[#39484F] leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
                   </div>
                   {approach && (
@@ -759,7 +759,7 @@ export default function PipelinePage() {
 
             {selectedClient.notes && (
               <div>
-                <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-1">Notas</h4>
+                <h4 className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider mb-1">Notas</h4>
                 <p className="text-sm text-[#39484F] bg-[#F1E9DF] rounded-xl p-3">{selectedClient.notes}</p>
               </div>
             )}
@@ -777,7 +777,7 @@ export default function PipelinePage() {
             <p><strong>Cotización</strong> → Propuesta</p>
             <p><strong>1ra Compra / Postventa / Activo / Recompra / VIP</strong> → Cierre</p>
           </div>
-          <p className="text-xs text-[#5F6B72]">Los clientes se marcarán como &quot;comprador&quot; por defecto.</p>
+          <p className="text-xs text-[#4C5760]">Los clientes se marcarán como &quot;comprador&quot; por defecto.</p>
           <div className="flex gap-3">
             <button onClick={() => setShowMigrateModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF]">Cancelar</button>
             <button onClick={handleMigrate} disabled={migrating} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] disabled:opacity-50">{migrating ? "Migrando..." : "Migrar ahora"}</button>
@@ -794,7 +794,7 @@ export default function PipelinePage() {
                 const stages = getStagesForType(value);
                 setAddForm({ ...addForm, client_type: value, stage: stages[0].key });
               }}
-                className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all ${addForm.client_type === value ? "border-[#BA4A3A] bg-[#BA4A3A]/5 text-[#39484F]" : "border-[#E0DAD3] text-[#5F6B72] hover:bg-[#F1E9DF]"}`}>
+                className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all ${addForm.client_type === value ? "border-[#BA4A3A] bg-[#BA4A3A]/5 text-[#39484F]" : "border-[#E0DAD3] text-[#4C5760] hover:bg-[#F1E9DF]"}`}>
                 <Icon size={16} /> {label}
               </button>
             ))}
@@ -808,16 +808,16 @@ export default function PipelinePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
-            <input type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
-              <input type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <input type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Email</label>
-              <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex gap-3 pt-2">

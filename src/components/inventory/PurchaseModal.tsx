@@ -105,7 +105,7 @@ export default function PurchaseModal({
             <input
               type="date" value={form.purchase_date}
               onChange={(e) => setForm({ ...form, purchase_date: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div className="relative">
@@ -116,9 +116,9 @@ export default function PurchaseModal({
                 onChange={(e) => { setForm({ ...form, supplier_name: e.target.value }); setSupplierSearch(e.target.value); setShowSupplierDropdown(true); }}
                 onFocus={() => setShowSupplierDropdown(true)}
                 placeholder="Buscar o escribir proveedor..."
-                className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5F6B72] pointer-events-none" />
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4C5760] pointer-events-none" />
             </div>
             {showSupplierDropdown && (
               <>
@@ -132,11 +132,11 @@ export default function PurchaseModal({
                       className="w-full text-left px-4 py-2.5 text-sm text-[#39484F] hover:bg-[#F1E9DF] transition-colors flex justify-between"
                     >
                       <span>{s.name}</span>
-                      {s.city && <span className="text-[#5F6B72] text-xs">{s.city}</span>}
+                      {s.city && <span className="text-[#4C5760] text-xs">{s.city}</span>}
                     </button>
                   ))}
                   {suppliers.filter(s => !supplierSearch || normalize(s.name).includes(normalize(supplierSearch))).length === 0 && (
-                    <p className="px-4 py-3 text-sm text-[#5F6B72]">Sin resultados. Escribe para agregar uno nuevo.</p>
+                    <p className="px-4 py-3 text-sm text-[#4C5760]">Sin resultados. Escribe para agregar uno nuevo.</p>
                   )}
                 </div>
               </>
@@ -151,7 +151,7 @@ export default function PurchaseModal({
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             placeholder="Notas adicionales..."
             rows={2}
-            className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
           />
         </div>
 
@@ -162,7 +162,7 @@ export default function PurchaseModal({
               type="number" step="0.01" min={0} value={form.discount_amount}
               onChange={(e) => setForm({ ...form, discount_amount: Number(e.target.value) })}
               placeholder="0"
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div>
@@ -170,7 +170,7 @@ export default function PurchaseModal({
             <select
               value={form.payment_method}
               onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option>Efectivo</option>
               <option>Transferencia</option>
@@ -187,7 +187,7 @@ export default function PurchaseModal({
             <select
               value={form.bank_account_id}
               onChange={(e) => setForm({ ...form, bank_account_id: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option value="">Seleccionar banco...</option>
               {bankAccounts.map((b) => (
@@ -232,18 +232,18 @@ export default function PurchaseModal({
             <div className="mb-4 bg-[#F1E9DF] rounded-xl overflow-hidden">
               <div className="p-2">
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
                     type="text" value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     placeholder="Buscar producto por nombre o código..."
-                    className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                    className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                   />
                 </div>
               </div>
               <div className="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
                 {productFiltered.length === 0 ? (
-                  <p className="text-sm text-[#5F6B72] py-3 text-center">Sin resultados</p>
+                  <p className="text-sm text-[#4C5760] py-3 text-center">Sin resultados</p>
                 ) : productFiltered.map((p) => (
                   <button
                     key={p.id}
@@ -251,7 +251,7 @@ export default function PurchaseModal({
                     className="w-full text-left px-3 py-2 text-sm text-[#39484F] hover:bg-white rounded-lg transition-colors flex justify-between"
                   >
                     <span className="truncate">{p.name}</span>
-                    <span className="text-[#5F6B72] shrink-0 ml-2">{formatCurrency(p.cost || 0)}</span>
+                    <span className="text-[#4C5760] shrink-0 ml-2">{formatCurrency(p.cost || 0)}</span>
                   </button>
                 ))}
               </div>
@@ -259,7 +259,7 @@ export default function PurchaseModal({
           )}
 
           {form.items.length === 0 ? (
-            <p className="text-sm text-[#5F6B72] py-3">No hay productos agregados</p>
+            <p className="text-sm text-[#4C5760] py-3">No hay productos agregados</p>
           ) : (
             <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
               {form.items.map((item, i) => {
@@ -287,7 +287,7 @@ export default function PurchaseModal({
                       onChange={(e) => updateItem(i, "unit_cost", Number(e.target.value))}
                       className="w-24 h-9 px-2 rounded-lg border border-[#E0DAD3] text-center text-sm"
                     />
-                    <span className="text-xs text-[#5F6B72] w-20 text-center">{formatCurrency(lineItbis)}</span>
+                    <span className="text-xs text-[#4C5760] w-20 text-center">{formatCurrency(lineItbis)}</span>
                     <span className="text-sm font-medium text-[#39484F] w-24 text-right">{formatCurrency(lineTotal)}</span>
                     <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
                       <X size={16} />
@@ -301,23 +301,23 @@ export default function PurchaseModal({
 
         <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-1.5">
           <div className="flex justify-between text-sm">
-            <span className="text-[#5F6B72]">Subtotal</span>
+            <span className="text-[#4C5760]">Subtotal</span>
             <span className="text-[#39484F]">{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-[#5F6B72]">Impuesto de Recogida</span>
+            <span className="text-[#4C5760]">Impuesto de Recogida</span>
             <input type="number" step="0.01" min={0} value={form.impuesto_recogida}
               onChange={(e) => setForm({ ...form, impuesto_recogida: Math.max(0, Number(e.target.value)) })}
               className="w-24 h-7 px-2 text-right rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-[#5F6B72]">Cargo de Administración (Detalle)</span>
+            <span className="text-[#4C5760]">Cargo de Administración (Detalle)</span>
             <input type="number" step="0.01" min={0} value={form.cargo_administracion}
               onChange={(e) => setForm({ ...form, cargo_administracion: Math.max(0, Number(e.target.value)) })}
               className="w-24 h-7 px-2 text-right rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#5F6B72]">ITBIS (18%)</span>
+            <span className="text-[#4C5760]">ITBIS (18%)</span>
             <span className="text-[#39484F]">{formatCurrency(itbis)}</span>
           </div>
           {form.discount_amount > 0 && (

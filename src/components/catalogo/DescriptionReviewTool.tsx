@@ -224,19 +224,19 @@ export default function DescriptionReviewTool({
     >
       <div className="space-y-4">        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 min-w-[220px]">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar producto..."
-              className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div className="flex items-center gap-2 text-xs text-[#39484F]">
             <Badge variant="warning">{counts.issues} con observaciones</Badge>
             <Badge variant="success">{counts.ok} ok</Badge>
-            <span className="text-[#5F6B72]">{counts.total} productos</span>
+            <span className="text-[#4C5760]">{counts.total} productos</span>
           </div>
         </div>
 
@@ -247,7 +247,7 @@ export default function DescriptionReviewTool({
         ) : (
           <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
             {filtered.length === 0 ? (
-              <p className="text-center text-[#5F6B72] py-10 text-sm">No hay productos para revisar</p>
+              <p className="text-center text-[#4C5760] py-10 text-sm">No hay productos para revisar</p>
             ) : (
               filtered.map((r) => {
                 const issues = detectIssue(r.description, r.benefits, r.name);
@@ -260,7 +260,7 @@ export default function DescriptionReviewTool({
                       </button>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-[#39484F] truncate">{r.name}</div>
-                        <div className="text-xs text-[#5F6B72]">
+                        <div className="text-xs text-[#4C5760]">
                           {r.code && `Código: ${r.code}`}
                           {r.category ? ` · ${r.category}` : ""}
                           {r.subcategory ? ` · ${r.subcategory}` : ""}
@@ -298,7 +298,7 @@ export default function DescriptionReviewTool({
                         <div>
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-xs font-medium text-[#39484F]">Descripción</label>
-                            <span className="text-[10px] text-[#5F6B72]">{r.description.length} car.</span>
+                            <span className="text-[10px] text-[#4C5760]">{r.description.length} car.</span>
                           </div>
                           <textarea
                             value={r.description}
@@ -309,8 +309,8 @@ export default function DescriptionReviewTool({
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-[#39484F]">Beneficios <span className="text-[#5F6B72] font-normal">(uno por línea)</span></label>
-                            <span className="text-[10px] text-[#5F6B72]">{r.benefits.length} car.</span>
+                            <label className="text-xs font-medium text-[#39484F]">Beneficios <span className="text-[#4C5760] font-normal">(uno por línea)</span></label>
+                            <span className="text-[10px] text-[#4C5760]">{r.benefits.length} car.</span>
                           </div>
                           <textarea
                             value={r.benefits}
@@ -345,7 +345,7 @@ export default function DescriptionReviewTool({
         )}
 
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#E0DAD3]">
-          <div className="text-xs text-[#5F6B72]">
+          <div className="text-xs text-[#4C5760]">
             {rows.filter((r) => r.approved === "edit" && (r.description !== r.originalDescription || r.benefits !== r.originalBenefits)).length} producto(s) con cambios por aplicar
           </div>
           <div className="flex items-center gap-3">

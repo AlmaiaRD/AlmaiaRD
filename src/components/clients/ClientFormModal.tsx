@@ -82,7 +82,7 @@ export default function ClientFormModal({
     }
   }
 
-  const inputCls = "w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all";
+  const inputCls = "w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle}>
@@ -94,7 +94,7 @@ export default function ClientFormModal({
               <button key={value} type="button" onClick={() => setForm({ ...form, client_type: value })}
                 className={`flex-1 p-3 rounded-xl border text-left transition-all ${form.client_type === value ? "border-[#BA4A3A] bg-[#BA4A3A]/5" : "border-[#E0DAD3] bg-white hover:bg-[#F1E9DF]"}`}>
                 <p className="text-sm font-medium text-[#39484F]">{label}</p>
-                <p className="text-xs text-[#5F6B72] mt-0.5">{desc}</p>
+                <p className="text-xs text-[#4C5760] mt-0.5">{desc}</p>
               </button>
             ))}
           </div>
@@ -124,11 +124,11 @@ export default function ClientFormModal({
         <div>
           <label className="block text-sm font-medium text-[#39484F] mb-1.5">Telegram Chat ID (opcional)</label>
           <input type="text" value={form.telegram_chat_id || ""} onChange={(e) => setForm({ ...form, telegram_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
-          <p className="text-[11px] text-[#5F6B72] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
+          <p className="text-[11px] text-[#4C5760] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
+          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
         </div>
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>

@@ -175,11 +175,11 @@ export default function BonificacionesPage() {
           className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
       </div>
       <div>
-        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Descripción <span className="text-[#5F6B72] font-normal">(opcional)</span></label>
+        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Descripción <span className="text-[#4C5760] font-normal">(opcional)</span></label>
         <textarea value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={2} placeholder="Describe la bonificación..."
-          className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
+          className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
       </div>
     </div>
   );
@@ -188,11 +188,11 @@ export default function BonificacionesPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-2 transition-colors">
+          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#4C5760] hover:text-[#39484F] mb-2 transition-colors">
             <ArrowLeft size={16} /> Volver al Dashboard
           </button>
           <h1 className="text-[30px] font-marca text-[#39484F]">Bonificaciones</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Incentivos y premios para clientes</p>
+          <p className="text-sm text-[#4C5760] mt-1">Incentivos y premios para clientes</p>
         </div>
         <button onClick={() => { resetForm(); setShowCreate(true); }}
           className="flex items-center gap-2 bg-[#D4A0A0] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#C08080] transition-all shadow-sm">
@@ -201,21 +201,21 @@ export default function BonificacionesPage() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] mb-6">
-        <p className="text-xs text-[#5F6B72] mb-1">Total Bonificaciones</p>
+        <p className="text-xs text-[#4C5760] mb-1">Total Bonificaciones</p>
         <p className="text-2xl font-bold text-[#BA4A3A]">{formatCurrency(total)}</p>
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por tipo o descripción..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-[#5F6B72] text-sm">Cargando bonificaciones...</div>
+        <div className="text-center py-16 text-[#4C5760] text-sm">Cargando bonificaciones...</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <Award size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">{searchQuery ? "Sin resultados" : "No hay bonificaciones registradas"}</p>
         </div>
@@ -224,17 +224,17 @@ export default function BonificacionesPage() {
           <table className="w-full border-separate border-spacing-y-2">
             <thead>
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Fecha</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Tipo</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Descripción</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#5F6B72] uppercase">Monto</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Acciones</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Fecha</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Tipo</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Descripción</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-[#4C5760] uppercase">Monto</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((b) => (
                 <tr key={b.id} className="bg-white rounded-xl shadow-sm border border-[#E0DAD3] hover:shadow-md">
-                  <td className="px-4 py-3.5 text-sm text-[#5F6B72] whitespace-nowrap">{formatDate(b.bonus_date)}</td>
+                  <td className="px-4 py-3.5 text-sm text-[#4C5760] whitespace-nowrap">{formatDate(b.bonus_date)}</td>
                   <td className="px-4 py-3.5">
                     <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs ${badgeType(b.bonus_type)}`}>{b.bonus_type}</span>
                   </td>
@@ -245,7 +245,7 @@ export default function BonificacionesPage() {
                   <td className="px-4 py-3.5">
                     <div className="flex justify-center gap-1">
                       <button onClick={() => openEdit(b)}
-                        className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-all"><Edit3 size={15} /></button>
+                        className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg transition-all"><Edit3 size={15} /></button>
                       <button onClick={() => setShowDelete(b)}
                         className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg transition-all"><Trash2 size={15} /></button>
                     </div>

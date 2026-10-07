@@ -313,7 +313,7 @@ export default function DevolucionesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Devoluciones</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Gestión de devoluciones de productos</p>
+          <p className="text-sm text-[#4C5760] mt-1">Gestión de devoluciones de productos</p>
         </div>
         <button onClick={openNew} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all duration-200 shadow-sm">
           <Plus size={18} /> Nueva Devolución
@@ -321,16 +321,16 @@ export default function DevolucionesPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por número, cliente o factura..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <RotateCcw size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay devoluciones registradas</p>
         </div>
@@ -344,11 +344,11 @@ export default function DevolucionesPage() {
                     <h3 className="font-medium text-[#39484F]">{ret.return_number}</h3>
                     <Badge variant={STATUS_COLORS[ret.status] || "neutral"}>{ret.status === "DRAFT" ? "Borrador" : ret.status === "COMPLETED" ? "Completada" : "Anulada"}</Badge>
                   </div>
-                  <p className="text-sm text-[#5F6B72]">{ret.clients?.full_name} — Factura {ret.invoices?.invoice_number}</p>
+                  <p className="text-sm text-[#4C5760]">{ret.clients?.full_name} — Factura {ret.invoices?.invoice_number}</p>
                   <div className="flex items-center gap-4 mt-2 text-sm">
                     <span className="text-[#39484F] font-medium">{formatCurrency(ret.total)}</span>
-                    <span className="text-[#5F6B72]">{formatDate(ret.return_date)}</span>
-                    {ret.reason && <span className="text-[#5F6B72] truncate max-w-[200px]">{ret.reason}</span>}
+                    <span className="text-[#4C5760]">{formatDate(ret.return_date)}</span>
+                    {ret.reason && <span className="text-[#4C5760] truncate max-w-[200px]">{ret.reason}</span>}
                   </div>
                 </div>
                 <div className="flex gap-2 ml-4">
@@ -371,7 +371,7 @@ export default function DevolucionesPage() {
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
             <select value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Seleccionar factura...</option>
               {invoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>
@@ -391,7 +391,7 @@ export default function DevolucionesPage() {
                       if (e.target.value) { addReturnItem(e.target.value); e.target.value = ""; }
                     }}
                     disabled={loadingLines}
-                    className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 disabled:opacity-50"
+                    className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 disabled:opacity-50"
                   >
                     <option value="">{loadingLines ? "Cargando productos..." : "+ Agregar producto"}</option>
                     {invoiceLines
@@ -405,9 +405,9 @@ export default function DevolucionesPage() {
                 </div>
 
                 {invoiceLines.length === 0 && !loadingLines ? (
-                  <p className="text-sm text-[#5F6B72] py-4 text-center">Esta factura no tiene productos para devolver</p>
+                  <p className="text-sm text-[#4C5760] py-4 text-center">Esta factura no tiene productos para devolver</p>
                 ) : returnItems.length === 0 ? (
-                  <p className="text-sm text-[#5F6B72] py-4 text-center">Selecciona productos de la factura</p>
+                  <p className="text-sm text-[#4C5760] py-4 text-center">Selecciona productos de la factura</p>
                 ) : (
                   <div className="space-y-2">
                     {returnItems.map((item, i) => (
@@ -439,12 +439,12 @@ export default function DevolucionesPage() {
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Motivo</label>
                 <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas internas</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
             </>
           )}
@@ -467,23 +467,23 @@ export default function DevolucionesPage() {
               <Badge variant={STATUS_COLORS[viewingReturn.status] || "neutral"}>
                 {viewingReturn.status === "DRAFT" ? "Borrador" : viewingReturn.status === "COMPLETED" ? "Completada" : "Anulada"}
               </Badge>
-              <span className="text-sm text-[#5F6B72]">{formatDate(viewingReturn.return_date)}</span>
+              <span className="text-sm text-[#4C5760]">{formatDate(viewingReturn.return_date)}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Cliente</label>
+                <label className="block text-xs font-medium text-[#4C5760] mb-1">Cliente</label>
                 <p className="text-sm text-[#39484F]">{viewingReturn.clients?.full_name || "N/A"}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Factura</label>
+                <label className="block text-xs font-medium text-[#4C5760] mb-1">Factura</label>
                 <p className="text-sm text-[#39484F]">{viewingReturn.invoices?.invoice_number || "N/A"}</p>
               </div>
             </div>
 
             {viewingReturn.reason && (
               <div>
-                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Motivo</label>
+                <label className="block text-xs font-medium text-[#4C5760] mb-1">Motivo</label>
                 <p className="text-sm text-[#39484F]">{viewingReturn.reason}</p>
               </div>
             )}
@@ -491,14 +491,14 @@ export default function DevolucionesPage() {
             <div className="border-t border-[#E0DAD3] pt-4">
               <h4 className="text-sm font-semibold text-[#39484F] mb-3">Productos</h4>
               {viewingItems.length === 0 ? (
-                <p className="text-sm text-[#5F6B72]">Cargando...</p>
+                <p className="text-sm text-[#4C5760]">Cargando...</p>
               ) : (
                 <div className="space-y-2">
                   {viewingItems.map((item: ReturnItemWithProduct) => (
                     <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F1E9DF]">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#39484F]">{item.products?.name || "Producto"}</p>
-                        <p className="text-xs text-[#5F6B72]">{item.products?.code || ""}</p>
+                        <p className="text-xs text-[#4C5760]">{item.products?.code || ""}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-[#39484F]">{item.quantity} × {formatCurrency(item.unit_price)}</p>
@@ -516,7 +516,7 @@ export default function DevolucionesPage() {
 
             {viewingReturn.notes && (
               <div>
-                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Notas internas</label>
+                <label className="block text-xs font-medium text-[#4C5760] mb-1">Notas internas</label>
                 <p className="text-sm text-[#39484F]">{viewingReturn.notes}</p>
               </div>
             )}

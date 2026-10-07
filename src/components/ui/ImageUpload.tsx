@@ -81,7 +81,7 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
           </div>
         ) : (
           <div className="w-24 h-24 rounded-xl border-2 border-dashed border-[#E0DAD3] bg-[#F1E9DF] flex items-center justify-center flex-shrink-0">
-            <Upload size={20} className="text-[#5F6B72]" />
+            <Upload size={20} className="text-[#4C5760]" />
           </div>
         )}
         <div className="flex-1">
@@ -103,7 +103,7 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
               <><Upload size={16} /> {preview ? "Cambiar imagen" : "Seleccionar imagen"}</>
             )}
           </label>
-          <p className="text-xs text-[#5F6B72] mt-2">PNG, JPG o WEBP. Máximo {maxSizeMB}MB.</p>
+          <p className="text-xs text-[#4C5760] mt-2">PNG, JPG o WEBP. Máximo {maxSizeMB}MB.</p>
         </div>
       </div>
     </div>

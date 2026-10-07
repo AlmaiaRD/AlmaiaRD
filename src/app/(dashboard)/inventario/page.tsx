@@ -87,7 +87,7 @@ function getStockStatus(stock: number, minimum: number): { label: string; varian
 
 export default function InventarioPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#D8CBBF]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
       <InventarioContent />
     </Suspense>
   );
@@ -199,7 +199,7 @@ function InventarioContent() {
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    setTextColor("#5F6B72");
+    setTextColor("#4C5760");
     doc.text(`No. ${purchase.purchase_number}`, margin, y + 7);
     y += 18;
     drawLine(margin, y, pageW - margin, y, "#E0DAD3");
@@ -230,7 +230,7 @@ function InventarioContent() {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    setTextColor("#5F6B72");
+    setTextColor("#4C5760");
     const colW = [55, 25, 25, 25, 25, 25];
     const colX = [margin];
     for (let i = 1; i < colW.length; i++) colX.push(colX[i - 1] + colW[i - 1]);
@@ -299,7 +299,7 @@ function InventarioContent() {
     y += 20;
     drawLine(margin, y, pageW - margin, y, "#E0DAD3");
     y += 8;
-    setTextColor("#5F6B72");
+    setTextColor("#4C5760");
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.text(`Documento generado por ${settings?.business_name || "Almaia RD"}`, margin, y);
@@ -329,7 +329,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
     return (
       '<div style="color:#39484F;">' +
       '<h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>' +
-      '<p style="font-size:10px;color:#5F6B72;margin:2px 0 16px;">No. ' + sanitizeHtml(purchase.purchase_number) + '</p>' +
+      '<p style="font-size:10px;color:#4C5760;margin:2px 0 16px;">No. ' + sanitizeHtml(purchase.purchase_number) + '</p>' +
       '<hr style="border-color:#E0DAD3;margin-bottom:8px;"/>' +
       '<p style="font-size:10px;"><b>Fecha:</b> ' + sanitizeHtml(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (sanitizeHtml(purchase.supplier_name) || "—") + '</p>' +
       '<hr style="border-color:#E0DAD3;margin:8px 0;"/>' +
@@ -851,11 +851,11 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
   // meterla aqui haria que las columnas se reconstruyan siempre, que es
   // justo lo que este useMemo evita.
   const stockColumns: Column<InventoryItem>[] = useMemo(() => [
-    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</span> },
+    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#4C5760]">{item.products?.subbrands?.name || "—"}</span> },
     { key: "products.name", header: "Producto", minWidth: 200, sortable: true, render: (item) => (
       <div className="flex flex-col">
         <span className="text-sm text-[#39484F] font-medium">{item.products?.name || "—"}</span>
-        <span className="text-xs text-[#5F6B72]">{item.products?.code}</span>
+        <span className="text-xs text-[#4C5760]">{item.products?.code}</span>
       </div>
     )},
     { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{purchasedMap[item.product_id] || "—"}</span> },
@@ -879,7 +879,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       const status = getStockStatus(computedStock, item.minimum_stock);
       return <Badge variant={status.variant}>{status.label}</Badge>;
     }},
-    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#5F6B72] mx-auto" /> },
+    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#4C5760] mx-auto" /> },
     { key: "hide", header: "Ocultar", minWidth: 100, align: "center", render: (item) => (
       <div className="flex items-center justify-center gap-1">
         <button
@@ -887,7 +887,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
           className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
             hiddenStockIds.includes(item.product_id)
               ? "bg-[#BA4A3A]/10 text-[#BA4A3A]"
-              : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"
+              : "text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF]"
           }`}
         >
           <EyeOff size={12} className="inline mr-1" />
@@ -969,7 +969,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Inventario</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Control de existencias y stock</p>
+          <p className="text-sm text-[#4C5760] mt-1">Control de existencias y stock</p>
         </div>
         <button
           onClick={() => { resetPurchaseForm(); setShowPurchase(true); }}
@@ -983,19 +983,19 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {/* KPI mini-cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-          <p className="text-xs text-[#5F6B72] mb-1">Total Productos</p>
+          <p className="text-xs text-[#4C5760] mb-1">Total Productos</p>
           <p className="text-xl font-bold text-[#39484F]">{totalInventory}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-          <p className="text-xs text-[#5F6B72] mb-1">Valor Inventario</p>
+          <p className="text-xs text-[#4C5760] mb-1">Valor Inventario</p>
           <p className="text-xl font-bold text-[#39484F]">{formatCurrency(kpiStats.totalValue)}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-          <p className="text-xs text-[#5F6B72] mb-1">Stock Total</p>
+          <p className="text-xs text-[#4C5760] mb-1">Stock Total</p>
           <p className="text-xl font-bold text-[#39484F]">{kpiStats.totalStock}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
-          <p className="text-xs text-[#5F6B72] mb-1">Pend. Devolución</p>
+          <p className="text-xs text-[#4C5760] mb-1">Pend. Devolución</p>
           <p className="text-xl font-bold text-[#D4A0A0]">{kpiStats.totalPending}</p>
         </div>
       </div>
@@ -1008,7 +1008,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "stock"
                 ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
-                : "text-[#5F6B72] hover:text-[#39484F]"
+                : "text-[#4C5760] hover:text-[#39484F]"
             }`}
           >
             Existencias de Stock
@@ -1018,7 +1018,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "rotation"
                 ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
-                : "text-[#5F6B72] hover:text-[#39484F]"
+                : "text-[#4C5760] hover:text-[#39484F]"
             }`}
           >
             Rotación de Inventario
@@ -1028,7 +1028,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "history"
                 ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
-                : "text-[#5F6B72] hover:text-[#39484F]"
+                : "text-[#4C5760] hover:text-[#39484F]"
             }`}
           >
             Compras Registradas
@@ -1039,13 +1039,13 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {/* Search & controls */}
       <div className="flex items-center gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre, código o submarca..."
-            className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
           />
         </div>
         {activeTab === "stock" && (
@@ -1054,7 +1054,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
               showHiddenStock
                 ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
-                : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
+                : "border-[#E0DAD3] text-[#4C5760] hover:text-[#39484F]"
             }`}
           >
             <EyeOff size={16} />
@@ -1067,7 +1067,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
               showHiddenRotation
                 ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
-                : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
+                : "border-[#E0DAD3] text-[#4C5760] hover:text-[#39484F]"
             }`}
           >
             <EyeOff size={16} />
@@ -1093,7 +1093,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             ))}
           </select>
           {(filterMonth || filterYear) && (
-            <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
+            <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#4C5760] hover:text-[#39484F] px-3">Limpiar filtros</button>
           )}
         </div>
       )}
@@ -1151,7 +1151,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {activeTab === "history" && (
         <div className="space-y-3">
           {purchases.length === 0 ? (
-            <div className="text-center py-16 text-[#5F6B72]">
+            <div className="text-center py-16 text-[#4C5760]">
               <Package size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay compras registradas</p>
             </div>
@@ -1174,7 +1174,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[#39484F]">{pur.purchase_number}</p>
-                      <p className="text-xs text-[#5F6B72]">{formatDate(pur.purchase_date)} {pur.supplier_name ? `· ${pur.supplier_name}` : ""}</p>
+                      <p className="text-xs text-[#4C5760]">{formatDate(pur.purchase_date)} {pur.supplier_name ? `· ${pur.supplier_name}` : ""}</p>
                     </div>
                   </div>
                    <div className="flex items-center gap-3">
@@ -1182,7 +1182,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                     <div className="flex items-center gap-1 relative">
                       <button
                         onClick={() => openEditPurchase(pur)}
-                        className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
+                        className="p-2 text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                         title="Editar"
                       >
                         <Edit2 size={14} />
@@ -1200,7 +1200,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                       <div className="relative">
                         <button
                           onClick={() => setOpenDownloadId(openDownloadId === pur.id ? null : pur.id)}
-                          className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
+                          className="p-2 text-[#4C5760] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                           title="Más opciones"
                         >
                           <Download size={14} />
@@ -1236,12 +1236,12 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                   {pur.purchase_items?.map((pi) => (
                     <div key={pi.id} className="flex items-center justify-between text-sm">
                       <span className="text-[#39484F]">{pi.products?.name || "Producto"}</span>
-                      <span className="text-[#5F6B72]">{pi.quantity} x {formatCurrency(pi.unit_cost)}</span>
+                      <span className="text-[#4C5760]">{pi.quantity} x {formatCurrency(pi.unit_cost)}</span>
                     </div>
                   ))}
                 </div>
                 {(pur.discount_amount > 0 || pur.notes) && (
-                  <div className="mt-2 pt-2 border-t border-[#E0DAD3] space-y-1 text-xs text-[#5F6B72]">
+                  <div className="mt-2 pt-2 border-t border-[#E0DAD3] space-y-1 text-xs text-[#4C5760]">
                     {pur.discount_amount > 0 && <p>Descuento: -{formatCurrency(pur.discount_amount)}</p>}
                     {pur.notes && <p>Notas: {pur.notes}</p>}
                   </div>
@@ -1267,30 +1267,30 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-[#5F6B72]">{detailItem.products?.subbrands?.name} · {detailItem.products?.code}</p>
+                <p className="text-xs text-[#4C5760]">{detailItem.products?.subbrands?.name} · {detailItem.products?.code}</p>
               </div>
               <Badge variant={detStatus.variant}>{detStatus.label}</Badge>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Compradas</p>
+                <p className="text-xs text-[#4C5760]">Compradas</p>
                 <p className="text-xl font-bold text-[#39484F]">{detPurchased || "—"}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Stock actual</p>
+                <p className="text-xs text-[#4C5760]">Stock actual</p>
                 <p className="text-xl font-bold text-[#39484F]">{detStock}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Pend. Dev.</p>
+                <p className="text-xs text-[#4C5760]">Pend. Dev.</p>
                 <p className="text-xl font-bold text-[#D4A0A0]">{detPending}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Vendidas</p>
+                <p className="text-xs text-[#4C5760]">Vendidas</p>
                 <p className="text-xl font-bold text-[#39484F]">{detSold}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Capital</p>
+                <p className="text-xs text-[#4C5760]">Capital</p>
                 <p className="text-xl font-bold text-[#39484F]">{formatCurrency(detCapital)}</p>
               </div>
             </div>
@@ -1314,7 +1314,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 className={`ml-auto flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-all ${
                   isHidden
                     ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
-                    : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
+                    : "border-[#E0DAD3] text-[#4C5760] hover:text-[#39484F]"
                 }`}
               >
                 <EyeOff size={14} />
@@ -1325,7 +1325,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             <div>
               <h4 className="text-sm font-semibold text-[#39484F] mb-3">Movimientos</h4>
               {detailMovements.length === 0 ? (
-                <p className="text-sm text-[#5F6B72] py-4 text-center">Sin movimientos registrados</p>
+                <p className="text-sm text-[#4C5760] py-4 text-center">Sin movimientos registrados</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {detailMovements.map((m) => (
@@ -1334,14 +1334,14 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                         <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
                           {movementLabel[m.movement_type] || m.movement_type}
                         </p>
-                        {m.notes && <p className="text-xs text-[#5F6B72]">{m.notes}</p>}
+                        {m.notes && <p className="text-xs text-[#4C5760]">{m.notes}</p>}
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-[#39484F]">
                           {m.movement_type === "PURCHASE" ? "+" : m.movement_type === "SALE" ? "-" : ""}
                           {m.quantity}
                         </p>
-                        <p className="text-xs text-[#5F6B72]">{formatDate(m.created_at)}</p>
+                        <p className="text-xs text-[#4C5760]">{formatDate(m.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -1405,39 +1405,39 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
           <div className="space-y-5">
             <div className="grid grid-cols-5 gap-3">
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Subtotal</p>
+                <p className="text-xs text-[#4C5760]">Subtotal</p>
                 <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.subtotal)}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Recogida</p>
+                <p className="text-xs text-[#4C5760]">Recogida</p>
                 <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.impuesto_recogida || 0)}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Cargo Admin.</p>
+                <p className="text-xs text-[#4C5760]">Cargo Admin.</p>
                 <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.cargo_administracion || 0)}</p>
               </div>
               <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">ITBIS (18%)</p>
+                <p className="text-xs text-[#4C5760]">ITBIS (18%)</p>
                 <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.itbis || 0)}</p>
               </div>
               <div className="bg-[#BA4A3A]/10 rounded-xl p-3 text-center">
-                <p className="text-xs text-[#5F6B72]">Total</p>
+                <p className="text-xs text-[#4C5760]">Total</p>
                 <p className="text-lg font-bold text-[#BA4A3A]">{formatCurrency(detailPurchase.total)}</p>
               </div>
             </div>
 
             <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[#5F6B72]">Fecha:</span><span className="text-[#39484F]">{formatDate(detailPurchase.purchase_date)}</span></div>
-              <div className="flex justify-between"><span className="text-[#5F6B72]">Proveedor:</span><span className="text-[#39484F]">{detailPurchase.supplier_name || "—"}</span></div>
-              <div className="flex justify-between"><span className="text-[#5F6B72]">Estado:</span><span className="text-[#39484F]">{detailPurchase.status}</span></div>
+              <div className="flex justify-between"><span className="text-[#4C5760]">Fecha:</span><span className="text-[#39484F]">{formatDate(detailPurchase.purchase_date)}</span></div>
+              <div className="flex justify-between"><span className="text-[#4C5760]">Proveedor:</span><span className="text-[#39484F]">{detailPurchase.supplier_name || "—"}</span></div>
+              <div className="flex justify-between"><span className="text-[#4C5760]">Estado:</span><span className="text-[#39484F]">{detailPurchase.status}</span></div>
               {detailPurchase.discount_amount > 0 && <div className="flex justify-between"><span className="text-[#D4A0A0]">Descuento:</span><span className="text-[#D4A0A0]">-{formatCurrency(detailPurchase.discount_amount)}</span></div>}
-              {(detailPurchase.impuesto_recogida || 0) > 0 && <div className="flex justify-between"><span className="text-[#5F6B72]">Impuesto Recogida:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.impuesto_recogida)}</span></div>}
-              {(detailPurchase.cargo_administracion || 0) > 0 && <div className="flex justify-between"><span className="text-[#5F6B72]">Cargo Admin.:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.cargo_administracion)}</span></div>}
-              {detailPurchase.notes && <div className="flex justify-between"><span className="text-[#5F6B72]">Notas:</span><span className="text-[#39484F]">{detailPurchase.notes}</span></div>}
+              {(detailPurchase.impuesto_recogida || 0) > 0 && <div className="flex justify-between"><span className="text-[#4C5760]">Impuesto Recogida:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.impuesto_recogida)}</span></div>}
+              {(detailPurchase.cargo_administracion || 0) > 0 && <div className="flex justify-between"><span className="text-[#4C5760]">Cargo Admin.:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.cargo_administracion)}</span></div>}
+              {detailPurchase.notes && <div className="flex justify-between"><span className="text-[#4C5760]">Notas:</span><span className="text-[#39484F]">{detailPurchase.notes}</span></div>}
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-[#5F6B72] uppercase mb-2">Productos</p>
+              <p className="text-xs font-semibold text-[#4C5760] uppercase mb-2">Productos</p>
               <div className="space-y-2">
                 {(detailPurchase.purchase_items || []).map((pi) => {
                   const hasItbis = pi.itbis !== false;
@@ -1447,7 +1447,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                     <div key={pi.id} className="bg-white rounded-xl p-3 border border-[#E0DAD3] flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-[#39484F]">{pi.products?.name || "—"}</p>
-                        <p className="text-xs text-[#5F6B72]">{pi.quantity} x {formatCurrency(pi.unit_cost)}{hasItbis ? ` + ITBIS ${formatCurrency(lineItbis)}` : " (sin ITBIS)"}</p>
+                        <p className="text-xs text-[#4C5760]">{pi.quantity} x {formatCurrency(pi.unit_cost)}{hasItbis ? ` + ITBIS ${formatCurrency(lineItbis)}` : " (sin ITBIS)"}</p>
                       </div>
                       <p className="text-sm font-bold text-[#39484F]">{formatCurrency(lineTotal)}</p>
                     </div>

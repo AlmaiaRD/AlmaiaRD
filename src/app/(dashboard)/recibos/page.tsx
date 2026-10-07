@@ -217,22 +217,22 @@ export default function RecibosPage() {
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
-            <p style="font-size:12px;color:#5F6B72;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
+            <p style="font-size:12px;color:#4C5760;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0FAF4;color:#6DB08A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
           <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.receipt_number)}</p>
-          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.receipt_date || data.created_at))}</p>
+          <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.receipt_date || data.created_at))}</p>
         </div>
       </div>
       <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">INFORMACI\u00d3N DEL PAGO</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Cliente:</span> ${sanitizeHtml(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
-          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Factura:</span> ${sanitizeHtml(data.invoices?.invoice_number) || "\u2014"}</p>
-          <p style="color:#39484F;margin:0;grid-column:1/-1;"><span style="color:#5F6B72;">M\u00e9todo de pago:</span> ${sanitizeHtml(methodLabel[data.payment_method as string] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${sanitizeHtml(data.bank_accounts.bank_name)}` : ""}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Cliente:</span> ${sanitizeHtml(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Factura:</span> ${sanitizeHtml(data.invoices?.invoice_number) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;grid-column:1/-1;"><span style="color:#4C5760;">M\u00e9todo de pago:</span> ${sanitizeHtml(methodLabel[data.payment_method as string] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${sanitizeHtml(data.bank_accounts.bank_name)}` : ""}</p>
         </div>
       </div>
 
@@ -260,14 +260,14 @@ export default function RecibosPage() {
       ` : ""}
       <div style="border-top:1px solid #E0DAD3;padding-top:16px;margin-bottom:20px;">
         <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
-          <span style="font-size:14px;color:#5F6B72;">Monto pagado</span>
+          <span style="font-size:14px;color:#4C5760;">Monto pagado</span>
           <span style="font-size:24px;font-weight:700;color:#86C7A3;">${sanitizeHtml(formatCurrency(Number(data.amount)))}</span>
         </div>
-        ${data.amount_in_words ? `<p style="font-size:11px;color:#5F6B72;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${sanitizeHtml(data.amount_in_words)}</p>` : ""}
+        ${data.amount_in_words ? `<p style="font-size:11px;color:#4C5760;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${sanitizeHtml(data.amount_in_words)}</p>` : ""}
       </div>
       ${data.concept ? `
         <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:10px;">
-          <p style="font-size:11px;color:#5F6B72;margin:0 0 4px;">Notas:</p>
+          <p style="font-size:11px;color:#4C5760;margin:0 0 4px;">Notas:</p>
           <p style="font-size:13px;color:#39484F;margin:0;">${sanitizeHtml(data.concept)}</p>
         </div>
       ` : ""}
@@ -275,7 +275,7 @@ export default function RecibosPage() {
         <p style="font-size:11px;font-style:italic;color:#BA4A3A;margin:0;">\u00a1Gracias por tu pago!</p>
         <div style="text-align:center;">
           ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:14px;color:#39484F;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
-          <p style="font-size:9px;color:#5F6B72;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+          <p style="font-size:9px;color:#4C5760;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
     `;
@@ -424,7 +424,7 @@ export default function RecibosPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-[30px] font-marca text-[#39484F]">Recibos</h1>
-          <p className="text-sm text-[#5F6B72] mt-1">Comprobantes de pago emitidos a clientes</p>
+          <p className="text-sm text-[#4C5760] mt-1">Comprobantes de pago emitidos a clientes</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
@@ -436,11 +436,11 @@ export default function RecibosPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
         <input
           type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar recibo por número, factura o cliente..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
         />
       </div>
 
@@ -466,14 +466,14 @@ export default function RecibosPage() {
           ))}
         </select>
         {(filterMonth || filterYear || filterStatus !== "all") && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus("all"); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus("all"); }} className="text-xs text-[#4C5760] hover:text-[#39484F] px-3">Limpiar filtros</button>
         )}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" /></div>
       ) : receiptSearchFiltered.length === 0 ? (
-        <div className="text-center py-16 text-[#5F6B72]">
+        <div className="text-center py-16 text-[#4C5760]">
           <Receipt size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay recibos registrados</p>
         </div>
@@ -483,14 +483,14 @@ export default function RecibosPage() {
             <table className="w-full border-separate border-spacing-y-2">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">No. Recibo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Factura</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#5F6B72] uppercase">Monto</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Método</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Estado</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Acciones</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">No. Recibo</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Cliente</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Factura</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#4C5760] uppercase">Monto</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Método</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Estado</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -499,7 +499,7 @@ export default function RecibosPage() {
                 return (
                   <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow">
                     <td className="px-4 py-3.5 text-sm font-medium text-[#39484F]">{rec.receipt_number}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5F6B72]">{formatDate(rec.receipt_date || rec.created_at)}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#4C5760]">{formatDate(rec.receipt_date || rec.created_at)}</td>
                     <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.invoices?.invoice_number || "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-[#39484F] text-right font-medium">{formatCurrency(rec.amount)}</td>
@@ -511,10 +511,10 @@ export default function RecibosPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="Ver"><Eye size={15} /></button>
-                        <button onClick={() => openEdit(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="Editar"><Edit2 size={15} /></button>
-                        <button onClick={() => handlePrintPdf(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="PDF"><Printer size={15} /></button>
-                        <button onClick={() => handlePrintJpg(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="JPG"><Download size={15} /></button>
+                        <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="Ver"><Eye size={15} /></button>
+                        <button onClick={() => openEdit(rec)} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="Editar"><Edit2 size={15} /></button>
+                        <button onClick={() => handlePrintPdf(rec)} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="PDF"><Printer size={15} /></button>
+                        <button onClick={() => handlePrintJpg(rec)} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="JPG"><Download size={15} /></button>
                         <button onClick={() => handleDelete(rec.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
                       </div>
                     </td>
@@ -534,11 +534,11 @@ export default function RecibosPage() {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-[#5F6B72]">Cliente</p>
+                <p className="text-xs text-[#4C5760]">Cliente</p>
                 <p className="text-sm font-medium text-[#39484F]">{selectedReceipt.clients?.full_name || selectedReceipt.invoices?.clients?.full_name || "—"}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-[#5F6B72]">Fecha</p>
+                <p className="text-xs text-[#4C5760]">Fecha</p>
                 <p className="text-sm text-[#39484F]">{formatDate(selectedReceipt.receipt_date || selectedReceipt.created_at)}</p>
               </div>
             </div>
@@ -584,12 +584,12 @@ export default function RecibosPage() {
             )}
 
             {selectedReceipt.amount_in_words && (
-              <p className="text-sm text-[#5F6B72] italic">Son: {selectedReceipt.amount_in_words}</p>
+              <p className="text-sm text-[#4C5760] italic">Son: {selectedReceipt.amount_in_words}</p>
             )}
 
             {selectedReceipt.concept && (
               <div>
-                <p className="text-xs text-[#5F6B72] mb-1">Notas</p>
+                <p className="text-xs text-[#4C5760] mb-1">Notas</p>
                 <p className="text-sm text-[#39484F] bg-[#F1E9DF] rounded-xl p-3">{selectedReceipt.concept}</p>
               </div>
             )}
@@ -680,7 +680,7 @@ export default function RecibosPage() {
               <input
                 type="number" step="0.01" value={editForm.amount}
                 onChange={(e) => setEditForm({ ...editForm, amount: Number(e.target.value) })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
@@ -688,7 +688,7 @@ export default function RecibosPage() {
               <select
                 value={editForm.payment_method}
                 onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as "CASH" | "TRANSFER" | "CARD", bank_account_id: "" })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -702,7 +702,7 @@ export default function RecibosPage() {
               <select
                 value={editForm.bank_account_id}
                 onChange={(e) => setEditForm({ ...editForm, bank_account_id: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -717,7 +717,7 @@ export default function RecibosPage() {
               value={editForm.concept} onChange={(e) => setEditForm({ ...editForm, concept: e.target.value })}
               rows={3}
               placeholder="Notas del recibo..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -737,7 +737,7 @@ export default function RecibosPage() {
             <select
               value={selectedInvoice}
               onChange={(e) => { setSelectedInvoice(e.target.value); setAmount(0); }}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             >
               <option value="">Seleccionar factura...</option>
               {pendingInvoices.map((inv: InvoiceRef) => {
@@ -766,7 +766,7 @@ export default function RecibosPage() {
             <input
               type="date" value={receiptDate}
               onChange={(e) => setReceiptDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             />
           </div>
 
@@ -776,7 +776,7 @@ export default function RecibosPage() {
               <input
                 type="number" step="0.01" value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
@@ -784,7 +784,7 @@ export default function RecibosPage() {
               <select
                 value={paymentMethod}
                 onChange={(e) => { setPaymentMethod(e.target.value as "CASH" | "TRANSFER" | "CARD"); setBankAccountId(""); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -799,7 +799,7 @@ export default function RecibosPage() {
               <select
                 value={bankAccountId}
                 onChange={(e) => setBankAccountId(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -814,7 +814,7 @@ export default function RecibosPage() {
             <textarea
               value={notes} onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
 

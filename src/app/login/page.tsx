@@ -44,17 +44,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5EFE9] flex flex-col">
+    <div className="min-h-screen bg-[#D8CBBF] flex flex-col">
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center">
-              <Flower2 size={22} className="text-[#BA4A3A]" />
+            <div className="w-10 h-10 rounded-full bg-[#39484F]/10 flex items-center justify-center">
+              <Flower2 size={22} className="text-[#39484F]" />
             </div>
             <div>
               <Wordmark
                 h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
-                pClassName="text-[10px] text-[#5F6B72] tracking-widest uppercase leading-tight"
+                pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
               />
             </div>
           </Link>
@@ -71,11 +71,11 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="bg-white rounded-3xl shadow-sm border border-[#E0DAD3] p-8">
             <div className="text-center mb-8">
-              <div className="w-14 h-14 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mx-auto mb-4">
-                <LogIn size={26} className="text-[#BA4A3A]" />
+              <div className="w-14 h-14 rounded-full bg-[#39484F]/10 flex items-center justify-center mx-auto mb-4">
+                <LogIn size={26} className="text-[#39484F]" />
               </div>
               <h2 className="text-xl font-bold text-[#39484F]">Inicia Sesión</h2>
-              <p className="text-sm text-[#5F6B72] mt-1">Accede al sistema de gestión</p>
+              <p className="text-sm text-[#4C5760] mt-1">Accede al sistema de gestión</p>
             </div>
 
             {error && (
@@ -89,7 +89,7 @@ export default function LoginPage() {
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Correo Electrónico</label>
                 <div className="relative">
-                  <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                  <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
                     type="email"
                     value={email}
@@ -106,7 +106,7 @@ export default function LoginPage() {
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Contraseña</label>
                 <div className="relative">
-                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -119,7 +119,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5F6B72] hover:text-[#39484F] transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4C5760] hover:text-[#39484F] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -140,8 +140,8 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 pt-6 border-t border-[#E0DAD3] text-center">
-              <p className="text-xs text-[#5F6B72]">
-                ¿No tienes cuenta? <button className="text-[#BA4A3A] font-medium hover:underline">Solicitar Acceso</button>
+              <p className="text-xs text-[#4C5760]">
+                ¿No tienes cuenta? <button className="text-[#39484F] font-medium hover:underline hover:text-[#BA4A3A]">Solicitar Acceso</button>
               </p>
             </div>
           </div>
