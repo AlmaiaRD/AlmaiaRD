@@ -2,6 +2,7 @@
 
 import { Flower2, ArrowRight, BarChart3, FileText, Package, Users, Shield, Receipt } from "lucide-react";
 import Link from "next/link";
+import Wordmark from "@/components/layout/Wordmark";
 
 const features = [
   { icon: FileText, label: "Facturación", desc: "Crea y gestiona facturas con descuentos y múltiples productos" },
@@ -21,10 +22,10 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-full bg-[#B8837E]/10 flex items-center justify-center">
               <Flower2 size={22} className="text-[#B8837E]" />
             </div>
-            <div>
-              <h1 className="text-[24px] font-marca text-[#5C3E35] leading-tight">ALMAIA</h1>
-              <p className="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight">Bienestar & Salud</p>
-            </div>
+            <Wordmark
+              h1ClassName="text-[24px] font-marca text-[#5C3E35] leading-tight"
+              pClassName="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight"
+            />
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="h-10 px-5 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center">

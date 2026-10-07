@@ -6,6 +6,7 @@ import { Flower2, Plus, LogOut, UserPlus, FileText, Receipt, ShoppingCart, Chevr
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import Wordmark from "@/components/layout/Wordmark";
 
 export default function Header() {
   const { signOut } = useAuth();
@@ -25,12 +26,10 @@ export default function Header() {
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Flower2 size={22} className="sm:w-7 sm:h-7 text-primary" />
           </div>
-          <div>
-            <h1 className="text-[24px] sm:text-[26px] font-marca text-foreground leading-tight tracking-wide">ALMAIA</h1>
-            <p className="text-[10px] sm:text-[11px] text-text-muted tracking-widest uppercase leading-tight font-medium">
-              Bienestar & Salud
-            </p>
-          </div>
+          <Wordmark
+            h1ClassName="text-[24px] sm:text-[26px] font-marca text-foreground leading-tight tracking-wide"
+            pClassName="text-[10px] sm:text-[11px] text-text-muted tracking-widest uppercase leading-tight font-medium"
+          />
         </Link>
 
         {/* Desktop Actions */}

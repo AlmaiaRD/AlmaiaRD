@@ -6,6 +6,7 @@ import { Flower2, LogIn, Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, Loader
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+import Wordmark from "@/components/layout/Wordmark";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -51,8 +52,10 @@ export default function LoginPage() {
               <Flower2 size={22} className="text-[#B8837E]" />
             </div>
             <div>
-              <h1 className="text-[24px] font-marca text-[#5C3E35] leading-tight">ALMAIA</h1>
-              <p className="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight">Bienestar & Salud</p>
+              <Wordmark
+                h1ClassName="text-[24px] font-marca text-[#5C3E35] leading-tight"
+                pClassName="text-[10px] text-[#9C8A82] tracking-widest uppercase leading-tight"
+              />
             </div>
           </Link>
           <Link
