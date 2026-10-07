@@ -60,7 +60,7 @@ export default function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Volver arriba"
       title="Volver arriba"
-      className="fixed z-[9998] w-11 h-11 rounded-full bg-[#5C3E35] text-white shadow-xl flex items-center justify-center hover:bg-[#3F2A24] hover:scale-105 transition-all duration-200"
+      className="fixed z-[9998] w-11 h-11 rounded-full bg-[#39484F] text-white shadow-xl flex items-center justify-center hover:bg-[#3F2A24] hover:scale-105 transition-all duration-200"
       style={{ right: pos.right, bottom: pos.bottom }}
     >
       <ArrowUp size={20} />

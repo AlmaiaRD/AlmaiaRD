@@ -55,7 +55,7 @@ function statusColor(status: string) {
   if (status === "Pagada" || status === "Emitido" || status === "Registrada") return "text-green-600 bg-green-50";
   if (status === "Pendiente") return "text-amber-600 bg-amber-50";
   if (status === "Parcial") return "text-blue-600 bg-blue-50";
-  return "text-[#9C8A82] bg-[#FAF6F0]";
+  return "text-[#5F6B72] bg-[#F1E9DF]";
 }
 
 export default function DocumentosPage() {
@@ -132,14 +132,14 @@ export default function DocumentosPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
+        <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver al Dashboard
         </button>
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">Centro de Documentos</h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Facturas, recibos, compras y guías de ayuda</p>
+        <h1 className="text-[30px] font-marca text-[#39484F]">Centro de Documentos</h1>
+        <p className="text-sm text-[#5F6B72] mt-1">Facturas, recibos, compras y guías de ayuda</p>
       </div>
 
-      <div className="border-b border-[#E8E0D8] mb-6">
+      <div className="border-b border-[#E0DAD3] mb-6">
         <div className="flex gap-6">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -149,8 +149,8 @@ export default function DocumentosPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? "text-[#B8837E] border-b-2 border-[#B8837E]"
-                    : "text-[#9C8A82] hover:text-[#5C3E35]"
+                    ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
+                    : "text-[#5F6B72] hover:text-[#39484F]"
                 }`}
               >
                 <Icon size={16} />
@@ -167,29 +167,29 @@ export default function DocumentosPage() {
             {FILTERS.map((f) => (
               <button key={f} onClick={() => setCurrentFilter(f)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                  currentFilter === f ? "bg-[#B8837E] text-white shadow-sm" : "bg-white text-[#9C8A82] border border-[#E8E0D8] hover:text-[#5C3E35]"
+                  currentFilter === f ? "bg-[#BA4A3A] text-white shadow-sm" : "bg-white text-[#5F6B72] border border-[#E0DAD3] hover:text-[#39484F]"
                 }`}>
                 {f}
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  currentFilter === f ? "bg-white/20" : "bg-[#FAF6F0]"
+                  currentFilter === f ? "bg-white/20" : "bg-[#F1E9DF]"
                 }`}>{counts[f]}</span>
               </button>
             ))}
           </div>
 
           <div className="relative mb-6">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por número, cliente o proveedor..."
-              className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <FileText size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">{searchQuery || currentFilter !== "Todos" ? "Sin resultados" : "No hay documentos"}</p>
             </div>
@@ -198,32 +198,32 @@ export default function DocumentosPage() {
               {filtered.map((doc) => {
                 const Icon = typeIcon(doc.type);
                 return (
-                  <div key={doc.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all flex items-center justify-between">
+                  <div key={doc.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${typeColor(doc.type)}`}>
                         <Icon size={18} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{doc.number}</p>
-                        <p className="text-xs text-[#9C8A82]">{doc.client || doc.supplier} &middot; {formatDate(doc.date)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{doc.number}</p>
+                        <p className="text-xs text-[#5F6B72]">{doc.client || doc.supplier} &middot; {formatDate(doc.date)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(doc.total)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{formatCurrency(doc.total)}</p>
                         <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${statusColor(doc.status)}`}>{doc.status}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleView(doc)}
-                          className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all"
+                          className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                           title="Ver detalle"
                         >
                           <Eye size={16} />
                         </button>
                         <button
                           onClick={() => handleDownload(doc)}
-                          className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all"
+                          className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                           title="Descargar"
                         >
                           <Download size={16} />
@@ -242,10 +242,10 @@ export default function DocumentosPage() {
         <>
           {loadingGuides ? (
             <div className="flex justify-center py-16">
-              <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : guides.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <BookOpen size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay guías disponibles</p>
             </div>
@@ -253,22 +253,22 @@ export default function DocumentosPage() {
             <div className="space-y-6">
               {guides.map((group) => (
                 <div key={group.id}>
-                  <h3 className="text-sm font-semibold text-[#5C3E35] mb-3 uppercase tracking-wider">{group.label}</h3>
+                  <h3 className="text-sm font-semibold text-[#39484F] mb-3 uppercase tracking-wider">{group.label}</h3>
                   <div className="space-y-2">
                     {group.files.map((file) => {
                       const isExpanded = expandedGuides.has(file.id);
                       return (
-                        <div key={file.id} className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] overflow-hidden">
+                        <div key={file.id} className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
                           <button
                             onClick={() => toggleGuide(file.id)}
-                            className="w-full flex items-center justify-between p-4 text-left hover:bg-[#FAF6F0] transition-colors"
+                            className="w-full flex items-center justify-between p-4 text-left hover:bg-[#F1E9DF] transition-colors"
                           >
-                            <span className="text-sm font-medium text-[#5C3E35]">{file.label}</span>
-                            {isExpanded ? <ChevronDown size={16} className="text-[#9C8A82]" /> : <ChevronRight size={16} className="text-[#9C8A82]" />}
+                            <span className="text-sm font-medium text-[#39484F]">{file.label}</span>
+                            {isExpanded ? <ChevronDown size={16} className="text-[#5F6B72]" /> : <ChevronRight size={16} className="text-[#5F6B72]" />}
                           </button>
                           {isExpanded && (
                             <div className="px-4 pb-4">
-                              <div className="prose prose-sm max-w-none text-[#5C3E35] whitespace-pre-wrap font-mono text-xs leading-relaxed bg-[#FAF6F0] rounded-xl p-4 overflow-x-auto">
+                              <div className="prose prose-sm max-w-none text-[#39484F] whitespace-pre-wrap font-mono text-xs leading-relaxed bg-[#F1E9DF] rounded-xl p-4 overflow-x-auto">
                                 {file.content}
                               </div>
                             </div>

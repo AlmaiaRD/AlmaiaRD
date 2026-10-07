@@ -212,27 +212,27 @@ export default function RecibosPage() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BA4A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
-            <p style="font-size:12px;color:#9C8A82;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:12px;color:#5F6B72;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
           <span style="display:inline-block;background:#F0FAF4;color:#6DB08A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${sanitizeHtml(data.receipt_number)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.receipt_date || data.created_at))}</p>
+          <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.receipt_number)}</p>
+          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.receipt_date || data.created_at))}</p>
         </div>
       </div>
-      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">INFORMACI\u00d3N DEL PAGO</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Cliente:</span> ${sanitizeHtml(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Factura:</span> ${sanitizeHtml(data.invoices?.invoice_number) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;grid-column:1/-1;"><span style="color:#9C8A82;">M\u00e9todo de pago:</span> ${sanitizeHtml(methodLabel[data.payment_method as string] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${sanitizeHtml(data.bank_accounts.bank_name)}` : ""}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Cliente:</span> ${sanitizeHtml(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Factura:</span> ${sanitizeHtml(data.invoices?.invoice_number) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;grid-column:1/-1;"><span style="color:#5F6B72;">M\u00e9todo de pago:</span> ${sanitizeHtml(methodLabel[data.payment_method as string] || data.payment_method)}${data.bank_accounts ? ` &mdash; ${sanitizeHtml(data.bank_accounts.bank_name)}` : ""}</p>
         </div>
       </div>
 
@@ -240,42 +240,42 @@ export default function RecibosPage() {
         <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
           <thead>
             <tr style="background:#F0EBE3;">
-              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
             </tr>
           </thead>
           <tbody>
             ${((data.invoices as { invoice_items: ReceiptInvoiceItem[] }).invoice_items).map((item: ReceiptInvoiceItem) => `
               <tr style="border-bottom:1px solid #F0EBE3;">
-                <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}</td>
-                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${formatCurrency(Number(item.unit_price))}</td>
-                <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${formatCurrency(Number(item.line_total))}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#39484F;">${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${item.quantity}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${formatCurrency(Number(item.unit_price))}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#39484F;">${formatCurrency(Number(item.line_total))}</td>
               </tr>
             `).join("")}
           </tbody>
         </table>
       ` : ""}
-      <div style="border-top:1px solid #E8E0D8;padding-top:16px;margin-bottom:20px;">
+      <div style="border-top:1px solid #E0DAD3;padding-top:16px;margin-bottom:20px;">
         <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:16px;">
-          <span style="font-size:14px;color:#9C8A82;">Monto pagado</span>
+          <span style="font-size:14px;color:#5F6B72;">Monto pagado</span>
           <span style="font-size:24px;font-weight:700;color:#86C7A3;">${sanitizeHtml(formatCurrency(Number(data.amount)))}</span>
         </div>
-        ${data.amount_in_words ? `<p style="font-size:11px;color:#9C8A82;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${sanitizeHtml(data.amount_in_words)}</p>` : ""}
+        ${data.amount_in_words ? `<p style="font-size:11px;color:#5F6B72;font-style:italic;text-align:right;margin:4px 0 0;">Son: ${sanitizeHtml(data.amount_in_words)}</p>` : ""}
       </div>
       ${data.concept ? `
-        <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:10px;">
-          <p style="font-size:11px;color:#9C8A82;margin:0 0 4px;">Notas:</p>
-          <p style="font-size:13px;color:#5C3E35;margin:0;">${sanitizeHtml(data.concept)}</p>
+        <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:10px;">
+          <p style="font-size:11px;color:#5F6B72;margin:0 0 4px;">Notas:</p>
+          <p style="font-size:13px;color:#39484F;margin:0;">${sanitizeHtml(data.concept)}</p>
         </div>
       ` : ""}
-      <div style="border-top:1px solid #E8E0D8;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">
-        <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu pago!</p>
+      <div style="border-top:1px solid #E0DAD3;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <p style="font-size:11px;font-style:italic;color:#BA4A3A;margin:0;">\u00a1Gracias por tu pago!</p>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:14px;color:#5C3E35;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
-          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:14px;color:#39484F;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
+          <p style="font-size:9px;color:#5F6B72;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
     `;
@@ -423,8 +423,8 @@ export default function RecibosPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Recibos</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Comprobantes de pago emitidos a clientes</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Recibos</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Comprobantes de pago emitidos a clientes</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
@@ -436,44 +436,44 @@ export default function RecibosPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
         <input
           type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar recibo por número, factura o cliente..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
         />
       </div>
 
       <div className="flex gap-3 mb-6 flex-wrap">
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "all" | "paid" | "pending")}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
           <option value="all">Todos los estados</option>
           <option value="paid">Pagados</option>
           <option value="pending">Pendientes</option>
         </select>
         <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
           <option value="">Todos los meses</option>
           {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map((m, i) => (
             <option key={i} value={String(i + 1).padStart(2, "0")}>{m}</option>
           ))}
         </select>
         <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30">
           <option value="">Todos los años</option>
           {[2024, 2025, 2026, 2027].map((y) => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
         {(filterMonth || filterYear || filterStatus !== "all") && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus("all"); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus("all"); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
         )}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" /></div>
       ) : receiptSearchFiltered.length === 0 ? (
-        <div className="text-center py-16 text-[#9C8A82]">
+        <div className="text-center py-16 text-[#5F6B72]">
           <Receipt size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay recibos registrados</p>
         </div>
@@ -483,26 +483,26 @@ export default function RecibosPage() {
             <table className="w-full border-separate border-spacing-y-2">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">No. Recibo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Factura</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#9C8A82] uppercase">Monto</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Método</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#9C8A82] uppercase">Acciones</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">No. Recibo</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Cliente</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Factura</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#5F6B72] uppercase">Monto</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Método</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Estado</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#5F6B72] uppercase">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {receiptSearchFiltered.map((rec: ReceiptRow) => {
                 const m = methodMap[rec.payment_method as string] || methodMap.CASH;
                 return (
-                  <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow">
-                    <td className="px-4 py-3.5 text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#9C8A82]">{formatDate(rec.receipt_date || rec.created_at)}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5C3E35]">{rec.invoices?.invoice_number || "—"}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#5C3E35] text-right font-medium">{formatCurrency(rec.amount)}</td>
+                  <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow">
+                    <td className="px-4 py-3.5 text-sm font-medium text-[#39484F]">{rec.receipt_number}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#5F6B72]">{formatDate(rec.receipt_date || rec.created_at)}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.invoices?.invoice_number || "—"}</td>
+                    <td className="px-4 py-3.5 text-sm text-[#39484F] text-right font-medium">{formatCurrency(rec.amount)}</td>
                     <td className="px-4 py-3.5 text-center"><Badge variant={m.variant}>{m.label}</Badge></td>
                     <td className="px-4 py-3.5 text-center">
                       <Badge variant={rec.invoices?.status === "PAID" ? "success" : "warning"}>
@@ -511,10 +511,10 @@ export default function RecibosPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="Ver"><Eye size={15} /></button>
-                        <button onClick={() => openEdit(rec)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="Editar"><Edit2 size={15} /></button>
-                        <button onClick={() => handlePrintPdf(rec)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="PDF"><Printer size={15} /></button>
-                        <button onClick={() => handlePrintJpg(rec)} className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg" title="JPG"><Download size={15} /></button>
+                        <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="Ver"><Eye size={15} /></button>
+                        <button onClick={() => openEdit(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="Editar"><Edit2 size={15} /></button>
+                        <button onClick={() => handlePrintPdf(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="PDF"><Printer size={15} /></button>
+                        <button onClick={() => handlePrintJpg(rec)} className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg" title="JPG"><Download size={15} /></button>
                         <button onClick={() => handleDelete(rec.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
                       </div>
                     </td>
@@ -534,23 +534,23 @@ export default function RecibosPage() {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-[#9C8A82]">Cliente</p>
-                <p className="text-sm font-medium text-[#5C3E35]">{selectedReceipt.clients?.full_name || selectedReceipt.invoices?.clients?.full_name || "—"}</p>
+                <p className="text-xs text-[#5F6B72]">Cliente</p>
+                <p className="text-sm font-medium text-[#39484F]">{selectedReceipt.clients?.full_name || selectedReceipt.invoices?.clients?.full_name || "—"}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-[#9C8A82]">Fecha</p>
-                <p className="text-sm text-[#5C3E35]">{formatDate(selectedReceipt.receipt_date || selectedReceipt.created_at)}</p>
+                <p className="text-xs text-[#5F6B72]">Fecha</p>
+                <p className="text-sm text-[#39484F]">{formatDate(selectedReceipt.receipt_date || selectedReceipt.created_at)}</p>
               </div>
             </div>
 
             <div className="bg-[#F0FAF4] rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-[#6DB08A]">Factura asociada</span>
-                <span className="text-[#5C3E35] font-medium">{selectedReceipt.invoices?.invoice_number || "—"}</span>
+                <span className="text-[#39484F] font-medium">{selectedReceipt.invoices?.invoice_number || "—"}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#6DB08A]">Método de pago</span>
-                <span className="text-[#5C3E35]" style={{whiteSpace:"nowrap"}}>{methodLabel[selectedReceipt.payment_method as string] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
+                <span className="text-[#39484F]" style={{whiteSpace:"nowrap"}}>{methodLabel[selectedReceipt.payment_method as string] || selectedReceipt.payment_method}{selectedReceipt.bank_accounts ? ` — ${selectedReceipt.bank_accounts.bank_name}` : ""}</span>
               </div>
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-[#86C7A3]/30">
                 <span>Monto pagado</span>
@@ -563,19 +563,19 @@ export default function RecibosPage() {
                 <table className="w-full text-sm mb-5">
                   <thead>
                     <tr className="bg-[#F0EBE3]">
-                      <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripci\u00f3n / Producto</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
+                      <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripci\u00f3n / Producto</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
+                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(selectedReceipt.invoices?.invoice_items || []).map((item: ReceiptInvoiceItem, i: number) => (
                       <tr key={i} className="border-b border-[#F0EBE3]">
-                        <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
-                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
+                        <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
+                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#39484F]">{formatCurrency(Number(item.line_total))}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -584,27 +584,27 @@ export default function RecibosPage() {
             )}
 
             {selectedReceipt.amount_in_words && (
-              <p className="text-sm text-[#9C8A82] italic">Son: {selectedReceipt.amount_in_words}</p>
+              <p className="text-sm text-[#5F6B72] italic">Son: {selectedReceipt.amount_in_words}</p>
             )}
 
             {selectedReceipt.concept && (
               <div>
-                <p className="text-xs text-[#9C8A82] mb-1">Notas</p>
-                <p className="text-sm text-[#5C3E35] bg-[#FAF6F0] rounded-xl p-3">{selectedReceipt.concept}</p>
+                <p className="text-xs text-[#5F6B72] mb-1">Notas</p>
+                <p className="text-sm text-[#39484F] bg-[#F1E9DF] rounded-xl p-3">{selectedReceipt.concept}</p>
               </div>
             )}
 
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => handlePrintPdf(selectedReceipt)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+              <button onClick={() => handlePrintPdf(selectedReceipt)} className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <Printer size={18} /> PDF
               </button>
-              <button onClick={() => { setShowDetail(false); handlePrintJpg(selectedReceipt); }} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+              <button onClick={() => { setShowDetail(false); handlePrintJpg(selectedReceipt); }} className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <Download size={18} /> JPG
               </button>
               {(selectedReceipt.clients?.email || selectedReceipt.invoices?.clients?.email) && (
                 <button
                   onClick={() => setDraftModal({ type: "email" })}
-                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                  className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2"
                 >
                   <Mail size={18} /> Email
                 </button>
@@ -612,7 +612,7 @@ export default function RecibosPage() {
               {(selectedReceipt.clients?.phone || selectedReceipt.invoices?.clients?.phone) && (
                 <button
                   onClick={() => setDraftModal({ type: "whatsapp" })}
-                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                  className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={18} /> WhatsApp
                 </button>
@@ -676,19 +676,19 @@ export default function RecibosPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Monto</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
               <input
                 type="number" step="0.01" value={editForm.amount}
                 onChange={(e) => setEditForm({ ...editForm, amount: Number(e.target.value) })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Método de pago</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
               <select
                 value={editForm.payment_method}
                 onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as "CASH" | "TRANSFER" | "CARD", bank_account_id: "" })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -698,11 +698,11 @@ export default function RecibosPage() {
           </div>
           {editForm.payment_method === "TRANSFER" && (
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cuenta bancaria destino</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
               <select
                 value={editForm.bank_account_id}
                 onChange={(e) => setEditForm({ ...editForm, bank_account_id: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -712,16 +712,16 @@ export default function RecibosPage() {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
             <textarea
               value={editForm.concept} onChange={(e) => setEditForm({ ...editForm, concept: e.target.value })}
               rows={3}
               placeholder="Notas del recibo..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => { setShowEditModal(false); setSelectedReceipt(null); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
+            <button onClick={() => { setShowEditModal(false); setSelectedReceipt(null); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
             <button onClick={handleEditSave} disabled={saving} className="flex-1 h-12 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <Save size={18} /> {saving ? "Guardando..." : "Guardar Cambios"}
             </button>
@@ -733,11 +733,11 @@ export default function RecibosPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Registrar Pago" subtitle={selectedInvoiceData?.clients?.full_name ? `Cliente: ${selectedInvoiceData.clients.full_name}` : undefined} wide>
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Factura</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
             <select
               value={selectedInvoice}
               onChange={(e) => { setSelectedInvoice(e.target.value); setAmount(0); }}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             >
               <option value="">Seleccionar factura...</option>
               {pendingInvoices.map((inv: InvoiceRef) => {
@@ -755,36 +755,36 @@ export default function RecibosPage() {
             <div className="bg-[#F0FAF4] rounded-xl p-4 text-sm space-y-1">
               <div className="flex justify-between"><span className="text-[#6DB08A]">Total factura</span><span>{formatCurrency(selectedInvoiceData.total as number)}</span></div>
               <div className="flex justify-between"><span className="text-[#6DB08A]">Pagado</span><span>{formatCurrency(selectedInvoiceData.amount_paid || 0)}</span></div>
-              <div className="flex justify-between font-bold text-[#5C3E35] pt-1 border-t border-[#86C7A3]/30">
+              <div className="flex justify-between font-bold text-[#39484F] pt-1 border-t border-[#86C7A3]/30">
                 <span>Saldo pendiente</span><span>{formatCurrency(balanceDue)}</span>
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha del recibo</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha del recibo</label>
             <input
               type="date" value={receiptDate}
               onChange={(e) => setReceiptDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Monto</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
               <input
                 type="number" step="0.01" value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Método de pago</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => { setPaymentMethod(e.target.value as "CASH" | "TRANSFER" | "CARD"); setBankAccountId(""); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -795,11 +795,11 @@ export default function RecibosPage() {
 
           {paymentMethod === "TRANSFER" && (
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cuenta bancaria destino</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
               <select
                 value={bankAccountId}
                 onChange={(e) => setBankAccountId(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -810,16 +810,16 @@ export default function RecibosPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas (opcional)</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
             <textarea
               value={notes} onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
+            <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
             <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#86C7A3] text-white rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <Save size={18} /> {saving ? "Guardando..." : "Registrar Pago"}
             </button>

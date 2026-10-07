@@ -173,11 +173,11 @@ export default function ReportesPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
+        <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver al Dashboard
         </button>
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">Reportes</h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Informes comerciales y financieros</p>
+        <h1 className="text-[30px] font-marca text-[#39484F]">Reportes</h1>
+        <p className="text-sm text-[#5F6B72] mt-1">Informes comerciales y financieros</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -186,40 +186,40 @@ export default function ReportesPage() {
             key={r.id}
             onClick={() => { setSelectedReport(r.id); setPreviewData(null); }}
             className={`bg-white rounded-2xl p-5 shadow-sm border text-left transition-all hover:shadow-md ${
-              selectedReport === r.id ? "border-[#B8837E] ring-2 ring-[#B8837E]/20" : "border-[#E8E0D8]"
+              selectedReport === r.id ? "border-[#BA4A3A] ring-2 ring-[#BA4A3A]/20" : "border-[#E0DAD3]"
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${r.color}`}>
               <r.icon size={20} />
             </div>
-            <h3 className="text-sm font-semibold text-[#5C3E35]">{r.label}</h3>
-            <p className="text-xs text-[#9C8A82] mt-1">{r.desc}</p>
+            <h3 className="text-sm font-semibold text-[#39484F]">{r.label}</h3>
+            <p className="text-xs text-[#5F6B72] mt-1">{r.desc}</p>
           </button>
         ))}
       </div>
 
       {activeReport && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
-          <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">{activeReport.label}</h3>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
+          <h3 className="text-sm font-semibold text-[#39484F] mb-4">{activeReport.label}</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Desde</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Desde</label>
               <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPreviewData(null); }}
-                className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Hasta</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Hasta</label>
               <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPreviewData(null); }}
-                className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex gap-3 mb-4">
             <button onClick={handlePreview} disabled={generating}
-              className="flex items-center gap-2 border border-[#B8837E] text-[#B8837E] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B8837E]/5 transition-all disabled:opacity-50">
+              className="flex items-center gap-2 border border-[#BA4A3A] text-[#BA4A3A] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/5 transition-all disabled:opacity-50">
               <Eye size={16} /> {generating ? "Cargando..." : "Vista Previa"}
             </button>
             <button onClick={handleDownload} disabled={generating}
-              className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">
+              className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">
               <Download size={16} /> Descargar Excel
             </button>
           </div>
@@ -227,13 +227,13 @@ export default function ReportesPage() {
           {previewData && (
             <div className="overflow-x-auto border-t border-[#F0EBE3] pt-4">
               {previewData.rows.length === 0 ? (
-                <p className="text-center text-sm text-[#9C8A82] py-8">Sin datos para el período seleccionado</p>
+                <p className="text-center text-sm text-[#5F6B72] py-8">Sin datos para el período seleccionado</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr>
                       {previewData.columns.map((col) => (
-                        <th key={col} className="px-3 py-2 text-left text-xs font-semibold text-[#9C8A82] uppercase border-b border-[#F0EBE3]">{col}</th>
+                        <th key={col} className="px-3 py-2 text-left text-xs font-semibold text-[#5F6B72] uppercase border-b border-[#F0EBE3]">{col}</th>
                       ))}
                     </tr>
                   </thead>
@@ -241,7 +241,7 @@ export default function ReportesPage() {
                     {previewData.rows.map((row, i) => (
                       <tr key={i} className="border-b border-[#F0EBE3] last:border-0">
                         {Object.values(row).map((val, j) => (
-                          <td key={j} className="px-3 py-2 text-[#5C3E35]">{String(val)}</td>
+                          <td key={j} className="px-3 py-2 text-[#39484F]">{String(val)}</td>
                         ))}
                       </tr>
                     ))}

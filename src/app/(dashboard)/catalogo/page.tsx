@@ -587,15 +587,15 @@ export default function CatalogoPage() {
 
       const drawFooter = () => {
         let fy = PH - 20;
-        sc("#5C3E35"); doc.setFont("Italiana", "normal"); doc.setFontSize(8);
+        sc("#39484F"); doc.setFont("Italiana", "normal"); doc.setFontSize(8);
         doc.text(bizName.toUpperCase(), PW / 2, fy, { align: "center" });
         fy += 4;
-        sc("#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        sc("#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
         doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, fy, { align: "center" });
         fy += 3;
         doc.text(`Tel: ${bizPhone || "N/D"}${bizEmail ? ` | Email: ${bizEmail}` : ""}`, PW / 2, fy, { align: "center" });
         fy += 4;
-        sc("#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
+        sc("#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
         doc.text(`Generado: ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, fy, { align: "center" });
       };
 
@@ -613,9 +613,9 @@ export default function CatalogoPage() {
         } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
         const hCenterY = hTop + hLogoH / 2;
         const hTextX = M + hLogoW + 4;
-        sc("#5C3E35"); doc.setFont("Italiana", "normal"); doc.setFontSize(22);
+        sc("#39484F"); doc.setFont("Italiana", "normal"); doc.setFontSize(22);
         doc.text(bizName.toUpperCase(), hTextX, hCenterY);
-        sc("#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        sc("#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
         const hy = hLogoBottom + 7;
         doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
@@ -625,22 +625,22 @@ export default function CatalogoPage() {
       const drawEntry = async (p: CatalogProduct, startY: number): Promise<number> => {
         let y = startY;
         const priceClient = catalogPdfProductPrice(p);
-        sc("#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+        sc("#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
         const nameLines = doc.splitTextToSize(p.name || "Producto", CW * 0.65);
         doc.text(nameLines, M, y + 3, { align: "left" });
         const nameH = nameLines.length * 5.5;
 
-        sc("#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        sc("#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
-        sc("#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+        sc("#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
         doc.text(formatCurrency(priceClient), PW - M, y + 4, { align: "right" });
-        sc("#9C8A82"); doc.setFontSize(5.5);
+        sc("#5F6B72"); doc.setFontSize(5.5);
         doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
 
         const sub = p.subbrands?.name;
         const cat = p.categories?.name;
         if (sub || cat) {
-          sc("#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          sc("#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
           doc.text([sub, cat].filter(Boolean).join(" · "), M, y + nameH + 2);
         }
 
@@ -673,9 +673,9 @@ export default function CatalogoPage() {
 
         let textY = photoY;
         if (p.description) {
-          sc("#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+          sc("#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
           doc.text("DESCRIPCIÓN", textX, textY); textY += 4;
-          sc("#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+          sc("#39484F"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
           const descLines = doc.splitTextToSize(p.description, textW - 2) as string[];
           for (const dl of descLines) { doc.text(dl, textX, textY); textY += 4; }
           textY += 3;
@@ -683,9 +683,9 @@ export default function CatalogoPage() {
         if (p.benefits) {
           const benefitList = String(p.benefits).split("\n").filter(Boolean);
           if (benefitList.length > 0) {
-            sc("#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+            sc("#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
             doc.text("BENEFICIOS", textX, textY); textY += 4;
-            sc("#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+            sc("#39484F"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
             for (const ben of benefitList) {
               const bLines = doc.splitTextToSize(`• ${ben}`, textW - 4) as string[];
               for (const bl of bLines) { doc.text(bl, textX + 1, textY); textY += 3.5; }
@@ -766,41 +766,41 @@ export default function CatalogoPage() {
     <PageContainer>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Catálogo de Productos</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Base de datos de productos Amway</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Catálogo de Productos</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Base de datos de productos Amway</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => setFilterBundles(!filterBundles)}
-            className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${filterBundles ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]" : "border-[#E8E0D8] text-[#9C8A82] hover:bg-[#FAF6F0]"}`}
+            className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${filterBundles ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]" : "border-[#E0DAD3] text-[#5F6B72] hover:bg-[#F1E9DF]"}`}
           >
             <Boxes size={18} /> {filterBundles ? "Ver todos" : "Solo bundles"}
           </button>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showArchived ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]" : "border-[#E8E0D8] text-[#9C8A82] hover:bg-[#FAF6F0]"}`}
+            className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showArchived ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]" : "border-[#E0DAD3] text-[#5F6B72] hover:bg-[#F1E9DF]"}`}
           >
             <Archive size={18} /> {showArchived ? "Ocultar archivados" : "Ver archivados"}
           </button>
-          <button onClick={() => router.push("/recomendaciones")} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+          <button onClick={() => router.push("/recomendaciones")} className="flex items-center gap-2 bg-white border border-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all duration-200">
             <Brain size={18} /> IA Recomendaciones
           </button>
-          <button onClick={handleImportPdf} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+          <button onClick={handleImportPdf} className="flex items-center gap-2 bg-white border border-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all duration-200">
             <Upload size={18} /> Importar PDF
           </button>
-          <button onClick={openBundleNew} className="flex items-center gap-2 bg-white border border-[#B8837E]/50 text-[#B8837E] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 transition-all duration-200">
+          <button onClick={openBundleNew} className="flex items-center gap-2 bg-white border border-[#BA4A3A]/50 text-[#BA4A3A] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/10 transition-all duration-200">
             <PackagePlus size={18} /> Crear Bundle
           </button>
-          <button onClick={() => setShowReviewTool(true)} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+          <button onClick={() => setShowReviewTool(true)} className="flex items-center gap-2 bg-white border border-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all duration-200">
             <FileCheck2 size={18} /> Revisar descripciones
           </button>
-          <button onClick={openCatalogPdfModal} className="flex items-center gap-2 bg-white border border-[#B8837E]/50 text-[#B8837E] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 transition-all duration-200">
+          <button onClick={openCatalogPdfModal} className="flex items-center gap-2 bg-white border border-[#BA4A3A]/50 text-[#BA4A3A] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/10 transition-all duration-200">
             <FileDown size={18} /> Catálogo PDF
           </button>
-          <button onClick={openCatalogsList} className="flex items-center gap-2 bg-white border border-[#E8E0D8] text-[#5C3E35] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all duration-200">
+          <button onClick={openCatalogsList} className="flex items-center gap-2 bg-white border border-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all duration-200">
             <Archive size={18} /> Mis catálogos
           </button>
-          <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm">
+          <button onClick={openNew} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all duration-200 shadow-sm">
             <Plus size={18} /> Nuevo Producto
           </button>
         </div>
@@ -810,12 +810,12 @@ export default function CatalogoPage() {
 
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6">
         <div className="relative flex-1 min-w-[220px]">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar producto por nombre o código..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar producto por nombre o código..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
         </div>
         {settings && (
-          <div className="flex items-center gap-2 px-4 h-12 rounded-xl border border-[#E8E0D8] bg-white text-sm">
-            <span className="text-[#9C8A82] whitespace-nowrap">Nutrilite ITBIS</span>
+          <div className="flex items-center gap-2 px-4 h-12 rounded-xl border border-[#E0DAD3] bg-white text-sm">
+            <span className="text-[#5F6B72] whitespace-nowrap">Nutrilite ITBIS</span>
             <button
               type="button"
               onClick={async () => {
@@ -825,46 +825,46 @@ export default function CatalogoPage() {
                 if (error) { toast.error("Error al guardar"); setSettings(settings); }
                 else toast.success(newVal ? "ITBIS activado para Nutrilite" : "ITBIS desactivado para Nutrilite");
               }}
-              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${settings.nutrilite_itbis_enabled ? "bg-[#B8837E]" : "bg-gray-300"}`}
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${settings.nutrilite_itbis_enabled ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
             >
               <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.nutrilite_itbis_enabled ? "translate-x-6" : "translate-x-0.5"}`} />
             </button>
           </div>
         )}
-        <button onClick={() => setShowFilters(!showFilters)} className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showFilters || filterSubbrand || filterCategory ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]" : "border-[#E8E0D8] text-[#9C8A82] hover:bg-[#FAF6F0]"}`}>
+        <button onClick={() => setShowFilters(!showFilters)} className={`h-12 px-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${showFilters || filterSubbrand || filterCategory ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]" : "border-[#E0DAD3] text-[#5F6B72] hover:bg-[#F1E9DF]"}`}>
           <Filter size={18} /> Filtros
         </button>
       </div>
 
       {showFilters && (
-        <div className="flex gap-4 mb-6 p-4 bg-white rounded-2xl border border-[#E8E0D8]">
+        <div className="flex gap-4 mb-6 p-4 bg-white rounded-2xl border border-[#E0DAD3]">
           <div className="flex-1">
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1 flex items-center gap-1">
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1 flex items-center gap-1">
               Submarca
-              <button onClick={() => setShowManageSubbrands(true)} className="text-[#B8837E] hover:text-[#9A6B66]" title="Gestionar submarcas">
+              <button onClick={() => setShowManageSubbrands(true)} className="text-[#BA4A3A] hover:text-[#9C382A]" title="Gestionar submarcas">
                 <SettingsIcon size={14} />
               </button>
             </label>
             <select value={filterSubbrand} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("subbrand"); setShowNewSubbrand(true); return; }
               setFilterSubbrand(e.target.value);
-            }} className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Todas</option>
               {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               <option value="__new__">+ Otra...</option>
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1 flex items-center gap-1">
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1 flex items-center gap-1">
               Categoría
-              <button onClick={() => setShowManageCategories(true)} className="text-[#B8837E] hover:text-[#9A6B66]" title="Gestionar categorías">
+              <button onClick={() => setShowManageCategories(true)} className="text-[#BA4A3A] hover:text-[#9C382A]" title="Gestionar categorías">
                 <SettingsIcon size={14} />
               </button>
             </label>
             <select value={filterCategory} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("category"); setShowNewCategory(true); return; }
               setFilterCategory(e.target.value);
-            }} className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Todas</option>
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               <option value="__new__">+ Otra...</option>
@@ -874,9 +874,9 @@ export default function CatalogoPage() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
       ) : products.length === 0 ? (
-        <div className="text-center py-16 text-[#9C8A82]"><BookOpen size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">No hay productos registrados</p></div>
+        <div className="text-center py-16 text-[#5F6B72]"><BookOpen size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">No hay productos registrados</p></div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => {
@@ -884,10 +884,10 @@ export default function CatalogoPage() {
               const items = product.bundle_items || [];
               const hasItbisComponents = items.some((it) => it.products?.apply_itbis !== false);
               return (
-                <div key={product.id} className="lg:col-span-3 bg-white rounded-2xl p-5 shadow-sm border-2 border-[#B8837E]/30 hover:shadow-md transition-shadow duration-200">
+                <div key={product.id} className="lg:col-span-3 bg-white rounded-2xl p-5 shadow-sm border-2 border-[#BA4A3A]/30 hover:shadow-md transition-shadow duration-200">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="relative w-24 h-24 rounded-xl bg-[#FAF6F0] flex items-center justify-center text-[#B8837E] flex-shrink-0 overflow-hidden border border-[#E8E0D8]">
+                      <div className="relative w-24 h-24 rounded-xl bg-[#F1E9DF] flex items-center justify-center text-[#BA4A3A] flex-shrink-0 overflow-hidden border border-[#E0DAD3]">
                         {product.image_url ? (
                           <>
                             <ProductImage
@@ -902,7 +902,7 @@ export default function CatalogoPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title="Descargar imagen en alta resolución"
-                              className="absolute bottom-1 right-1 w-7 h-7 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center text-[#B8837E] shadow-sm hover:bg-[#B8837E] hover:text-white transition-colors"
+                              className="absolute bottom-1 right-1 w-7 h-7 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center text-[#BA4A3A] shadow-sm hover:bg-[#BA4A3A] hover:text-white transition-colors"
                             >
                               <Download size={14} />
                             </a>
@@ -916,10 +916,10 @@ export default function CatalogoPage() {
                           <Badge variant="warning">BUNDLE</Badge>
                           {!product.active && <Badge variant="danger">Inactivo</Badge>}
                         </div>
-                        <h3 className="font-medium text-[#5C3E35] text-lg mt-1">{product.name}</h3>
-                        <p className="text-xs text-[#9C8A82]">{product.code}</p>
+                        <h3 className="font-medium text-[#39484F] text-lg mt-1">{product.name}</h3>
+                        <p className="text-xs text-[#5F6B72]">{product.code}</p>
                         {product.image_url && (
-                          <a href={product.image_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] hover:underline mt-1">
+                          <a href={product.image_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] hover:underline mt-1">
                             <Download size={12} /> Descargar imagen HD
                           </a>
                         )}
@@ -927,53 +927,53 @@ export default function CatalogoPage() {
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right">
-                        <p className="text-[10px] font-medium text-[#9C8A82] uppercase tracking-wide">Precio especial</p>
-                        <p className="text-2xl font-bold text-[#B8837E]">{formatCurrency(product.price_30 || 0)}</p>
+                        <p className="text-[10px] font-medium text-[#5F6B72] uppercase tracking-wide">Precio especial</p>
+                        <p className="text-2xl font-bold text-[#BA4A3A]">{formatCurrency(product.price_30 || 0)}</p>
                       </div>
-                      <button onClick={() => openEdit(product)} className="p-2.5 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Editar bundle"><Edit2 size={16} /></button>
-                      <button onClick={() => duplicateBundle(product)} className="p-2.5 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Duplicar bundle"><Copy size={16} /></button>
+                      <button onClick={() => openEdit(product)} className="p-2.5 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Editar bundle"><Edit2 size={16} /></button>
+                      <button onClick={() => duplicateBundle(product)} className="p-2.5 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Duplicar bundle"><Copy size={16} /></button>
                       {!product.active ? (
                         <>
                           <button onClick={() => handleRestoreProduct(product)} className="p-2.5 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={16} /></button>
                           <button onClick={() => requestDeleteProduct(product)} className="p-2.5 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={16} /></button>
                         </>
                       ) : (
-                        <button onClick={() => handleArchiveProduct(product)} className="p-2.5 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Archivar"><Archive size={16} /></button>
+                        <button onClick={() => handleArchiveProduct(product)} className="p-2.5 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={16} /></button>
                       )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mt-4">
-                    <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                      <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Costo sugerido</label>
-                      <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(product.cost)}</p>
-                      <p className="text-[10px] text-[#9C8A82] mt-0.5">Suma de componentes</p>
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                      <label className="block text-[10px] font-medium text-[#5F6B72] mb-0.5">Costo sugerido</label>
+                      <p className="text-sm font-bold text-[#39484F]">{formatCurrency(product.cost)}</p>
+                      <p className="text-[10px] text-[#5F6B72] mt-0.5">Suma de componentes</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                      <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">PV total</label>
-                      <p className="text-sm font-bold text-[#5C3E35]">{product.pv || 0}</p>
-                      <p className="text-[10px] text-[#9C8A82] mt-0.5">Suma de componentes</p>
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                      <label className="block text-[10px] font-medium text-[#5F6B72] mb-0.5">PV total</label>
+                      <p className="text-sm font-bold text-[#39484F]">{product.pv || 0}</p>
+                      <p className="text-[10px] text-[#5F6B72] mt-0.5">Suma de componentes</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
-                      <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Sugerido 30% c/ITBIS</label>
-                      <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(invoiceLineTotalForUnit(product.cost * 1.3, product.cost || 0, hasItbisComponents))}</p>
-                      <p className="text-[10px] text-[#9C8A82] mt-0.5">{formatCurrency(product.cost * 1.3)} base · {hasItbisComponents ? "c/ITBIS" : "sin ITBIS"}</p>
+                    <div className="p-3 rounded-xl bg-[#BA4A3A]/10 border border-[#BA4A3A]/30">
+                      <label className="block text-[10px] font-medium text-[#BA4A3A] mb-0.5">Sugerido 30% c/ITBIS</label>
+                      <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(invoiceLineTotalForUnit(product.cost * 1.3, product.cost || 0, hasItbisComponents))}</p>
+                      <p className="text-[10px] text-[#5F6B72] mt-0.5">{formatCurrency(product.cost * 1.3)} base · {hasItbisComponents ? "c/ITBIS" : "sin ITBIS"}</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
-                      <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Sugerido 35% c/ITBIS</label>
-                      <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(invoiceLineTotalForUnit(product.cost * 1.35, product.cost || 0, hasItbisComponents))}</p>
-                      <p className="text-[10px] text-[#9C8A82] mt-0.5">{formatCurrency(product.cost * 1.35)} base · {hasItbisComponents ? "c/ITBIS" : "sin ITBIS"}</p>
+                    <div className="p-3 rounded-xl bg-[#BA4A3A]/10 border border-[#BA4A3A]/30">
+                      <label className="block text-[10px] font-medium text-[#BA4A3A] mb-0.5">Sugerido 35% c/ITBIS</label>
+                      <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(invoiceLineTotalForUnit(product.cost * 1.35, product.cost || 0, hasItbisComponents))}</p>
+                      <p className="text-[10px] text-[#5F6B72] mt-0.5">{formatCurrency(product.cost * 1.35)} base · {hasItbisComponents ? "c/ITBIS" : "sin ITBIS"}</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                      <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Ganancia estimada</label>
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                      <label className="block text-[10px] font-medium text-[#5F6B72] mb-0.5">Ganancia estimada</label>
                       <p className="text-sm font-bold text-[#86C7A3]">{formatCurrency((product.price_30 || 0) - product.cost)}</p>
-                      <p className="text-[10px] text-[#9C8A82] mt-0.5">Precio especial − costo</p>
+                      <p className="text-[10px] text-[#5F6B72] mt-0.5">Precio especial − costo</p>
                     </div>
                   </div>
 
                   {items.length > 0 && (
                     <div className="mt-4">
-                      <p className="text-xs font-bold text-[#B8837E] uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-[#BA4A3A] uppercase tracking-wide mb-3 flex items-center gap-1.5">
                         <Boxes size={14} /> {items.length} {items.length === 1 ? "producto incluido" : "productos incluidos"}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -981,9 +981,9 @@ export default function CatalogoPage() {
                           const p = it.products;
                           if (!p) return null;
                           return (
-                            <div key={it.id} className="bg-white rounded-2xl border border-[#E8E0D8] overflow-hidden flex flex-col">
-                              <div className="flex items-center gap-3 p-3 bg-[#FAF6F0]/60 border-b border-[#E8E0D8]">
-                                <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
+                            <div key={it.id} className="bg-white rounded-2xl border border-[#E0DAD3] overflow-hidden flex flex-col">
+                              <div className="flex items-center gap-3 p-3 bg-[#F1E9DF]/60 border-b border-[#E0DAD3]">
+                                <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#5F6B72] flex-shrink-0 overflow-hidden">
                                   {p.image_url ? (
                                     <ProductImage
                                       src={p.image_url}
@@ -997,33 +997,33 @@ export default function CatalogoPage() {
                                   )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium text-[#5C3E35] leading-snug line-clamp-2">{p.name}</p>
-                                  <p className="text-xs text-[#9C8A82]">Código: {p.code}</p>
+                                  <p className="text-sm font-medium text-[#39484F] leading-snug line-clamp-2">{p.name}</p>
+                                  <p className="text-xs text-[#5F6B72]">Código: {p.code}</p>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                  <span className="px-2 py-1 rounded-lg bg-[#B8837E]/10 text-[#B8837E] text-xs font-bold">{it.quantity}×</span>
+                                  <span className="px-2 py-1 rounded-lg bg-[#BA4A3A]/10 text-[#BA4A3A] text-xs font-bold">{it.quantity}×</span>
                                   {p.apply_itbis !== false && <span className="px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-[10px] font-medium">ITBIS</span>}
                                 </div>
                               </div>
                               <div className="p-3 space-y-1.5 text-sm flex-1">
                                 {p.subbrands && <div className="flex flex-wrap gap-1 mb-1"><Badge variant="info">{p.subbrands.name}</Badge></div>}
                                 {p.categories && <div className="flex flex-wrap gap-1 mb-1"><Badge variant="neutral">{p.categories.name}</Badge></div>}
-                                <div className="flex justify-between"><span className="text-[#9C8A82]">PV</span><span className="font-medium">{p.pv || 0}</span></div>
-                                <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(p.cost)}</span></div>
+                                <div className="flex justify-between"><span className="text-[#5F6B72]">PV</span><span className="font-medium">{p.pv || 0}</span></div>
+                                <div className="flex justify-between"><span className="text-[#5F6B72]">Costo Amway</span><span className="font-medium">{formatCurrency(p.cost)}</span></div>
                                 {p.apply_itbis !== false && (
-                                  <div className="flex justify-between"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((p.cost || 0) * (1 + ITBIS_RATE))}</span></div>
+                                  <div className="flex justify-between"><span className="text-[#5F6B72]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((p.cost || 0) * (1 + ITBIS_RATE))}</span></div>
                                 )}
-                                <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 30%</span><span className="font-medium text-[#B8837E]">{formatCurrency(p.price_30 || 0)}</span></div>
+                                <div className="flex justify-between"><span className="text-[#5F6B72]">Precio 30%</span><span className="font-medium text-[#BA4A3A]">{formatCurrency(p.price_30 || 0)}</span></div>
                                 {p.apply_itbis !== false && (
-                                  <div className="flex justify-between"><span className="text-[#9C8A82]">Total c/ITBIS 30%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(p.price_30 || 0, p.cost || 0, true))}</span></div>
+                                  <div className="flex justify-between"><span className="text-[#5F6B72]">Total c/ITBIS 30%</span><span className="font-bold text-[#39484F]">{formatCurrency(invoiceLineTotalForUnit(p.price_30 || 0, p.cost || 0, true))}</span></div>
                                 )}
-                                <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 35%</span><span className="font-medium text-[#B8837E]">{formatCurrency(p.price_35 || 0)}</span></div>
+                                <div className="flex justify-between"><span className="text-[#5F6B72]">Precio 35%</span><span className="font-medium text-[#BA4A3A]">{formatCurrency(p.price_35 || 0)}</span></div>
                                 {p.apply_itbis !== false && (
-                                  <div className="flex justify-between"><span className="text-[#9C8A82]">Total c/ITBIS 35%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(p.price_35 || 0, p.cost || 0, true))}</span></div>
+                                  <div className="flex justify-between"><span className="text-[#5F6B72]">Total c/ITBIS 35%</span><span className="font-bold text-[#39484F]">{formatCurrency(invoiceLineTotalForUnit(p.price_35 || 0, p.cost || 0, true))}</span></div>
                                 )}
                                 {(p.description || p.benefits) && (
-                                  <div className="pt-2 mt-2 border-t border-[#E8E0D8]">
-                                    <p className="text-xs text-[#5C3E35] whitespace-pre-wrap leading-relaxed line-clamp-4">{p.description || p.benefits}</p>
+                                  <div className="pt-2 mt-2 border-t border-[#E0DAD3]">
+                                    <p className="text-xs text-[#39484F] whitespace-pre-wrap leading-relaxed line-clamp-4">{p.description || p.benefits}</p>
                                   </div>
                                 )}
                               </div>
@@ -1034,7 +1034,7 @@ export default function CatalogoPage() {
                     </div>
                   )}
                   <div className="flex justify-end mt-4">
-                    <button type="button" onClick={() => setViewingProduct(product)} className="h-10 px-5 flex items-center justify-center gap-2 bg-[#FAF6F0] border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 hover:border-[#B8837E]/40 hover:text-[#B8837E] transition-all duration-200">
+                    <button type="button" onClick={() => setViewingProduct(product)} className="h-10 px-5 flex items-center justify-center gap-2 bg-[#F1E9DF] border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/10 hover:border-[#BA4A3A]/40 hover:text-[#BA4A3A] transition-all duration-200">
                       <Eye size={16} /> Ver bundle completo
                     </button>
                   </div>
@@ -1042,9 +1042,9 @@ export default function CatalogoPage() {
               );
             }
             return (
-              <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200 flex flex-col">
+              <div key={product.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow duration-200 flex flex-col">
                 {product.image_url ? (
-                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#FAF6F0] cursor-pointer group">
+                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl overflow-hidden mb-3 bg-[#F1E9DF] cursor-pointer group">
                     <ProductImage
                       src={product.image_url}
                       alt={product.name}
@@ -1054,24 +1054,24 @@ export default function CatalogoPage() {
                     />
                   </button>
                 ) : (
-                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl mb-3 bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] cursor-pointer">
+                  <button type="button" onClick={() => setViewingProduct(product)} className="w-full h-36 rounded-xl mb-3 bg-[#F1E9DF] flex items-center justify-center text-[#5F6B72] cursor-pointer">
                     <BookOpen size={32} className="opacity-40" />
                   </button>
                 )}
                 <div className="flex items-start justify-between mb-3">
                   <button type="button" onClick={() => setViewingProduct(product)} className="flex-1 text-left cursor-pointer">
-                    <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors line-clamp-2">{product.name}</h3>
-                    <p className="text-xs text-[#9C8A82] mt-0.5">{product.code}</p>
+                    <h3 className="font-medium text-[#39484F] hover:text-[#BA4A3A] transition-colors line-clamp-2">{product.name}</h3>
+                    <p className="text-xs text-[#5F6B72] mt-0.5">{product.code}</p>
                   </button>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => openEdit(product)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Editar"><Edit2 size={14} /></button>
+                    <button onClick={() => openEdit(product)} className="p-2.5 sm:p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Editar"><Edit2 size={14} /></button>
                     {!product.active ? (
                       <>
                         <button onClick={() => handleRestoreProduct(product)} className="p-2.5 sm:p-2 text-[#86C7A3] hover:bg-green-50 rounded-lg transition-colors" title="Restaurar"><RotateCcw size={14} /></button>
                         <button onClick={() => requestDeleteProduct(product)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
                       </>
                     ) : (
-                      <button onClick={() => handleArchiveProduct(product)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
+                      <button onClick={() => handleArchiveProduct(product)} className="p-2.5 sm:p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
                     )}
                   </div>
                 </div>
@@ -1083,66 +1083,66 @@ export default function CatalogoPage() {
                 <button
                   type="button"
                   onClick={() => openDescriptionEditor(product)}
-                  className="mb-3 flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] hover:underline transition-colors"
+                  className="mb-3 flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] hover:underline transition-colors"
                   title="Editar descripción del producto"
                 >
                   <NotebookPen size={13} />
                   {product.description ? "Editar descripción" : "Agregar descripción"}
                 </button>
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(product.cost)}</span></div>
+                  <div className="flex justify-between"><span className="text-[#5F6B72]">Costo Amway</span><span className="font-medium">{formatCurrency(product.cost)}</span></div>
                   {product.apply_itbis !== false && (
-                    <div className="flex justify-between"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((product.cost || 0) * (1 + ITBIS_RATE))}</span></div>
+                    <div className="flex justify-between"><span className="text-[#5F6B72]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((product.cost || 0) * (1 + ITBIS_RATE))}</span></div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span className="text-[#9C8A82]">Precio 30%</span>
+                    <span className="text-[#5F6B72]">Precio 30%</span>
                     {editingPrice?.id === product.id && editingPrice?.field === "price_30" ? (
                       <input type="number" step="0.01" value={editingPrice.value} autoFocus
                         onChange={(e) => setEditingPrice({ ...editingPrice, value: Number(e.target.value) })}
                         onBlur={handlePriceSave}
                         onKeyDown={(e) => { if (e.key === "Enter") handlePriceSave(); if (e.key === "Escape") setEditingPrice(null); }}
-                        className="w-28 h-7 px-2 text-right rounded-lg border border-[#B8837E] text-sm font-medium text-[#5C3E35] bg-white focus:outline-none"
+                        className="w-28 h-7 px-2 text-right rounded-lg border border-[#BA4A3A] text-sm font-medium text-[#39484F] bg-white focus:outline-none"
                       />
                     ) : (
                       <span onClick={() => setEditingPrice({ id: product.id, field: "price_30", value: product.price_30 || 0 })}
-                        className="font-medium text-[#B8837E] cursor-pointer hover:bg-[#FAF6F0] px-2 py-0.5 rounded transition-colors">
+                        className="font-medium text-[#BA4A3A] cursor-pointer hover:bg-[#F1E9DF] px-2 py-0.5 rounded transition-colors">
                         {formatCurrency(product.price_30 || 0)}
                       </span>
                     )}
                   </div>
                   {product.apply_itbis !== false && (
-                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 30%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_30 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-[#5F6B72]">Total c/ITBIS 30%</span><span className="font-bold text-[#39484F]">{formatCurrency(invoiceLineTotalForUnit(product.price_30 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
                   )}
-                  <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Ganancia 30%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_30 || 0) - product.cost)}</span></div>
+                  <div className="flex justify-between items-center"><span className="text-[#5F6B72]">Ganancia 30%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_30 || 0) - product.cost)}</span></div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#9C8A82]">Precio 35%</span>
+                    <span className="text-[#5F6B72]">Precio 35%</span>
                     {editingPrice?.id === product.id && editingPrice?.field === "price_35" ? (
                       <input type="number" step="0.01" value={editingPrice.value} autoFocus
                         onChange={(e) => setEditingPrice({ ...editingPrice, value: Number(e.target.value) })}
                         onBlur={handlePriceSave}
                         onKeyDown={(e) => { if (e.key === "Enter") handlePriceSave(); if (e.key === "Escape") setEditingPrice(null); }}
-                        className="w-28 h-7 px-2 text-right rounded-lg border border-[#B8837E] text-sm font-medium text-[#5C3E35] bg-white focus:outline-none"
+                        className="w-28 h-7 px-2 text-right rounded-lg border border-[#BA4A3A] text-sm font-medium text-[#39484F] bg-white focus:outline-none"
                       />
                     ) : (
                       <span onClick={() => setEditingPrice({ id: product.id, field: "price_35", value: product.price_35 || 0 })}
-                        className="font-medium text-[#B8837E] cursor-pointer hover:bg-[#FAF6F0] px-2 py-0.5 rounded transition-colors">
+                        className="font-medium text-[#BA4A3A] cursor-pointer hover:bg-[#F1E9DF] px-2 py-0.5 rounded transition-colors">
                         {formatCurrency(product.price_35 || 0)}
                       </span>
                     )}
                   </div>
                   {product.apply_itbis !== false && (
-                    <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Total c/ITBIS 35%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(product.price_35 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-[#5F6B72]">Total c/ITBIS 35%</span><span className="font-bold text-[#39484F]">{formatCurrency(invoiceLineTotalForUnit(product.price_35 || 0, product.cost || 0, (product.apply_itbis as boolean | null) !== false))}</span></div>
                   )}
-                  <div className="flex justify-between items-center"><span className="text-[#9C8A82]">Ganancia 35%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_35 || 0) - product.cost)}</span></div>
-                  <div className="flex items-center justify-between pt-2 border-t border-[#E8E0D8] mt-2">
-                    <span className="text-xs font-medium text-[#5C3E35]">ITBIS</span>
+                  <div className="flex justify-between items-center"><span className="text-[#5F6B72]">Ganancia 35%</span><span className="font-medium text-[#86C7A3]">{formatCurrency((product.price_35 || 0) - product.cost)}</span></div>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#E0DAD3] mt-2">
+                    <span className="text-xs font-medium text-[#39484F]">ITBIS</span>
                     <button onClick={() => handleToggleItbis(product)} disabled={savingItbis === product.id}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${product.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}>
+                      className={`relative w-12 h-6 rounded-full transition-colors ${product.apply_itbis !== false ? "bg-[#BA4A3A]" : "bg-gray-300"}`}>
                       <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${product.apply_itbis !== false ? "translate-x-6" : "translate-x-0"}`} />
                     </button>
                   </div>
                 </div>
-                <button type="button" onClick={() => setViewingProduct(product)} className="mt-4 w-full h-10 flex items-center justify-center gap-2 bg-[#FAF6F0] border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#B8837E]/10 hover:border-[#B8837E]/40 hover:text-[#B8837E] transition-all duration-200">
+                <button type="button" onClick={() => setViewingProduct(product)} className="mt-4 w-full h-10 flex items-center justify-center gap-2 bg-[#F1E9DF] border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/10 hover:border-[#BA4A3A]/40 hover:text-[#BA4A3A] transition-all duration-200">
                   <Eye size={16} /> Ver
                 </button>
               </div>
@@ -1155,38 +1155,38 @@ export default function CatalogoPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Código *</label>
-              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Código *</label>
+              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre *</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
               <input type="text" value={form.name} onChange={(e) => {
                 const newName = e.target.value;
                 const isNutri = subbrands.find((s) => s.id === form.subbrand_id)?.name === "Nutrilite";
                 setForm({ ...form, name: newName, apply_itbis: isNutri ? isNutriliteItbisException(newName) : true });
-              }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Submarca</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Submarca</label>
               <select value={form.subbrand_id} onChange={(e) => {
                 if (e.target.value === "__new__") { setNewForFilter(null); setShowNewSubbrand(true); return; }
                 const sub = subbrands.find((s) => s.id === e.target.value);
                 const isNutri = sub?.name === "Nutrilite";
                 setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isNutriliteItbisException(form.name)) });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value="">Seleccionar...</option>
                 {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 <option value="__new__">+ Crear nueva...</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Categoría</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Categoría</label>
               <select value={form.category_id} onChange={(e) => {
                 if (e.target.value === "__new__") { setNewForFilter(null); setShowNewCategory(true); return; }
                 setForm({ ...form, category_id: e.target.value });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value="">Seleccionar...</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 <option value="__new__">+ Crear nueva...</option>
@@ -1195,41 +1195,41 @@ export default function CatalogoPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Costo Amway (RD$)</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Costo Amway (RD$)</label>
               <input type="number" step="0.01" value={form.cost} onChange={(e) => {
                 const c = Number(e.target.value);
                 setForm({ ...form, cost: c, price_30: Math.round(c * MARKUP_30 * 100) / 100, price_35: Math.round(c * MARKUP_35 * 100) / 100 });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">PV</label>
-              <input type="number" step="0.01" value={form.pv} onChange={(e) => setForm({ ...form, pv: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">PV</label>
+              <input type="number" step="0.01" value={form.pv} onChange={(e) => setForm({ ...form, pv: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 30%</label>
-              <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_30)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_30) || Number(form.cost) * MARKUP_30, Number(form.cost), true))}</>}</p>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio 30%</label>
+              <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <p className="text-[10px] text-[#5F6B72] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_30)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_30) || Number(form.cost) * MARKUP_30, Number(form.cost), true))}</>}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio 35%</label>
-              <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_35)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_35) || Number(form.cost) * MARKUP_35, Number(form.cost), true))}</>}</p>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio 35%</label>
+              <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <p className="text-[10px] text-[#5F6B72] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_35)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_35) || Number(form.cost) * MARKUP_35, Number(form.cost), true))}</>}</p>
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-[#5C3E35]">Aplicar ITBIS en cálculos</label>
+            <label className="text-sm font-medium text-[#39484F]">Aplicar ITBIS en cálculos</label>
             <button type="button" onClick={() => {
               const newVal = !(form.apply_itbis !== false);
               setForm({ ...form, apply_itbis: newVal });
             }}
-              className={`relative w-10 h-5 rounded-full transition-colors ${form.apply_itbis !== false ? "bg-[#B8837E]" : "bg-gray-300"}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${form.apply_itbis !== false ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
               style={{ height: "20px" }}>
               <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${form.apply_itbis !== false ? "translate-x-[21px]" : "translate-x-0.5"}`} />
             </button>
           </div>
-          <div className="border-t border-[#E8E0D8] pt-4 mt-2">
-            <label className="block text-sm font-medium text-[#5C3E35] mb-2">Duración del producto</label>
-            <p className="text-xs text-[#9C8A82] mb-3">Define cuántos días dura este producto para programar automáticamente la próxima compra en CRM.</p>
+          <div className="border-t border-[#E0DAD3] pt-4 mt-2">
+            <label className="block text-sm font-medium text-[#39484F] mb-2">Duración del producto</label>
+            <p className="text-xs text-[#5F6B72] mb-3">Define cuántos días dura este producto para programar automáticamente la próxima compra en CRM.</p>
             <div className="flex gap-2 flex-wrap">
               {[null, 10, 15, 20, 30, 60].map((d) => (
                 <button
@@ -1238,8 +1238,8 @@ export default function CatalogoPage() {
                   onClick={() => setForm({ ...form, duracion_dias: d })}
                   className={`px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
                     form.duracion_dias === d
-                      ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
-                      : "border-[#E8E0D8] text-[#9C8A82] hover:border-[#B8837E]/30 hover:text-[#5C3E35]"
+                      ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
+                      : "border-[#E0DAD3] text-[#5F6B72] hover:border-[#BA4A3A]/30 hover:text-[#39484F]"
                   }`}
                 >
                   {d ? `${d} días` : "Sin duración"}
@@ -1247,19 +1247,19 @@ export default function CatalogoPage() {
               ))}
             </div>
           </div>
-          <div className="border-t border-[#E8E0D8] pt-4">
+          <div className="border-t border-[#E0DAD3] pt-4">
             <ImageUpload
               currentUrl={form.image_url}
               onUploaded={(url) => setForm({ ...form, image_url: url })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descripción</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descripción</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <Save size={18} /> {saving ? "Guardando..." : "Guardar"}
             </button>
           </div>
@@ -1268,33 +1268,33 @@ export default function CatalogoPage() {
 
       <Modal isOpen={showBundleModal} onClose={() => setShowBundleModal(false)} title={editingBundle ? "Editar Bundle" : "Crear Bundle"} wide>
         <div className="space-y-5">
-          <div className="bg-[#B8837E]/10 border border-[#B8837E]/30 rounded-xl p-4 flex items-start gap-3">
-            <Boxes size={20} className="text-[#B8837E] flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-[#5C3E35]">
+          <div className="bg-[#BA4A3A]/10 border border-[#BA4A3A]/30 rounded-xl p-4 flex items-start gap-3">
+            <Boxes size={20} className="text-[#BA4A3A] flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-[#39484F]">
               Un bundle es un combo de productos a un precio especial. Busca productos del catálogo, agrégalos y fija el precio del combo.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Código *</label>
-              <input type="text" value={bundleForm.code} onChange={(e) => setBundleForm({ ...bundleForm, code: e.target.value })} placeholder="BUN-001" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Código *</label>
+              <input type="text" value={bundleForm.code} onChange={(e) => setBundleForm({ ...bundleForm, code: e.target.value })} placeholder="BUN-001" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre del bundle *</label>
-              <input type="text" value={bundleForm.name} onChange={(e) => setBundleForm({ ...bundleForm, name: e.target.value })} placeholder="Ej: Kit de Bienestar" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre del bundle *</label>
+              <input type="text" value={bundleForm.name} onChange={(e) => setBundleForm({ ...bundleForm, name: e.target.value })} placeholder="Ej: Kit de Bienestar" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Precio especial (RD$) *</label>
-              <input type="number" step="0.01" min="0" value={bundleForm.price} onChange={(e) => setBundleForm({ ...bundleForm, price: Number(e.target.value) })} placeholder="0.00" className="w-full h-12 px-4 rounded-xl border border-[#B8837E] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all font-semibold" />
-              <p className="text-[10px] text-[#9C8A82] mt-1">Se aplica a ambos márgenes (30% y 35%)</p>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio especial (RD$) *</label>
+              <input type="number" step="0.01" min="0" value={bundleForm.price} onChange={(e) => setBundleForm({ ...bundleForm, price: Number(e.target.value) })} placeholder="0.00" className="w-full h-12 px-4 rounded-xl border border-[#BA4A3A] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all font-semibold" />
+              <p className="text-[10px] text-[#5F6B72] mt-1">Se aplica a ambos márgenes (30% y 35%)</p>
               {bundleComponents.length > 0 && (
                 <>
                   <div className="flex gap-2 mt-2">
                     <button
                       type="button"
                       onClick={() => setBundleForm({ ...bundleForm, price: bundleSuggestedTotal(1.3) })}
-                      className="flex-1 h-8 rounded-lg border border-[#B8837E]/50 text-[#B8837E] text-xs font-medium hover:bg-[#B8837E]/10 transition-all"
+                      className="flex-1 h-8 rounded-lg border border-[#BA4A3A]/50 text-[#BA4A3A] text-xs font-medium hover:bg-[#BA4A3A]/10 transition-all"
                       title="Fija el precio especial al sugerido de 30% con ITBIS"
                     >
                       Poner 30% ({formatCurrency(bundleSuggestedTotal(1.3))})
@@ -1302,7 +1302,7 @@ export default function CatalogoPage() {
                     <button
                       type="button"
                       onClick={() => setBundleForm({ ...bundleForm, price: bundleSuggestedTotal(1.35) })}
-                      className="flex-1 h-8 rounded-lg border border-[#B8837E]/50 text-[#B8837E] text-xs font-medium hover:bg-[#B8837E]/10 transition-all"
+                      className="flex-1 h-8 rounded-lg border border-[#BA4A3A]/50 text-[#BA4A3A] text-xs font-medium hover:bg-[#BA4A3A]/10 transition-all"
                       title="Fija el precio especial al sugerido de 35% con ITBIS"
                     >
                       Poner 35% ({formatCurrency(bundleSuggestedTotal(1.35))})
@@ -1310,23 +1310,23 @@ export default function CatalogoPage() {
                     <button
                       type="button"
                       onClick={() => { setBundleForm({ ...bundleForm, price: bundleSuggestedTotal(1.35) }); toast.success("Sugeridos recalculados: precio fijado al 35% con ITBIS"); }}
-                      className="h-8 px-2.5 rounded-lg border border-[#B8837E]/50 text-[#B8837E] text-xs font-medium hover:bg-[#B8837E]/10 transition-all flex items-center gap-1"
+                      className="h-8 px-2.5 rounded-lg border border-[#BA4A3A]/50 text-[#BA4A3A] text-xs font-medium hover:bg-[#BA4A3A]/10 transition-all flex items-center gap-1"
                       title="Recalcula los sugeridos desde los componentes y fija el precio al 35%"
                     >
                       <RefreshCw size={12} /> Recalcular sugeridos
                     </button>
                   </div>
-                  <div className="mt-2 p-2.5 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30 text-xs space-y-1">
-                    <p className="text-[#9C8A82]">Sugerido <b className="text-[#B8837E]">30%</b> c/ITBIS: <b className="text-[#B8837E]">{formatCurrency(bundleSuggestedTotal(1.3))}</b></p>
-                    <p className="text-[#9C8A82]">Sugerido <b className="text-[#B8837E]">35%</b> c/ITBIS: <b className="text-[#B8837E]">{formatCurrency(bundleSuggestedTotal(1.35))}</b></p>
-                    <p className="text-[#9C8A82]">Costo total: <b className="text-[#5C3E35]">{formatCurrency(bundleSuggestedCost())}</b> · PV: <b className="text-[#5C3E35]">{bundleSuggestedPv()}</b></p>
+                  <div className="mt-2 p-2.5 rounded-xl bg-[#BA4A3A]/10 border border-[#BA4A3A]/30 text-xs space-y-1">
+                    <p className="text-[#5F6B72]">Sugerido <b className="text-[#BA4A3A]">30%</b> c/ITBIS: <b className="text-[#BA4A3A]">{formatCurrency(bundleSuggestedTotal(1.3))}</b></p>
+                    <p className="text-[#5F6B72]">Sugerido <b className="text-[#BA4A3A]">35%</b> c/ITBIS: <b className="text-[#BA4A3A]">{formatCurrency(bundleSuggestedTotal(1.35))}</b></p>
+                    <p className="text-[#5F6B72]">Costo total: <b className="text-[#39484F]">{formatCurrency(bundleSuggestedCost())}</b> · PV: <b className="text-[#39484F]">{bundleSuggestedPv()}</b></p>
                   </div>
                 </>
               )}
             </div>
           </div>
 
-          <div className="border-t border-[#E8E0D8] pt-4">
+          <div className="border-t border-[#E0DAD3] pt-4">
             <ImageUpload
               currentUrl={bundleForm.image_url}
               onUploaded={(url) => setBundleForm({ ...bundleForm, image_url: url })}
@@ -1334,23 +1334,23 @@ export default function CatalogoPage() {
             />
           </div>
 
-          <div className="border-t border-[#E8E0D8] pt-4">
-            <label className="block text-sm font-medium text-[#5C3E35] mb-2">1. Buscar productos del catálogo</label>
+          <div className="border-t border-[#E0DAD3] pt-4">
+            <label className="block text-sm font-medium text-[#39484F] mb-2">1. Buscar productos del catálogo</label>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
                 <input
                   type="text"
                   value={bundleSearch}
                   onChange={(e) => setBundleSearch(e.target.value)}
                   placeholder="Buscar por nombre o código..."
-                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 />
               </div>
               <select
                 value={bundleFilterBrand}
                 onChange={(e) => setBundleFilterBrand(e.target.value)}
-                className="sm:w-56 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                className="sm:w-56 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               >
                 <option value="">Todas las marcas</option>
                 {subbrands.filter((s) => s.active).map((s) => (
@@ -1358,15 +1358,15 @@ export default function CatalogoPage() {
                 ))}
               </select>
             </div>
-            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-[#E8E0D8] bg-white divide-y divide-[#E8E0D8]/60">
+            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-[#E0DAD3] bg-white divide-y divide-[#E0DAD3]/60">
               {bundlePickerResults.length === 0 ? (
-                <p className="text-sm text-[#9C8A82] p-4 text-center">
+                <p className="text-sm text-[#5F6B72] p-4 text-center">
                   {bundleSearch.trim() || bundleFilterBrand ? "Sin resultados" : "No hay productos disponibles"}
                 </p>
               ) : (
                 bundlePickerResults.slice(0, 20).map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#FAF6F0] transition-colors">
-                    <div className="w-9 h-9 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
+                  <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#F1E9DF] transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-[#F1E9DF] flex items-center justify-center text-[#5F6B72] flex-shrink-0 overflow-hidden">
                       {p.image_url ? (
                         <ProductImage src={p.image_url} alt="" size={40} sizes="40px" className="w-full h-full object-contain" />
                       ) : (
@@ -1374,12 +1374,12 @@ export default function CatalogoPage() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[#5C3E35] truncate">{p.name}</p>
-                      <p className="text-xs text-[#9C8A82]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}{p.subbrands?.name ? ` · ${p.subbrands.name}` : ""}</p>
+                      <p className="text-sm font-medium text-[#39484F] truncate">{p.name}</p>
+                      <p className="text-xs text-[#5F6B72]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}{p.subbrands?.name ? ` · ${p.subbrands.name}` : ""}</p>
                     </div>
                     <button
                       onClick={() => addBundleComponent(p)}
-                      className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-[#B8837E] text-white text-xs font-medium hover:bg-[#9A6B66] transition-all flex-shrink-0"
+                      className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-[#BA4A3A] text-white text-xs font-medium hover:bg-[#9C382A] transition-all flex-shrink-0"
                     >
                       <Plus size={14} /> Agregar
                     </button>
@@ -1389,13 +1389,13 @@ export default function CatalogoPage() {
             </div>
           </div>
 
-          <div className="border-t border-[#E8E0D8] pt-4">
+          <div className="border-t border-[#E0DAD3] pt-4">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#5C3E35]">2. Productos del bundle ({bundleComponents.length})</label>
+              <label className="text-sm font-medium text-[#39484F]">2. Productos del bundle ({bundleComponents.length})</label>
               {bundleComponents.length > 0 && (
                 <div className="flex items-center gap-4 text-xs">
-                  <span className="text-[#9C8A82]">Costo sugerido: <b className="text-[#5C3E35]">{formatCurrency(bundleSuggestedCost())}</b></span>
-                  <span className="text-[#9C8A82]">PV: <b className="text-[#5C3E35]">{bundleSuggestedPv()}</b></span>
+                  <span className="text-[#5F6B72]">Costo sugerido: <b className="text-[#39484F]">{formatCurrency(bundleSuggestedCost())}</b></span>
+                  <span className="text-[#5F6B72]">PV: <b className="text-[#39484F]">{bundleSuggestedPv()}</b></span>
                   {bundleForm.price > 0 && (
                     <span className="text-[#86C7A3]">Ganancia: <b>{formatCurrency(bundleForm.price - bundleSuggestedCost())}</b></span>
                   )}
@@ -1403,7 +1403,7 @@ export default function CatalogoPage() {
               )}
             </div>
             {bundleComponents.length === 0 ? (
-              <p className="text-sm text-[#9C8A82] py-6 text-center bg-[#FAF6F0] rounded-xl border border-dashed border-[#E8E0D8]">
+              <p className="text-sm text-[#5F6B72] py-6 text-center bg-[#F1E9DF] rounded-xl border border-dashed border-[#E0DAD3]">
                 Aún no has agregado productos. Usa el buscador de arriba.
               </p>
             ) : (
@@ -1411,33 +1411,33 @@ export default function CatalogoPage() {
                 {bundleComponents.map((c) => {
                   const p = c.product;
                   return (
-                    <div key={p.id} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
+                    <div key={p.id} className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
                       <div className="flex items-center gap-3 p-3">
-                        <div className="w-12 h-12 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 rounded-lg bg-[#F1E9DF] flex items-center justify-center text-[#5F6B72] flex-shrink-0 overflow-hidden">
                           {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-contain" /> : <BookOpen size={20} className="opacity-40" />}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-[#5C3E35] leading-snug line-clamp-2">{p.name}</p>
-                          <p className="text-xs text-[#9C8A82]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}</p>
+                          <p className="text-sm font-medium text-[#39484F] leading-snug line-clamp-2">{p.name}</p>
+                          <p className="text-xs text-[#5F6B72]">{p.code} · {formatCurrency(p.price_30 || 0)} · PV {p.pv || 0}</p>
                         </div>
                         <button onClick={() => removeBundleComponent(p.id)} className="p-2 text-[#D4A0A0] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0" title="Quitar">
                           <Trash2 size={16} />
                         </button>
                       </div>
-                      <div className="flex items-center justify-between px-3 py-2 bg-[#FCFAF7] border-t border-[#E8E0D8]">
-                        <span className="text-xs text-[#9C8A82]">Cantidad</span>
+                      <div className="flex items-center justify-between px-3 py-2 bg-[#F5EFE9] border-t border-[#E0DAD3]">
+                        <span className="text-xs text-[#5F6B72]">Cantidad</span>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setBundleComponentQuantity(p.id, c.quantity - 1)}
                             disabled={c.quantity <= 1}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0] disabled:opacity-40 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF] disabled:opacity-40 transition-all"
                           >
                             <Minus size={14} />
                           </button>
-                          <span className="w-8 text-center text-sm font-bold text-[#5C3E35]">{c.quantity}</span>
+                          <span className="w-8 text-center text-sm font-bold text-[#39484F]">{c.quantity}</span>
                           <button
                             onClick={() => setBundleComponentQuantity(p.id, c.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0] transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF] transition-all"
                           >
                             <Plus size={14} />
                           </button>
@@ -1450,38 +1450,38 @@ export default function CatalogoPage() {
             )}
           </div>
 
-          <div className="border-t border-[#E8E0D8] pt-4">
-            <label className="block text-sm font-medium text-[#5C3E35] mb-3 flex items-center gap-1.5">
-              <Eye size={15} className="text-[#9C8A82]" /> Vista previa del bundle
+          <div className="border-t border-[#E0DAD3] pt-4">
+            <label className="block text-sm font-medium text-[#39484F] mb-3 flex items-center gap-1.5">
+              <Eye size={15} className="text-[#5F6B72]" /> Vista previa del bundle
             </label>
-            <div className="rounded-xl border border-[#B8837E]/30 bg-[#FAF6F0] p-4 flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center overflow-hidden border border-[#E8E0D8] flex-shrink-0">
+            <div className="rounded-xl border border-[#BA4A3A]/30 bg-[#F1E9DF] p-4 flex items-center gap-4">
+              <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center overflow-hidden border border-[#E0DAD3] flex-shrink-0">
                 {bundleForm.image_url ? (
                   <ProductImage src={bundleForm.image_url} alt="" size={128} sizes="128px" className="w-full h-full object-contain" />
                 ) : (
-                  <Boxes size={28} className="text-[#9C8A82]" />
+                  <Boxes size={28} className="text-[#5F6B72]" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="warning">BUNDLE</Badge>
-                  <span className="text-sm font-medium text-[#5C3E35] truncate">{bundleForm.name || "Nombre del bundle"}</span>
+                  <span className="text-sm font-medium text-[#39484F] truncate">{bundleForm.name || "Nombre del bundle"}</span>
                 </div>
-                <p className="text-xs text-[#9C8A82] truncate mt-0.5">
+                <p className="text-xs text-[#5F6B72] truncate mt-0.5">
                   {bundleForm.code || "Código"}
                   {bundleComponents.length > 0 && ` · ${bundleComponents.length} ${bundleComponents.length === 1 ? "producto" : "productos"} · ${bundleComponents.reduce((s, c) => s + c.quantity, 0)} unidades en total`}
                 </p>
-                <p className="text-lg font-bold text-[#B8837E]">{bundleForm.price > 0 ? formatCurrency(bundleForm.price) : "Precio especial por definir"}</p>
+                <p className="text-lg font-bold text-[#BA4A3A]">{bundleForm.price > 0 ? formatCurrency(bundleForm.price) : "Precio especial por definir"}</p>
                 {bundleComponents.length > 0 && (
-                  <p className="text-xs text-[#9C8A82] truncate">{bundleSummary()}</p>
+                  <p className="text-xs text-[#5F6B72] truncate">{bundleSummary()}</p>
                 )}
               </div>
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowBundleModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleBundleSave} disabled={savingBundle} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={() => setShowBundleModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={handleBundleSave} disabled={savingBundle} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <PackagePlus size={18} /> {savingBundle ? "Guardando..." : "Guardar Bundle"}
             </button>
           </div>
@@ -1491,12 +1491,12 @@ export default function CatalogoPage() {
       <Modal isOpen={showNewSubbrand} onClose={() => { setShowNewSubbrand(false); setNewSubbrandName(""); setNewForFilter(null); }} title="Nueva Submarca">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre de la submarca</label>
-            <input type="text" value={newSubbrandName} onChange={(e) => setNewSubbrandName(e.target.value)} placeholder="Ej: Nutrilite" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre de la submarca</label>
+            <input type="text" value={newSubbrandName} onChange={(e) => setNewSubbrandName(e.target.value)} placeholder="Ej: Nutrilite" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
           <div className="flex gap-3">
-            <button onClick={() => { setShowNewSubbrand(false); setNewSubbrandName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={() => handleCreateSubbrand(newSubbrandName)} disabled={!newSubbrandName.trim()} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">Crear</button>
+            <button onClick={() => { setShowNewSubbrand(false); setNewSubbrandName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={() => handleCreateSubbrand(newSubbrandName)} disabled={!newSubbrandName.trim()} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">Crear</button>
           </div>
         </div>
       </Modal>
@@ -1504,12 +1504,12 @@ export default function CatalogoPage() {
       <Modal isOpen={showNewCategory} onClose={() => { setShowNewCategory(false); setNewCategoryName(""); setNewForFilter(null); }} title="Nueva Categoría">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre de la categoría</label>
-            <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ej: Vitaminas" className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre de la categoría</label>
+            <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ej: Vitaminas" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
           <div className="flex gap-3">
-            <button onClick={() => { setShowNewCategory(false); setNewCategoryName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={() => handleCreateCategory(newCategoryName)} disabled={!newCategoryName.trim()} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">Crear</button>
+            <button onClick={() => { setShowNewCategory(false); setNewCategoryName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={() => handleCreateCategory(newCategoryName)} disabled={!newCategoryName.trim()} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">Crear</button>
           </div>
         </div>
       </Modal>
@@ -1517,10 +1517,10 @@ export default function CatalogoPage() {
       <Modal isOpen={showManageSubbrands} onClose={() => { setShowManageSubbrands(false); setDeletingSubbrand(null); }} title="Gestionar Submarcas">
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {subbrands.length === 0 ? (
-            <p className="text-sm text-[#9C8A82] py-4 text-center">No hay submarcas</p>
+            <p className="text-sm text-[#5F6B72] py-4 text-center">No hay submarcas</p>
           ) : subbrands.map((s) => (
-            <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
-              <span className="text-sm text-[#5C3E35]">{s.name}</span>
+            <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F1E9DF]">
+              <span className="text-sm text-[#39484F]">{s.name}</span>
               <button
                 onClick={async () => {
                   if (deletingSubbrand === s.id || !confirm(`¿Eliminar "${s.name}"?`)) return;
@@ -1534,7 +1534,7 @@ export default function CatalogoPage() {
                   finally { setDeletingSubbrand(null); }
                 }}
                 disabled={deletingSubbrand === s.id}
-                className="p-1.5 text-[#9C8A82] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                className="p-1.5 text-[#5F6B72] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Eliminar submarca"
               >
                 <Trash2 size={15} />
@@ -1547,10 +1547,10 @@ export default function CatalogoPage() {
       <Modal isOpen={showManageCategories} onClose={() => { setShowManageCategories(false); setDeletingCategory(null); }} title="Gestionar Categorías">
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {categories.length === 0 ? (
-            <p className="text-sm text-[#9C8A82] py-4 text-center">No hay categorías</p>
+            <p className="text-sm text-[#5F6B72] py-4 text-center">No hay categorías</p>
           ) : categories.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
-              <span className="text-sm text-[#5C3E35]">{c.name}</span>
+            <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F1E9DF]">
+              <span className="text-sm text-[#39484F]">{c.name}</span>
               <button
                 onClick={async () => {
                   if (deletingCategory === c.id || !confirm(`¿Eliminar "${c.name}"?`)) return;
@@ -1564,7 +1564,7 @@ export default function CatalogoPage() {
                   finally { setDeletingCategory(null); }
                 }}
                 disabled={deletingCategory === c.id}
-                className="p-1.5 text-[#9C8A82] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                className="p-1.5 text-[#5F6B72] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Eliminar categoría"
               >
                 <Trash2 size={15} />
@@ -1579,7 +1579,7 @@ export default function CatalogoPage() {
           <div className="space-y-5">
             {viewingProduct.image_url ? (
               <div>
-                <div className="w-full max-h-[360px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#FAF6F0] to-[#F3EAE3] flex items-center justify-center p-6">
+                <div className="w-full max-h-[360px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#F1E9DF] to-[#F3EAE3] flex items-center justify-center p-6">
                 <ProductImage
                   src={viewingProduct.image_url}
                   alt={viewingProduct.name}
@@ -1593,13 +1593,13 @@ export default function CatalogoPage() {
                   href={viewingProduct.image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#FAF6F0] border border-[#E8E0D8] text-[#5C3E35] text-sm font-medium hover:bg-[#B8837E]/10 hover:border-[#B8837E]/40 hover:text-[#B8837E] transition-all duration-200"
+                  className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#F1E9DF] border border-[#E0DAD3] text-[#39484F] text-sm font-medium hover:bg-[#BA4A3A]/10 hover:border-[#BA4A3A]/40 hover:text-[#BA4A3A] transition-all duration-200"
                 >
                   <Download size={16} /> Descargar imagen en alta resolución
                 </a>
               </div>
             ) : (
-              <div className="w-full h-40 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#9C8A82]">
+              <div className="w-full h-40 rounded-2xl bg-[#F1E9DF] flex items-center justify-center text-[#5F6B72]">
                 <BookOpen size={40} className="opacity-40" />
               </div>
             )}
@@ -1613,86 +1613,86 @@ export default function CatalogoPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Código</label>
-                <p className="text-sm font-semibold text-[#5C3E35]">{viewingProduct.code || "N/A"}</p>
+              <div className="p-4 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Código</label>
+                <p className="text-sm font-semibold text-[#39484F]">{viewingProduct.code || "N/A"}</p>
               </div>
-              <div className="p-4 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">PV</label>
-                <p className="text-sm font-semibold text-[#5C3E35]">{viewingProduct.pv || "N/A"}</p>
+              <div className="p-4 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">PV</label>
+                <p className="text-sm font-semibold text-[#39484F]">{viewingProduct.pv || "N/A"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Costo Amway</label>
-                <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(viewingProduct.cost)}</p>
-                {viewingProduct.apply_itbis !== false && <p className="text-[10px] text-[#9C8A82] mt-0.5">+ ITBIS: {formatCurrency(viewingProduct.cost * (1 + ITBIS_RATE))}</p>}
+              <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                <label className="block text-[10px] font-medium text-[#5F6B72] mb-0.5">Costo Amway</label>
+                <p className="text-sm font-bold text-[#39484F]">{formatCurrency(viewingProduct.cost)}</p>
+                {viewingProduct.apply_itbis !== false && <p className="text-[10px] text-[#5F6B72] mt-0.5">+ ITBIS: {formatCurrency(viewingProduct.cost * (1 + ITBIS_RATE))}</p>}
               </div>
-              <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
-                <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Precio 30%</label>
-                <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(viewingProduct.price_30 || 0)}</p>
+              <div className="p-3 rounded-xl bg-[#BA4A3A]/10 border border-[#BA4A3A]/30">
+                <label className="block text-[10px] font-medium text-[#BA4A3A] mb-0.5">Precio 30%</label>
+                <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(viewingProduct.price_30 || 0)}</p>
                 <p className="text-[10px] text-[#86C7A3] mt-0.5 font-medium">Ganancia: {formatCurrency((viewingProduct.price_30 || 0) - viewingProduct.cost)}</p>
               </div>
-              <div className="p-3 rounded-xl bg-[#B8837E]/10 border border-[#B8837E]/30">
-                <label className="block text-[10px] font-medium text-[#B8837E] mb-0.5">Precio 35%</label>
-                <p className="text-sm font-bold text-[#B8837E]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
+              <div className="p-3 rounded-xl bg-[#BA4A3A]/10 border border-[#BA4A3A]/30">
+                <label className="block text-[10px] font-medium text-[#BA4A3A] mb-0.5">Precio 35%</label>
+                <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
                 <p className="text-[10px] text-[#86C7A3] mt-0.5 font-medium">Ganancia: {formatCurrency((viewingProduct.price_35 || 0) - viewingProduct.cost)}</p>
               </div>
-              <div className="p-3 rounded-xl bg-[#FCFAF7] border border-[#E8E0D8]">
-                <label className="block text-[10px] font-medium text-[#9C8A82] mb-0.5">Total c/ITBIS</label>
+              <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
+                <label className="block text-[10px] font-medium text-[#5F6B72] mb-0.5">Total c/ITBIS</label>
                 {viewingProduct.apply_itbis !== false ? (
                   <>
-                    <p className="text-sm font-bold text-[#5C3E35]">30%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_30 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
-                    <p className="text-sm text-[#5C3E35]">35%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_35 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
+                    <p className="text-sm font-bold text-[#39484F]">30%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_30 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
+                    <p className="text-sm text-[#39484F]">35%: {formatCurrency(invoiceLineTotalForUnit(viewingProduct.price_35 || 0, viewingProduct.cost || 0, (viewingProduct.apply_itbis as boolean | null) !== false))}</p>
                   </>
                 ) : (
-                  <p className="text-sm text-[#9C8A82]">Sin ITBIS</p>
+                  <p className="text-sm text-[#5F6B72]">Sin ITBIS</p>
                 )}
               </div>
             </div>
 
             {(viewingProduct.description || viewingProduct.benefits) && (
-              <div className="border-t border-[#E8E0D8] pt-4">
+              <div className="border-t border-[#E0DAD3] pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-medium text-[#9C8A82]">Descripción completa</label>
+                  <label className="block text-xs font-medium text-[#5F6B72]">Descripción completa</label>
                   <button
                     onClick={() => { openDescriptionEditor(viewingProduct); setViewingProduct(null); }}
-                    className="flex items-center gap-1 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] hover:underline"
+                    className="flex items-center gap-1 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] hover:underline"
                   >
                     <Edit2 size={12} /> Editar
                   </button>
                 </div>
-                <div className="p-4 bg-[#FAF6F0] rounded-xl max-h-[40vh] overflow-y-auto">
-                  <p className="text-sm text-[#5C3E35] whitespace-pre-wrap leading-relaxed">{viewingProduct.description || viewingProduct.benefits}</p>
+                <div className="p-4 bg-[#F1E9DF] rounded-xl max-h-[40vh] overflow-y-auto">
+                  <p className="text-sm text-[#39484F] whitespace-pre-wrap leading-relaxed">{viewingProduct.description || viewingProduct.benefits}</p>
                 </div>
               </div>
             )}
 
             {viewingProduct.is_bundle && (
-              <div className="border-t border-[#E8E0D8] pt-4">
+              <div className="border-t border-[#E0DAD3] pt-4">
                 <div className="flex items-center justify-between mb-3">
-                  <label className="block text-xs font-medium text-[#9C8A82] flex items-center gap-1.5">
+                  <label className="block text-xs font-medium text-[#5F6B72] flex items-center gap-1.5">
                     <Boxes size={14} /> Productos incluidos en el bundle
                   </label>
                   <button
                     onClick={() => { openBundleEditor(viewingProduct); setViewingProduct(null); }}
-                    className="flex items-center gap-1 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] hover:underline"
+                    className="flex items-center gap-1 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] hover:underline"
                   >
                     <Edit2 size={12} /> Editar bundle
                   </button>
                 </div>
                 {(viewingProduct.bundle_items || []).length === 0 ? (
-                  <p className="text-sm text-[#9C8A82] py-4 text-center bg-[#FAF6F0] rounded-xl">Este bundle no tiene productos registrados.</p>
+                  <p className="text-sm text-[#5F6B72] py-4 text-center bg-[#F1E9DF] rounded-xl">Este bundle no tiene productos registrados.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[45vh] overflow-y-auto pr-1">
                     {(viewingProduct.bundle_items || []).map((it) => {
                       const p = it.products;
                       if (!p) return null;
                       return (
-                        <div key={it.id} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
-                          <div className="flex items-center gap-3 p-3 bg-[#FAF6F0]/60 border-b border-[#E8E0D8]">
-                            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#9C8A82] flex-shrink-0 overflow-hidden">
+                        <div key={it.id} className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
+                          <div className="flex items-center gap-3 p-3 bg-[#F1E9DF]/60 border-b border-[#E0DAD3]">
+                            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-[#5F6B72] flex-shrink-0 overflow-hidden">
                               {p.image_url ? (
                                 <ProductImage src={p.image_url} alt={p.name} size={64} sizes="64px" className="w-full h-full object-contain" />
                               ) : (
@@ -1700,10 +1700,10 @@ export default function CatalogoPage() {
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-[#5C3E35] line-clamp-2">{p.name}</p>
-                              <p className="text-xs text-[#9C8A82]">Código: {p.code}</p>
+                              <p className="text-sm font-medium text-[#39484F] line-clamp-2">{p.name}</p>
+                              <p className="text-xs text-[#5F6B72]">Código: {p.code}</p>
                             </div>
-                            <span className="px-2 py-1 rounded-lg bg-[#B8837E]/10 text-[#B8837E] text-xs font-bold flex-shrink-0">{it.quantity}×</span>
+                            <span className="px-2 py-1 rounded-lg bg-[#BA4A3A]/10 text-[#BA4A3A] text-xs font-bold flex-shrink-0">{it.quantity}×</span>
                           </div>
                           <div className="p-3 space-y-1.5 text-sm">
                             <div className="flex flex-wrap gap-1">
@@ -1711,19 +1711,19 @@ export default function CatalogoPage() {
                               {p.categories && <Badge variant="neutral">{p.categories.name}</Badge>}
                               {p.apply_itbis !== false && <Badge variant="warning">ITBIS</Badge>}
                             </div>
-                            <div className="flex justify-between"><span className="text-[#9C8A82]">PV</span><span className="font-medium">{p.pv || 0}</span></div>
-                            <div className="flex justify-between"><span className="text-[#9C8A82]">Costo Amway</span><span className="font-medium">{formatCurrency(p.cost)}</span></div>
+                            <div className="flex justify-between"><span className="text-[#5F6B72]">PV</span><span className="font-medium">{p.pv || 0}</span></div>
+                            <div className="flex justify-between"><span className="text-[#5F6B72]">Costo Amway</span><span className="font-medium">{formatCurrency(p.cost)}</span></div>
                             {p.apply_itbis !== false && (
-                              <div className="flex justify-between"><span className="text-[#9C8A82]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((p.cost || 0) * (1 + ITBIS_RATE))}</span></div>
+                              <div className="flex justify-between"><span className="text-[#5F6B72]">Costo + ITBIS</span><span className="font-medium">{formatCurrency((p.cost || 0) * (1 + ITBIS_RATE))}</span></div>
                             )}
-                            <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 30%</span><span className="font-medium text-[#B8837E]">{formatCurrency(p.price_30 || 0)}</span></div>
-                            <div className="flex justify-between"><span className="text-[#9C8A82]">Precio 35%</span><span className="font-medium text-[#B8837E]">{formatCurrency(p.price_35 || 0)}</span></div>
+                            <div className="flex justify-between"><span className="text-[#5F6B72]">Precio 30%</span><span className="font-medium text-[#BA4A3A]">{formatCurrency(p.price_30 || 0)}</span></div>
+                            <div className="flex justify-between"><span className="text-[#5F6B72]">Precio 35%</span><span className="font-medium text-[#BA4A3A]">{formatCurrency(p.price_35 || 0)}</span></div>
                             {p.apply_itbis !== false && (
-                              <div className="flex justify-between"><span className="text-[#9C8A82]">Total c/ITBIS 30%</span><span className="font-bold text-[#5C3E35]">{formatCurrency(invoiceLineTotalForUnit(p.price_30 || 0, p.cost || 0, true))}</span></div>
+                              <div className="flex justify-between"><span className="text-[#5F6B72]">Total c/ITBIS 30%</span><span className="font-bold text-[#39484F]">{formatCurrency(invoiceLineTotalForUnit(p.price_30 || 0, p.cost || 0, true))}</span></div>
                             )}
                             {(p.description || p.benefits) && (
-                              <div className="pt-2 mt-2 border-t border-[#E8E0D8]">
-                                <p className="text-xs text-[#5C3E35] whitespace-pre-wrap leading-relaxed">{p.description || p.benefits}</p>
+                              <div className="pt-2 mt-2 border-t border-[#E0DAD3]">
+                                <p className="text-xs text-[#39484F] whitespace-pre-wrap leading-relaxed">{p.description || p.benefits}</p>
                               </div>
                             )}
                           </div>
@@ -1736,7 +1736,7 @@ export default function CatalogoPage() {
             )}
 
             <div className="flex justify-end gap-3 pt-2">
-              <button onClick={() => openEdit(viewingProduct)} className="h-10 px-5 flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+              <button onClick={() => openEdit(viewingProduct)} className="h-10 px-5 flex items-center gap-2 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
                 <Edit2 size={15} /> Editar
               </button>
               {!viewingProduct.active ? (
@@ -1744,11 +1744,11 @@ export default function CatalogoPage() {
                   <Trash2 size={15} /> Eliminar
                 </button>
               ) : (
-                <button onClick={() => { handleArchiveProduct(viewingProduct); setViewingProduct(null); }} className="h-10 px-5 flex items-center gap-2 border border-[#E8E0D8] text-[#9C8A82] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                <button onClick={() => { handleArchiveProduct(viewingProduct); setViewingProduct(null); }} className="h-10 px-5 flex items-center gap-2 border border-[#E0DAD3] text-[#5F6B72] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
                   <Archive size={15} /> Archivar
                 </button>
               )}
-              <button onClick={() => setViewingProduct(null)} className="h-10 px-6 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cerrar</button>
+              <button onClick={() => setViewingProduct(null)} className="h-10 px-6 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cerrar</button>
             </div>
           </div>
         )}
@@ -1757,21 +1757,21 @@ export default function CatalogoPage() {
       <Modal isOpen={!!editingDescription} onClose={() => setEditingDescription(null)} title="Editar Descripción del Producto" wide>
         {editingDescription && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E8E0D8]">
-              <p className="text-sm font-semibold text-[#5C3E35]">{editingDescription.name}</p>
-              <p className="text-xs text-[#9C8A82] mt-0.5">Código: {editingDescription.code}</p>
+            <div className="p-4 rounded-xl bg-[#F1E9DF] border border-[#E0DAD3]">
+              <p className="text-sm font-semibold text-[#39484F]">{editingDescription.name}</p>
+              <p className="text-xs text-[#5F6B72] mt-0.5">Código: {editingDescription.code}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descripción</label>
-              <textarea value={descForm.description} onChange={(e) => setDescForm({ ...descForm, description: e.target.value })} rows={8} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-y" placeholder="Descripción completa del producto..." />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descripción</label>
+              <textarea value={descForm.description} onChange={(e) => setDescForm({ ...descForm, description: e.target.value })} rows={8} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Descripción completa del producto..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Beneficios</label>
-              <textarea value={descForm.benefits} onChange={(e) => setDescForm({ ...descForm, benefits: e.target.value })} rows={4} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-y" placeholder="Beneficios del producto..." />
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Beneficios</label>
+              <textarea value={descForm.benefits} onChange={(e) => setDescForm({ ...descForm, benefits: e.target.value })} rows={4} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Beneficios del producto..." />
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setEditingDescription(null)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-              <button onClick={handleSaveDescription} disabled={savingDesc} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={() => setEditingDescription(null)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+              <button onClick={handleSaveDescription} disabled={savingDesc} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
                 <Save size={18} /> {savingDesc ? "Guardando..." : "Guardar"}
               </button>
             </div>
@@ -1790,7 +1790,7 @@ export default function CatalogoPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setConfirmDeleteProduct(null)}
-              className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+              className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
             >
               Cancelar
             </button>
@@ -1809,59 +1809,59 @@ export default function CatalogoPage() {
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Número de catálogo</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Número de catálogo</label>
               <input type="text" value={catalogPdfNumber} onChange={(e) => setCatalogPdfNumber(e.target.value)}
-                placeholder="001" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-              <p className="text-[11px] text-[#9C8A82] mt-1">El archivo se llamará CAT-XXXX-MMAA.pdf (MMAA = mes y año actuales)</p>
+                placeholder="001" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <p className="text-[11px] text-[#5F6B72] mt-1">El archivo se llamará CAT-XXXX-MMAA.pdf (MMAA = mes y año actuales)</p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Buscar producto</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Buscar producto</label>
               <input type="text" value={catalogPdfSearch} onChange={(e) => setCatalogPdfSearch(e.target.value)}
-                placeholder="Buscar por nombre o código..." className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                placeholder="Buscar por nombre o código..." className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-[#5C3E35]">
+            <p className="text-sm font-medium text-[#39484F]">
               {selectedCatalogIds.size} producto{selectedCatalogIds.size === 1 ? "" : "s"} seleccionado{selectedCatalogIds.size === 1 ? "" : "s"}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setSelectedCatalogIds(new Set(products.filter((p) => p.active !== false).map((p) => p.id)))}
-                className="text-xs text-[#B8837E] hover:underline">Seleccionar todos</button>
-              <button onClick={() => setSelectedCatalogIds(new Set())} className="text-xs text-[#9C8A82] hover:underline">Limpiar</button>
+                className="text-xs text-[#BA4A3A] hover:underline">Seleccionar todos</button>
+              <button onClick={() => setSelectedCatalogIds(new Set())} className="text-xs text-[#5F6B72] hover:underline">Limpiar</button>
             </div>
           </div>
 
-          <div className="max-h-72 overflow-y-auto border border-[#E8E0D8] rounded-xl divide-y divide-[#E8E0D8]">
+          <div className="max-h-72 overflow-y-auto border border-[#E0DAD3] rounded-xl divide-y divide-[#E0DAD3]">
             {products.filter((p) => p.active !== false && p.id).filter((p) => !catalogPdfSearch.trim() || (p.name + " " + p.code).toLowerCase().includes(catalogPdfSearch.toLowerCase())).map((p) => (
-              <label key={p.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#FAF6F0] cursor-pointer">
+              <label key={p.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#F1E9DF] cursor-pointer">
                 <input type="checkbox" checked={selectedCatalogIds.has(p.id)} onChange={() => toggleCatalogProduct(p.id)}
-                  className="w-4 h-4 rounded text-[#B8837E] focus:ring-[#B8837E]/30" />
-                <span className="text-xs text-[#9C8A82] w-16">{p.code || ""}</span>
-                <span className="flex-1 text-sm text-[#5C3E35] truncate">{p.name}</span>
-                <span className="text-xs text-[#B8837E] font-medium">{formatCurrency(catalogPdfProductPrice(p))}</span>
+                  className="w-4 h-4 rounded text-[#BA4A3A] focus:ring-[#BA4A3A]/30" />
+                <span className="text-xs text-[#5F6B72] w-16">{p.code || ""}</span>
+                <span className="flex-1 text-sm text-[#39484F] truncate">{p.name}</span>
+                <span className="text-xs text-[#BA4A3A] font-medium">{formatCurrency(catalogPdfProductPrice(p))}</span>
               </label>
             ))}
             {products.filter((p) => p.active !== false && p.id).filter((p) => !catalogPdfSearch.trim() || (p.name + " " + p.code).toLowerCase().includes(catalogPdfSearch.toLowerCase())).length === 0 && (
-              <div className="px-4 py-8 text-center text-[#9C8A82] text-sm">No hay productos que coincidan</div>
+              <div className="px-4 py-8 text-center text-[#5F6B72] text-sm">No hay productos que coincidan</div>
             )}
           </div>
 
-          <div className="bg-[#FAF6F0] rounded-xl p-4 border border-[#E8E0D8]">
-            <p className="text-sm text-[#5C3E35]">
+          <div className="bg-[#F1E9DF] rounded-xl p-4 border border-[#E0DAD3]">
+            <p className="text-sm text-[#39484F]">
               <strong>Se guardará automáticamente</strong> como una cotización con estado <strong>{'"'}{"Catálogo"}{'"'}</strong> en el módulo Cotizaciones.
             </p>
-            <p className="text-xs text-[#9C8A82] mt-1">
+            <p className="text-xs text-[#5F6B72] mt-1">
               Cuando el cliente apruebe el documento, entra a Cotizaciones, abre esa cotización y usa <strong>{'"'}{"Editar"}{'"'}</strong> para agregar el cliente, fechas, notas y el resto de los detalles.
             </p>
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setShowCatalogPdfModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            <button onClick={() => setShowCatalogPdfModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
               Cancelar
             </button>
             <button onClick={generateCatalogPdfPack} disabled={generatingCatalog || selectedCatalogIds.size === 0}
-              className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+              className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <FileDown size={16} /> {generatingCatalog ? "Generando..." : "Generar Catálogo PDF"}
             </button>
           </div>
@@ -1870,26 +1870,26 @@ export default function CatalogoPage() {
 
       <Modal isOpen={showCatalogsList} onClose={() => setShowCatalogsList(false)} title="Mis Catálogos Guardados">
         <div className="space-y-4">
-          <p className="text-sm text-[#9C8A82]">
+          <p className="text-sm text-[#5F6B72]">
             Catálogos generados desde este módulo y guardados como cotizaciones con estado <strong>Catálogo</strong>. Ábrelos en Cotizaciones para ver/descargar el PDF o completarlos cuando el cliente apruebe.
           </p>
           {loadingCatalogs ? (
-            <div className="py-10 text-center text-[#9C8A82] text-sm"><div className="inline-block w-6 h-6 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+            <div className="py-10 text-center text-[#5F6B72] text-sm"><div className="inline-block w-6 h-6 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
           ) : catalogQuotes.length === 0 ? (
-            <div className="py-10 text-center text-[#9C8A82] text-sm">
+            <div className="py-10 text-center text-[#5F6B72] text-sm">
               <Archive size={40} className="mx-auto mb-3 opacity-40" />
               <p>No hay catálogos guardados todavía.<br />Genera un Catálogo PDF para que aparezca aquí.</p>
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto border border-[#E8E0D8] rounded-xl divide-y divide-[#E8E0D8]">
+            <div className="max-h-96 overflow-y-auto border border-[#E0DAD3] rounded-xl divide-y divide-[#E0DAD3]">
               {catalogQuotes.map((c) => (
                 <div key={c.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#5C3E35]">{c.quote_number}</p>
-                    <p className="text-xs text-[#9C8A82]">{new Date(c.created_at).toLocaleDateString()} · {c.total ? formatCurrency(c.total) : "—"}</p>
+                    <p className="text-sm font-medium text-[#39484F]">{c.quote_number}</p>
+                    <p className="text-xs text-[#5F6B72]">{new Date(c.created_at).toLocaleDateString()} · {c.total ? formatCurrency(c.total) : "—"}</p>
                   </div>
                   <button onClick={() => router.push("/cotizaciones")}
-                    className="h-10 px-4 rounded-xl bg-[#B8837E] text-white text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+                    className="h-10 px-4 rounded-xl bg-[#BA4A3A] text-white text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
                     Abrir en Cotizaciones
                   </button>
                 </div>

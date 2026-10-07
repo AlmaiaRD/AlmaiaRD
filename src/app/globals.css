@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #FCFAF7;
-  --color-foreground: #5C3E35;
-  --color-primary: #B8837E;
-  --color-primary-light: #D4A8A4;
-  --color-primary-dark: #9A6B66;
+  /* Identidad ALMAIA 2026 — fondo casi blanco
+     Principales: terracota #BA4A3A · pizarra #39484F
+     Complementarios: perla #E0DAD3 (bordes) · arena #BEA995 (superficies marcadas)
+     Tonos derivados (soft): #F5EFE9 (fondo), #F1E9DF (hover), #EBCFC3 (tint terracota) */
+  --color-background: #F5EFE9;
+  --color-foreground: #39484F;
+  --color-primary: #BA4A3A;
+  --color-primary-light: #EBCFC3;
+  --color-primary-dark: #9C382A;
   --color-card: #FFFFFF;
-  --color-secondary-bg: #FAF6F0;
+  --color-secondary-bg: #F1E9DF;
+  --color-secondary: #BEA995;
   --color-success: #86C7A3;
   --color-warning: #E8C87A;
   --color-danger: #D4A0A0;
-  --color-text-muted: #9C8A82;
-  --color-border: #E8E0D8;
+  --color-text-muted: #5F6B72;
+  --color-border: #E0DAD3;
 
   --font-sans: "Montserrat", sans-serif;
   --font-signature: "Inspiration", cursive;
 }
 
 .dark {
-  --color-background: #1A1412;
-  --color-foreground: #E8E0D8;
-  --color-primary: #C99A94;
-  --color-primary-light: #D4A8A4;
-  --color-primary-dark: #B8837E;
-  --color-card: #2A2220;
-  --color-secondary-bg: #332B29;
+  --color-background: #1F272C;
+  --color-foreground: #E8E0D3;
+  --color-primary: #D08A7E;
+  --color-primary-light: #E0A99F;
+  --color-primary-dark: #BA6A5E;
+  --color-card: #2A3339;
+  --color-secondary-bg: #333E44;
+  --color-secondary: #BEA995;
   --color-success: #86C7A3;
   --color-warning: #E8C87A;
   --color-danger: #D4A0A0;
-  --color-text-muted: #9C8A82;
-  --color-border: #3D3533;
+  --color-text-muted: #9AA7AC;
+  --color-border: #3A454B;
 }
 
 body {
@@ -55,7 +61,7 @@ body {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #D4C8C0;
+    background: #CFC3B7;
     border-radius: 2px;
   }
 }

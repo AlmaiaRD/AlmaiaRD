@@ -575,22 +575,22 @@ export default function TelegramPage() {
   }
 
   const inputCls =
-    "w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30";
+    "w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30";
 
   const templateCategories = ["General", ...Array.from(new Set(localTemplates.map((t) => t.category)))];
 
   return (
     <PageContainer>
       <div className="mb-8">
-        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
+        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver a CRM
         </button>
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">Telegram</h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Mensajes, bots y avisos por Telegram (gratuito)</p>
+        <h1 className="text-[30px] font-marca text-[#39484F]">Telegram</h1>
+        <p className="text-sm text-[#5F6B72] mt-1">Mensajes, bots y avisos por Telegram (gratuito)</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 mb-6 border-b border-[#E8E0D8] pb-2 flex-wrap">
+      <div className="flex items-center gap-2 mb-6 border-b border-[#E0DAD3] pb-2 flex-wrap">
         {[
           { key: "send", label: "Enviar Mensaje", icon: Send },
           { key: "templates", label: "Plantillas", icon: Bookmark },
@@ -603,8 +603,8 @@ export default function TelegramPage() {
             onClick={() => setActiveTab(tab.key as Tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === tab.key
-                ? "bg-[#B8837E]/10 text-[#B8837E]"
-                : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                ? "bg-[#BA4A3A]/10 text-[#BA4A3A]"
+                : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"
             }`}
           >
             <tab.icon size={16} />
@@ -616,10 +616,10 @@ export default function TelegramPage() {
       {/* ===================== SEND TAB ===================== */}
       {activeTab === "send" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-            <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Enviar Mensaje por Telegram</h3>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+            <h3 className="text-sm font-semibold text-[#39484F] mb-4">Enviar Mensaje por Telegram</h3>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Bot de Telegram</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Bot de Telegram</label>
               <select
                 value={selectedConfig?.id || ""}
                 onChange={(e) => {
@@ -639,7 +639,7 @@ export default function TelegramPage() {
 
             {localTemplates.length > 0 && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Plantilla rápida</label>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Plantilla rápida</label>
                 <select
                   value={selectedTemplate}
                   onChange={(e) => {
@@ -664,7 +664,7 @@ export default function TelegramPage() {
             )}
 
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Enviar a</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Enviar a</label>
               <select
                 value={recipientMode}
                 onChange={(e) => setRecipientMode(e.target.value as "manual" | "client" | "all")}
@@ -678,7 +678,7 @@ export default function TelegramPage() {
 
             {recipientMode === "manual" && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del destinatario</label>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Chat ID del destinatario</label>
                 <input
                   type="text"
                   value={chatId}
@@ -691,7 +691,7 @@ export default function TelegramPage() {
 
             {recipientMode === "client" && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cliente</label>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Cliente</label>
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
@@ -706,7 +706,7 @@ export default function TelegramPage() {
             )}
 
             {recipientMode === "all" && (
-              <div className="mb-4 p-3 rounded-xl bg-[#2AABEE]/5 border border-[#2AABEE]/20 text-xs text-[#5C3E35]">
+              <div className="mb-4 p-3 rounded-xl bg-[#2AABEE]/5 border border-[#2AABEE]/20 text-xs text-[#39484F]">
                 <div className="flex items-center gap-2">
                   <Users size={14} className="text-[#2AABEE]" />
                   Se enviará el mensaje a los {telegramClients.length} cliente(s) que tienen Telegram configurado.
@@ -715,22 +715,22 @@ export default function TelegramPage() {
             )}
 
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
               />
               {messageText && (
-                <p className="text-xs text-[#9C8A82] mt-1">{messageText.length} caracteres</p>
+                <p className="text-xs text-[#5F6B72] mt-1">{messageText.length} caracteres</p>
               )}
             </div>
 
             {/* Adjunto (foto / documento / video / audio) */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Adjuntar (opcional)</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Adjuntar (opcional)</label>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {(["photo", "document", "video", "audio"] as const).map((t) => (
                   <button
@@ -739,7 +739,7 @@ export default function TelegramPage() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                       mediaDisposition === t
                         ? "bg-[#2AABEE]/10 text-[#1D8FC9] border-[#2AABEE]"
-                        : "text-[#9C8A82] border-[#E8E0D8] hover:bg-[#FAF6F0]"
+                        : "text-[#5F6B72] border-[#E0DAD3] hover:bg-[#F1E9DF]"
                     }`}
                   >
                     {t === "photo" ? "Foto" : t === "document" ? "Documento" : t === "video" ? "Video" : "Audio"}
@@ -747,10 +747,10 @@ export default function TelegramPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#9C8A82] cursor-pointer hover:bg-[#FAF6F0] transition-all">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#5F6B72] cursor-pointer hover:bg-[#F1E9DF] transition-all">
                   <Paperclip size={15} />
                   {mediaFile ? (
-                    <span className="text-[#5C3E35] truncate">{mediaFile.name}</span>
+                    <span className="text-[#39484F] truncate">{mediaFile.name}</span>
                   ) : (
                     "Subir archivo (máx 8MB)"
                   )}
@@ -774,7 +774,7 @@ export default function TelegramPage() {
                   value={mediaUrl}
                   onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
                   placeholder="o pega una URL pública..."
-                  className="flex-1 h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {(mediaFile || mediaUrl) && (
@@ -807,12 +807,12 @@ export default function TelegramPage() {
             </button>
 
             {sendResults.length > 0 && (
-              <div className="mt-3 max-h-56 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+              <div className="mt-3 max-h-56 overflow-y-auto border border-[#E0DAD3] rounded-xl">
                 {sendResults.map((r, i) => (
-                  <div key={i} className={`px-3 py-2 text-xs border-b border-[#E8E0D8] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
+                  <div key={i} className={`px-3 py-2 text-xs border-b border-[#E0DAD3] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
                     {r.ok ? <CheckCircle size={13} className="mt-0.5 shrink-0" /> : <AlertCircle size={13} className="mt-0.5 shrink-0" />}
                     <span>
-                      <span className="font-medium text-[#5C3E35]">{r.name}</span>
+                      <span className="font-medium text-[#39484F]">{r.name}</span>
                       {r.ok ? " enviado" : ` · ${r.error || "no enviado"}`}
                     </span>
                   </div>
@@ -823,10 +823,10 @@ export default function TelegramPage() {
 
           {/* Quick Actions Panel */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Acciones Rápidas</h3>
-                <button onClick={openCreateAction} className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors">
+                <h3 className="text-sm font-semibold text-[#39484F]">Acciones Rápidas</h3>
+                <button onClick={openCreateAction} className="flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] transition-colors">
                   <Plus size={14} /> Nueva
                 </button>
               </div>
@@ -837,19 +837,19 @@ export default function TelegramPage() {
                     <div key={action.id} className="flex items-center gap-2 group">
                       <button
                         onClick={() => executeQuickAction(action)}
-                        className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all text-left"
+                        className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-all text-left"
                       >
                         <div className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center`}>
                           <IconComp size={18} className={action.color} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#5C3E35] truncate">{action.name}</p>
-                          <p className="text-xs text-[#9C8A82] truncate">{action.description}</p>
+                          <p className="text-sm font-medium text-[#39484F] truncate">{action.name}</p>
+                          <p className="text-xs text-[#5F6B72] truncate">{action.description}</p>
                         </div>
                       </button>
                       <button
                         onClick={() => openEditAction(action)}
-                        className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Edit3 size={14} />
                       </button>
@@ -859,15 +859,15 @@ export default function TelegramPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-              <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Cómo enviar a un cliente</h3>
-              <ol className="list-decimal list-inside space-y-2 text-sm text-[#5C3E35]">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+              <h3 className="text-sm font-semibold text-[#39484F] mb-4">Cómo enviar a un cliente</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-[#39484F]">
                 <li>El cliente debe escribirle <span className="font-medium">/start</span> a tu bot en Telegram (los bots no pueden iniciar conversación).</li>
                 <li>El bot le responderá con su <span className="font-medium">chat_id</span>.</li>
                 <li>Guarda ese chat_id en el formulario del cliente (campo &quot;Telegram Chat ID&quot;).</li>
                 <li>Usa ese chat_id aquí para enviarle mensajes o avisos.</li>
               </ol>
-              <p className="mt-4 text-xs text-[#9C8A82]">
+              <p className="mt-4 text-xs text-[#5F6B72]">
                 Consejo: los mensajes entrantes aparecen en el historial; pulsa el icono de enviar junto a uno para rellenar el chat_id automáticamente.
               </p>
             </div>
@@ -879,13 +879,13 @@ export default function TelegramPage() {
       {activeTab === "templates" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button onClick={openCreateTemplate} className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={openCreateTemplate} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               <Plus size={18} /> Nueva Plantilla
             </button>
           </div>
 
           {localTemplates.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <Bookmark size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay plantillas creadas</p>
               <p className="text-xs mt-1">Crea plantillas para enviar mensajes predefinidos (aparecen también en WhatsApp y Email)</p>
@@ -893,23 +893,23 @@ export default function TelegramPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {localTemplates.map((template) => (
-                <div key={template.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                <div key={template.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#B8837E]/10 flex items-center justify-center">
-                        <FileText size={16} className="text-[#B8837E]" />
+                      <div className="w-8 h-8 rounded-lg bg-[#BA4A3A]/10 flex items-center justify-center">
+                        <FileText size={16} className="text-[#BA4A3A]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#5C3E35]">{template.name}</p>
-                        <p className="text-xs text-[#9C8A82]">{template.category}</p>
+                        <p className="text-sm font-semibold text-[#39484F]">{template.name}</p>
+                        <p className="text-xs text-[#5F6B72]">{template.category}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-[#5C3E35] bg-[#FAF6F0] rounded-xl p-3 mb-3 line-clamp-3">{template.message}</p>
+                  <p className="text-xs text-[#39484F] bg-[#F1E9DF] rounded-xl p-3 mb-3 line-clamp-3">{template.message}</p>
                   {template.variables.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {template.variables.map((v) => (
-                        <span key={v} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#B8837E]/10 text-[#B8837E]">
+                        <span key={v} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#BA4A3A]/10 text-[#BA4A3A]">
                           {`{${v}}`}
                         </span>
                       ))}
@@ -919,13 +919,13 @@ export default function TelegramPage() {
                     <button onClick={() => selectTemplate(template)} className="flex-1 h-9 bg-[#2AABEE] text-white rounded-xl text-xs font-medium hover:bg-[#1D8FC9] transition-all flex items-center justify-center gap-1">
                       <Send size={12} /> Usar
                     </button>
-                    <button onClick={() => { setPreviewTemplate(template); setPreviewVars({}); }} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => { setPreviewTemplate(template); setPreviewVars({}); }} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Eye size={14} />
                     </button>
-                    <button onClick={() => openEditTemplate(template)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => openEditTemplate(template)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Edit3 size={14} />
                     </button>
-                    <button onClick={() => deleteTemplate(template.id, template.is_system)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
+                    <button onClick={() => deleteTemplate(template.id, template.is_system)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -940,7 +940,7 @@ export default function TelegramPage() {
       {activeTab === "actions" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button onClick={openCreateAction} className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={openCreateAction} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               <Plus size={18} /> Nueva Acción
             </button>
           </div>
@@ -949,26 +949,26 @@ export default function TelegramPage() {
             {quickActions.map((action) => {
               const IconComp = getIconComponent(action.iconName).icon;
               return (
-                <div key={action.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                <div key={action.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                   <div className="flex items-start gap-3 mb-3">
                     <div className={`w-12 h-12 rounded-xl ${action.bgColor} flex items-center justify-center`}>
                       <IconComp size={22} className={action.color} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-[#5C3E35]">{action.name}</p>
-                      <p className="text-xs text-[#9C8A82]">{action.description}</p>
+                      <p className="text-sm font-semibold text-[#39484F]">{action.name}</p>
+                      <p className="text-xs text-[#5F6B72]">{action.description}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-[#5C3E35] bg-[#FAF6F0] rounded-xl p-3 mb-3 line-clamp-3">{action.message}</p>
+                  <p className="text-xs text-[#39484F] bg-[#F1E9DF] rounded-xl p-3 mb-3 line-clamp-3">{action.message}</p>
                   <div className="flex items-center gap-2">
                     <button onClick={() => executeQuickAction(action)} className="flex-1 h-9 bg-[#2AABEE] text-white rounded-xl text-xs font-medium hover:bg-[#1D8FC9] transition-all flex items-center justify-center gap-1">
                       <Send size={12} /> Usar
                     </button>
-                    <button onClick={() => openEditAction(action)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => openEditAction(action)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Edit3 size={14} />
                     </button>
                     {!action.isDefault && (
-                      <button onClick={() => deleteAction(action.id)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
+                      <button onClick={() => deleteAction(action.id)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -983,26 +983,26 @@ export default function TelegramPage() {
       {/* ===================== CONFIGS TAB ===================== */}
       {activeTab === "configs" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#5C3E35]">Bots Configurados</h3>
-              <button onClick={() => setShowAddConfig(true)} className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors">
+              <h3 className="text-sm font-semibold text-[#39484F]">Bots Configurados</h3>
+              <button onClick={() => setShowAddConfig(true)} className="flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] transition-colors">
                 <Plus size={14} /> Agregar Bot
               </button>
             </div>
             {configs.length === 0 ? (
-              <p className="text-sm text-[#9C8A82] text-center py-6">No hay bots de Telegram configurados</p>
+              <p className="text-sm text-[#5F6B72] text-center py-6">No hay bots de Telegram configurados</p>
             ) : (
               <div className="space-y-2">
                 {configs.map((config) => (
-                  <div key={config.id} className="flex items-center justify-between p-3 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+                  <div key={config.id} className="flex items-center justify-between p-3 rounded-xl border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-all">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#5C3E35] truncate">{config.label}</p>
-                      <p className="text-xs text-[#9C8A82]">{config.is_active ? "Activo" : "Inactivo"}{config.has_token ? " · token configurado" : " · sin token"}</p>
+                      <p className="text-sm font-medium text-[#39484F] truncate">{config.label}</p>
+                      <p className="text-xs text-[#5F6B72]">{config.is_active ? "Activo" : "Inactivo"}{config.has_token ? " · token configurado" : " · sin token"}</p>
                     </div>
                     <div className="flex items-center gap-1">
                       {config.owner_chat_id && (
-                        <span className="text-xs text-[#9C8A82] px-2 py-1 bg-[#FAF6F0] rounded-lg truncate max-w-[140px]">{config.owner_chat_id}</span>
+                        <span className="text-xs text-[#5F6B72] px-2 py-1 bg-[#F1E9DF] rounded-lg truncate max-w-[140px]">{config.owner_chat_id}</span>
                       )}
                       <button onClick={() => handleDeleteConfig(config.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg transition-all">
                         <Trash2 size={15} />
@@ -1014,12 +1014,12 @@ export default function TelegramPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8] space-y-3">
-            <h3 className="text-sm font-semibold text-[#5C3E35]">Configuración Webhook</h3>
-            <p className="text-sm text-[#9C8A82]">
-              <span className="font-medium text-[#5C3E35]">URL del Webhook:</span>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3] space-y-3">
+            <h3 className="text-sm font-semibold text-[#39484F]">Configuración Webhook</h3>
+            <p className="text-sm text-[#5F6B72]">
+              <span className="font-medium text-[#39484F]">URL del Webhook:</span>
             </p>
-            <code className="block p-3 bg-[#FAF6F0] rounded-xl text-xs text-[#5C3E35] break-all">
+            <code className="block p-3 bg-[#F1E9DF] rounded-xl text-xs text-[#39484F] break-all">
               {typeof window !== "undefined" ? `${window.location.origin}/api/telegram/webhook` : "/api/telegram/webhook"}
             </code>
             <button
@@ -1029,32 +1029,32 @@ export default function TelegramPage() {
             >
               {webhookLoading ? "Registrando..." : "Registrar Webhook en el Bot"}
             </button>
-            <p className="text-xs text-[#9C8A82]">
+            <p className="text-xs text-[#5F6B72]">
               Registra la URL para que Telegram envíe aquí los mensajes que reciba el bot. Necesario para ver mensajes entrantes y vincular clientes.
             </p>
           </div>
 
           {/* Clientes sin Telegram vinculado (tesis de chat_id) */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-[#5C3E35]">Clientes sin Telegram vinculado</h3>
-              <span className="text-xs text-[#9C8A82]">
+              <h3 className="text-sm font-semibold text-[#39484F]">Clientes sin Telegram vinculado</h3>
+              <span className="text-xs text-[#5F6B72]">
                 {allClients.length - telegramClients.length} de {allClients.length}
               </span>
             </div>
-            <p className="text-xs text-[#9C8A82] mb-3">
+            <p className="text-xs text-[#5F6B72] mb-3">
               Pídele a cada cliente que escriba <b>/start</b> a tu bot de Telegram. El sistema detecta su chat_id automáticamente.
             </p>
             {allClients.length - telegramClients.length === 0 ? (
               <p className="text-sm text-[#6B8E6B]">Todos tus clientes ya tienen Telegram configurado.</p>
             ) : (
-              <div className="max-h-56 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+              <div className="max-h-56 overflow-y-auto border border-[#E0DAD3] rounded-xl">
                 {allClients
                   .filter((c) => !c.telegram_chat_id)
                   .slice(0, 50)
                   .map((c) => (
-                    <div key={c.id} className="flex items-center justify-between px-3 py-2 border-b border-[#E8E0D8] last:border-0">
-                      <p className="text-sm text-[#5C3E35] truncate">{c.full_name || "Cliente"}</p>
+                    <div key={c.id} className="flex items-center justify-between px-3 py-2 border-b border-[#E0DAD3] last:border-0">
+                      <p className="text-sm text-[#39484F] truncate">{c.full_name || "Cliente"}</p>
                       {c.phone && (
                         <button
                           onClick={() => {
@@ -1062,7 +1062,7 @@ export default function TelegramPage() {
                             navigator.clipboard?.writeText(m);
                             toast.success("Mensaje copiado: pégalo y envíalo por WhatsApp");
                           }}
-                          className="text-xs text-[#B8837E] hover:text-[#9A6B66] flex items-center gap-1 shrink-0"
+                          className="text-xs text-[#BA4A3A] hover:text-[#9C382A] flex items-center gap-1 shrink-0"
                         >
                           <Copy size={12} /> Copiar invitación
                         </button>
@@ -1074,15 +1074,15 @@ export default function TelegramPage() {
           </div>
 
           {/* Recordatorio masivo de pagos por Telegram */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-            <h3 className="text-sm font-semibold text-[#5C3E35] mb-1">Recordatorio Masivo de Pagos</h3>
-            <p className="text-xs text-[#9C8A82] mb-3">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+            <h3 className="text-sm font-semibold text-[#39484F] mb-1">Recordatorio Masivo de Pagos</h3>
+            <p className="text-xs text-[#5F6B72] mb-3">
               Envía el mensaje de arriba a todos los clientes con saldo pendiente y Telegram vinculado. Usa {"{cliente}"} y {"{monto}"} como variables.
             </p>
             <button
               onClick={handleTelegramReminders}
               disabled={reminderSending || !selectedConfig || !messageText.trim()}
-              className="w-full h-11 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
+              className="w-full h-11 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50"
             >
               {reminderSending ? "Enviando recordatorios..." : "Enviar recordatorios a clientes con saldo"}
             </button>
@@ -1092,33 +1092,33 @@ export default function TelegramPage() {
 
       {/* ===================== LOGS TAB ===================== */}
       {activeTab === "logs" && (
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E8E0D8]">
-            <h3 className="text-sm font-semibold text-[#5C3E35]">Historial de Telegram</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E0DAD3]">
+            <h3 className="text-sm font-semibold text-[#39484F]">Historial de Telegram</h3>
           </div>
           {logs.length === 0 ? (
-            <div className="text-center py-12 text-[#9C8A82]">
+            <div className="text-center py-12 text-[#5F6B72]">
               <History size={36} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm">No hay mensajes de Telegram</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E8E0D8]">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Dirección</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Chat</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Mensaje</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
+                <tr className="border-b border-[#E0DAD3]">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Dirección</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Chat</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Mensaje</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => (
-                  <tr key={log.id} className="border-b border-[#E8E0D8] last:border-0 hover:bg-[#FAF6F0]">
-                    <td className="px-4 py-3 text-sm text-[#5C3E35] whitespace-nowrap">{formatDate(log.created_at)}</td>
+                  <tr key={log.id} className="border-b border-[#E0DAD3] last:border-0 hover:bg-[#F1E9DF]">
+                    <td className="px-4 py-3 text-sm text-[#39484F] whitespace-nowrap">{formatDate(log.created_at)}</td>
                     <td className="px-4 py-3">
                       {log.direction === "incoming" ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#B8837E]">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#BA4A3A]">
                           <ArrowDownLeft size={14} /> Entrante
                         </span>
                       ) : (
@@ -1127,8 +1127,8 @@ export default function TelegramPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#5C3E35]">{log.chat_id}</td>
-                    <td className="px-4 py-3 text-sm text-[#9C8A82] max-w-[220px] truncate" title={log.message_body || ""}>
+                    <td className="px-4 py-3 text-sm text-[#39484F]">{log.chat_id}</td>
+                    <td className="px-4 py-3 text-sm text-[#5F6B72] max-w-[220px] truncate" title={log.message_body || ""}>
                       {log.message_body || "(media)"}
                     </td>
                     <td className="px-4 py-3">
@@ -1140,16 +1140,16 @@ export default function TelegramPage() {
                             ) : log.status === "failed" ? (
                               <AlertCircle size={15} className="text-[#D4A0A0]" />
                             ) : (
-                              <Clock size={15} className="text-[#B8837E]" />
+                              <Clock size={15} className="text-[#BA4A3A]" />
                             )}
                           </span>
                         )}
                         {log.direction === "incoming" ? (
-                          <ArrowDownLeft size={14} className="text-[#B8837E]" />
+                          <ArrowDownLeft size={14} className="text-[#BA4A3A]" />
                         ) : (
                           <ArrowUpRight size={14} className="text-[#6B8E6B]" />
                         )}
-                        <span className="text-sm text-[#5C3E35] capitalize">{log.status}</span>
+                        <span className="text-sm text-[#39484F] capitalize">{log.status}</span>
                         {log.direction === "incoming" && (
                           <button
                             onClick={() => {
@@ -1157,7 +1157,7 @@ export default function TelegramPage() {
                               setActiveTab("send");
                               toast.success("Chat ID copiado a Enviar Mensaje");
                             }}
-                            className="p-1 rounded-lg text-[#B8837E] hover:bg-[#B8837E]/10 transition-all ml-2"
+                            className="p-1 rounded-lg text-[#BA4A3A] hover:bg-[#BA4A3A]/10 transition-all ml-2"
                             title="Usar este chat para responder"
                           >
                             <Send size={13} />
@@ -1177,7 +1177,7 @@ export default function TelegramPage() {
       <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title={editingTemplate ? "Editar Plantilla" : "Nueva Plantilla"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Nombre</label>
             <input
               type="text"
               value={templateForm.name}
@@ -1187,7 +1187,7 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Categoría</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Categoría</label>
             <select
               value={templateForm.category}
               onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
@@ -1199,17 +1199,17 @@ export default function TelegramPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
             <textarea
               value={templateForm.message}
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
               rows={5}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Variables (separadas por coma)</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Variables (separadas por coma)</label>
             <input
               type="text"
               value={templateForm.variables}
@@ -1217,13 +1217,13 @@ export default function TelegramPage() {
               placeholder="Ej: nombre, monto, fecha"
               className={inputCls}
             />
-            <p className="text-[10px] text-[#9C8A82] mt-1">Usa {"{nombre}"} en el mensaje para insertar la variable</p>
+            <p className="text-[10px] text-[#5F6B72] mt-1">Usa {"{nombre}"} en el mensaje para insertar la variable</p>
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowTemplateModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            <button onClick={() => setShowTemplateModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
               Cancelar
             </button>
-            <button onClick={saveTemplate} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={saveTemplate} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               {editingTemplate ? "Actualizar" : "Crear"}
             </button>
           </div>
@@ -1236,7 +1236,7 @@ export default function TelegramPage() {
           <div className="space-y-4">
             <div className="bg-[#E5DDD5] rounded-2xl p-4 relative">
               <div className="bg-white rounded-2xl p-4 shadow-sm max-w-sm ml-auto">
-                <p className="text-sm text-[#5C3E35] whitespace-pre-wrap">
+                <p className="text-sm text-[#39484F] whitespace-pre-wrap">
                   {(() => {
                     let msg = previewTemplate.message;
                     previewTemplate.variables.forEach((v) => {
@@ -1246,12 +1246,12 @@ export default function TelegramPage() {
                     return msg;
                   })()}
                 </p>
-                <p className="text-[10px] text-[#9C8A82] text-right mt-2">{new Date().toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</p>
+                <p className="text-[10px] text-[#5F6B72] text-right mt-2">{new Date().toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</p>
               </div>
             </div>
             {previewTemplate.variables.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-[#9C8A82]">Rellena las variables para previsualizar:</p>
+                <p className="text-xs font-medium text-[#5F6B72]">Rellena las variables para previsualizar:</p>
                 {previewTemplate.variables.map((v) => (
                   <input
                     key={v}
@@ -1259,7 +1259,7 @@ export default function TelegramPage() {
                     value={previewVars[v] || ""}
                     onChange={(e) => setPreviewVars({ ...previewVars, [v]: e.target.value })}
                     placeholder={v}
-                    className="w-full h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
                 ))}
               </div>
@@ -1268,7 +1268,7 @@ export default function TelegramPage() {
               <button onClick={() => { selectTemplate(previewTemplate); setPreviewTemplate(null); }} className="flex-1 h-12 bg-[#2AABEE] text-white rounded-xl text-sm font-medium hover:bg-[#1D8FC9] transition-all shadow-sm flex items-center justify-center gap-2">
                 <Send size={16} /> Usar Plantilla
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(previewTemplate.message); toast.success("Mensaje copiado"); }} className="h-12 px-4 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(previewTemplate.message); toast.success("Mensaje copiado"); }} className="h-12 px-4 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center gap-2">
                 <Copy size={16} /> Copiar
               </button>
             </div>
@@ -1280,7 +1280,7 @@ export default function TelegramPage() {
       <Modal isOpen={showActionModal} onClose={() => setShowActionModal(false)} title={editingAction ? "Editar Acción" : "Nueva Acción Rápida"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Nombre</label>
             <input
               type="text"
               value={actionForm.name}
@@ -1290,7 +1290,7 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Descripción</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Descripción</label>
             <input
               type="text"
               value={actionForm.description}
@@ -1300,10 +1300,10 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Icono</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Icono</label>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm flex items-center gap-3 hover:bg-[#FAF6F0] transition-all"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
             >
               {(() => {
                 const iconData = getIconComponent(actionForm.iconName);
@@ -1314,13 +1314,13 @@ export default function TelegramPage() {
                       <IconC size={16} className={iconData.color} />
                     </div>
                     <span>{actionForm.iconName}</span>
-                    <ChevronDown size={14} className="ml-auto text-[#9C8A82]" />
+                    <ChevronDown size={14} className="ml-auto text-[#5F6B72]" />
                   </>
                 );
               })()}
             </button>
             {showIconPicker && (
-              <div className="mt-2 p-2 bg-white border border-[#E8E0D8] rounded-xl shadow-lg inline-flex flex-wrap gap-1 max-w-[280px]">
+              <div className="mt-2 p-2 bg-white border border-[#E0DAD3] rounded-xl shadow-lg inline-flex flex-wrap gap-1 max-w-[280px]">
                 {ICON_OPTIONS.map((opt) => {
                   const Ic = opt.icon;
                   return (
@@ -1328,7 +1328,7 @@ export default function TelegramPage() {
                       key={opt.name}
                       title={opt.name}
                       onClick={() => { setActionForm({ ...actionForm, iconName: opt.name }); setShowIconPicker(false); }}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${actionForm.iconName === opt.name ? "ring-2 ring-[#B8837E] " + opt.bgColor : "hover:bg-[#FAF6F0]"}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${actionForm.iconName === opt.name ? "ring-2 ring-[#BA4A3A] " + opt.bgColor : "hover:bg-[#F1E9DF]"}`}
                     >
                       <Ic size={15} className={opt.color} />
                     </button>
@@ -1338,20 +1338,20 @@ export default function TelegramPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje predeterminado</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje predeterminado</label>
             <textarea
               value={actionForm.message}
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowActionModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            <button onClick={() => setShowActionModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
               Cancelar
             </button>
-            <button onClick={saveAction} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={saveAction} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               {editingAction ? "Actualizar" : "Crear"}
             </button>
           </div>
@@ -1362,22 +1362,22 @@ export default function TelegramPage() {
       <Modal isOpen={showAddConfig} onClose={() => setShowAddConfig(false)} title="Agregar Bot de Telegram">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Etiqueta</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Etiqueta</label>
             <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: Bot de Avisos" className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Token del Bot</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Token del Bot</label>
             <input type="password" value={configForm.bot_token} onChange={(e) => setConfigForm({ ...configForm, bot_token: e.target.value })} placeholder="Token de @BotFather, ej: 123456:ABC-DEF..." className={inputCls} />
-            <p className="text-[10px] text-[#9C8A82] mt-1">Ve a @BotFather en Telegram, crea un bot y copia su token. Es gratis.</p>
+            <p className="text-[10px] text-[#5F6B72] mt-1">Ve a @BotFather en Telegram, crea un bot y copia su token. Es gratis.</p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Chat ID del dueño (opcional)</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Chat ID del dueño (opcional)</label>
             <input type="text" value={configForm.owner_chat_id} onChange={(e) => setConfigForm({ ...configForm, owner_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
-            <p className="text-[10px] text-[#9C8A82] mt-1">Para recibir avisos automáticos (Modelo A). Escríbele /start al bot para obtener tu chat_id.</p>
+            <p className="text-[10px] text-[#5F6B72] mt-1">Para recibir avisos automáticos (Modelo A). Escríbele /start al bot para obtener tu chat_id.</p>
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleAddConfig} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">Guardar</button>
+            <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={handleAddConfig} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">Guardar</button>
           </div>
         </div>
       </Modal>

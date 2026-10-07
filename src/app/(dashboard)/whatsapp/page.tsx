@@ -631,15 +631,15 @@ export default function WhatsAppPage() {
   return (
     <PageContainer>
       <div className="mb-8">
-        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
+        <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#5F6B72] hover:text-[#39484F] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver a CRM
         </button>
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">WhatsApp Business</h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Envía mensajes, plantillas y recordatorios por WhatsApp</p>
+        <h1 className="text-[30px] font-marca text-[#39484F]">WhatsApp Business</h1>
+        <p className="text-sm text-[#5F6B72] mt-1">Envía mensajes, plantillas y recordatorios por WhatsApp</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 mb-6 border-b border-[#E8E0D8] pb-2 flex-wrap">
+      <div className="flex items-center gap-2 mb-6 border-b border-[#E0DAD3] pb-2 flex-wrap">
         {[
           { key: "send", label: "Enviar Mensaje", icon: Send },
           { key: "templates", label: "Plantillas", icon: Bookmark },
@@ -654,8 +654,8 @@ export default function WhatsAppPage() {
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === tab.key
-                ? "bg-[#B8837E]/10 text-[#B8837E]"
-                : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+                ? "bg-[#BA4A3A]/10 text-[#BA4A3A]"
+                : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"
             }`}
           >
             <tab.icon size={16} />
@@ -667,19 +667,19 @@ export default function WhatsAppPage() {
       {/* ===================== SEND TAB ===================== */}
       {activeTab === "send" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-            <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Enviar Mensaje</h3>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+            <h3 className="text-sm font-semibold text-[#39484F] mb-4">Enviar Mensaje</h3>
 
             {/* Select Config */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cuenta de WhatsApp</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Cuenta de WhatsApp</label>
               <select
                 value={selectedConfig?.id || ""}
                 onChange={(e) => {
                   const config = configs.find((c) => c.id === e.target.value);
                   setSelectedConfig(config || null);
                 }}
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               >
                 <option value="">Seleccionar cuenta...</option>
                 {configs.map((config) => (
@@ -692,28 +692,28 @@ export default function WhatsAppPage() {
 
             {/* Client Search */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Buscar Cliente</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Buscar Cliente</label>
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
                 <input
                   type="text"
                   value={searchClient}
                   onChange={(e) => setSearchClient(e.target.value)}
                   placeholder="Nombre o teléfono..."
-                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {searchClient && filteredClients.length > 0 && (
-                <div className="mt-1 max-h-40 overflow-y-auto border border-[#E8E0D8] rounded-xl bg-white">
+                <div className="mt-1 max-h-40 overflow-y-auto border border-[#E0DAD3] rounded-xl bg-white">
                   {filteredClients.slice(0, 5).map((client) => (
                     <button
                       key={client.id}
                       onClick={() => selectClient(client)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-[#FAF6F0] flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-[#F1E9DF] flex items-center gap-2"
                     >
-                      <Phone size={14} className="text-[#9C8A82]" />
-                      <span className="text-[#5C3E35]">{client.full_name}</span>
-                      <span className="text-xs text-[#9C8A82]">{client.phone}</span>
+                      <Phone size={14} className="text-[#5F6B72]" />
+                      <span className="text-[#39484F]">{client.full_name}</span>
+                      <span className="text-xs text-[#5F6B72]">{client.phone}</span>
                     </button>
                   ))}
                 </div>
@@ -722,20 +722,20 @@ export default function WhatsAppPage() {
 
             {/* Phone */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Teléfono</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Teléfono</label>
               <input
                 type="tel"
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
                 placeholder="Ej: 8091234567"
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               />
             </div>
 
             {/* Template selector */}
             {localTemplates.length > 0 && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Plantilla rápida</label>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Plantilla rápida</label>
                 <select
                   value={selectedLocalTemplate}
                   onChange={(e) => {
@@ -749,7 +749,7 @@ export default function WhatsAppPage() {
                       setSelectedLocalTemplate("");
                     }
                   }}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 >
                   <option value="">Escribir mensaje manualmente...</option>
                   {localTemplates.map((tpl) => (
@@ -761,22 +761,22 @@ export default function WhatsAppPage() {
 
             {/* Message */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
                 rows={5}
-                className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
               />
               {messageText && (
-                <p className="text-xs text-[#9C8A82] mt-1">{messageText.length} caracteres</p>
+                <p className="text-xs text-[#5F6B72] mt-1">{messageText.length} caracteres</p>
               )}
             </div>
 
             {/* Adjunto (imagen / documento / video / audio) */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Adjuntar (opcional)</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Adjuntar (opcional)</label>
               <div className="flex items-center gap-2 mb-2">
                 {(["image", "document", "video", "audio"] as const).map((t) => (
                   <button
@@ -785,7 +785,7 @@ export default function WhatsAppPage() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                       mediaDisposition === t
                         ? "bg-[#25D366]/10 text-[#128C7E] border-[#25D366]"
-                        : "text-[#9C8A82] border-[#E8E0D8] hover:bg-[#FAF6F0]"
+                        : "text-[#5F6B72] border-[#E0DAD3] hover:bg-[#F1E9DF]"
                     }`}
                   >
                     {t === "image" ? "Imagen" : t === "document" ? "Documento" : t === "video" ? "Video" : "Audio"}
@@ -793,10 +793,10 @@ export default function WhatsAppPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#9C8A82] cursor-pointer hover:bg-[#FAF6F0] transition-all">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#5F6B72] cursor-pointer hover:bg-[#F1E9DF] transition-all">
                   <Paperclip size={15} />
                   {mediaFile ? (
-                    <span className="text-[#5C3E35] truncate">{mediaFile.name}</span>
+                    <span className="text-[#39484F] truncate">{mediaFile.name}</span>
                   ) : (
                     "Subir archivo (máx 8MB)"
                   )}
@@ -820,7 +820,7 @@ export default function WhatsAppPage() {
                   value={mediaUrl}
                   onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
                   placeholder="o pega una URL pública..."
-                  className="flex-1 h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {(mediaFile || mediaUrl) && (
@@ -849,10 +849,10 @@ export default function WhatsAppPage() {
 
           {/* Quick Actions Panel */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Acciones Rápidas</h3>
-                <button onClick={openCreateAction} className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors">
+                <h3 className="text-sm font-semibold text-[#39484F]">Acciones Rápidas</h3>
+                <button onClick={openCreateAction} className="flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] transition-colors">
                   <Plus size={14} /> Nueva
                 </button>
               </div>
@@ -863,19 +863,19 @@ export default function WhatsAppPage() {
                     <div key={action.id} className="flex items-center gap-2 group">
                       <button
                         onClick={() => executeQuickAction(action)}
-                        className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all text-left"
+                        className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-all text-left"
                       >
                         <div className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center`}>
                           <IconComp size={18} className={action.color} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#5C3E35] truncate">{action.name}</p>
-                          <p className="text-xs text-[#9C8A82] truncate">{action.description}</p>
+                          <p className="text-sm font-medium text-[#39484F] truncate">{action.name}</p>
+                          <p className="text-xs text-[#5F6B72] truncate">{action.description}</p>
                         </div>
                       </button>
                       <button
                         onClick={() => openEditAction(action)}
-                        className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Edit3 size={14} />
                       </button>
@@ -886,41 +886,41 @@ export default function WhatsAppPage() {
             </div>
 
             {/* Webhook Info */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-              <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Configuración Webhook</h3>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+              <h3 className="text-sm font-semibold text-[#39484F] mb-4">Configuración Webhook</h3>
               <div className="space-y-2 text-sm">
-                <p className="text-[#9C8A82]">
-                  <span className="font-medium text-[#5C3E35]">URL del Webhook:</span>
+                <p className="text-[#5F6B72]">
+                  <span className="font-medium text-[#39484F]">URL del Webhook:</span>
                 </p>
-                <code className="block p-3 bg-[#FAF6F0] rounded-xl text-xs text-[#5C3E35] break-all">
+                <code className="block p-3 bg-[#F1E9DF] rounded-xl text-xs text-[#39484F] break-all">
                   {typeof window !== "undefined" ? `${window.location.origin}/api/whatsapp/webhook` : "/api/whatsapp/webhook"}
                 </code>
               </div>
             </div>
 
             {/* Recordatorios de pago masivos */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
-              <h3 className="text-sm font-semibold text-[#5C3E35] mb-1">Recordatorio Masivo de Pagos</h3>
-              <p className="text-xs text-[#9C8A82] mb-3">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+              <h3 className="text-sm font-semibold text-[#39484F] mb-1">Recordatorio Masivo de Pagos</h3>
+              <p className="text-xs text-[#5F6B72] mb-3">
                 Envía el mensaje de arriba a todos los clientes con saldo pendiente. Usa {"{cliente}"} y {"{monto}"} como variables.
               </p>
               <button
                 onClick={handleWhatsAppReminders}
                 disabled={reminderSending || !selectedConfig || !messageText.trim()}
-                className="w-full h-11 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50"
+                className="w-full h-11 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50"
               >
                 {reminderSending ? "Enviando recordatorios..." : "Enviar recordatorios a clientes con saldo"}
               </button>
-              <p className="text-[10px] text-[#9C8A82] mt-2">
+              <p className="text-[10px] text-[#5F6B72] mt-2">
                 Nota: si hace más de 24 h que el cliente no te escribe, WhatsApp exige una plantilla aprobada por Meta y el envío de texto libre puede fallar (te avisamos con claridad).
               </p>
               {reminderResults.length > 0 && (
-                <div className="mt-3 max-h-48 overflow-y-auto border border-[#E8E0D8] rounded-xl">
+                <div className="mt-3 max-h-48 overflow-y-auto border border-[#E0DAD3] rounded-xl">
                   {reminderResults.map((r, i) => (
-                    <div key={i} className={`px-3 py-2 text-xs border-b border-[#E8E0D8] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
+                    <div key={i} className={`px-3 py-2 text-xs border-b border-[#E0DAD3] last:border-0 flex items-start gap-2 ${r.ok ? "text-[#6B8E6B]" : "text-red-400"}`}>
                       {r.ok ? <CheckCircle size={13} className="mt-0.5 shrink-0" /> : <AlertCircle size={13} className="mt-0.5 shrink-0" />}
                       <span>
-                        <span className="font-medium text-[#5C3E35]">{r.name}</span>
+                        <span className="font-medium text-[#39484F]">{r.name}</span>
                         {r.ok ? " enviado" : ` · ${r.error || "no enviado"}`}
                       </span>
                     </div>
@@ -936,34 +936,34 @@ export default function WhatsAppPage() {
       {activeTab === "templates" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button onClick={openCreateTemplate} className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={openCreateTemplate} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               <Plus size={18} /> Nueva Plantilla
             </button>
           </div>
 
           {/* Plantillas de Meta: estado de aprobación */}
           {selectedConfig && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <ImageIcon size={16} className="text-[#B8837E]" />
-                  <h3 className="text-sm font-semibold text-[#5C3E35]">Plantillas de Meta (estado de aprobación)</h3>
+                  <ImageIcon size={16} className="text-[#BA4A3A]" />
+                  <h3 className="text-sm font-semibold text-[#39484F]">Plantillas de Meta (estado de aprobación)</h3>
                 </div>
                 <button
                   onClick={loadMetaTemplates}
-                  className="flex items-center gap-1.5 text-xs font-medium text-[#B8837E] hover:text-[#9A6B66] transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-medium text-[#BA4A3A] hover:text-[#9C382A] transition-colors"
                 >
                   <RefreshCw size={13} className={metaTemplatesLoading ? "animate-spin" : ""} /> Refrescar
                 </button>
               </div>
-              <p className="text-xs text-[#9C8A82] mb-3">
+              <p className="text-xs text-[#5F6B72] mb-3">
                 Solo las plantillas <span className="font-medium text-[#6B8E6B]">Aprobadas</span> se pueden enviar a un cliente
                 que no te ha escrito en las últimas 24 horas. Las pendientes o rechazadas fallarán.
               </p>
               {metaTemplatesLoading ? (
-                <p className="text-xs text-[#9C8A82]">Cargando plantillas de Meta...</p>
+                <p className="text-xs text-[#5F6B72]">Cargando plantillas de Meta...</p>
               ) : metaTemplates.length === 0 ? (
-                <div className="text-center py-8 text-[#9C8A82]">
+                <div className="text-center py-8 text-[#5F6B72]">
                   <p className="text-sm">No hay plantillas visible en la cuenta de Meta</p>
                   <p className="text-xs mt-1">Créalas en la app de Meta Business Manager; aquí verás su estado.</p>
                 </div>
@@ -972,9 +972,9 @@ export default function WhatsAppPage() {
                   {metaTemplates.map((t, idx) => {
                     const st = (t.status || "").toString().toUpperCase();
                     return (
-                      <div key={t.name + idx} className="p-4 rounded-xl border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+                      <div key={t.name + idx} className="p-4 rounded-xl border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-all">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="text-sm font-semibold text-[#5C3E35] break-all">{t.name}</p>
+                          <p className="text-sm font-semibold text-[#39484F] break-all">{t.name}</p>
                           {st === "APPROVED" ? (
                             <Badge variant="success">Aprobada</Badge>
                           ) : st === "PENDING" ? (
@@ -983,9 +983,9 @@ export default function WhatsAppPage() {
                             <Badge variant="danger">Rechazada</Badge>
                           )}
                         </div>
-                        <p className="text-xs text-[#9C8A82] capitalize">{t.category}</p>
+                        <p className="text-xs text-[#5F6B72] capitalize">{t.category}</p>
                         {t.language && (
-                          <p className="text-[10px] text-[#9C8A82] mt-1">
+                          <p className="text-[10px] text-[#5F6B72] mt-1">
                             Idioma: {typeof t.language === "string" ? t.language : (t.language as { code?: string })?.code || "—"}
                           </p>
                         )}
@@ -998,7 +998,7 @@ export default function WhatsAppPage() {
           )}
 
           {localTemplates.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <Bookmark size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay plantillas creadas</p>
               <p className="text-xs mt-1">Crea plantillas para enviar mensajes predefinidos</p>
@@ -1006,23 +1006,23 @@ export default function WhatsAppPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {localTemplates.map((template) => (
-                <div key={template.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                <div key={template.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#B8837E]/10 flex items-center justify-center">
-                        <FileText size={16} className="text-[#B8837E]" />
+                      <div className="w-8 h-8 rounded-lg bg-[#BA4A3A]/10 flex items-center justify-center">
+                        <FileText size={16} className="text-[#BA4A3A]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#5C3E35]">{template.name}</p>
-                        <p className="text-xs text-[#9C8A82]">{template.category}</p>
+                        <p className="text-sm font-semibold text-[#39484F]">{template.name}</p>
+                        <p className="text-xs text-[#5F6B72]">{template.category}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-[#5C3E35] bg-[#FAF6F0] rounded-xl p-3 mb-3 line-clamp-3">{template.message}</p>
+                  <p className="text-xs text-[#39484F] bg-[#F1E9DF] rounded-xl p-3 mb-3 line-clamp-3">{template.message}</p>
                   {template.variables.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {template.variables.map((v) => (
-                        <span key={v} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#B8837E]/10 text-[#B8837E]">
+                        <span key={v} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#BA4A3A]/10 text-[#BA4A3A]">
                           {`{${v}}`}
                         </span>
                       ))}
@@ -1032,13 +1032,13 @@ export default function WhatsAppPage() {
                     <button onClick={() => selectTemplate(template)} className="flex-1 h-9 bg-[#25D366] text-white rounded-xl text-xs font-medium hover:bg-[#128C7E] transition-all flex items-center justify-center gap-1">
                       <Send size={12} /> Usar
                     </button>
-                    <button onClick={() => { setPreviewTemplate(template); setPreviewVars({}); }} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => { setPreviewTemplate(template); setPreviewVars({}); }} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Eye size={14} />
                     </button>
-                    <button onClick={() => openEditTemplate(template)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => openEditTemplate(template)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Edit3 size={14} />
                     </button>
-                    <button onClick={() => deleteTemplate(template.id, template.is_system)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
+                    <button onClick={() => deleteTemplate(template.id, template.is_system)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -1053,7 +1053,7 @@ export default function WhatsAppPage() {
       {activeTab === "actions" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button onClick={openCreateAction} className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={openCreateAction} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               <Plus size={18} /> Nueva Acción
             </button>
           </div>
@@ -1062,26 +1062,26 @@ export default function WhatsAppPage() {
             {quickActions.map((action) => {
               const IconComp = getIconComponent(action.iconName).icon;
               return (
-                <div key={action.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                <div key={action.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                   <div className="flex items-start gap-3 mb-3">
                     <div className={`w-12 h-12 rounded-xl ${action.bgColor} flex items-center justify-center`}>
                       <IconComp size={22} className={action.color} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-[#5C3E35]">{action.name}</p>
-                      <p className="text-xs text-[#9C8A82]">{action.description}</p>
+                      <p className="text-sm font-semibold text-[#39484F]">{action.name}</p>
+                      <p className="text-xs text-[#5F6B72]">{action.description}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-[#5C3E35] bg-[#FAF6F0] rounded-xl p-3 mb-3 line-clamp-3">{action.message}</p>
+                  <p className="text-xs text-[#39484F] bg-[#F1E9DF] rounded-xl p-3 mb-3 line-clamp-3">{action.message}</p>
                   <div className="flex items-center gap-2">
                     <button onClick={() => executeQuickAction(action)} className="flex-1 h-9 bg-[#25D366] text-white rounded-xl text-xs font-medium hover:bg-[#128C7E] transition-all flex items-center justify-center gap-1">
                       <Send size={12} /> Usar
                     </button>
-                    <button onClick={() => openEditAction(action)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#9C8A82] hover:bg-[#FAF6F0] transition-all">
+                    <button onClick={() => openEditAction(action)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#5F6B72] hover:bg-[#F1E9DF] transition-all">
                       <Edit3 size={14} />
                     </button>
                     {!action.isDefault && (
-                      <button onClick={() => deleteAction(action.id)} className="h-9 w-9 border border-[#E8E0D8] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
+                      <button onClick={() => deleteAction(action.id)} className="h-9 w-9 border border-[#E0DAD3] rounded-xl flex items-center justify-center text-[#D4A0A0] hover:bg-red-50 transition-all">
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -1097,31 +1097,31 @@ export default function WhatsAppPage() {
       {activeTab === "configs" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button onClick={() => setShowAddConfig(true)} className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={() => setShowAddConfig(true)} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               <Plus size={18} /> Agregar Cuenta
             </button>
           </div>
           {configs.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <MessageCircle size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay cuentas de WhatsApp configuradas</p>
             </div>
           ) : (
             configs.map((config) => (
-              <div key={config.id} className={`bg-white rounded-2xl p-5 shadow-sm border transition-all ${selectedConfig?.id === config.id ? "border-[#B8837E] ring-2 ring-[#B8837E]/20" : "border-[#E8E0D8]"}`}>
+              <div key={config.id} className={`bg-white rounded-2xl p-5 shadow-sm border transition-all ${selectedConfig?.id === config.id ? "border-[#BA4A3A] ring-2 ring-[#BA4A3A]/20" : "border-[#E0DAD3]"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-[#25D366]/10 flex items-center justify-center">
                       <MessageCircle size={24} className="text-[#25D366]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[#5C3E35]">{config.label}</p>
-                      <p className="text-sm text-[#9C8A82]">ID: {config.phone_number_id}</p>
+                      <p className="font-medium text-[#39484F]">{config.label}</p>
+                      <p className="text-sm text-[#5F6B72]">ID: {config.phone_number_id}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {config.is_active ? <Badge variant="success">Activa</Badge> : <Badge variant="neutral">Inactiva</Badge>}
-                    <button onClick={() => setSelectedConfig(config)} className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all">
+                    <button onClick={() => setSelectedConfig(config)} className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all">
                       <Settings size={16} />
                     </button>
                     <button onClick={() => handleDeleteConfig(config.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg transition-all">
@@ -1137,30 +1137,30 @@ export default function WhatsAppPage() {
 
       {/* ===================== LOGS TAB ===================== */}
       {activeTab === "logs" && (
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
           {logs.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <History size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay mensajes en el historial</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E8E0D8]">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Dirección</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Teléfono</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Mensaje</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#9C8A82] uppercase">Estado</th>
+                <tr className="border-b border-[#E0DAD3]">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Dirección</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Teléfono</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Mensaje</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#5F6B72] uppercase">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => (
-                  <tr key={log.id} className="border-b border-[#E8E0D8] last:border-0 hover:bg-[#FAF6F0]">
-                    <td className="px-4 py-3 text-sm text-[#5C3E35] whitespace-nowrap">{formatDate(log.created_at)}</td>
+                  <tr key={log.id} className="border-b border-[#E0DAD3] last:border-0 hover:bg-[#F1E9DF]">
+                    <td className="px-4 py-3 text-sm text-[#39484F] whitespace-nowrap">{formatDate(log.created_at)}</td>
                     <td className="px-4 py-3">
                       {log.direction === "incoming" ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#B8837E]">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#BA4A3A]">
                           <ArrowDownLeft size={14} /> Entrante
                         </span>
                       ) : (
@@ -1169,15 +1169,15 @@ export default function WhatsAppPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#5C3E35]">{log.recipient || log.to}</td>
-                    <td className="px-4 py-3 text-sm text-[#9C8A82] max-w-[320px] truncate" title={log.message_body || log.template_name || ""}>
+                    <td className="px-4 py-3 text-sm text-[#39484F]">{log.recipient || log.to}</td>
+                    <td className="px-4 py-3 text-sm text-[#5F6B72] max-w-[320px] truncate" title={log.message_body || log.template_name || ""}>
                       {log.message_body || (log.direction === "incoming" ? "(adjunto o media)" : log.message_type)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        {log.status === "sent" ? <CheckCircle size={14} className="text-green-500" /> : log.status === "delivered" ? <CheckCheck size={14} className="text-[#B8837E]" /> : log.status === "read" ? <CheckCircle size={14} className="text-blue-500" /> : log.status === "failed" ? <AlertCircle size={14} className="text-red-500" /> : log.status === "received" ? <ArrowDownLeft size={14} className="text-[#6B8E6B]" /> : <Clock size={14} className="text-gray-400" />}
-                        <span className="text-sm text-[#5C3E35]">{STATUS_LABELS[log.status || ""] || log.status}</span>
-                        {log.status === "delivered" && <span className="text-[10px] text-[#9C8A82]">· a las {new Date(log.status_updated_at || log.created_at || "").toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</span>}
+                        {log.status === "sent" ? <CheckCircle size={14} className="text-green-500" /> : log.status === "delivered" ? <CheckCheck size={14} className="text-[#BA4A3A]" /> : log.status === "read" ? <CheckCircle size={14} className="text-blue-500" /> : log.status === "failed" ? <AlertCircle size={14} className="text-red-500" /> : log.status === "received" ? <ArrowDownLeft size={14} className="text-[#6B8E6B]" /> : <Clock size={14} className="text-gray-400" />}
+                        <span className="text-sm text-[#39484F]">{STATUS_LABELS[log.status || ""] || log.status}</span>
+                        {log.status === "delivered" && <span className="text-[10px] text-[#5F6B72]">· a las {new Date(log.status_updated_at || log.created_at || "").toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</span>}
                       </div>
                     </td>
                   </tr>
@@ -1193,21 +1193,21 @@ export default function WhatsAppPage() {
       <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title={editingTemplate ? "Editar Plantilla" : "Nueva Plantilla"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Nombre</label>
             <input
               type="text"
               value={templateForm.name}
               onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
               placeholder="Ej: Bienvenida Cliente"
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Categoría</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Categoría</label>
             <select
               value={templateForm.category}
               onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             >
               {templateCategories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -1215,31 +1215,31 @@ export default function WhatsAppPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
             <textarea
               value={templateForm.message}
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
               rows={5}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Variables (separadas por coma)</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Variables (separadas por coma)</label>
             <input
               type="text"
               value={templateForm.variables}
               onChange={(e) => setTemplateForm({ ...templateForm, variables: e.target.value })}
               placeholder="Ej: nombre, monto, fecha"
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
-            <p className="text-[10px] text-[#9C8A82] mt-1">Usa {"{nombre}"} en el mensaje para insertar la variable</p>
+            <p className="text-[10px] text-[#5F6B72] mt-1">Usa {"{nombre}"} en el mensaje para insertar la variable</p>
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowTemplateModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            <button onClick={() => setShowTemplateModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
               Cancelar
             </button>
-            <button onClick={saveTemplate} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={saveTemplate} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               {editingTemplate ? "Actualizar" : "Crear"}
             </button>
           </div>
@@ -1252,7 +1252,7 @@ export default function WhatsAppPage() {
           <div className="space-y-4">
             <div className="bg-[#E5DDD5] rounded-2xl p-4 relative">
               <div className="bg-white rounded-2xl p-4 shadow-sm max-w-sm ml-auto">
-                <p className="text-sm text-[#5C3E35] whitespace-pre-wrap">
+                <p className="text-sm text-[#39484F] whitespace-pre-wrap">
                   {(() => {
                     let msg = previewTemplate.message;
                     previewTemplate.variables.forEach((v) => {
@@ -1262,12 +1262,12 @@ export default function WhatsAppPage() {
                     return msg;
                   })()}
                 </p>
-                <p className="text-[10px] text-[#9C8A82] text-right mt-2">{new Date().toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</p>
+                <p className="text-[10px] text-[#5F6B72] text-right mt-2">{new Date().toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</p>
               </div>
             </div>
             {previewTemplate.variables.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-[#9C8A82]">Rellena las variables para previsualizar:</p>
+                <p className="text-xs font-medium text-[#5F6B72]">Rellena las variables para previsualizar:</p>
                 {previewTemplate.variables.map((v) => (
                   <input
                     key={v}
@@ -1275,7 +1275,7 @@ export default function WhatsAppPage() {
                     value={previewVars[v] || ""}
                     onChange={(e) => setPreviewVars({ ...previewVars, [v]: e.target.value })}
                     placeholder={v}
-                    className="w-full h-10 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
                 ))}
               </div>
@@ -1284,7 +1284,7 @@ export default function WhatsAppPage() {
               <button onClick={() => { selectTemplate(previewTemplate); setPreviewTemplate(null); }} className="flex-1 h-12 bg-[#25D366] text-white rounded-xl text-sm font-medium hover:bg-[#128C7E] transition-all shadow-sm flex items-center justify-center gap-2">
                 <Send size={16} /> Usar Plantilla
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(previewTemplate.message); toast.success("Mensaje copiado"); }} className="h-12 px-4 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(previewTemplate.message); toast.success("Mensaje copiado"); }} className="h-12 px-4 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center gap-2">
                 <Copy size={16} /> Copiar
               </button>
             </div>
@@ -1296,30 +1296,30 @@ export default function WhatsAppPage() {
       <Modal isOpen={showActionModal} onClose={() => setShowActionModal(false)} title={editingAction ? "Editar Acción" : "Nueva Acción Rápida"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Nombre</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Nombre</label>
             <input
               type="text"
               value={actionForm.name}
               onChange={(e) => setActionForm({ ...actionForm, name: e.target.value })}
               placeholder="Ej: Enviar Catálogo"
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Descripción</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Descripción</label>
             <input
               type="text"
               value={actionForm.description}
               onChange={(e) => setActionForm({ ...actionForm, description: e.target.value })}
               placeholder="Breve descripción"
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Icono</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Icono</label>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm flex items-center gap-3 hover:bg-[#FAF6F0] transition-all"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
             >
               {(() => {
                 const iconData = getIconComponent(actionForm.iconName);
@@ -1330,13 +1330,13 @@ export default function WhatsAppPage() {
                       <IconC size={16} className={iconData.color} />
                     </div>
                     <span>{actionForm.iconName}</span>
-                    <ChevronDown size={14} className="ml-auto text-[#9C8A82]" />
+                    <ChevronDown size={14} className="ml-auto text-[#5F6B72]" />
                   </>
                 );
               })()}
             </button>
             {showIconPicker && (
-              <div className="mt-2 p-2 bg-white border border-[#E8E0D8] rounded-xl shadow-lg inline-flex flex-wrap gap-1 max-w-[280px]">
+              <div className="mt-2 p-2 bg-white border border-[#E0DAD3] rounded-xl shadow-lg inline-flex flex-wrap gap-1 max-w-[280px]">
                 {ICON_OPTIONS.map((opt) => {
                   const Ic = opt.icon;
                   return (
@@ -1344,7 +1344,7 @@ export default function WhatsAppPage() {
                       key={opt.name}
                       title={opt.name}
                       onClick={() => { setActionForm({ ...actionForm, iconName: opt.name }); setShowIconPicker(false); }}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${actionForm.iconName === opt.name ? "ring-2 ring-[#B8837E] " + opt.bgColor : "hover:bg-[#FAF6F0]"}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${actionForm.iconName === opt.name ? "ring-2 ring-[#BA4A3A] " + opt.bgColor : "hover:bg-[#F1E9DF]"}`}
                     >
                       <Ic size={15} className={opt.color} />
                     </button>
@@ -1354,20 +1354,20 @@ export default function WhatsAppPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje predeterminado</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje predeterminado</label>
             <textarea
               value={actionForm.message}
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowActionModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            <button onClick={() => setShowActionModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
               Cancelar
             </button>
-            <button onClick={saveAction} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+            <button onClick={saveAction} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
               {editingAction ? "Actualizar" : "Crear"}
             </button>
           </div>
@@ -1378,28 +1378,28 @@ export default function WhatsAppPage() {
       <Modal isOpen={showAddConfig} onClose={() => setShowAddConfig(false)} title="Agregar Cuenta de WhatsApp">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Etiqueta</label>
-            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Etiqueta</label>
+            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Phone Number ID</label>
-            <input type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Phone Number ID</label>
+            <input type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Access Token</label>
-            <input type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Access Token</label>
+            <input type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Verify Token</label>
-            <input type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Verify Token</label>
+            <input type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Business Account ID</label>
-            <input type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Business Account ID</label>
+            <input type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-            <button onClick={handleAddConfig} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">Guardar</button>
+            <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+            <button onClick={handleAddConfig} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">Guardar</button>
           </div>
         </div>
       </Modal>

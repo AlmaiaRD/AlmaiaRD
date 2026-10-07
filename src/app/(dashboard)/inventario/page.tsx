@@ -87,7 +87,7 @@ function getStockStatus(stock: number, minimum: number): { label: string; varian
 
 export default function InventarioPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
       <InventarioContent />
     </Suspense>
   );
@@ -192,21 +192,21 @@ function InventarioContent() {
       doc.line(x1, y1, x2, y2);
     }
 
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     doc.text("COMPRA", margin, y);
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    setTextColor("#9C8A82");
+    setTextColor("#5F6B72");
     doc.text(`No. ${purchase.purchase_number}`, margin, y + 7);
     y += 18;
-    drawLine(margin, y, pageW - margin, y, "#E8E0D8");
+    drawLine(margin, y, pageW - margin, y, "#E0DAD3");
     y += 8;
 
     doc.setFontSize(10);
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.setFont("helvetica", "bold");
     doc.text("Fecha:", margin, y);
     doc.setFont("helvetica", "normal");
@@ -225,12 +225,12 @@ function InventarioContent() {
       y += 8;
     }
     y += 4;
-    drawLine(margin, y, pageW - margin, y, "#E8E0D8");
+    drawLine(margin, y, pageW - margin, y, "#E0DAD3");
     y += 6;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    setTextColor("#9C8A82");
+    setTextColor("#5F6B72");
     const colW = [55, 25, 25, 25, 25, 25];
     const colX = [margin];
     for (let i = 1; i < colW.length; i++) colX.push(colX[i - 1] + colW[i - 1]);
@@ -241,11 +241,11 @@ function InventarioContent() {
     doc.text("Subtotal", colX[4], y, { align: "center" });
     doc.text("Total", colX[5], y, { align: "right" });
     y += 8;
-    drawLine(colX[0], y, pageW - margin, y, "#E8E0D8");
+    drawLine(colX[0], y, pageW - margin, y, "#E0DAD3");
     y += 4;
 
     doc.setFont("helvetica", "normal");
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.setFontSize(9);
 
     (purchase.purchase_items || []).forEach((item) => {
@@ -263,24 +263,24 @@ function InventarioContent() {
     });
 
     y += 4;
-    drawLine(margin, y, pageW - margin, y, "#E8E0D8");
+    drawLine(margin, y, pageW - margin, y, "#E0DAD3");
     y += 8;
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.text("Subtotal:", pageW - margin - 60, y, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.text(formatCurrency(purchase.subtotal), pageW - margin, y, { align: "right" });
     y += 7;
     doc.setFont("helvetica", "bold");
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.text("Impuesto Recogida:", pageW - margin - 60, y, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.text(formatCurrency(purchase.impuesto_recogida || 0), pageW - margin, y, { align: "right" });
     y += 7;
     doc.setFont("helvetica", "bold");
-    setTextColor("#5C3E35");
+    setTextColor("#39484F");
     doc.text("Cargo Admin.:", pageW - margin - 60, y, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.text(formatCurrency(purchase.cargo_administracion || 0), pageW - margin, y, { align: "right" });
@@ -292,19 +292,19 @@ function InventarioContent() {
     y += 7;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    setTextColor("#B8837E");
+    setTextColor("#BA4A3A");
     doc.text("TOTAL:", pageW - margin - 60, y, { align: "right" });
     doc.text(formatCurrency(purchase.total), pageW - margin, y, { align: "right" });
 
     y += 20;
-    drawLine(margin, y, pageW - margin, y, "#E8E0D8");
+    drawLine(margin, y, pageW - margin, y, "#E0DAD3");
     y += 8;
-    setTextColor("#9C8A82");
+    setTextColor("#5F6B72");
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.text(`Documento generado por ${settings?.business_name || "Almaia RD"}`, margin, y);
     doc.setFontSize(8);
-    setTextColor("#B8837E");
+    setTextColor("#BA4A3A");
     doc.text(`${settings?.business_name || "Almaia RD"} - ${formatDate(new Date().toISOString())}`, pageW - margin, y, { align: "right" });
 
     doc.save(`COMPRA-${purchase.purchase_number}.pdf`);
@@ -327,23 +327,23 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       );
     }).join("");
     return (
-      '<div style="color:#5C3E35;">' +
+      '<div style="color:#39484F;">' +
       '<h2 style="font-size:22px;font-weight:bold;margin:0;">COMPRA</h2>' +
-      '<p style="font-size:10px;color:#9C8A82;margin:2px 0 16px;">No. ' + sanitizeHtml(purchase.purchase_number) + '</p>' +
-      '<hr style="border-color:#E8E0D8;margin-bottom:8px;"/>' +
+      '<p style="font-size:10px;color:#5F6B72;margin:2px 0 16px;">No. ' + sanitizeHtml(purchase.purchase_number) + '</p>' +
+      '<hr style="border-color:#E0DAD3;margin-bottom:8px;"/>' +
       '<p style="font-size:10px;"><b>Fecha:</b> ' + sanitizeHtml(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (sanitizeHtml(purchase.supplier_name) || "—") + '</p>' +
-      '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
+      '<hr style="border-color:#E0DAD3;margin:8px 0;"/>' +
       '<table style="width:100%;font-size:9px;border-collapse:collapse;">' +
       '<thead><tr style="background:#F0EBE3;"><th style="text-align:left;padding:4px;">Producto</th><th style="text-align:center;padding:4px;">Cant.</th><th style="text-align:center;padding:4px;">Costo U.</th><th style="text-align:center;padding:4px;">ITBIS</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
       '</table>' +
-      '<hr style="border-color:#E8E0D8;margin:8px 0;"/>' +
+      '<hr style="border-color:#E0DAD3;margin:8px 0;"/>' +
       '<div style="text-align:right;font-size:10px;">' +
       '<p>Subtotal: ' + sanitizeHtml(formatCurrency(purchase.subtotal)) + '</p>' +
       '<p>Impuesto Recogida: ' + sanitizeHtml(formatCurrency(purchase.impuesto_recogida || 0)) + '</p>' +
       '<p>Cargo Admin.: ' + sanitizeHtml(formatCurrency(purchase.cargo_administracion || 0)) + '</p>' +
       '<p>ITBIS (18%): ' + sanitizeHtml(formatCurrency(purchase.itbis || 0)) + '</p>' +
-      '<p style="font-size:12px;font-weight:bold;color:#B8837E;">TOTAL: ' + sanitizeHtml(formatCurrency(purchase.total)) + '</p>' +
+      '<p style="font-size:12px;font-weight:bold;color:#BA4A3A;">TOTAL: ' + sanitizeHtml(formatCurrency(purchase.total)) + '</p>' +
       '</div>' +
       '</div>'
     );
@@ -851,20 +851,20 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
   // meterla aqui haria que las columnas se reconstruyan siempre, que es
   // justo lo que este useMemo evita.
   const stockColumns: Column<InventoryItem>[] = useMemo(() => [
-    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</span> },
+    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</span> },
     { key: "products.name", header: "Producto", minWidth: 200, sortable: true, render: (item) => (
       <div className="flex flex-col">
-        <span className="text-sm text-[#5C3E35] font-medium">{item.products?.name || "—"}</span>
-        <span className="text-xs text-[#9C8A82]">{item.products?.code}</span>
+        <span className="text-sm text-[#39484F] font-medium">{item.products?.name || "—"}</span>
+        <span className="text-xs text-[#5F6B72]">{item.products?.code}</span>
       </div>
     )},
-    { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#5C3E35] text-right">{purchasedMap[item.product_id] || "—"}</span> },
-    { key: "sold", header: "Vendidas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#5C3E35] text-right">{soldMap[item.product_id]}</span> },
+    { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{purchasedMap[item.product_id] || "—"}</span> },
+    { key: "sold", header: "Vendidas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{soldMap[item.product_id]}</span> },
     { key: "computedStock", header: "Stock", minWidth: 90, align: "right", sortable: true, render: (item) => {
       const sold = soldMap[item.product_id] || 0;
       const purchased = purchasedMap[item.product_id] || 0;
       const computedStock = Math.max(0, purchased - sold);
-      return <span className="text-sm text-[#5C3E35] text-right font-medium">{computedStock}</span>;
+      return <span className="text-sm text-[#39484F] text-right font-medium">{computedStock}</span>;
     }},
     { key: "computedPending", header: "Pend. Dev.", minWidth: 90, align: "right", sortable: true, render: (item) => {
       const sold = soldMap[item.product_id] || 0;
@@ -879,15 +879,15 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       const status = getStockStatus(computedStock, item.minimum_stock);
       return <Badge variant={status.variant}>{status.label}</Badge>;
     }},
-    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#9C8A82] mx-auto" /> },
+    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#5F6B72] mx-auto" /> },
     { key: "hide", header: "Ocultar", minWidth: 100, align: "center", render: (item) => (
       <div className="flex items-center justify-center gap-1">
         <button
           onClick={(e) => { e.stopPropagation(); toggleHideStockProduct(item.product_id); }}
           className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${
             hiddenStockIds.includes(item.product_id)
-              ? "bg-[#B8837E]/10 text-[#B8837E]"
-              : "text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0]"
+              ? "bg-[#BA4A3A]/10 text-[#BA4A3A]"
+              : "text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF]"
           }`}
         >
           <EyeOff size={12} className="inline mr-1" />
@@ -968,12 +968,12 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Inventario</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Control de existencias y stock</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Inventario</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Control de existencias y stock</p>
         </div>
         <button
           onClick={() => { resetPurchaseForm(); setShowPurchase(true); }}
-          className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm"
+          className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm"
         >
           <Plus size={18} />
           Registrar Compra
@@ -982,33 +982,33 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
 
       {/* KPI mini-cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-          <p className="text-xs text-[#9C8A82] mb-1">Total Productos</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{totalInventory}</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+          <p className="text-xs text-[#5F6B72] mb-1">Total Productos</p>
+          <p className="text-xl font-bold text-[#39484F]">{totalInventory}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-          <p className="text-xs text-[#9C8A82] mb-1">Valor Inventario</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(kpiStats.totalValue)}</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+          <p className="text-xs text-[#5F6B72] mb-1">Valor Inventario</p>
+          <p className="text-xl font-bold text-[#39484F]">{formatCurrency(kpiStats.totalValue)}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-          <p className="text-xs text-[#9C8A82] mb-1">Stock Total</p>
-          <p className="text-xl font-bold text-[#5C3E35]">{kpiStats.totalStock}</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+          <p className="text-xs text-[#5F6B72] mb-1">Stock Total</p>
+          <p className="text-xl font-bold text-[#39484F]">{kpiStats.totalStock}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
-          <p className="text-xs text-[#9C8A82] mb-1">Pend. Devolución</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+          <p className="text-xs text-[#5F6B72] mb-1">Pend. Devolución</p>
           <p className="text-xl font-bold text-[#D4A0A0]">{kpiStats.totalPending}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#E8E0D8] mb-6">
+      <div className="border-b border-[#E0DAD3] mb-6">
         <div className="flex gap-6">
           <button
             onClick={() => setActiveTab("stock")}
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "stock"
-                ? "text-[#B8837E] border-b-2 border-[#B8837E]"
-                : "text-[#9C8A82] hover:text-[#5C3E35]"
+                ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
+                : "text-[#5F6B72] hover:text-[#39484F]"
             }`}
           >
             Existencias de Stock
@@ -1017,8 +1017,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             onClick={() => setActiveTab("rotation")}
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "rotation"
-                ? "text-[#B8837E] border-b-2 border-[#B8837E]"
-                : "text-[#9C8A82] hover:text-[#5C3E35]"
+                ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
+                : "text-[#5F6B72] hover:text-[#39484F]"
             }`}
           >
             Rotación de Inventario
@@ -1027,8 +1027,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             onClick={() => setActiveTab("history")}
             className={`pb-3 text-sm font-medium transition-colors ${
               activeTab === "history"
-                ? "text-[#B8837E] border-b-2 border-[#B8837E]"
-                : "text-[#9C8A82] hover:text-[#5C3E35]"
+                ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]"
+                : "text-[#5F6B72] hover:text-[#39484F]"
             }`}
           >
             Compras Registradas
@@ -1039,13 +1039,13 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {/* Search & controls */}
       <div className="flex items-center gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre, código o submarca..."
-            className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
           />
         </div>
         {activeTab === "stock" && (
@@ -1053,8 +1053,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             onClick={() => setShowHiddenStock(!showHiddenStock)}
             className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
               showHiddenStock
-                ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
-                : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+                ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
+                : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
             }`}
           >
             <EyeOff size={16} />
@@ -1066,8 +1066,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             onClick={() => setShowHiddenRotation(!showHiddenRotation)}
             className={`flex items-center gap-2 h-12 px-4 rounded-xl text-sm font-medium border transition-all ${
               showHiddenRotation
-                ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
-                : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+                ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
+                : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
             }`}
           >
             <EyeOff size={16} />
@@ -1079,21 +1079,21 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {activeTab === "history" && (
         <div className="flex gap-3 mb-6">
           <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
-            className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+            className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
             <option value="">Todos los meses</option>
             {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map((m, i) => (
               <option key={i} value={String(i + 1).padStart(2, "0")}>{m}</option>
             ))}
           </select>
           <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}
-            className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+            className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
             <option value="">Todos los años</option>
             {[2024, 2025, 2026, 2027].map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
           {(filterMonth || filterYear) && (
-            <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
+            <button onClick={() => { setFilterMonth(""); setFilterYear(""); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
           )}
         </div>
       )}
@@ -1151,7 +1151,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {activeTab === "history" && (
         <div className="space-y-3">
           {purchases.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <Package size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay compras registradas</p>
             </div>
@@ -1166,23 +1166,23 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 return true;
               })
               .map((pur: PurchaseWithItems) => (
-              <div key={pur.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+              <div key={pur.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#FAF6F0] flex items-center justify-center text-[#B8837E] shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-[#F1E9DF] flex items-center justify-center text-[#BA4A3A] shrink-0">
                       <span className="text-xs font-bold">{pur.purchase_number?.replace(settings?.purchase_prefix || "COM-", "")}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-[#5C3E35]">{pur.purchase_number}</p>
-                      <p className="text-xs text-[#9C8A82]">{formatDate(pur.purchase_date)} {pur.supplier_name ? `· ${pur.supplier_name}` : ""}</p>
+                      <p className="text-sm font-medium text-[#39484F]">{pur.purchase_number}</p>
+                      <p className="text-xs text-[#5F6B72]">{formatDate(pur.purchase_date)} {pur.supplier_name ? `· ${pur.supplier_name}` : ""}</p>
                     </div>
                   </div>
                    <div className="flex items-center gap-3">
-                    <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(pur.total)}</p>
+                    <p className="text-sm font-bold text-[#39484F]">{formatCurrency(pur.total)}</p>
                     <div className="flex items-center gap-1 relative">
                       <button
                         onClick={() => openEditPurchase(pur)}
-                        className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all"
+                        className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                         title="Editar"
                       >
                         <Edit2 size={14} />
@@ -1192,7 +1192,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                           generatePurchasePdfLocal(pur);
                           setOpenDownloadId(null);
                         }}
-                        className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg transition-all"
+                        className="p-2 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg transition-all"
                         title="Descargar PDF"
                       >
                         <Printer size={14} />
@@ -1200,23 +1200,23 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                       <div className="relative">
                         <button
                           onClick={() => setOpenDownloadId(openDownloadId === pur.id ? null : pur.id)}
-                          className="p-2 text-[#9C8A82] hover:text-[#5C3E35] hover:bg-[#FAF6F0] rounded-lg transition-all"
+                          className="p-2 text-[#5F6B72] hover:text-[#39484F] hover:bg-[#F1E9DF] rounded-lg transition-all"
                           title="Más opciones"
                         >
                           <Download size={14} />
                         </button>
                         {openDownloadId === pur.id && (
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#E8E0D8] py-1 z-50">
+                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#E0DAD3] py-1 z-50">
                             <button onClick={() => { handleViewPurchase(pur.id); setOpenDownloadId(null); }}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#39484F] hover:bg-[#F1E9DF]">
                               <Eye size={14} /> Ver detalle
                             </button>
                             <button onClick={() => { generatePurchasePdfLocal(pur); setOpenDownloadId(null); }}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#39484F] hover:bg-[#F1E9DF]">
                               <Download size={14} /> Descargar PDF
                             </button>
                             <button onClick={() => handleDownloadJpg(pur)}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#39484F] hover:bg-[#F1E9DF]">
                               <Download size={14} /> Descargar JPG
                             </button>
                           </div>
@@ -1235,13 +1235,13 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 <div className="space-y-1.5">
                   {pur.purchase_items?.map((pi) => (
                     <div key={pi.id} className="flex items-center justify-between text-sm">
-                      <span className="text-[#5C3E35]">{pi.products?.name || "Producto"}</span>
-                      <span className="text-[#9C8A82]">{pi.quantity} x {formatCurrency(pi.unit_cost)}</span>
+                      <span className="text-[#39484F]">{pi.products?.name || "Producto"}</span>
+                      <span className="text-[#5F6B72]">{pi.quantity} x {formatCurrency(pi.unit_cost)}</span>
                     </div>
                   ))}
                 </div>
                 {(pur.discount_amount > 0 || pur.notes) && (
-                  <div className="mt-2 pt-2 border-t border-[#E8E0D8] space-y-1 text-xs text-[#9C8A82]">
+                  <div className="mt-2 pt-2 border-t border-[#E0DAD3] space-y-1 text-xs text-[#5F6B72]">
                     {pur.discount_amount > 0 && <p>Descuento: -{formatCurrency(pur.discount_amount)}</p>}
                     {pur.notes && <p>Notas: {pur.notes}</p>}
                   </div>
@@ -1267,42 +1267,42 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-[#9C8A82]">{detailItem.products?.subbrands?.name} · {detailItem.products?.code}</p>
+                <p className="text-xs text-[#5F6B72]">{detailItem.products?.subbrands?.name} · {detailItem.products?.code}</p>
               </div>
               <Badge variant={detStatus.variant}>{detStatus.label}</Badge>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Compradas</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{detPurchased || "—"}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Compradas</p>
+                <p className="text-xl font-bold text-[#39484F]">{detPurchased || "—"}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Stock actual</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{detStock}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Stock actual</p>
+                <p className="text-xl font-bold text-[#39484F]">{detStock}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Pend. Dev.</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Pend. Dev.</p>
                 <p className="text-xl font-bold text-[#D4A0A0]">{detPending}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Vendidas</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{detSold}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Vendidas</p>
+                <p className="text-xl font-bold text-[#39484F]">{detSold}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Capital</p>
-                <p className="text-xl font-bold text-[#5C3E35]">{formatCurrency(detCapital)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Capital</p>
+                <p className="text-xl font-bold text-[#39484F]">{formatCurrency(detCapital)}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-sm text-[#5C3E35] font-medium">Stock mínimo:</label>
+              <label className="text-sm text-[#39484F] font-medium">Stock mínimo:</label>
               <input
                 type="number" value={detailMinStock}
                 onChange={(e) => setDetailMinStock(Math.max(0, Number(e.target.value)))}
-                className="w-20 h-9 px-3 rounded-lg border border-[#E8E0D8] text-sm text-center"
+                className="w-20 h-9 px-3 rounded-lg border border-[#E0DAD3] text-sm text-center"
               />
-              <button onClick={handleSaveMinStock} className="h-9 px-3 bg-[#B8837E] text-white rounded-lg text-xs font-medium hover:bg-[#9A6B66] transition-all">
+              <button onClick={handleSaveMinStock} className="h-9 px-3 bg-[#BA4A3A] text-white rounded-lg text-xs font-medium hover:bg-[#9C382A] transition-all">
                 <Save size={14} />
               </button>
               <button
@@ -1313,8 +1313,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 }}
                 className={`ml-auto flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium border transition-all ${
                   isHidden
-                    ? "bg-[#B8837E]/10 border-[#B8837E] text-[#B8837E]"
-                    : "border-[#E8E0D8] text-[#9C8A82] hover:text-[#5C3E35]"
+                    ? "bg-[#BA4A3A]/10 border-[#BA4A3A] text-[#BA4A3A]"
+                    : "border-[#E0DAD3] text-[#5F6B72] hover:text-[#39484F]"
                 }`}
               >
                 <EyeOff size={14} />
@@ -1323,25 +1323,25 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Movimientos</h4>
+              <h4 className="text-sm font-semibold text-[#39484F] mb-3">Movimientos</h4>
               {detailMovements.length === 0 ? (
-                <p className="text-sm text-[#9C8A82] py-4 text-center">Sin movimientos registrados</p>
+                <p className="text-sm text-[#5F6B72] py-4 text-center">Sin movimientos registrados</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {detailMovements.map((m) => (
-                    <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                    <div key={m.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                       <div>
                         <p className={`text-sm font-medium ${movementColor[m.movement_type] || ""}`}>
                           {movementLabel[m.movement_type] || m.movement_type}
                         </p>
-                        {m.notes && <p className="text-xs text-[#9C8A82]">{m.notes}</p>}
+                        {m.notes && <p className="text-xs text-[#5F6B72]">{m.notes}</p>}
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">
+                        <p className="text-sm font-medium text-[#39484F]">
                           {m.movement_type === "PURCHASE" ? "+" : m.movement_type === "SALE" ? "-" : ""}
                           {m.quantity}
                         </p>
-                        <p className="text-xs text-[#9C8A82]">{formatDate(m.created_at)}</p>
+                        <p className="text-xs text-[#5F6B72]">{formatDate(m.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -1404,52 +1404,52 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
         {detailPurchase && (
           <div className="space-y-5">
             <div className="grid grid-cols-5 gap-3">
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Subtotal</p>
-                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.subtotal)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Subtotal</p>
+                <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.subtotal)}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Recogida</p>
-                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.impuesto_recogida || 0)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Recogida</p>
+                <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.impuesto_recogida || 0)}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Cargo Admin.</p>
-                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.cargo_administracion || 0)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Cargo Admin.</p>
+                <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.cargo_administracion || 0)}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">ITBIS (18%)</p>
-                <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(detailPurchase.itbis || 0)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">ITBIS (18%)</p>
+                <p className="text-lg font-bold text-[#39484F]">{formatCurrency(detailPurchase.itbis || 0)}</p>
               </div>
-              <div className="bg-[#B8837E]/10 rounded-xl p-3 text-center">
-                <p className="text-xs text-[#9C8A82]">Total</p>
-                <p className="text-lg font-bold text-[#B8837E]">{formatCurrency(detailPurchase.total)}</p>
+              <div className="bg-[#BA4A3A]/10 rounded-xl p-3 text-center">
+                <p className="text-xs text-[#5F6B72]">Total</p>
+                <p className="text-lg font-bold text-[#BA4A3A]">{formatCurrency(detailPurchase.total)}</p>
               </div>
             </div>
 
-            <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[#9C8A82]">Fecha:</span><span className="text-[#5C3E35]">{formatDate(detailPurchase.purchase_date)}</span></div>
-              <div className="flex justify-between"><span className="text-[#9C8A82]">Proveedor:</span><span className="text-[#5C3E35]">{detailPurchase.supplier_name || "—"}</span></div>
-              <div className="flex justify-between"><span className="text-[#9C8A82]">Estado:</span><span className="text-[#5C3E35]">{detailPurchase.status}</span></div>
+            <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-[#5F6B72]">Fecha:</span><span className="text-[#39484F]">{formatDate(detailPurchase.purchase_date)}</span></div>
+              <div className="flex justify-between"><span className="text-[#5F6B72]">Proveedor:</span><span className="text-[#39484F]">{detailPurchase.supplier_name || "—"}</span></div>
+              <div className="flex justify-between"><span className="text-[#5F6B72]">Estado:</span><span className="text-[#39484F]">{detailPurchase.status}</span></div>
               {detailPurchase.discount_amount > 0 && <div className="flex justify-between"><span className="text-[#D4A0A0]">Descuento:</span><span className="text-[#D4A0A0]">-{formatCurrency(detailPurchase.discount_amount)}</span></div>}
-              {(detailPurchase.impuesto_recogida || 0) > 0 && <div className="flex justify-between"><span className="text-[#9C8A82]">Impuesto Recogida:</span><span className="text-[#5C3E35]">{formatCurrency(detailPurchase.impuesto_recogida)}</span></div>}
-              {(detailPurchase.cargo_administracion || 0) > 0 && <div className="flex justify-between"><span className="text-[#9C8A82]">Cargo Admin.:</span><span className="text-[#5C3E35]">{formatCurrency(detailPurchase.cargo_administracion)}</span></div>}
-              {detailPurchase.notes && <div className="flex justify-between"><span className="text-[#9C8A82]">Notas:</span><span className="text-[#5C3E35]">{detailPurchase.notes}</span></div>}
+              {(detailPurchase.impuesto_recogida || 0) > 0 && <div className="flex justify-between"><span className="text-[#5F6B72]">Impuesto Recogida:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.impuesto_recogida)}</span></div>}
+              {(detailPurchase.cargo_administracion || 0) > 0 && <div className="flex justify-between"><span className="text-[#5F6B72]">Cargo Admin.:</span><span className="text-[#39484F]">{formatCurrency(detailPurchase.cargo_administracion)}</span></div>}
+              {detailPurchase.notes && <div className="flex justify-between"><span className="text-[#5F6B72]">Notas:</span><span className="text-[#39484F]">{detailPurchase.notes}</span></div>}
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-[#9C8A82] uppercase mb-2">Productos</p>
+              <p className="text-xs font-semibold text-[#5F6B72] uppercase mb-2">Productos</p>
               <div className="space-y-2">
                 {(detailPurchase.purchase_items || []).map((pi) => {
                   const hasItbis = pi.itbis !== false;
                   const lineItbis = hasItbis ? pi.line_itbis || (pi.quantity * pi.unit_cost * 0.18) : 0;
                   const lineTotal = pi.line_total + lineItbis;
                   return (
-                    <div key={pi.id} className="bg-white rounded-xl p-3 border border-[#E8E0D8] flex items-center justify-between">
+                    <div key={pi.id} className="bg-white rounded-xl p-3 border border-[#E0DAD3] flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{pi.products?.name || "—"}</p>
-                        <p className="text-xs text-[#9C8A82]">{pi.quantity} x {formatCurrency(pi.unit_cost)}{hasItbis ? ` + ITBIS ${formatCurrency(lineItbis)}` : " (sin ITBIS)"}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{pi.products?.name || "—"}</p>
+                        <p className="text-xs text-[#5F6B72]">{pi.quantity} x {formatCurrency(pi.unit_cost)}{hasItbis ? ` + ITBIS ${formatCurrency(lineItbis)}` : " (sin ITBIS)"}</p>
                       </div>
-                      <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(lineTotal)}</p>
+                      <p className="text-sm font-bold text-[#39484F]">{formatCurrency(lineTotal)}</p>
                     </div>
                   );
                 })}
@@ -1458,15 +1458,15 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => { setShowDetailPurchase(false); openEditPurchase(detailPurchase); }}
-                className="flex-1 h-11 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm flex items-center justify-center gap-2">
+                className="flex-1 h-11 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm flex items-center justify-center gap-2">
                 <Edit2 size={16} /> Editar Compra
               </button>
               <button onClick={() => generatePurchasePdfLocal(detailPurchase)}
-                className="flex-1 h-11 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                className="flex-1 h-11 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <Download size={16} /> Descargar PDF
               </button>
               <button onClick={() => handleDownloadJpg(detailPurchase)}
-                className="flex-1 h-11 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+                className="flex-1 h-11 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <Download size={16} /> Descargar JPG
               </button>
             </div>
@@ -1477,11 +1477,11 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       {/* Delete confirmation modal */}
       <Modal isOpen={!!showConfirmDelete} onClose={() => setShowConfirmDelete(null)} title="Confirmar Eliminación">
         <div className="space-y-5">
-          <p className="text-sm text-[#5C3E35]">¿Estás seguro de eliminar esta compra? Esta acción no se puede deshacer.</p>
+          <p className="text-sm text-[#39484F]">¿Estás seguro de eliminar esta compra? Esta acción no se puede deshacer.</p>
           <div className="flex gap-3">
             <button
               onClick={() => setShowConfirmDelete(null)}
-              className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+              className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
             >
               Cancelar
             </button>
@@ -1513,12 +1513,12 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
                 <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
                   placeholder="ELIMINAR"
-                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
+                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowConfirmDeleteProduct(null); setProductUsage(null); setConfirmDeleteText(""); }}
-                  className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+                  className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
                 >
                   Cancelar
                 </button>
@@ -1533,17 +1533,17 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             </>
           ) : (
             <>
-              <p className="text-sm text-[#5C3E35]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
+              <p className="text-sm text-[#39484F]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
               <div>
                 <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
                 <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
                   placeholder="ELIMINAR"
-                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
+                  className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowConfirmDeleteProduct(null); setConfirmDeleteText(""); }}
-                  className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+                  className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
                 >
                   Cancelar
                 </button>

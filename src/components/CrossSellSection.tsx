@@ -48,13 +48,13 @@ export default function CrossSellSection({ clientId, topProducts }: Props) {
     return () => { cancelled = true; };
   }, [clientId, topProducts]);
 
-  if (loading) return <div className="text-xs text-[#9C8A82] py-2">Buscando productos complementarios...</div>;
-  if (suggestions.length === 0) return <div className="text-xs text-[#9C8A82] py-2">No hay sugerencias disponibles</div>;
+  if (loading) return <div className="text-xs text-[#5F6B72] py-2">Buscando productos complementarios...</div>;
+  if (suggestions.length === 0) return <div className="text-xs text-[#5F6B72] py-2">No hay sugerencias disponibles</div>;
 
   return (
     <div className="flex flex-wrap gap-2">
       {suggestions.map((s, i) => (
-        <span key={i} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-[#B8837E]/10 text-[#B8837E] border border-[#B8837E]/20">
+        <span key={i} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-[#BA4A3A]/10 text-[#BA4A3A] border border-[#BA4A3A]/20">
           <ShoppingCart size={12} />
           {s.product_name}
           <span className="text-[10px] opacity-60">{s.frequency}%</span>

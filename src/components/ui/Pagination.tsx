@@ -15,7 +15,7 @@ const Pagination = memo(function Pagination({ page, pageSize, total, onPageChang
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between pt-4 text-sm text-[#9C8A82]">
+    <div className="flex items-center justify-between pt-4 text-sm text-[#5F6B72]">
       <span>
         {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} de {total}
       </span>
@@ -23,7 +23,7 @@ const Pagination = memo(function Pagination({ page, pageSize, total, onPageChang
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="p-1.5 rounded-lg hover:bg-[#FAF6F0] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="p-1.5 rounded-lg hover:bg-[#F1E9DF] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           <ChevronLeft size={16} />
         </button>
@@ -44,8 +44,8 @@ const Pagination = memo(function Pagination({ page, pageSize, total, onPageChang
               onClick={() => onPageChange(pageNum)}
               className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
                 page === pageNum
-                  ? "bg-[#B8837E] text-white"
-                  : "text-[#5C3E35] hover:bg-[#FAF6F0]"
+                  ? "bg-[#BA4A3A] text-white"
+                  : "text-[#39484F] hover:bg-[#F1E9DF]"
               }`}
             >
               {pageNum}
@@ -55,7 +55,7 @@ const Pagination = memo(function Pagination({ page, pageSize, total, onPageChang
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="p-1.5 rounded-lg hover:bg-[#FAF6F0] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="p-1.5 rounded-lg hover:bg-[#F1E9DF] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           <ChevronRight size={16} />
         </button>

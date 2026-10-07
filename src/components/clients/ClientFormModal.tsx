@@ -82,57 +82,57 @@ export default function ClientFormModal({
     }
   }
 
-  const inputCls = "w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all";
+  const inputCls = "w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Tipo de cliente *</label>
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Tipo de cliente *</label>
           <div className="flex gap-3">
             {([["comprador", "Cliente Comprador", "Compra productos"], ["negocio", "Prospecto de Negocio", "Posible IBO / Demo"]] as const).map(([value, label, desc]) => (
               <button key={value} type="button" onClick={() => setForm({ ...form, client_type: value })}
-                className={`flex-1 p-3 rounded-xl border text-left transition-all ${form.client_type === value ? "border-[#B8837E] bg-[#B8837E]/5" : "border-[#E8E0D8] bg-white hover:bg-[#FAF6F0]"}`}>
-                <p className="text-sm font-medium text-[#5C3E35]">{label}</p>
-                <p className="text-xs text-[#9C8A82] mt-0.5">{desc}</p>
+                className={`flex-1 p-3 rounded-xl border text-left transition-all ${form.client_type === value ? "border-[#BA4A3A] bg-[#BA4A3A]/5" : "border-[#E0DAD3] bg-white hover:bg-[#F1E9DF]"}`}>
+                <p className="text-sm font-medium text-[#39484F]">{label}</p>
+                <p className="text-xs text-[#5F6B72] mt-0.5">{desc}</p>
               </button>
             ))}
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Nombre completo *</label>
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre completo *</label>
           <input type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nombre y apellidos" className={inputCls} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Teléfono</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
             <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="809-000-0000" className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Correo electrónico</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Correo electrónico</label>
             <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" className={inputCls} />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de cumpleaños</label>
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de cumpleaños</label>
           <input type="date" value={form.birthday} onChange={(e) => setForm({ ...form, birthday: e.target.value })} className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Número IBO (opcional)</label>
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Número IBO (opcional)</label>
           <input type="text" value={form.ibo_number} onChange={(e) => setForm({ ...form, ibo_number: e.target.value })} placeholder="IBO" className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Telegram Chat ID (opcional)</label>
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Telegram Chat ID (opcional)</label>
           <input type="text" value={form.telegram_chat_id || ""} onChange={(e) => setForm({ ...form, telegram_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
-          <p className="text-[11px] text-[#9C8A82] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
+          <p className="text-[11px] text-[#5F6B72] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas</label>
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
+          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
+          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
         </div>
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={onClose} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
             <Save size={18} /> {saving ? "Guardando..." : (saveLabel || "Guardar")}
           </button>
         </div>

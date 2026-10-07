@@ -373,24 +373,24 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
       <div className="space-y-5">
         {/* Type Selector */}
         <div>
-          <label className="block text-xs font-medium text-[#9C8A82] mb-2">Tipo de Mensaje</label>
+          <label className="block text-xs font-medium text-[#5F6B72] mb-2">Tipo de Mensaje</label>
           <div className="relative">
             <button
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm flex items-center justify-between hover:border-[#B8837E]/50 transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm flex items-center justify-between hover:border-[#BA4A3A]/50 transition-all"
             >
               <div className="flex items-center gap-3">
-                <currentTemplate.icon size={18} className="text-[#B8837E]" />
+                <currentTemplate.icon size={18} className="text-[#BA4A3A]" />
                 <div className="text-left">
                   <div className="font-medium">{currentTemplate.label}</div>
-                  <div className="text-xs text-[#9C8A82]">{currentTemplate.description}</div>
+                  <div className="text-xs text-[#5F6B72]">{currentTemplate.description}</div>
                 </div>
               </div>
-              <ChevronDown size={18} className={`text-[#9C8A82] transition-transform ${showTypeDropdown ? "rotate-180" : ""}`} />
+              <ChevronDown size={18} className={`text-[#5F6B72] transition-transform ${showTypeDropdown ? "rotate-180" : ""}`} />
             </button>
 
             {showTypeDropdown && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-2 bg-white border border-[#E8E0D8] rounded-xl shadow-lg overflow-hidden">
+              <div className="absolute z-20 top-full left-0 right-0 mt-2 bg-white border border-[#E0DAD3] rounded-xl shadow-lg overflow-hidden">
                 {MESSAGE_TYPES.map((type) => {
                   const Icon = type.icon;
                   return (
@@ -402,14 +402,14 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                         setFieldValues({});
                         setSelectedInvoiceId("");
                       }}
-                      className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#FAF6F0] transition-colors ${
-                        messageType === type.id ? "bg-[#B8837E]/10" : ""
+                      className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#F1E9DF] transition-colors ${
+                        messageType === type.id ? "bg-[#BA4A3A]/10" : ""
                       }`}
                     >
-                      <Icon size={18} className="text-[#B8837E]" />
+                      <Icon size={18} className="text-[#BA4A3A]" />
                       <div className="text-left">
-                        <div className="text-sm font-medium text-[#5C3E35]">{type.label}</div>
-                        <div className="text-xs text-[#9C8A82]">{type.description}</div>
+                        <div className="text-sm font-medium text-[#39484F]">{type.label}</div>
+                        <div className="text-xs text-[#5F6B72]">{type.description}</div>
                       </div>
                     </button>
                   );
@@ -421,14 +421,14 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
 
         {/* Channel Selector */}
         <div>
-          <label className="block text-xs font-medium text-[#9C8A82] mb-2">Canal</label>
+          <label className="block text-xs font-medium text-[#5F6B72] mb-2">Canal</label>
           <div className="flex gap-3">
             <button
               onClick={() => setChannel("email")}
               className={`flex-1 h-12 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                 channel === "email"
-                  ? "bg-[#B8837E] text-white"
-                  : "border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0]"
+                  ? "bg-[#BA4A3A] text-white"
+                  : "border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF]"
               }`}
             >
               <Send size={16} /> Email
@@ -438,7 +438,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
               className={`flex-1 h-12 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                 channel === "whatsapp"
                   ? "bg-[#86C7A3] text-white"
-                  : "border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0]"
+                  : "border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF]"
               }`}
             >
               <Send size={16} /> WhatsApp
@@ -449,12 +449,12 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Client Selection with New Client Button */}
         {currentTemplate.fields.some(f => f.type === "client") && (
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-2">Cliente</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-2">Cliente</label>
             <div className="flex gap-2">
               <select
                 value={selectedClientId}
                 onChange={(e) => handleClientSelect(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                className="flex-1 h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               >
                 <option value="">Seleccionar cliente...</option>
                 {clients.map((c) => (
@@ -467,7 +467,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                   onClose();
                   router.push("/clientes?nuevo=true");
                 }}
-                className="h-10 px-3 rounded-xl border border-[#B8837E] text-[#B8837E] text-sm font-medium hover:bg-[#B8837E]/10 transition-all flex items-center gap-1"
+                className="h-10 px-3 rounded-xl border border-[#BA4A3A] text-[#BA4A3A] text-sm font-medium hover:bg-[#BA4A3A]/10 transition-all flex items-center gap-1"
               >
                 <Plus size={14} /> Nuevo
               </button>
@@ -479,11 +479,11 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {currentTemplate.fields.some(f => f.type === "invoice") && selectedClientId && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-medium text-[#9C8A82]">Factura</label>
+              <label className="block text-xs font-medium text-[#5F6B72]">Factura</label>
               <button
                 type="button"
                 onClick={() => setShowInvoice(!showInvoice)}
-                className="flex items-center gap-1.5 text-xs text-[#9C8A82] hover:text-[#5C3E35]"
+                className="flex items-center gap-1.5 text-xs text-[#5F6B72] hover:text-[#39484F]"
               >
                 {showInvoice ? <ToggleRight size={18} className="text-[#86C7A3]" /> : <ToggleLeft size={18} />}
                 {showInvoice ? "Visible en mensaje" : "Oculta en mensaje"}
@@ -492,7 +492,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
             <select
               value={selectedInvoiceId}
               onChange={(e) => setSelectedInvoiceId(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             >
               <option value="">Sin factura (seleccionar producto manualmente)</option>
               {clientInvoices.map((inv) => (
@@ -505,32 +505,32 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Product Selection */}
         {currentTemplate.fields.some(f => f.type === "product") && (
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-2">Productos</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-2">Productos</label>
             {selectedInvoiceId && showInvoice ? (
-              <div className="bg-[#FAF6F0] rounded-xl p-3 space-y-1">
+              <div className="bg-[#F1E9DF] rounded-xl p-3 space-y-1">
                 {invoiceProducts.map((p, i: number) => (
-                  <div key={i} className="flex items-center justify-between text-sm text-[#5C3E35]">
+                  <div key={i} className="flex items-center justify-between text-sm text-[#39484F]">
                     <span>• {p.name}</span>
-                    <span className="text-[#9C8A82]">x{p.quantity}</span>
+                    <span className="text-[#5F6B72]">x{p.quantity}</span>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="space-y-2">
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
                   <input
                     type="text"
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     placeholder="Buscar producto..."
-                    className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
                 </div>
                 <select
                   value={fieldValues.lista_productos || ""}
                   onChange={(e) => handleFieldChange("lista_productos", e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 >
                   <option value="">Seleccionar producto...</option>
                   {products
@@ -550,7 +550,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
           .filter(f => f.type !== "client" && f.type !== "invoice" && f.type !== "product")
           .map((field) => (
             <div key={field.key}>
-              <label className="block text-xs text-[#5C3E35] mb-1">
+              <label className="block text-xs text-[#39484F] mb-1">
                 {field.label}
                 {field.required && <span className="text-[#D4A0A0] ml-1">*</span>}
               </label>
@@ -560,7 +560,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   placeholder={field.placeholder}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 resize-none"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
                 />
               ) : (
                 <input
@@ -568,7 +568,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
                   value={fieldValues[field.key] || ""}
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   placeholder={field.placeholder}
-                  className="w-full h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               )}
             </div>
@@ -577,28 +577,28 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
         {/* Subject (Email only) */}
         {channel === "email" && (
           <div>
-            <label className="block text-xs font-medium text-[#9C8A82] mb-1">Asunto</label>
+            <label className="block text-xs font-medium text-[#5F6B72] mb-1">Asunto</label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Asunto del mensaje..."
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
         )}
 
         {/* Message Body */}
         <div>
-          <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+          <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={10}
             placeholder="Escribe tu mensaje aquí..."
-            className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 whitespace-pre-wrap"
+            className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 whitespace-pre-wrap"
           />
-          <p className="text-xs text-[#9C8A82] mt-1">
+          <p className="text-xs text-[#5F6B72] mt-1">
             Variables disponibles: {"{{nombre_cliente}}"}, {"{{numero_factura}}"}, {"{{monto_total}}"}, {"{{empresa}}"}, {"{{nombre_vendedor}}"}
           </p>
         </div>
@@ -608,7 +608,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
           <button
             onClick={() => handleSave("draft")}
             disabled={saving}
-            className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all disabled:opacity-50"
+            className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all disabled:opacity-50"
           >
             {saving ? "Guardando..." : "Guardar Borrador"}
           </button>
@@ -621,7 +621,7 @@ export default function MessageComposer({ isOpen, onClose, onSaved, defaultType,
           </button>
           <button
             onClick={onClose}
-            className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+            className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
           >
             Cancelar
           </button>

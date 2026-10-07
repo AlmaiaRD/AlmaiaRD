@@ -75,8 +75,8 @@ function VirtualRow<T>({
   onRowClick?: (row: T, index: number) => void;
   classNameCell?: string;
 }) {
-  const stripe = striped && index % 2 === 1 ? "bg-[#FAF6F0]" : "";
-  const hover = hoverable && onRowClick ? "hover:bg-[#FAF6F0] cursor-pointer transition-colors" : "";
+  const stripe = striped && index % 2 === 1 ? "bg-[#F1E9DF]" : "";
+  const hover = hoverable && onRowClick ? "hover:bg-[#F1E9DF] cursor-pointer transition-colors" : "";
 
   return (
     <div
@@ -102,7 +102,7 @@ function VirtualRow<T>({
           {col.render ? (
             col.render(row, index)
           ) : (
-            <span className="text-sm text-[#5C3E35]">
+            <span className="text-sm text-[#39484F]">
               {String((row as Record<string, unknown>)[col.key] ?? "")}
             </span>
           )}
@@ -137,7 +137,7 @@ function LoadingRow<T>({
     >
       {columns.map((col) => (
         <div key={col.key} className="flex items-center px-4" style={cellStyle(col)}>
-          <div className="h-4 w-3/4 rounded bg-[#E8E0D8] animate-pulse" />
+          <div className="h-4 w-3/4 rounded bg-[#E0DAD3] animate-pulse" />
         </div>
       ))}
     </div>
@@ -185,7 +185,7 @@ export function VirtualTable<T>({
 
   if (!loading && data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-[#9C8A82]">
+      <div className="flex flex-col items-center justify-center py-16 text-[#5F6B72]">
         {emptyIcon ?? (
           <svg className="w-16 h-16 opacity-40 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -211,7 +211,7 @@ export function VirtualTable<T>({
     >
       <div
         role="row"
-        className={`flex border-b border-[#E8E0D8] bg-[#FCFAF7] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
+        className={`flex border-b border-[#E0DAD3] bg-[#F5EFE9] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
       >
         {columns.map((col) => {
           const active = sortBy === col.key;
@@ -220,7 +220,7 @@ export function VirtualTable<T>({
               key={col.key}
               role="columnheader"
               aria-sort={active ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
-              className={`flex items-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#9C8A82] ${ALIGN_CLASS[col.align ?? "left"]} ${col.sortable ? "cursor-pointer select-none hover:text-[#5C3E35] transition-colors" : ""}`}
+              className={`flex items-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#5F6B72] ${ALIGN_CLASS[col.align ?? "left"]} ${col.sortable ? "cursor-pointer select-none hover:text-[#39484F] transition-colors" : ""}`}
               style={cellStyle(col)}
               onClick={() => col.sortable && onSort?.(col.key)}
             >
@@ -228,9 +228,9 @@ export function VirtualTable<T>({
               {col.sortable &&
                 (active ? (
                   sortOrder === "asc" ? (
-                    <ChevronUp size={14} className="text-[#B8837E]" />
+                    <ChevronUp size={14} className="text-[#BA4A3A]" />
                   ) : (
-                    <ChevronDown size={14} className="text-[#B8837E]" />
+                    <ChevronDown size={14} className="text-[#BA4A3A]" />
                   )
                 ) : (
                   <ChevronUp size={14} className="opacity-40" />

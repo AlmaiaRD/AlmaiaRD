@@ -26,8 +26,8 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]">
-        <div className="w-10 h-10 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]">
+        <div className="w-10 h-10 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -38,9 +38,9 @@ export default function DashboardLayout({
 
   return (
     <QueryProvider>
-      <div className="min-h-screen flex flex-col bg-[#FCFAF7]">
+      <div className="min-h-screen flex flex-col bg-[#F5EFE9]">
         <Header />
-        <div className="border-b border-[#E8E0D8] bg-white">
+        <div className="border-b border-[#E0DAD3] bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
             <NavMenu />
           </div>

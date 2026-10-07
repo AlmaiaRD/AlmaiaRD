@@ -154,32 +154,32 @@ export default function CommunicationDraftModal({
         {isEmail && (
           <>
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Para</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Para</label>
               <input type="text" readOnly value={client.email || ""}
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm" />
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Asunto</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Asunto</label>
               <input type="text" value={subject}
                 onChange={e => setSubject(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </>
         )}
         {!isEmail && (
           <>
             <div>
-              <label className="block text-xs font-medium text-[#9C8A82] mb-1">Enviar a</label>
+              <label className="block text-xs font-medium text-[#5F6B72] mb-1">Enviar a</label>
               <input type="text" readOnly value={client.phone || ""}
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm" />
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             {whatsappConfigs.length > 0 && (
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cuenta de WhatsApp</label>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Cuenta de WhatsApp</label>
                 <select
                   value={selectedConfigId}
                   onChange={(e) => setSelectedConfigId(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 >
                   {whatsappConfigs.map((c) => (
                     <option key={c.id} value={c.id}>{c.label}</option>
@@ -190,15 +190,15 @@ export default function CommunicationDraftModal({
           </>
         )}
         <div>
-          <label className="block text-xs font-medium text-[#9C8A82] mb-1">Mensaje</label>
+          <label className="block text-xs font-medium text-[#5F6B72] mb-1">Mensaje</label>
           <textarea value={body} rows={10}
             onChange={e => setBody(e.target.value)}
-            className="w-full resize-y px-4 py-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+            className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>
 
         <div className="flex gap-3 pt-2">
           <button onClick={() => handleSave("draft")} disabled={saving}
-            className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all disabled:opacity-50">
+            className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all disabled:opacity-50">
             {saving ? "Guardando..." : "Guardar Borrador"}
           </button>
           {!isEmail ? (
@@ -215,7 +215,7 @@ export default function CommunicationDraftModal({
             </button>
           )}
           <button onClick={onClose}
-            className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+            className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
             Cancelar
           </button>
         </div>

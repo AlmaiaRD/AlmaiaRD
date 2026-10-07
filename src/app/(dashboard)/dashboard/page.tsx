@@ -37,7 +37,7 @@ import {
   Line,
 } from "recharts";
 
-const PIE_COLORS = ["#86C7A3", "#B8837E", "#E8C87A"];
+const PIE_COLORS = ["#86C7A3", "#BA4A3A", "#E8C87A"];
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -135,10 +135,10 @@ export default function DashboardPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">
+        <h1 className="text-[30px] font-marca text-[#39484F]">
           Buenas tardes, {user.name?.split(" ")[0] || "Admin"}
         </h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Resumen de tu negocio</p>
+        <p className="text-sm text-[#5F6B72] mt-1">Resumen de tu negocio</p>
       </div>
 
       {loading || loadingData ? (
@@ -165,21 +165,21 @@ export default function DashboardPage() {
           </div>
 
           {/* KPI Metas */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] mb-8">
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#5C3E35]">Meta Mensual</h3>
-              <span className="text-xs text-[#9C8A82]">{goalMonth}</span>
+              <h3 className="text-sm font-semibold text-[#39484F]">Meta Mensual</h3>
+              <span className="text-xs text-[#5F6B72]">{goalMonth}</span>
             </div>
 
-            <div className="bg-[#FCFAF7] border border-dashed border-[#E8E0D8] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <label className="text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Meta</label>
+            <div className="bg-[#F5EFE9] border border-dashed border-[#E0DAD3] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <label className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Meta</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={goalInput}
                   onChange={(e) => setGoalInput(e.target.value)}
                   placeholder="0"
-                  className="text-lg font-extrabold text-[#5C3E35] border-none bg-transparent w-36 text-right outline-none placeholder:text-[#E8E0D8]"
+                  className="text-lg font-extrabold text-[#39484F] border-none bg-transparent w-36 text-right outline-none placeholder:text-[#E0DAD3]"
                 />
                 <button
                   type="button"
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                       localStorage.setItem("almaia_monthly_goal", String(val));
                     }
                   }}
-                  className="text-xs bg-[#B8837E] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9A6B66] active:scale-95 transition-all cursor-pointer"
+                  className="text-xs bg-[#BA4A3A] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9C382A] active:scale-95 transition-all cursor-pointer"
                 >
                   Fijar Meta
                 </button>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
             </div>
 
 {monthlyGoal ? (
-          <><div className="flex mb-1.5 text-xs font-semibold text-[#5C3E35]">
+          <><div className="flex mb-1.5 text-xs font-semibold text-[#39484F]">
               <div style={{ flex: barCobrado || 1 }} className="text-left">Cobrado</div>
               <div style={{ flex: barVendido || 1 }} className="text-center">Vendido</div>
               <div style={{ flex: barRestante || 1 }} className="text-right">Restante</div>
@@ -216,43 +216,43 @@ export default function DashboardPage() {
               </div>
               <div
                 className="flex items-center justify-center text-xs font-bold text-white transition-all duration-500"
-                style={{ width: `${barVendido}%`, backgroundColor: "#B8837E" }}
+                style={{ width: `${barVendido}%`, backgroundColor: "#BA4A3A" }}
               >
                 {vendido > cobrado ? formatCurrency(vendido) : ""}
               </div>
               <div
-                className="flex items-center justify-center text-xs font-bold text-[#9C8A82] transition-all duration-500"
-                style={{ width: `${barRestante}%`, backgroundColor: "#E8E0D8" }}
+                className="flex items-center justify-center text-xs font-bold text-[#5F6B72] transition-all duration-500"
+                style={{ width: `${barRestante}%`, backgroundColor: "#E0DAD3" }}
               >
                 {restanteKpi > 0 && monthlyGoal > 0 ? formatCurrency(restanteKpi) : ""}
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <div className="flex-1 bg-[#FCFAF7] rounded-xl p-3 text-center border border-[#E8E0D8]">
-                <div className="text-[10px] font-semibold text-[#9C8A82] uppercase tracking-wider">Cobrado</div>
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
+                <div className="text-[10px] font-semibold text-[#5F6B72] uppercase tracking-wider">Cobrado</div>
                 <div className="text-base font-extrabold text-[#86C7A3] mt-1">{formatCurrency(cobrado)}</div>
-                <div className="text-xs text-[#9C8A82] mt-0.5">{monthlyGoal > 0 ? cobradoPct.toFixed(1) + "%" : "—"}</div>
+                <div className="text-xs text-[#5F6B72] mt-0.5">{monthlyGoal > 0 ? cobradoPct.toFixed(1) + "%" : "—"}</div>
               </div>
-              <div className="flex-1 bg-[#FCFAF7] rounded-xl p-3 text-center border border-[#E8E0D8]">
-                <div className="text-[10px] font-semibold text-[#9C8A82] uppercase tracking-wider">Vendido</div>
-                <div className="text-base font-extrabold text-[#B8837E] mt-1">{formatCurrency(vendido)}</div>
-                <div className="text-xs text-[#9C8A82] mt-0.5">{monthlyGoal > 0 ? vendidoPct.toFixed(1) + "%" : "—"}</div>
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
+                <div className="text-[10px] font-semibold text-[#5F6B72] uppercase tracking-wider">Vendido</div>
+                <div className="text-base font-extrabold text-[#BA4A3A] mt-1">{formatCurrency(vendido)}</div>
+                <div className="text-xs text-[#5F6B72] mt-0.5">{monthlyGoal > 0 ? vendidoPct.toFixed(1) + "%" : "—"}</div>
               </div>
-              <div className="flex-1 bg-[#FCFAF7] rounded-xl p-3 text-center border border-[#E8E0D8]">
-                <div className="text-[10px] font-semibold text-[#9C8A82] uppercase tracking-wider">Restante</div>
-                <div className="text-base font-extrabold text-[#5C3E35] mt-1">{formatCurrency(restanteKpi)}</div>
-                <div className="text-xs text-[#9C8A82] mt-0.5">{monthlyGoal > 0 ? (Math.max(100 - vendidoPct, 0)).toFixed(1) + "%" : "—"}</div>
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
+                <div className="text-[10px] font-semibold text-[#5F6B72] uppercase tracking-wider">Restante</div>
+                <div className="text-base font-extrabold text-[#39484F] mt-1">{formatCurrency(restanteKpi)}</div>
+                <div className="text-xs text-[#5F6B72] mt-0.5">{monthlyGoal > 0 ? (Math.max(100 - vendidoPct, 0)).toFixed(1) + "%" : "—"}</div>
               </div>
             </div>
 </>
 ) : (
-  <div className="text-center py-4 text-[#9C8A82] text-sm">No has establecido una meta este mes</div>
+  <div className="text-center py-4 text-[#5F6B72] text-sm">No has establecido una meta este mes</div>
 )}
           </div>
 
           <div className="mb-8">
-            <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Módulos</h3>
+            <h3 className="text-sm font-semibold text-[#39484F] mb-4">Módulos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { href: "/bonificaciones", label: "Bonificaciones", icon: Award, color: "bg-purple-50 text-purple-600" },
@@ -263,37 +263,37 @@ export default function DashboardPage() {
                 <button
                   key={mod.href}
                   onClick={() => router.push(mod.href)}
-                  className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl shadow-sm border border-[#E8E0D8] hover:shadow-md hover:border-[#B8837E]/30 transition-all"
+                  className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl shadow-sm border border-[#E0DAD3] hover:shadow-md hover:border-[#BA4A3A]/30 transition-all"
                 >
                   <div className={`p-3 rounded-xl ${mod.color}`}>
                     <mod.icon size={22} />
                   </div>
-                  <span className="text-sm font-medium text-[#5C3E35]">{mod.label}</span>
+                  <span className="text-sm font-medium text-[#39484F]">{mod.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Comparativa Mensual</h3>
-                <span className="text-xs text-[#9C8A82]">Últimos 6 meses</span>
+                <h3 className="text-sm font-semibold text-[#39484F]">Comparativa Mensual</h3>
+                <span className="text-xs text-[#5F6B72]">Últimos 6 meses</span>
               </div>
               <div className="h-64">
                 {monthData.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-sm text-[#9C8A82]">Sin datos</div>
+                  <div className="flex items-center justify-center h-full text-sm text-[#5F6B72]">Sin datos</div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthData} barGap={4}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE3" />
-                      <XAxis dataKey="mes" tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                      <XAxis dataKey="mes" tick={{ fill: "#5F6B72", fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#5F6B72", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                       <Tooltip
-                        contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8", backgroundColor: "#fff" }}
+                        contentStyle={{ borderRadius: 12, border: "1px solid #E0DAD3", backgroundColor: "#fff" }}
                         formatter={(value: unknown) => formatCurrency(typeof value === "number" ? value : Number(value) || 0)}
                       />
-                      <Bar dataKey="ventas" fill="#B8837E" radius={[6, 6, 0, 0]} name="Ventas" />
+                      <Bar dataKey="ventas" fill="#BA4A3A" radius={[6, 6, 0, 0]} name="Ventas" />
                       <Bar dataKey="cobros" fill="#86C7A3" radius={[6, 6, 0, 0]} name="Cobros" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -301,14 +301,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Métodos de Pago</h3>
-                <span className="text-xs text-[#9C8A82]">Este mes</span>
+                <h3 className="text-sm font-semibold text-[#39484F]">Métodos de Pago</h3>
+                <span className="text-xs text-[#5F6B72]">Este mes</span>
               </div>
               <div className="h-56">
                 {paymentMethodData.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-sm text-[#9C8A82]">Sin pagos este mes</div>
+                  <div className="flex items-center justify-center h-full text-sm text-[#5F6B72]">Sin pagos este mes</div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -326,7 +326,7 @@ export default function DashboardPage() {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
+                        contentStyle={{ borderRadius: 12, border: "1px solid #E0DAD3" }}
                         formatter={(value: unknown) => `${typeof value === "number" ? value : Number(value) || 0}%`}
                       />
                     </PieChart>
@@ -336,7 +336,7 @@ export default function DashboardPage() {
               {paymentMethodData.length > 0 && (
                 <div className="flex justify-center gap-4 mt-2">
                   {paymentMethodData.map((d, i) => (
-                    <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#9C8A82]">
+                    <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#5F6B72]">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
                       {d.name}
                     </div>
@@ -347,41 +347,41 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Ventas Diarias</h3>
-                <span className="text-xs text-[#9C8A82]">Últimos 15 días</span>
+                <h3 className="text-sm font-semibold text-[#39484F]">Ventas Diarias</h3>
+                <span className="text-xs text-[#5F6B72]">Últimos 15 días</span>
               </div>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={dailySales}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE3" />
-                    <XAxis dataKey="dia" tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#9C8A82", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <XAxis dataKey="dia" tick={{ fill: "#5F6B72", fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "#5F6B72", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #E8E0D8" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #E0DAD3" }}
                       formatter={(value: unknown) => formatCurrency(typeof value === "number" ? value : Number(value) || 0)}
                     />
-                    <Line type="monotone" dataKey="ventas" stroke="#B8837E" strokeWidth={2} dot={{ fill: "#B8837E", r: 3 }} />
+                    <Line type="monotone" dataKey="ventas" stroke="#BA4A3A" strokeWidth={2} dot={{ fill: "#BA4A3A", r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle size={16} className="text-[#E8C87A]" />
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Alertas de Stock</h3>
+                <h3 className="text-sm font-semibold text-[#39484F]">Alertas de Stock</h3>
               </div>
               {lowStock.length === 0 ? (
-                <div className="text-center py-8 text-[#9C8A82] text-sm">Sin alertas pendientes</div>
+                <div className="text-center py-8 text-[#5F6B72] text-sm">Sin alertas pendientes</div>
               ) : (
                 <div className="space-y-3">
                   {lowStock.map((p) => (
                     <div key={p.name} className="flex items-center justify-between p-3 bg-[#FFFBEB] rounded-xl border border-[#E8C87A]/30">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{p.name}</p>
-                        <p className="text-xs text-[#9C8A82]">Stock: {p.stock}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{p.name}</p>
+                        <p className="text-xs text-[#5F6B72]">Stock: {p.stock}</p>
                       </div>
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                         p.status === "AGOTADO"
@@ -398,27 +398,27 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Facturas Recientes</h3>
-                <button onClick={() => router.push("/facturacion")} className="text-xs text-[#B8837E] hover:underline flex items-center gap-1">
+                <h3 className="text-sm font-semibold text-[#39484F]">Facturas Recientes</h3>
+                <button onClick={() => router.push("/facturacion")} className="text-xs text-[#BA4A3A] hover:underline flex items-center gap-1">
                   Ver todas <ArrowUpRight size={12} />
                 </button>
               </div>
               {recentInvoices.length === 0 ? (
-                <div className="text-center py-8 text-[#9C8A82] text-sm">Sin facturas recientes</div>
+                <div className="text-center py-8 text-[#5F6B72] text-sm">Sin facturas recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
                   {recentInvoices.map((inv) => (
                     <div key={inv.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</p>
-                        <p className="text-xs text-[#9C8A82]">{inv.clients?.full_name || "—"}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{inv.invoice_number}</p>
+                        <p className="text-xs text-[#5F6B72]">{inv.clients?.full_name || "—"}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(inv.total))}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{formatCurrency(Number(inv.total))}</p>
                         <span className={`text-xs font-medium ${
-                          inv.status === "PAID" ? "text-[#86C7A3]" : inv.status === "PENDING" ? "text-[#E8C87A]" : "text-[#9C8A82]"
+                          inv.status === "PAID" ? "text-[#86C7A3]" : inv.status === "PENDING" ? "text-[#E8C87A]" : "text-[#5F6B72]"
                         }`}>
                           {inv.status === "PAID" ? "Pagada" : inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Parcial" : inv.status}
                         </span>
@@ -429,26 +429,26 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#5C3E35]">Recibos Recientes</h3>
+                <h3 className="text-sm font-semibold text-[#39484F]">Recibos Recientes</h3>
                 <button onClick={() => router.push("/recibos")} className="text-xs text-[#86C7A3] hover:underline flex items-center gap-1">
                   Ver todos <ArrowUpRight size={12} />
                 </button>
               </div>
               {recentReceipts.length === 0 ? (
-                <div className="text-center py-8 text-[#9C8A82] text-sm">Sin recibos recientes</div>
+                <div className="text-center py-8 text-[#5F6B72] text-sm">Sin recibos recientes</div>
               ) : (
                 <div className="divide-y divide-[#F0EBE3]">
                   {recentReceipts.map((rec) => (
                     <div key={rec.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</p>
-                        <p className="text-xs text-[#9C8A82]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{rec.receipt_number}</p>
+                        <p className="text-xs text-[#5F6B72]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-[#86C7A3]">{formatCurrency(Number(rec.amount))}</p>
-                        <span className="text-xs text-[#9C8A82]">
+                        <span className="text-xs text-[#5F6B72]">
                           {rec.payment_method === "CASH" ? "Efectivo" : rec.payment_method === "TRANSFER" ? "Transferencia" : "Tarjeta"}
                         </span>
                       </div>

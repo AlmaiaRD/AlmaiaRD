@@ -106,8 +106,8 @@ export default function MigrateImagesPanel() {
     return (
       <div className="max-w-md mx-auto text-center py-12">
         <AlertTriangle size={40} className="mx-auto text-amber-500 mb-4" />
-        <h1 className="text-lg font-bold text-[#5C3E35] mb-2">Acceso restringido</h1>
-        <p className="text-[#9C8A82] text-sm">Solo los administradores pueden migrar imágenes.</p>
+        <h1 className="text-lg font-bold text-[#39484F] mb-2">Acceso restringido</h1>
+        <p className="text-[#5F6B72] text-sm">Solo los administradores pueden migrar imágenes.</p>
       </div>
     );
   }
@@ -166,19 +166,19 @@ export default function MigrateImagesPanel() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+      <div className="bg-white rounded-2xl border border-[#E0DAD3] p-6">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[#B8837E]/10 flex items-center justify-center">
-            <ImageIcon size={20} className="text-[#B8837E]" />
+          <div className="w-10 h-10 rounded-xl bg-[#BA4A3A]/10 flex items-center justify-center">
+            <ImageIcon size={20} className="text-[#BA4A3A]" />
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[#5C3E35]">
+            <div className="font-semibold text-[#39484F]">
               {loadingProducts ? "Cargando productos..." : `${products.length} productos con imagen de amway`}
             </div>
-            <p className="text-xs text-[#9C8A82]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
+            <p className="text-xs text-[#5F6B72]">La migración se ejecuta desde tu navegador (necesario para acceder a las imágenes).</p>
           </div>
           {!loadingProducts && (
-            <button onClick={loadPending} className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] hover:bg-[#FAF6F0]">
+            <button onClick={loadPending} className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] hover:bg-[#F1E9DF]">
               <RefreshCw size={16} /> Recargar
             </button>
           )}
@@ -187,7 +187,7 @@ export default function MigrateImagesPanel() {
         <button
           onClick={runMigration}
           disabled={running || products.length === 0}
-          className="w-full h-12 bg-[#B8837E] text-white rounded-xl text-sm font-semibold hover:bg-[#9A6B66] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-semibold hover:bg-[#9C382A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {running ? (
             <><Loader2 size={18} className="animate-spin" /> Migrando {progress.done}/{progress.total}...</>
@@ -197,26 +197,26 @@ export default function MigrateImagesPanel() {
         </button>
 
         {running && current && (
-          <div className="mt-4 p-3 rounded-xl bg-[#FAF6F0] text-sm text-[#5C3E35]">
-            <span className="text-[#9C8A82]">Procesando:</span> {current.code} — {current.name}
+          <div className="mt-4 p-3 rounded-xl bg-[#F1E9DF] text-sm text-[#39484F]">
+            <span className="text-[#5F6B72]">Procesando:</span> {current.code} — {current.name}
           </div>
         )}
       </div>
 
       {logs.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+        <div className="bg-white rounded-2xl border border-[#E0DAD3] p-6">
           <div className="flex gap-6 mb-4">
             <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={16} /> {okCount} migradas</span>
             <span className="text-sm font-semibold text-red-500 flex items-center gap-1.5"><XCircle size={16} /> {errCount} con error</span>
-            <span className="text-sm text-[#9C8A82] ml-auto">{logs.length} registros</span>
+            <span className="text-sm text-[#5F6B72] ml-auto">{logs.length} registros</span>
           </div>
           <div className="max-h-96 overflow-y-auto space-y-1">
             {logs.map((l, idx) => (
               <div key={idx} className={`flex items-start gap-2 text-sm p-2 rounded-lg ${l.status === "ok" ? "bg-emerald-50" : l.status === "err" ? "bg-red-50" : "bg-gray-50"}`}>
                 {l.status === "ok" ? <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" /> : <XCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />}
                 <div>
-                  <span className="font-medium text-[#5C3E35]">{l.code}</span> <span className="text-[#9C8A82]">— {l.name}</span>
-                  <div className="text-xs text-[#9C8A82]">{l.message}</div>
+                  <span className="font-medium text-[#39484F]">{l.code}</span> <span className="text-[#5F6B72]">— {l.name}</span>
+                  <div className="text-xs text-[#5F6B72]">{l.message}</div>
                 </div>
               </div>
             ))}

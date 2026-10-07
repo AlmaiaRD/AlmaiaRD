@@ -61,9 +61,9 @@ interface ReceiptData {
 
 const M = 15;
 const CW = 215.9 - M * 2;
-const PRIMARY = "#B8837E";
-const DARK = "#5C3E35";
-const GRAY = "#9C8A82";
+const PRIMARY = "#BA4A3A";
+const DARK = "#39484F";
+const GRAY = "#5F6B72";
 
 function setTextColor(doc: jsPDF, hex: string) {
   const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -81,8 +81,8 @@ function setDrawFillColor(doc: jsPDF, hex: string) {
 }
 
 function drawCreamRoundedRect(doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 4) {
-  setDrawFillColor(doc, "#E8E0D8");
-  doc.setFillColor(252, 250, 247);
+  setDrawFillColor(doc, "#E0DAD3");
+  doc.setFillColor(245, 239, 233);
   doc.roundedRect(x, y, w, h, r, r, "FD");
 }
 
@@ -102,11 +102,11 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   const centerR = size * 0.2;
 
   // Background circle (pink circle like in the header)
-  setDrawFillColor(doc, "#F2EBE8");
+  setDrawFillColor(doc, "#F3ECE3");
   doc.circle(cx, cy, size * 0.5, "F");
 
   // Petals
-  setDrawFillColor(doc, "#B8837E");
+  setDrawFillColor(doc, "#BA4A3A");
   for (let i = 0; i < petalCount; i++) {
     const angle = (i * 360) / petalCount;
     const rad = (angle * Math.PI) / 180;
@@ -116,9 +116,9 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   }
 
   // Center circle
-  setDrawFillColor(doc, "#5C3E35");
+  setDrawFillColor(doc, "#39484F");
   doc.circle(cx, cy, centerR, "F");
-  setDrawFillColor(doc, "#B8837E");
+  setDrawFillColor(doc, "#BA4A3A");
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
@@ -216,7 +216,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   const badgeH = 16;
   const badgeX = PW - M - badgeW;
 
-  drawBadge(doc, badgeX, y, badgeW, badgeH, "FACTURA DE VENTA", "#F0EBE3", PRIMARY);
+  drawBadge(doc, badgeX, y, badgeW, badgeH, "FACTURA DE VENTA", "#F3EBE0", PRIMARY);
 
   setTextColor(doc, DARK);
   doc.setFont("helvetica", "bold");
@@ -232,7 +232,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   y += logoBase64 ? 48 : 32;
 
   // Subtle divider line
-  doc.setDrawColor(232, 224, 216);
+  doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
   doc.line(M, y, PW - M, y);
   y += 8;
@@ -287,7 +287,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   ];
 
   // Table header background
-  doc.setFillColor(240, 235, 227);
+  doc.setFillColor(243, 235, 224);
   doc.rect(M, y, CW, 8, "F");
 
   // Header text
@@ -310,7 +310,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
       doc.addPage();
       y = M;
       // Repeat table header on new page
-      doc.setFillColor(240, 235, 227);
+      doc.setFillColor(243, 235, 224);
       doc.rect(M, y, CW, 8, "F");
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "bold");
@@ -337,7 +337,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     });
 
     // Subtle row line
-    doc.setDrawColor(240, 235, 227);
+    doc.setDrawColor(243, 235, 224);
     doc.setLineWidth(0.2);
     doc.line(M, y + 5.5, M + CW, y + 5.5);
 
@@ -423,7 +423,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   }
 
   // Total General (bold)
-  doc.setDrawColor(232, 224, 216);
+  doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
   doc.line(summaryX, y, summaryX + summaryW, y);
   y += 4;
@@ -456,7 +456,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   }
 
   // Amount in words
-  doc.setDrawColor(232, 224, 216);
+  doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
   doc.line(M, y, M + CW, y);
   y += 5;
@@ -480,7 +480,7 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   }
 
   // Divider
-  doc.setDrawColor(232, 224, 216);
+  doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.5);
   doc.line(M, y, PW - M, y);
   y += 6;
@@ -553,9 +553,9 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
   const bizEmail = receipt.email || "";
   const bizPhone = receipt.phone || "";
 
-  const primary = "#86C7A3";
-  const dark = "#5C3E35";
-  const gray = "#9C8A82";
+  const primary = "#BA4A3A";
+  const dark = "#39484F";
+  const gray = "#5F6B72";
 
   function setColor(hex: string) {
     const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -609,8 +609,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
 
   y += logoBase64 ? 32 : 22;
 
-  doc.setDrawColor(134, 199, 163);
-  doc.setFillColor(240, 250, 244);
+  doc.setDrawColor(186, 74, 58);
+  doc.setFillColor(245, 239, 233);
   doc.roundedRect(margin, y, pageWidth - margin * 2, 50, 3, 3, "FD");
 
   y += 10;
@@ -726,9 +726,9 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
   const bizEmail = expense.email || "";
   const bizPhone = expense.phone || "";
 
-  const primary = "#D4A0A0";
-  const dark = "#5C3E35";
-  const gray = "#9C8A82";
+  const primary = "#BA4A3A";
+  const dark = "#39484F";
+  const gray = "#5F6B72";
 
   function setColor(hex: string) {
     const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -778,8 +778,8 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
 
   y += logoBase64 ? 32 : 22;
 
-  doc.setDrawColor(212, 160, 160);
-  doc.setFillColor(252, 250, 247);
+  doc.setDrawColor(186, 74, 58);
+  doc.setFillColor(245, 239, 233);
   doc.roundedRect(margin, y, pageWidth - margin * 2, 60, 3, 3, "FD");
 
   y += 12;
@@ -950,7 +950,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     const badgeLabel = "COTIZACIÓN";
     const badgeW = doc.getTextWidth(badgeLabel) + 18;
     const badgeX = PW - M - badgeW;
-    setDrawFillColor(doc, "#F0EBE3");
+    setDrawFillColor(doc, "#F3EBE0");
     doc.roundedRect(badgeX, hy, badgeW, badgeH, badgeRad, badgeRad, "F");
     doc.text(badgeLabel, badgeX + badgeW / 2, hy + badgeH / 2 + 2.2, { align: "center" });
 
@@ -963,7 +963,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, numberY + 9.5, { align: "right" });
 
     hy += logoH + 24;
-    doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
+    doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.3);
     doc.line(M, hy, PW - M, hy);
     return hy + 8;
   };
@@ -990,7 +990,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     { label: "Total", x: M + 152, w: 34, align: "right" as const },
   ];
 
-  doc.setFillColor(240, 235, 227);
+  doc.setFillColor(243, 235, 224);
   doc.rect(M, y, CW, 8, "F");
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
   colDefs.forEach((c) => { doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align }); });
@@ -1022,7 +1022,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     doc.text(formatCurrency(item.unit_price), M + 122 + 28, y + 3, { align: "right" });
     doc.text(formatCurrency(item.line_total), M + 152 + 32, y + 3, { align: "right" });
 
-    doc.setDrawColor(240, 235, 227); doc.setLineWidth(0.2);
+    doc.setDrawColor(243, 235, 224); doc.setLineWidth(0.2);
     doc.line(M, y + rowHeight, M + CW, y + rowHeight);
 
     y += rowHeight;
@@ -1045,7 +1045,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     setTextColor(doc, "#D4A0A0"); doc.text(`-${formatCurrency(quote.discount_amount)}`, summaryX + summaryW, y, { align: "right" }); y += 6;
   }
 
-  doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
+  doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.3);
   doc.line(summaryX, y, summaryX + summaryW, y); y += 4;
 
   setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
@@ -1058,7 +1058,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     doc.text(noteLines, M, y); y += noteLines.length * 4 + 6;
   }
 
-  doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.3);
+  doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.3);
   doc.line(M, y, M + CW, y); y += 5;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "italic"); doc.setFontSize(8);
   doc.text(`Son: ${numberToWords(quote.total)}`, M, y); y += 15;
@@ -1159,7 +1159,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 
   // Footer (sin "Aliados de tu bienestar" — ahora va tras la firma)
   y = PH - 20;
-  doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.5);
+  doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.5);
   doc.line(M, y, PW - M, y); y += 7;
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
   doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", PW / 2, y, { align: "center" });

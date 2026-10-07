@@ -224,43 +224,43 @@ export default function DescriptionReviewTool({
     >
       <div className="space-y-4">        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 min-w-[220px]">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar producto..."
-              className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+              className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#5C3E35]">
+          <div className="flex items-center gap-2 text-xs text-[#39484F]">
             <Badge variant="warning">{counts.issues} con observaciones</Badge>
             <Badge variant="success">{counts.ok} ok</Badge>
-            <span className="text-[#9C8A82]">{counts.total} productos</span>
+            <span className="text-[#5F6B72]">{counts.total} productos</span>
           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
             {filtered.length === 0 ? (
-              <p className="text-center text-[#9C8A82] py-10 text-sm">No hay productos para revisar</p>
+              <p className="text-center text-[#5F6B72] py-10 text-sm">No hay productos para revisar</p>
             ) : (
               filtered.map((r) => {
                 const issues = detectIssue(r.description, r.benefits, r.name);
                 const hasChanges = r.description !== r.originalDescription || r.benefits !== r.originalBenefits;
                 return (
-                  <div key={r.id} className="border border-[#E8E0D8] rounded-xl overflow-hidden bg-white">
-                    <div className="flex items-center gap-3 p-3 bg-[#FAF6F0]">
-                      <button onClick={() => toggle(r.id)} className="text-[#5C3E35] hover:bg-[#E8E0D8] rounded p-1 transition-colors">
+                  <div key={r.id} className="border border-[#E0DAD3] rounded-xl overflow-hidden bg-white">
+                    <div className="flex items-center gap-3 p-3 bg-[#F1E9DF]">
+                      <button onClick={() => toggle(r.id)} className="text-[#39484F] hover:bg-[#E0DAD3] rounded p-1 transition-colors">
                         {r.expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                       </button>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-[#5C3E35] truncate">{r.name}</div>
-                        <div className="text-xs text-[#9C8A82]">
+                        <div className="text-sm font-semibold text-[#39484F] truncate">{r.name}</div>
+                        <div className="text-xs text-[#5F6B72]">
                           {r.code && `Código: ${r.code}`}
                           {r.category ? ` · ${r.category}` : ""}
                           {r.subcategory ? ` · ${r.subcategory}` : ""}
@@ -279,14 +279,14 @@ export default function DescriptionReviewTool({
                         <button
                           onClick={() => applySuggestion(r.id)}
                           disabled={!issues.some((i) => /leer|valores|vacío|sin descripción|muy corta/i.test(i)) && issues.length === 0}
-                          className="text-xs px-2 py-1 rounded-md bg-white border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0] disabled:opacity-40"
+                          className="text-xs px-2 py-1 rounded-md bg-white border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF] disabled:opacity-40"
                           title="Aplicar limpieza automática"
                         >
                           <RefreshCw size={13} />
                         </button>
                         <button
                           onClick={() => markKeep(r.id)}
-                          className={`text-xs px-2 py-1 rounded-md border flex-shrink-0 transition-colors ${r.approved === "keep" ? "bg-green-50 border-green-300 text-green-700" : "bg-white border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0]"}`}
+                          className={`text-xs px-2 py-1 rounded-md border flex-shrink-0 transition-colors ${r.approved === "keep" ? "bg-green-50 border-green-300 text-green-700" : "bg-white border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF]"}`}
                         >
                           Dejar igual
                         </button>
@@ -297,26 +297,26 @@ export default function DescriptionReviewTool({
                       <div className="p-3 space-y-3">
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-[#5C3E35]">Descripción</label>
-                            <span className="text-[10px] text-[#9C8A82]">{r.description.length} car.</span>
+                            <label className="text-xs font-medium text-[#39484F]">Descripción</label>
+                            <span className="text-[10px] text-[#5F6B72]">{r.description.length} car.</span>
                           </div>
                           <textarea
                             value={r.description}
                             onChange={(e) => updateRow(r.id, { description: e.target.value, approved: "edit" })}
                             rows={4}
-                            className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y"
+                            className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y"
                           />
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-[#5C3E35]">Beneficios <span className="text-[#9C8A82] font-normal">(uno por línea)</span></label>
-                            <span className="text-[10px] text-[#9C8A82]">{r.benefits.length} car.</span>
+                            <label className="text-xs font-medium text-[#39484F]">Beneficios <span className="text-[#5F6B72] font-normal">(uno por línea)</span></label>
+                            <span className="text-[10px] text-[#5F6B72]">{r.benefits.length} car.</span>
                           </div>
                           <textarea
                             value={r.benefits}
                             onChange={(e) => updateRow(r.id, { benefits: e.target.value, approved: "edit" })}
                             rows={4}
-                            className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y"
+                            className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y"
                           />
                         </div>
 
@@ -331,7 +331,7 @@ export default function DescriptionReviewTool({
                         )}
 
                         {hasChanges && (
-                          <div className="text-xs text-[#B8837E] flex items-center gap-1">
+                          <div className="text-xs text-[#BA4A3A] flex items-center gap-1">
                             <Save size={13} /> Hay cambios sin aplicar
                           </div>
                         )}
@@ -344,28 +344,28 @@ export default function DescriptionReviewTool({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#E8E0D8]">
-          <div className="text-xs text-[#9C8A82]">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#E0DAD3]">
+          <div className="text-xs text-[#5F6B72]">
             {rows.filter((r) => r.approved === "edit" && (r.description !== r.originalDescription || r.benefits !== r.originalBenefits)).length} producto(s) con cambios por aplicar
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={exportCsv}
               disabled={rows.length === 0}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-colors disabled:opacity-40 flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#39484F] border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-colors disabled:opacity-40 flex-shrink-0"
             >
               <Download size={16} /> Exportar inventario
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] hover:bg-[#FAF6F0] transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-[#39484F] hover:bg-[#F1E9DF] transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleApplyAll}
               disabled={saving || rows.filter((r) => r.approved === "edit" && (r.description !== r.originalDescription || r.benefits !== r.originalBenefits)).length === 0}
-              className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#9A6B66] transition-colors disabled:opacity-40 flex-shrink-0"
+              className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#9C382A] transition-colors disabled:opacity-40 flex-shrink-0"
             >
               <Save size={16} /> {saving ? "Guardando..." : "Aplicar cambios"}
             </button>

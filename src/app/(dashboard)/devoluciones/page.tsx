@@ -312,43 +312,43 @@ export default function DevolucionesPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Devoluciones</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Gestión de devoluciones de productos</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Devoluciones</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Gestión de devoluciones de productos</p>
         </div>
-        <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm">
+        <button onClick={openNew} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all duration-200 shadow-sm">
           <Plus size={18} /> Nueva Devolución
         </button>
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por número, cliente o factura..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#9C8A82]">
+        <div className="text-center py-16 text-[#5F6B72]">
           <RotateCcw size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay devoluciones registradas</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((ret) => (
-            <div key={ret.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-shadow duration-200">
+            <div key={ret.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow duration-200">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className="font-medium text-[#5C3E35]">{ret.return_number}</h3>
+                    <h3 className="font-medium text-[#39484F]">{ret.return_number}</h3>
                     <Badge variant={STATUS_COLORS[ret.status] || "neutral"}>{ret.status === "DRAFT" ? "Borrador" : ret.status === "COMPLETED" ? "Completada" : "Anulada"}</Badge>
                   </div>
-                  <p className="text-sm text-[#9C8A82]">{ret.clients?.full_name} — Factura {ret.invoices?.invoice_number}</p>
+                  <p className="text-sm text-[#5F6B72]">{ret.clients?.full_name} — Factura {ret.invoices?.invoice_number}</p>
                   <div className="flex items-center gap-4 mt-2 text-sm">
-                    <span className="text-[#5C3E35] font-medium">{formatCurrency(ret.total)}</span>
-                    <span className="text-[#9C8A82]">{formatDate(ret.return_date)}</span>
-                    {ret.reason && <span className="text-[#9C8A82] truncate max-w-[200px]">{ret.reason}</span>}
+                    <span className="text-[#39484F] font-medium">{formatCurrency(ret.total)}</span>
+                    <span className="text-[#5F6B72]">{formatDate(ret.return_date)}</span>
+                    {ret.reason && <span className="text-[#5F6B72] truncate max-w-[200px]">{ret.reason}</span>}
                   </div>
                 </div>
                 <div className="flex gap-2 ml-4">
@@ -369,9 +369,9 @@ export default function DevolucionesPage() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nueva Devolución" wide>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Factura</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
             <select value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Seleccionar factura...</option>
               {invoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>
@@ -383,15 +383,15 @@ export default function DevolucionesPage() {
 
           {selectedInvoice && (
             <>
-              <div className="border-t border-[#E8E0D8] pt-4">
+              <div className="border-t border-[#E0DAD3] pt-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-[#5C3E35]">Productos a devolver</h4>
+                  <h4 className="text-sm font-semibold text-[#39484F]">Productos a devolver</h4>
                   <select
                     onChange={(e) => {
                       if (e.target.value) { addReturnItem(e.target.value); e.target.value = ""; }
                     }}
                     disabled={loadingLines}
-                    className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 disabled:opacity-50"
+                    className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 disabled:opacity-50"
                   >
                     <option value="">{loadingLines ? "Cargando productos..." : "+ Agregar producto"}</option>
                     {invoiceLines
@@ -405,30 +405,30 @@ export default function DevolucionesPage() {
                 </div>
 
                 {invoiceLines.length === 0 && !loadingLines ? (
-                  <p className="text-sm text-[#9C8A82] py-4 text-center">Esta factura no tiene productos para devolver</p>
+                  <p className="text-sm text-[#5F6B72] py-4 text-center">Esta factura no tiene productos para devolver</p>
                 ) : returnItems.length === 0 ? (
-                  <p className="text-sm text-[#9C8A82] py-4 text-center">Selecciona productos de la factura</p>
+                  <p className="text-sm text-[#5F6B72] py-4 text-center">Selecciona productos de la factura</p>
                 ) : (
                   <div className="space-y-2">
                     {returnItems.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-[#FAF6F0]">
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-[#F1E9DF]">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#5C3E35] truncate">{item.name}</p>
+                          <p className="text-sm font-medium text-[#39484F] truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <input type="number" min={1} max={item.maxQty} value={item.quantity}
                               onChange={(e) => updateReturnItem(i, "quantity", Math.max(1, Number(e.target.value)))}
                               title={`Máximo ${item.maxQty} por devolver`}
-                              className="w-16 h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
+                              className="w-16 h-8 px-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                             <input type="number" step="0.01" value={item.unit_price}
                               onChange={(e) => updateReturnItem(i, "unit_price", Number(e.target.value))}
-                              className="w-24 h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-right text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30" />
-                            <span className="text-sm font-medium text-[#5C3E35] w-24 text-right">{formatCurrency(item.line_total)}</span>
+                              className="w-24 h-8 px-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                            <span className="text-sm font-medium text-[#39484F] w-24 text-right">{formatCurrency(item.line_total)}</span>
                           </div>
                         </div>
                         <button onClick={() => removeReturnItem(i)} className="p-1.5 text-[#D4A0A0] hover:bg-red-50 rounded-lg transition-colors"><X size={14} /></button>
                       </div>
                     ))}
-                    <div className="flex justify-between pt-2 text-sm font-semibold text-[#5C3E35]">
+                    <div className="flex justify-between pt-2 text-sm font-semibold text-[#39484F]">
                       <span>Total</span>
                       <span>{formatCurrency(returnItems.reduce((s, i) => s + i.line_total, 0))}</span>
                     </div>
@@ -437,22 +437,22 @@ export default function DevolucionesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Motivo</label>
+                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Motivo</label>
                 <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas internas</label>
+                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas internas</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
             </>
           )}
 
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowModal(false)} className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">Cancelar</button>
+            <button onClick={() => setShowModal(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
             <button onClick={handleSave} disabled={saving || !selectedInvoice || returnItems.length === 0}
-              className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+              className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
               <Package size={18} /> {saving ? "Guardando..." : "Crear Devolución"}
             </button>
           </div>
@@ -467,46 +467,46 @@ export default function DevolucionesPage() {
               <Badge variant={STATUS_COLORS[viewingReturn.status] || "neutral"}>
                 {viewingReturn.status === "DRAFT" ? "Borrador" : viewingReturn.status === "COMPLETED" ? "Completada" : "Anulada"}
               </Badge>
-              <span className="text-sm text-[#9C8A82]">{formatDate(viewingReturn.return_date)}</span>
+              <span className="text-sm text-[#5F6B72]">{formatDate(viewingReturn.return_date)}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Cliente</label>
-                <p className="text-sm text-[#5C3E35]">{viewingReturn.clients?.full_name || "N/A"}</p>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Cliente</label>
+                <p className="text-sm text-[#39484F]">{viewingReturn.clients?.full_name || "N/A"}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Factura</label>
-                <p className="text-sm text-[#5C3E35]">{viewingReturn.invoices?.invoice_number || "N/A"}</p>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Factura</label>
+                <p className="text-sm text-[#39484F]">{viewingReturn.invoices?.invoice_number || "N/A"}</p>
               </div>
             </div>
 
             {viewingReturn.reason && (
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Motivo</label>
-                <p className="text-sm text-[#5C3E35]">{viewingReturn.reason}</p>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Motivo</label>
+                <p className="text-sm text-[#39484F]">{viewingReturn.reason}</p>
               </div>
             )}
 
-            <div className="border-t border-[#E8E0D8] pt-4">
-              <h4 className="text-sm font-semibold text-[#5C3E35] mb-3">Productos</h4>
+            <div className="border-t border-[#E0DAD3] pt-4">
+              <h4 className="text-sm font-semibold text-[#39484F] mb-3">Productos</h4>
               {viewingItems.length === 0 ? (
-                <p className="text-sm text-[#9C8A82]">Cargando...</p>
+                <p className="text-sm text-[#5F6B72]">Cargando...</p>
               ) : (
                 <div className="space-y-2">
                   {viewingItems.map((item: ReturnItemWithProduct) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6F0]">
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F1E9DF]">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-[#5C3E35]">{item.products?.name || "Producto"}</p>
-                        <p className="text-xs text-[#9C8A82]">{item.products?.code || ""}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{item.products?.name || "Producto"}</p>
+                        <p className="text-xs text-[#5F6B72]">{item.products?.code || ""}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-[#5C3E35]">{item.quantity} × {formatCurrency(item.unit_price)}</p>
-                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(item.line_total)}</p>
+                        <p className="text-sm text-[#39484F]">{item.quantity} × {formatCurrency(item.unit_price)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{formatCurrency(item.line_total)}</p>
                       </div>
                     </div>
                   ))}
-                  <div className="flex justify-between pt-2 text-sm font-semibold text-[#5C3E35]">
+                  <div className="flex justify-between pt-2 text-sm font-semibold text-[#39484F]">
                     <span>Total</span>
                     <span>{formatCurrency(viewingItems.reduce((s: number, i: ReturnItemWithProduct) => s + Number(i.line_total), 0))}</span>
                   </div>
@@ -516,8 +516,8 @@ export default function DevolucionesPage() {
 
             {viewingReturn.notes && (
               <div>
-                <label className="block text-xs font-medium text-[#9C8A82] mb-1">Notas internas</label>
-                <p className="text-sm text-[#5C3E35]">{viewingReturn.notes}</p>
+                <label className="block text-xs font-medium text-[#5F6B72] mb-1">Notas internas</label>
+                <p className="text-sm text-[#39484F]">{viewingReturn.notes}</p>
               </div>
             )}
 
@@ -529,13 +529,13 @@ export default function DevolucionesPage() {
                     <Check size={18} /> Completar
                   </button>
                   <button onClick={() => { handleCancel(viewingReturn.id); setViewingReturn(null); }}
-                    className="flex-1 h-12 border border-[#E8E0D8] text-[#D4A0A0] rounded-xl text-sm font-medium hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                    className="flex-1 h-12 border border-[#E0DAD3] text-[#D4A0A0] rounded-xl text-sm font-medium hover:bg-red-50 transition-all flex items-center justify-center gap-2">
                     <X size={18} /> Anular
                   </button>
                 </>
               )}
               <button onClick={() => { setViewingReturn(null); setViewingItems([]); }}
-                className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
                 Cerrar
               </button>
             </div>

@@ -61,7 +61,7 @@ interface CatalogEntry {
 
 export default function CotizacionesPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FCFAF7]"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
       <CotizacionesContent />
     </Suspense>
   );
@@ -447,60 +447,60 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BA4A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
-            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Tus aliados en el camino a tu bienestar y salud.</p>
-            <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
-            <p style="font-size:12px;color:#9C8A82;margin:0;">Rep\u00fablica Dominicana</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:14px;font-weight:700;color:#39484F;margin:8px 0 0;">Tus aliados en el camino a tu bienestar y salud.</p>
+            <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
+            <p style="font-size:12px;color:#5F6B72;margin:0;">Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${sanitizeHtml(data.quote_number)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${sanitizeHtml(data.quote_date)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">V\u00e1lida hasta: ${sanitizeHtml(data.valid_until)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Estado: ${sanitizeHtml(statusLabel)}</p>
+          <span style="display:inline-block;background:#F0EBE3;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
+          <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.quote_number)}</p>
+          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Fecha: ${sanitizeHtml(data.quote_date)}</p>
+          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">V\u00e1lida hasta: ${sanitizeHtml(data.valid_until)}</p>
+          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Estado: ${sanitizeHtml(statusLabel)}</p>
         </div>
       </div>
-      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
-        <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
+      <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${sanitizeHtml(data.client_name) || ""}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${sanitizeHtml(data.client_phone) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${sanitizeHtml(data.client_email) || "N/D"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Nombre:</span> ${sanitizeHtml(data.client_name) || ""}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Tel\u00e9fono:</span> ${sanitizeHtml(data.client_phone) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Email:</span> ${sanitizeHtml(data.client_email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
         <thead>
           <tr style="background:#F0EBE3;">
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
-            <th style="padding:10px 12px;text-align:center;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${(data.items || []).map((item) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">${sanitizeHtml(item.name) || "Producto"}</td>
-              <td style="padding:10px 12px;text-align:center;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#39484F;">${sanitizeHtml(item.name) || "Producto"}</td>
+              <td style="padding:10px 12px;text-align:center;font-size:13px;color:#39484F;">${item.quantity}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#39484F;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
-      <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+      <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
           <span>Subtotal</span>
           <span>${sanitizeHtml(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
             <span>${sanitizeHtml(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
@@ -511,24 +511,24 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
             <span>-${sanitizeHtml(formatCurrency(Number(data.discount_amount)))}</span>
           </div>
         ` : ""}
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#39484F;padding-top:4px;border-top:1px solid #E0DAD3;margin-bottom:4px;">
           <span>Total General</span>
           <span>${sanitizeHtml(formatCurrency(Number(data.total)))}</span>
         </div>
         ${data.notes ? `
-          <div style="margin-top:8px;padding:8px 12px;background:#FAF6F0;border-radius:8px;font-size:12px;color:#9C8A82;">
+          <div style="margin-top:8px;padding:8px 12px;background:#F1E9DF;border-radius:8px;font-size:12px;color:#5F6B72;">
             <span style="font-weight:600;">Notas:</span> ${sanitizeHtml(data.notes)}
           </div>
         ` : ""}
       </div>
-      <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div style="border-top:1px solid #E0DAD3;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu inter\u00e9s en ${sanitizeHtml(st?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
-          <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
+          <p style="font-size:11px;font-style:italic;color:#BA4A3A;margin:0;">\u00a1Gracias por tu inter\u00e9s en ${sanitizeHtml(st?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;color:#5F6B72;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${st?.signature_url ? `<img src="${sanitizeHtml(st.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;color:#5C3E35;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
-          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+          ${st?.signature_url ? `<img src="${sanitizeHtml(st.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;color:#39484F;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
+          <p style="font-size:9px;color:#5F6B72;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
     `;
@@ -686,22 +686,22 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       const drawCatalogEntry = async (entry: CatalogEntry, startY: number): Promise<number> => {
         let y = startY;
         const priceClient = entry.price;
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
         const nameLines = doc.splitTextToSize(entry.name || "Producto", CW * 0.65);
         doc.text(nameLines, M, y + 3, { align: "left" });
         const nameH = nameLines.length * 5.5;
 
-        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        sc(doc, "#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+        sc(doc, "#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
         doc.text(formatCurrency(priceClient), PW - M, y + 4, { align: "right" });
-        sc(doc, "#9C8A82"); doc.setFontSize(5.5);
+        sc(doc, "#5F6B72"); doc.setFontSize(5.5);
         doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
 
         const sub = entry.subbrand;
         const cat = entry.category;
         if (sub || cat) {
-          sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          sc(doc, "#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
           doc.text([sub, cat].filter(Boolean).join(" · "), M, y + nameH + 2);
         }
 
@@ -734,9 +734,9 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
         let textY = photoY;
         if (entry.description) {
-          sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+          sc(doc, "#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
           doc.text("DESCRIPCIÓN", textX, textY); textY += 4;
-          sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+          sc(doc, "#39484F"); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
           const descLines = doc.splitTextToSize(entry.description, textW - 2) as string[];
           for (const dl of descLines) {
             doc.text(dl, textX, textY);
@@ -748,9 +748,9 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         if (entry.benefits) {
           const benefitList = entry.benefits.split("\n").filter(Boolean);
           if (benefitList.length > 0) {
-            sc(doc, "#B8837E"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+            sc(doc, "#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
             doc.text("BENEFICIOS", textX, textY); textY += 4;
-            sc(doc, "#5C3E35"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+            sc(doc, "#39484F"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
             for (const benefit of benefitList) {
               const bLines = doc.splitTextToSize(`• ${benefit}`, textW - 4) as string[];
               for (const bl of bLines) {
@@ -772,15 +772,15 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
       const drawFooter = () => {
         let fy = PH - 20;
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
         doc.text(bizName, PW / 2, fy, { align: "center" });
         fy += 4;
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        sc(doc, "#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
         doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, fy, { align: "center" });
         fy += 3;
         doc.text("Precio incluye ITBIS", PW / 2, fy, { align: "center" });
         fy += 4;
-        sc(doc, "#9C8A82"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
+        sc(doc, "#5F6B72"); doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
         doc.text(`Generado: ${"v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, fy, { align: "center" });
       };
 
@@ -798,9 +798,9 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
         const hCenterY = hTop + hLogoH / 2;
         const hTextX = M + hLogoW + 4;
-        sc(doc, "#5C3E35"); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
+        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
         doc.text(bizName, hTextX, hCenterY);
-        sc(doc, "#B8837E"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        sc(doc, "#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
         const hy = hLogoBottom + 7;
         doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
@@ -889,12 +889,12 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Cotizaciones</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Crea, envía y da seguimiento a tus cotizaciones</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Cotizaciones</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Crea, envía y da seguimiento a tus cotizaciones</p>
         </div>
         <button
           onClick={openNew}
-          className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm"
+          className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all duration-200 shadow-sm"
         >
           <Plus size={18} /> Nueva Cotización
         </button>
@@ -902,19 +902,19 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
           <input
             type="text"
             placeholder="Buscar por número o cliente..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-11 pl-9 pr-3 rounded-xl border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+            className="w-full h-11 pl-9 pr-3 rounded-xl border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="h-11 px-3 rounded-xl border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all sm:w-44"
+          className="h-11 px-3 rounded-xl border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all sm:w-44"
         >
           <option value="">Todos los estados</option>
           {Object.entries(statusMap).map(([k, v]) => (
@@ -924,7 +924,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         <select
           value={filterClient}
           onChange={(e) => setFilterClient(e.target.value)}
-          className="h-11 px-3 rounded-xl border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all sm:w-52"
+          className="h-11 px-3 rounded-xl border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all sm:w-52"
         >
           <option value="">Todos los clientes</option>
           {clients.map((c) => (
@@ -936,56 +936,56 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Borradores", value: quotes.filter(q => q.status === "DRAFT").length, color: "text-[#9C8A82]" },
-          { label: "Enviadas", value: quotes.filter(q => q.status === "SENT").length, color: "text-[#B8837E]" },
+          { label: "Borradores", value: quotes.filter(q => q.status === "DRAFT").length, color: "text-[#5F6B72]" },
+          { label: "Enviadas", value: quotes.filter(q => q.status === "SENT").length, color: "text-[#BA4A3A]" },
           { label: "Aceptadas", value: quotes.filter(q => q.status === "ACCEPTED").length, color: "text-[#86C7A3]" },
-          { label: "Convertidas", value: quotes.filter(q => q.status === "CONVERTED").length, color: "text-[#5C3E35]" },
+          { label: "Convertidas", value: quotes.filter(q => q.status === "CONVERTED").length, color: "text-[#39484F]" },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8]">
+          <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-[#9C8A82] mt-0.5">{s.label}</p>
+            <p className="text-xs text-[#5F6B72] mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
         {loading ? (
-          <div className="p-10 text-center text-sm text-[#9C8A82]">Cargando cotizaciones...</div>
+          <div className="p-10 text-center text-sm text-[#5F6B72]">Cargando cotizaciones...</div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <FileText size={40} className="mx-auto text-[#E8E0D8] mb-3" />
-            <p className="text-sm text-[#9C8A82]">No hay cotizaciones</p>
+            <FileText size={40} className="mx-auto text-[#E0DAD3] mb-3" />
+            <p className="text-sm text-[#5F6B72]">No hay cotizaciones</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#FAF6F0] border-b border-[#E8E0D8]">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Número</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Cliente</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Fecha</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Válida hasta</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Total</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Estado</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Acciones</th>
+                <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Número</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Fecha</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Válida hasta</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Total</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Estado</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((q) => (
-                  <tr key={q.id} className="border-b border-[#E8E0D8] last:border-0 hover:bg-[#FAF6F0]/50 cursor-pointer transition-colors" onClick={() => openDetail(q)}>
-                    <td className="px-4 py-3 font-semibold text-[#5C3E35]">{q.quote_number}</td>
-                    <td className="px-4 py-3 text-[#5C3E35]">{clientName(q)}</td>
-                    <td className="px-4 py-3 text-[#9C8A82]">{formatDate(q.quote_date)}</td>
-                    <td className="px-4 py-3 text-[#9C8A82]">{formatDate(q.valid_until)}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-[#5C3E35]">{formatCurrency(Number(q.total))}</td>
+                  <tr key={q.id} className="border-b border-[#E0DAD3] last:border-0 hover:bg-[#F1E9DF]/50 cursor-pointer transition-colors" onClick={() => openDetail(q)}>
+                    <td className="px-4 py-3 font-semibold text-[#39484F]">{q.quote_number}</td>
+                    <td className="px-4 py-3 text-[#39484F]">{clientName(q)}</td>
+                    <td className="px-4 py-3 text-[#5F6B72]">{formatDate(q.quote_date)}</td>
+                    <td className="px-4 py-3 text-[#5F6B72]">{formatDate(q.valid_until)}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-[#39484F]">{formatCurrency(Number(q.total))}</td>
                     <td className="px-4 py-3"><Badge variant={statusMap[q.status]?.variant || "neutral"}>{statusMap[q.status]?.label || q.status}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => handlePdf(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="PDF"><Printer size={15} /></button>
-                        <button onClick={() => handleJpg(q)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="JPG"><ImageIcon size={15} /></button>
+                        <button onClick={() => handlePdf(q)} className="p-2 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg" title="PDF"><Printer size={15} /></button>
+                        <button onClick={() => handleJpg(q)} className="p-2 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg" title="JPG"><ImageIcon size={15} /></button>
                         {(q.status === "DRAFT" || q.status === "SENT") && (
-                          <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="Marcar enviada"><Send size={15} /></button>
+                          <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg" title="Marcar enviada"><Send size={15} /></button>
                         )}
                         {q.status === "SENT" && (
                           <button onClick={() => handleStatus(q.id, "ACCEPTED")} className="p-2 text-[#86C7A3] hover:bg-[#86C7A3]/10 rounded-lg" title="Aceptar"><CheckCircle2 size={15} /></button>
@@ -994,18 +994,18 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                           <button onClick={() => handleStatus(q.id, "REJECTED")} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Rechazar"><XCircle size={15} /></button>
                         )}
                         {(q.status === "DRAFT" || q.status === "SENT") && (
-                          <button onClick={() => handleStatus(q.id, "CANCELLED")} className="p-2 text-[#9C8A82] hover:bg-[#9C8A82]/10 rounded-lg" title="Cancelar"><Ban size={15} /></button>
+                          <button onClick={() => handleStatus(q.id, "CANCELLED")} className="p-2 text-[#5F6B72] hover:bg-[#5F6B72]/10 rounded-lg" title="Cancelar"><Ban size={15} /></button>
                         )}
                         {q.status === "ACCEPTED" && (
-                          <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#9C8A82] hover:bg-[#9C8A82]/10 rounded-lg" title="Revertir a enviada"><Undo2 size={15} /></button>
+                          <button onClick={() => handleStatus(q.id, "SENT")} className="p-2 text-[#5F6B72] hover:bg-[#5F6B72]/10 rounded-lg" title="Revertir a enviada"><Undo2 size={15} /></button>
                         )}
                         {q.status === "ACCEPTED" && (
                           <button onClick={() => convertToInvoice(q)} className="p-2 text-[#86C7A3] hover:bg-[#86C7A3]/10 rounded-lg" title="Convertir en factura"><ArrowRightLeft size={15} /></button>
                         )}
                         {q.status !== "CONVERTED" && (
-                          <button onClick={() => openEdit(q.id)} className="p-2 text-[#5C3E35] hover:bg-[#5C3E35]/10 rounded-lg" title="Editar"><Edit2 size={15} /></button>
+                          <button onClick={() => openEdit(q.id)} className="p-2 text-[#39484F] hover:bg-[#39484F]/10 rounded-lg" title="Editar"><Edit2 size={15} /></button>
                         )}
-                        <button onClick={() => duplicateQuote(q.id)} className="p-2 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg" title="Duplicar"><Copy size={15} /></button>
+                        <button onClick={() => duplicateQuote(q.id)} className="p-2 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg" title="Duplicar"><Copy size={15} /></button>
                         {user?.role === "admin" && q.status !== "CONVERTED" && (
                           <button onClick={() => handleDelete(q.id)} className="p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg" title="Eliminar"><Trash2 size={15} /></button>
                         )}
@@ -1030,12 +1030,12 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cliente *</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente *</label>
               <div className="flex gap-2">
                 <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clients.map((c) => (
@@ -1045,7 +1045,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                 <button
                   type="button"
                   onClick={() => setShowNewClient(true)}
-                  className="shrink-0 h-12 px-4 rounded-xl bg-[#B8837E]/10 text-[#B8837E] text-sm font-medium hover:bg-[#B8837E]/20 transition-all flex items-center gap-1.5"
+                  className="shrink-0 h-12 px-4 rounded-xl bg-[#BA4A3A]/10 text-[#BA4A3A] text-sm font-medium hover:bg-[#BA4A3A]/20 transition-all flex items-center gap-1.5"
                   title="Nuevo Cliente"
                 >
                   <Plus size={16} /> Nuevo
@@ -1053,37 +1053,37 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha</label>
               <input type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Válida hasta</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Válida hasta</label>
               <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Margen</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
               <select value={margin} onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descuento %</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
               <input type="number" min={0} max={100} value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             {editingId && (
               <div>
-                <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Estado</label>
+                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Estado</label>
                 <select value={editingStatus} onChange={(e) => setEditingStatus(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all">
+                  className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                   <option value="DRAFT">Borrador</option>
                   <option value="SENT">Enviada</option>
                   <option value="ACCEPTED">Aceptada</option>
@@ -1096,45 +1096,45 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#5C3E35]">Productos</label>
+              <label className="text-sm font-medium text-[#39484F]">Productos</label>
               <div className="flex gap-3">
-                <button onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }} className="text-xs text-[#B8837E] hover:underline">
+                <button onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }} className="text-xs text-[#BA4A3A] hover:underline">
                   {showProducts ? "Ocultar catálogo" : "Catálogo"}
                 </button>
-                <button onClick={() => { setShowManualProduct(!showManualProduct); setShowProducts(false); }} className="text-xs text-[#B8837E] hover:underline">
+                <button onClick={() => { setShowManualProduct(!showManualProduct); setShowProducts(false); }} className="text-xs text-[#BA4A3A] hover:underline">
                   {showManualProduct ? "Cancelar" : "Manual"}
                 </button>
                 <button onClick={handleCatalogPdf} disabled={items.length === 0}
-                  className="text-xs bg-[#B8837E] text-white px-3 py-1 rounded-lg hover:bg-[#9A6B66] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+                  className="text-xs bg-[#BA4A3A] text-white px-3 py-1 rounded-lg hover:bg-[#9C382A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
                   <FileText size={13} /> Catálogo PDF
                 </button>
               </div>
             </div>
 
             {showProducts && (
-              <div className="mb-4 bg-[#FAF6F0] rounded-xl overflow-hidden">
+              <div className="mb-4 bg-[#F1E9DF] rounded-xl overflow-hidden">
                 <div className="p-2">
                   <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
                     <input type="text" placeholder="Buscar producto..." value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" autoFocus />
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" autoFocus />
                   </div>
                 </div>
                 <div className="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
                   {productFiltered.length === 0 ? (
-                    <p className="text-sm text-[#9C8A82] py-3 text-center">Sin resultados</p>
+                    <p className="text-sm text-[#5F6B72] py-3 text-center">Sin resultados</p>
                   ) : productFiltered.map((p) => (
                     <button key={p.id} onClick={() => addProduct(p)}
-                      className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2">
+                      className="w-full text-left px-3 py-2 text-sm text-[#39484F] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2">
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="truncate">{p.name}</span>
                         {p.is_bundle && <Badge variant="warning">BUNDLE</Badge>}
                       </span>
-                      <span className="text-[#9C8A82] text-xs flex-shrink-0">
-                        <span className={margin === 30 ? "font-semibold text-[#5C3E35]" : ""}>30%: {formatCurrency(p.price_30)}</span>
+                      <span className="text-[#5F6B72] text-xs flex-shrink-0">
+                        <span className={margin === 30 ? "font-semibold text-[#39484F]" : ""}>30%: {formatCurrency(p.price_30)}</span>
                         {" | "}
-                        <span className={margin === 35 ? "font-semibold text-[#5C3E35]" : ""}>35%: {formatCurrency(p.price_35)}</span>
+                        <span className={margin === 35 ? "font-semibold text-[#39484F]" : ""}>35%: {formatCurrency(p.price_35)}</span>
                       </span>
                     </button>
                   ))}
@@ -1143,39 +1143,39 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             )}
 
             {showManualProduct && (
-              <div className="mb-4 bg-[#FAF6F0] rounded-xl p-4 space-y-3">
+              <div className="mb-4 bg-[#F1E9DF] rounded-xl p-4 space-y-3">
                 <input type="text" value={manualProduct.name}
                   onChange={(e) => setManualProduct({ ...manualProduct, name: e.target.value })}
                   placeholder="Nombre del producto / costo" autoFocus
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                  className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Cantidad</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
                     <input type="number" min={1} value={manualProduct.quantity}
                       onChange={(e) => setManualProduct({ ...manualProduct, quantity: Number(e.target.value) })}
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Precio Unit.</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
                     <input type="number" step="0.01" min={0} value={manualProduct.unit_price}
                       onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Costo (opcional)</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
                     <input type="number" step="0.01" min={0} value={manualProduct.cost}
                       onChange={(e) => setManualProduct({ ...manualProduct, cost: Number(e.target.value) })}
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div className="flex items-end pb-2">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs font-medium text-[#5C3E35]">ITBIS</span>
+                      <span className="text-xs font-medium text-[#39484F]">ITBIS</span>
                       <button type="button" onClick={() => setManualProduct({ ...manualProduct, itbis: !manualProduct.itbis })}
-                        className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}>
+                        className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}>
                         <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${manualProduct.itbis ? "translate-x-5" : "translate-x-0.5"}`} />
                       </button>
                     </label>
-                    <button onClick={addManualProduct} className="ml-3 h-10 px-3 bg-[#B8837E] text-white text-xs rounded-lg hover:bg-[#9A6B66] transition-colors flex items-center gap-1">
+                    <button onClick={addManualProduct} className="ml-3 h-10 px-3 bg-[#BA4A3A] text-white text-xs rounded-lg hover:bg-[#9C382A] transition-colors flex items-center gap-1">
                       <Plus size={14} /> Agregar
                     </button>
                   </div>
@@ -1184,43 +1184,43 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             )}
 
             {items.length === 0 ? (
-              <div className="border-2 border-dashed border-[#E8E0D8] rounded-xl p-6 text-center">
-                <p className="text-sm text-[#9C8A82]">Agrega productos desde el catálogo o manualmente</p>
+              <div className="border-2 border-dashed border-[#E0DAD3] rounded-xl p-6 text-center">
+                <p className="text-sm text-[#5F6B72]">Agrega productos desde el catálogo o manualmente</p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
+              <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-[#FAF6F0] border-b border-[#E8E0D8]">
-                        <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Producto</th>
-                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Cant.</th>
-                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Precio Unit.</th>
-                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">PV</th>
-                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Total</th>
+                      <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
+                        <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Producto</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Cant.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Precio Unit.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">PV</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Total</th>
                         <th className="w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {items.map((item, i) => (
-                        <tr key={i} className="border-b border-[#E8E0D8] last:border-0">
-                          <td className="px-3 py-2 text-[#5C3E35]">{item.name}</td>
+                        <tr key={i} className="border-b border-[#E0DAD3] last:border-0">
+                          <td className="px-3 py-2 text-[#39484F]">{item.name}</td>
                           <td className="px-3 py-2 w-20">
                             <input type="number" min={0} value={item.quantity}
                               onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-center text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-center text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
                           <td className="px-3 py-2 w-28">
                             <input type="number" step="0.01" min={0} value={effectivePrice(item)}
                               onChange={(e) => updateItem(i, { unit_price: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-right text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
                           <td className="px-3 py-2 w-20">
                             <input type="number" step="0.01" min={0} value={item.pv}
                               onChange={(e) => updateItem(i, { pv: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E8E0D8] bg-[#FCFAF7] text-sm text-right text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
-                          <td className="px-3 py-2 text-right font-semibold text-[#5C3E35]">
+                          <td className="px-3 py-2 text-right font-semibold text-[#39484F]">
                             {formatCurrency((item.quantity || 0) * effectivePrice(item) + (math.lines[i]?.itbis_amount ?? 0))}
                           </td>
                           <td className="px-3 py-2">
@@ -1236,27 +1236,27 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
               placeholder="Condiciones, tiempos de entrega, observaciones..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none" />
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
           </div>
 
-          <div className="flex justify-end gap-3 bg-[#FAF6F0] rounded-xl p-4">
+          <div className="flex justify-end gap-3 bg-[#F1E9DF] rounded-xl p-4">
             <div className="text-right mr-4">
-              <p className="text-xs text-[#9C8A82]">Subtotal: <span className="text-[#5C3E35] font-medium">{formatCurrency(subtotal)}</span></p>
-              <p className="text-xs text-[#9C8A82]">ITBIS (18%): <span className="text-[#5C3E35] font-medium">{formatCurrency(itbisTotal)}</span></p>
+              <p className="text-xs text-[#5F6B72]">Subtotal: <span className="text-[#39484F] font-medium">{formatCurrency(subtotal)}</span></p>
+              <p className="text-xs text-[#5F6B72]">ITBIS (18%): <span className="text-[#39484F] font-medium">{formatCurrency(itbisTotal)}</span></p>
               {discountValue > 0 && <p className="text-xs text-[#D4A0A0]">Descuento: <span>-{formatCurrency(discountValue)}</span></p>}
-              <p className="text-xs text-[#9C8A82]">PV Total: <span className="text-[#5C3E35] font-medium">{pvTotal}</span></p>
-              <p className="text-sm font-bold text-[#5C3E35] mt-1">Total: {formatCurrency(math.total)}</p>
+              <p className="text-xs text-[#5F6B72]">PV Total: <span className="text-[#39484F] font-medium">{pvTotal}</span></p>
+              <p className="text-sm font-bold text-[#39484F] mt-1">Total: {formatCurrency(math.total)}</p>
             </div>
             <div className="flex flex-col gap-2">
               <button onClick={handleSave} disabled={saving}
-                className="flex items-center justify-center gap-2 bg-[#B8837E] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50">
+                className="flex items-center justify-center gap-2 bg-[#BA4A3A] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">
                 <Save size={16} /> {saving ? "Guardando..." : editingId ? "Guardar cambios" : "Guardar cotización"}
               </button>
               <button onClick={() => setShowModal(false)}
-                className="px-6 py-2.5 rounded-xl text-sm font-medium border border-[#E8E0D8] text-[#5C3E35] hover:bg-[#FAF6F0] transition-all">
+                className="px-6 py-2.5 rounded-xl text-sm font-medium border border-[#E0DAD3] text-[#39484F] hover:bg-[#F1E9DF] transition-all">
                 Cancelar
               </button>
             </div>
@@ -1275,43 +1275,43 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         {selectedQuote && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-[#FAF6F0] rounded-xl p-3">
-                <p className="text-xs text-[#9C8A82]">Fecha</p>
-                <p className="text-sm font-semibold text-[#5C3E35]">{formatDate(selectedQuote.quote_date)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3">
+                <p className="text-xs text-[#5F6B72]">Fecha</p>
+                <p className="text-sm font-semibold text-[#39484F]">{formatDate(selectedQuote.quote_date)}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3">
-                <p className="text-xs text-[#9C8A82]">Válida hasta</p>
-                <p className="text-sm font-semibold text-[#5C3E35]">{formatDate(selectedQuote.valid_until)}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3">
+                <p className="text-xs text-[#5F6B72]">Válida hasta</p>
+                <p className="text-sm font-semibold text-[#39484F]">{formatDate(selectedQuote.valid_until)}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3">
-                <p className="text-xs text-[#9C8A82]">Total</p>
-                <p className="text-sm font-bold text-[#5C3E35]">{formatCurrency(Number(selectedQuote.total))}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3">
+                <p className="text-xs text-[#5F6B72]">Total</p>
+                <p className="text-sm font-bold text-[#39484F]">{formatCurrency(Number(selectedQuote.total))}</p>
               </div>
-              <div className="bg-[#FAF6F0] rounded-xl p-3">
-                <p className="text-xs text-[#9C8A82]">PV Total</p>
-                <p className="text-sm font-semibold text-[#5C3E35]">{Number(selectedQuote.pv_total) || 0}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3">
+                <p className="text-xs text-[#5F6B72]">PV Total</p>
+                <p className="text-sm font-semibold text-[#39484F]">{Number(selectedQuote.pv_total) || 0}</p>
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-[#5C3E35] mb-2">Productos</p>
-              <div className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
+              <p className="text-sm font-medium text-[#39484F] mb-2">Productos</p>
+              <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#FAF6F0] border-b border-[#E8E0D8]">
-                      <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Producto</th>
-                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Cant.</th>
-                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Precio</th>
-                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#9C8A82] uppercase tracking-wider">Total</th>
+                    <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
+                      <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Producto</th>
+                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Cant.</th>
+                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Precio</th>
+                      <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#5F6B72] uppercase tracking-wider">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {detailItems.map((it, i) => (
-                      <tr key={i} className="border-b border-[#E8E0D8] last:border-0">
-                        <td className="px-3 py-2.5 text-[#5C3E35]">{it.products?.name || it.custom_name || "Producto"}</td>
-                        <td className="px-3 py-2.5 text-right text-[#9C8A82]">{it.quantity}</td>
-                        <td className="px-3 py-2.5 text-right text-[#9C8A82]">{formatCurrency(Number(it.unit_price))}</td>
-                        <td className="px-3 py-2.5 text-right font-semibold text-[#5C3E35]">{formatCurrency(Number(it.line_total) + Number(it.itbis_amount))}</td>
+                      <tr key={i} className="border-b border-[#E0DAD3] last:border-0">
+                        <td className="px-3 py-2.5 text-[#39484F]">{it.products?.name || it.custom_name || "Producto"}</td>
+                        <td className="px-3 py-2.5 text-right text-[#5F6B72]">{it.quantity}</td>
+                        <td className="px-3 py-2.5 text-right text-[#5F6B72]">{formatCurrency(Number(it.unit_price))}</td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-[#39484F]">{formatCurrency(Number(it.line_total) + Number(it.itbis_amount))}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1321,29 +1321,29 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
             <div className="flex justify-end">
               <div className="text-right">
-                <p className="text-xs text-[#9C8A82]">Subtotal: <span className="text-[#5C3E35]">{formatCurrency(Number(selectedQuote.subtotal))}</span></p>
-                <p className="text-xs text-[#9C8A82]">ITBIS: <span className="text-[#5C3E35]">{formatCurrency(Number(selectedQuote.itbis_total))}</span></p>
+                <p className="text-xs text-[#5F6B72]">Subtotal: <span className="text-[#39484F]">{formatCurrency(Number(selectedQuote.subtotal))}</span></p>
+                <p className="text-xs text-[#5F6B72]">ITBIS: <span className="text-[#39484F]">{formatCurrency(Number(selectedQuote.itbis_total))}</span></p>
                 {Number(selectedQuote.discount_amount) > 0 && <p className="text-xs text-[#D4A0A0]">Descuento: <span>-{formatCurrency(Number(selectedQuote.discount_amount))}</span></p>}
-                <p className="text-sm font-bold text-[#5C3E35] mt-1">Total: {formatCurrency(Number(selectedQuote.total))}</p>
+                <p className="text-sm font-bold text-[#39484F] mt-1">Total: {formatCurrency(Number(selectedQuote.total))}</p>
               </div>
             </div>
 
             {selectedQuote.notes && (
-              <div className="bg-[#FAF6F0] rounded-xl p-3">
-                <p className="text-xs text-[#9C8A82] mb-1">Notas</p>
-                <p className="text-sm text-[#5C3E35]">{selectedQuote.notes}</p>
+              <div className="bg-[#F1E9DF] rounded-xl p-3">
+                <p className="text-xs text-[#5F6B72] mb-1">Notas</p>
+                <p className="text-sm text-[#39484F]">{selectedQuote.notes}</p>
               </div>
             )}
 
             {detailFollowups.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-[#5C3E35] mb-2">Seguimientos programados</p>
+                <p className="text-sm font-medium text-[#39484F] mb-2">Seguimientos programados</p>
                 <div className="space-y-2">
                   {detailFollowups.map((f) => (
-                    <div key={f.id} className="flex items-center justify-between bg-[#FAF6F0] rounded-xl px-3 py-2">
+                    <div key={f.id} className="flex items-center justify-between bg-[#F1E9DF] rounded-xl px-3 py-2">
                       <div>
-                        <p className="text-sm text-[#5C3E35]">{f.comments}</p>
-                        <p className="text-xs text-[#9C8A82]">{formatDate(f.contact_date)}</p>
+                        <p className="text-sm text-[#39484F]">{f.comments}</p>
+                        <p className="text-xs text-[#5F6B72]">{formatDate(f.contact_date)}</p>
                       </div>
                       <Badge variant={f.status === "COMPLETED" ? "success" : f.status === "OVERDUE" ? "danger" : "warning"}>{f.status}</Badge>
                     </div>
@@ -1352,21 +1352,21 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E8E0D8]">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E0DAD3]">
               <button onClick={() => handlePdf(selectedQuote)}
-                className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
+                className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all">
                 <Printer size={16} /> PDF
               </button>
               <button onClick={() => handleJpg(selectedQuote)}
-                className="flex items-center gap-2 bg-[#B8837E] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
+                className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all">
                 <ImageIcon size={16} /> JPG
               </button>
               <button onClick={() => setDraftModal({ type: "email" })}
-                className="flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                className="flex items-center gap-2 border border-[#E0DAD3] text-[#39484F] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
                 <Mail size={16} /> Email
               </button>
               <button onClick={() => setDraftModal({ type: "whatsapp" })}
-                className="flex items-center gap-2 border border-[#E8E0D8] text-[#5C3E35] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all">
+                className="flex items-center gap-2 border border-[#E0DAD3] text-[#39484F] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">
                 <MessageCircle size={16} /> WhatsApp
               </button>
               {selectedQuote.status === "SENT" && (
@@ -1466,13 +1466,13 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       {showCatalogEditor && (
         <Modal isOpen={showCatalogEditor} onClose={() => setShowCatalogEditor(false)} wide title="Catálogo de Productos" subtitle="Revisa y edita la información antes de generar el PDF">
           <div className="space-y-4">
-            <div className="bg-[#FAF6F0] rounded-xl p-3 text-sm text-[#5C3E35]">
+            <div className="bg-[#F1E9DF] rounded-xl p-3 text-sm text-[#39484F]">
               Edita la descripción, beneficios y precio que aparecerán en el catálogo. Los cambios se aplican solo a este PDF, no modifican los productos guardados.
             </div>
 
             <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-1">
               {catalogEntries.map((entry) => (
-                <div key={entry.key} className="border border-[#E8E0D8] rounded-xl p-4 bg-white">
+                <div key={entry.key} className="border border-[#E0DAD3] rounded-xl p-4 bg-white">
                   <div className="flex items-start gap-3 mb-3">
                     {entry.image_url ? (
                       <ProductImage
@@ -1480,47 +1480,47 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                         alt={entry.name}
                         size={64}
                         sizes="64px"
-                        className="w-16 h-16 rounded-lg object-cover border border-[#E8E0D8] flex-shrink-0"
+                        className="w-16 h-16 rounded-lg object-cover border border-[#E0DAD3] flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-lg bg-[#FAF6F0] border border-[#E8E0D8] flex items-center justify-center text-[#9C8A82] text-xs flex-shrink-0">Sin foto</div>
+                      <div className="w-16 h-16 rounded-lg bg-[#F1E9DF] border border-[#E0DAD3] flex items-center justify-center text-[#5F6B72] text-xs flex-shrink-0">Sin foto</div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Nombre del producto</label>
+                      <label className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto</label>
                       <input type="text" value={entry.name} onChange={(e) => updateCatalogEntry(entry.key, "name", e.target.value)}
-                        className="w-full h-9 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E]" />
+                        className="w-full h-9 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A]" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Descripción</label>
+                      <label className="block text-xs font-medium text-[#39484F] mb-1">Descripción</label>
                       <textarea value={entry.description} onChange={(e) => updateCatalogEntry(entry.key, "description", e.target.value)} rows={3}
-                        className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y" />
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#5C3E35] mb-1">Beneficios <span className="text-[#9C8A82] font-normal">(uno por línea)</span></label>
+                      <label className="block text-xs font-medium text-[#39484F] mb-1">Beneficios <span className="text-[#5F6B72] font-normal">(uno por línea)</span></label>
                       <textarea value={entry.benefits} onChange={(e) => updateCatalogEntry(entry.key, "benefits", e.target.value)} rows={3}
-                        className="w-full px-3 py-2 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] resize-y" />
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y" />
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <label className="block text-xs font-medium text-[#5C3E35]">Precio al cliente</label>
+                    <label className="block text-xs font-medium text-[#39484F]">Precio al cliente</label>
                     <input type="number" value={entry.price} min={0} onChange={(e) => updateCatalogEntry(entry.key, "price", Number(e.target.value))}
-                      className="w-32 h-9 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E]" />
-                    <span className="text-xs text-[#9C8A82]">(RD$)</span>
+                      className="w-32 h-9 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A]" />
+                    <span className="text-xs text-[#5F6B72]">(RD$)</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-1 border-t border-[#E8E0D8] mt-1">
-              <button onClick={() => setShowCatalogEditor(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-[#5C3E35] hover:bg-[#FAF6F0] transition-colors">
+            <div className="flex items-center justify-end gap-3 pt-1 border-t border-[#E0DAD3] mt-1">
+              <button onClick={() => setShowCatalogEditor(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-[#39484F] hover:bg-[#F1E9DF] transition-colors">
                 Cancelar
               </button>
               <button onClick={() => generateCatalogPdf(catalogEntries)} disabled={saving}
-                className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#9A6B66] transition-colors disabled:opacity-50 flex-shrink-0">
+                className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#9C382A] transition-colors disabled:opacity-50 flex-shrink-0">
                 <FileText size={16} /> {saving ? "Generando..." : "Generar PDF"}
               </button>
             </div>

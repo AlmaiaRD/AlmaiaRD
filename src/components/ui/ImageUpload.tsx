@@ -66,10 +66,10 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Imagen del producto</label>
+      <label className="block text-sm font-medium text-[#39484F] mb-1.5">Imagen del producto</label>
       <div className="flex items-start gap-4">
         {preview ? (
-          <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-[#E8E0D8] bg-[#FAF6F0] flex-shrink-0">
+          <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-[#E0DAD3] bg-[#F1E9DF] flex-shrink-0">
             <img src={preview} alt="Preview" className="w-full h-full object-cover" />
             <button
               type="button"
@@ -80,8 +80,8 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
             </button>
           </div>
         ) : (
-          <div className="w-24 h-24 rounded-xl border-2 border-dashed border-[#E8E0D8] bg-[#FAF6F0] flex items-center justify-center flex-shrink-0">
-            <Upload size={20} className="text-[#9C8A82]" />
+          <div className="w-24 h-24 rounded-xl border-2 border-dashed border-[#E0DAD3] bg-[#F1E9DF] flex items-center justify-center flex-shrink-0">
+            <Upload size={20} className="text-[#5F6B72]" />
           </div>
         )}
         <div className="flex-1">
@@ -95,7 +95,7 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
           />
           <label
             htmlFor="product-image-input"
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] font-medium hover:bg-[#FAF6F0] transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] font-medium hover:bg-[#F1E9DF] transition-all cursor-pointer"
           >
             {uploading ? (
               <><Loader2 size={16} className="animate-spin" /> Subiendo...</>
@@ -103,7 +103,7 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
               <><Upload size={16} /> {preview ? "Cambiar imagen" : "Seleccionar imagen"}</>
             )}
           </label>
-          <p className="text-xs text-[#9C8A82] mt-2">PNG, JPG o WEBP. Máximo {maxSizeMB}MB.</p>
+          <p className="text-xs text-[#5F6B72] mt-2">PNG, JPG o WEBP. Máximo {maxSizeMB}MB.</p>
         </div>
       </div>
     </div>

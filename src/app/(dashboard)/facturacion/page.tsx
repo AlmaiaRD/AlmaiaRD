@@ -342,96 +342,96 @@ export default function FacturacionPage() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BA4A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
-            <p style="font-size:14px;font-weight:700;color:#5C3E35;margin:8px 0 0;">Distribuidor Independiente Amway</p>
-            <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
-            <p style="font-size:12px;color:#9C8A82;margin:0;">Rep\u00fablica Dominicana</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
+            <p style="font-size:14px;font-weight:700;color:#39484F;margin:8px 0 0;">Distribuidor Independiente Amway</p>
+            <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
+            <p style="font-size:12px;color:#5F6B72;margin:0;">Rep\u00fablica Dominicana</p>
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="display:inline-block;background:#F0EBE3;color:#B8837E;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
-          <p style="font-size:18px;font-weight:700;color:#5C3E35;margin:12px 0 0;">${sanitizeHtml(data.invoice_number)}</p>
-          <p style="font-size:12px;color:#9C8A82;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
+          <span style="display:inline-block;background:#F0EBE3;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
+          <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.invoice_number)}</p>
+          <p style="font-size:12px;color:#5F6B72;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
         </div>
       </div>
-      <div style="border-top:1px solid #E8E0D8;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
-        <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
+      <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tel\u00e9fono:</span> ${sanitizeHtml(data.clients?.phone) || "\u2014"}</p>
-          <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Tel\u00e9fono:</span> ${sanitizeHtml(data.clients?.phone) || "\u2014"}</p>
+          <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
         </div>
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
         <thead>
           <tr style="background:#F0EBE3;">
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Submarca</th>
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#5C3E35;font-weight:700;">Descripci\u00f3n / Producto</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Cant.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Precio Unit.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#5C3E35;font-weight:700;">Total</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Submarca</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${(data.invoice_items || []).map((item: InvoiceLineWithProduct) => `
             <tr style="border-bottom:1px solid #F0EBE3;">
-              <td style="padding:10px 12px;font-size:11px;color:#9C8A82;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
-              <td style="padding:10px 12px;font-size:13px;color:#5C3E35;">
+              <td style="padding:10px 12px;font-size:11px;color:#5F6B72;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#39484F;">
                 ${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}
                 ${(item.bundle_items || []).map((bi: BundleItem) => `
-                  <div style="font-size:10px;color:#9C8A82;margin-top:2px;">\u2014 ${sanitizeHtml(bi.products?.name || "Producto")} x${bi.quantity}</div>
+                  <div style="font-size:10px;color:#5F6B72;margin-top:2px;">\u2014 ${sanitizeHtml(bi.products?.name || "Producto")} x${bi.quantity}</div>
                 `).join("")}
               </td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${item.quantity}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
-              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#5C3E35;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${item.quantity}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>
+              <td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:500;color:#39484F;">${sanitizeHtml(formatCurrency(Number(item.line_total)))}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
       ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
-        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
-          <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
+        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:flex;white-space:nowrap;gap:0 24px;font-size:13px;margin-bottom:10px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
-            ${bankAccounts[0].id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${sanitizeHtml(bankAccounts[0].id_number)}</p>` : ""}
-            ${bankAccounts[0].email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${sanitizeHtml(bankAccounts[0].email)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
+            ${bankAccounts[0].id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">C\u00e9dula/RNC:</span> ${sanitizeHtml(bankAccounts[0].id_number)}</p>` : ""}
+            ${bankAccounts[0].email ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Correo:</span> ${sanitizeHtml(bankAccounts[0].email)}</p>` : ""}
           </div>
-          <div style="margin-top:10px;border-top:1px solid #E8E0D8;padding-top:10px;">
+          <div style="margin-top:10px;border-top:1px solid #E0DAD3;padding-top:10px;">
             ${bankAccounts.map((b) => `
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:7px 0;border-bottom:1px solid #F0EBE3;font-size:13px;">
-                <span style="color:#5C3E35;font-weight:600;">${sanitizeHtml(b.bank_name)}</span>
-                <span style="color:#5C3E35;">${sanitizeHtml(b.account_type)}</span>
-                <span style="color:#5C3E35;">No. ${sanitizeHtml(b.account_number)}</span>
+                <span style="color:#39484F;font-weight:600;">${sanitizeHtml(b.bank_name)}</span>
+                <span style="color:#39484F;">${sanitizeHtml(b.account_type)}</span>
+                <span style="color:#39484F;">No. ${sanitizeHtml(b.account_number)}</span>
               </div>
             `).join("")}
           </div>
         </div>
       ` : "") : data.bank_accounts ? `
-        <div style="border:1px solid #E8E0D8;background:#FCFAF7;border-radius:12px;padding:16px;margin-bottom:20px;">
-          <p style="font-size:11px;font-weight:700;color:#B8837E;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
+        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
-            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">C\u00e9dula/RNC:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Banco:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).bank_name)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Tipo de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_type)}</p>
-            <p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">No. de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_number)}</p>
-            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#5C3E35;margin:0;"><span style="color:#9C8A82;">Correo:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
+            ${(data.bank_accounts as BankAccountRef).id_number ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">C\u00e9dula/RNC:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).id_number)}</p>` : ""}
+            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Banco:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).bank_name)}</p>
+            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Tipo de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_type)}</p>
+            <p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">No. de Cuenta:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).account_number)}</p>
+            ${(data.bank_accounts as BankAccountRef).email ? `<p style="color:#39484F;margin:0;"><span style="color:#5F6B72;">Correo:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).email)}</p>` : ""}
           </div>
         </div>
       ` : ""}
-      <div style="border-top:1px solid #E8E0D8;padding-top:12px;margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+      <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
           <span>Subtotal</span>
           <span>${sanitizeHtml(formatCurrency(Number(data.subtotal)))}</span>
         </div>
         ${Number(data.itbis_total) > 0 ? `
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:#9C8A82;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#5F6B72;margin-bottom:4px;">
             <span>ITBIS (18%)</span>
             <span>${sanitizeHtml(formatCurrency(Number(data.itbis_total)))}</span>
           </div>
@@ -442,7 +442,7 @@ export default function FacturacionPage() {
             <span>-${sanitizeHtml(formatCurrency(Number(data.discount_amount)))}</span>
           </div>
         ` : ""}
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#5C3E35;padding-top:4px;border-top:1px solid #E8E0D8;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#39484F;padding-top:4px;border-top:1px solid #E0DAD3;margin-bottom:4px;">
           <span>Total General</span>
           <span>${sanitizeHtml(formatCurrency(Number(data.total)))}</span>
         </div>
@@ -453,20 +453,20 @@ export default function FacturacionPage() {
           </div>
         ` : ""}
         ${(Number(data.total) - Number(data.amount_paid || 0)) > 0 ? `
-          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#B8837E;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#BA4A3A;">
             <span>Saldo Pendiente</span>
             <span>${sanitizeHtml(formatCurrency(Number(data.total) - Number(data.amount_paid || 0)))}</span>
           </div>
         ` : ""}
       </div>
-      <div style="border-top:1px solid #E8E0D8;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div style="border-top:1px solid #E0DAD3;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${sanitizeHtml(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
-          <p style="font-size:11px;color:#9C8A82;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
+          <p style="font-size:11px;font-style:italic;color:#BA4A3A;margin:0;">\u00a1Gracias por tu compra y por apoyar a ${sanitizeHtml(settings?.business_name) || "Almaia RD"}, aliados a tu bienestar!</p>
+          <p style="font-size:11px;color:#5F6B72;margin:6px 0 0;">Nutrilite \u00b7 Artistry \u00b7 Glister \u00b7 G&H \u00b7 Satinique \u00b7 Amway Home</p>
         </div>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;color:#5C3E35;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
-          <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
+          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:16px;color:#39484F;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
+          <p style="font-size:9px;color:#5F6B72;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
     `;
@@ -759,21 +759,21 @@ export default function FacturacionPage() {
         header: "No. Factura",
         minWidth: 150,
         sortable: true,
-        render: (inv) => <span className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</span>,
+        render: (inv) => <span className="text-sm font-medium text-[#39484F]">{inv.invoice_number}</span>,
       },
       {
         key: "invoice_date",
         header: "Fecha",
         minWidth: 120,
         sortable: true,
-        render: (inv) => <span className="text-sm text-[#9C8A82]">{formatDate(inv.invoice_date)}</span>,
+        render: (inv) => <span className="text-sm text-[#5F6B72]">{formatDate(inv.invoice_date)}</span>,
       },
       {
         key: "client",
         header: "Cliente",
         minWidth: 200,
         sortable: true,
-        render: (inv) => <span className="text-sm text-[#5C3E35]">{inv.clients?.full_name || "—"}</span>,
+        render: (inv) => <span className="text-sm text-[#39484F]">{inv.clients?.full_name || "—"}</span>,
       },
       {
         key: "total",
@@ -781,7 +781,7 @@ export default function FacturacionPage() {
         minWidth: 130,
         align: "right",
         sortable: true,
-        render: (inv) => <span className="text-sm font-medium text-[#5C3E35]">{formatCurrency(inv.total)}</span>,
+        render: (inv) => <span className="text-sm font-medium text-[#39484F]">{formatCurrency(inv.total)}</span>,
       },
       {
         key: "status",
@@ -803,7 +803,7 @@ export default function FacturacionPage() {
           <div className="relative flex items-center justify-center gap-1">
             <button
               onClick={(e) => { e.stopPropagation(); handleViewDetail(inv); }}
-              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
               title="Ver"
             >
               <Eye size={15} />
@@ -813,14 +813,14 @@ export default function FacturacionPage() {
                 e.stopPropagation();
                 setOpenPrintId(openPrintId === inv.id ? null : inv.id);
               }}
-              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
               title="Descargar"
             >
               <Download size={15} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleEdit(inv); }}
-              className="p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"
+              className="p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"
               title="Editar"
             >
               <Edit2 size={15} />
@@ -835,16 +835,16 @@ export default function FacturacionPage() {
             {openPrintId === inv.id && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setOpenPrintId(null)} />
-                <div className="absolute right-0 top-full mt-1 z-20 min-w-[130px] rounded-xl border border-[#E8E0D8] bg-white py-1 shadow-lg">
+                <div className="absolute right-0 top-full mt-1 z-20 min-w-[130px] rounded-xl border border-[#E0DAD3] bg-white py-1 shadow-lg">
                   <button
                     onClick={(e) => { e.stopPropagation(); handlePrintPdf(inv); }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#39484F] hover:bg-[#F1E9DF]"
                   >
                     <FileText size={14} /> PDF
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handlePrintJpg(inv); }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3E35] hover:bg-[#FAF6F0]"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#39484F] hover:bg-[#F1E9DF]"
                   >
                     <Download size={14} /> JPG
                   </button>
@@ -863,12 +863,12 @@ export default function FacturacionPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[30px] font-marca text-[#5C3E35]">Facturación</h1>
-          <p className="text-sm text-[#9C8A82] mt-1">Gestión de facturas y ventas</p>
+          <h1 className="text-[30px] font-marca text-[#39484F]">Facturación</h1>
+          <p className="text-sm text-[#5F6B72] mt-1">Gestión de facturas y ventas</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
-          className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all duration-200 shadow-sm"
+          className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all duration-200 shadow-sm"
         >
           <Plus size={18} />
           Nueva Factura
@@ -876,57 +876,57 @@ export default function FacturacionPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
         <input
           ref={searchInputRef}
           type="text"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Buscar factura por número o cliente..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
         />
       </div>
 
       <div className="flex gap-3 mb-6 flex-wrap">
         <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
           <option value="">Todos los meses</option>
           {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map((m, i) => (
             <option key={i} value={String(i + 1).padStart(2, "0")}>{m}</option>
           ))}
         </select>
         <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
           <option value="">Todos los años</option>
           {[2024, 2025, 2026, 2027].map((y) => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
           <option value="">Todos los estados</option>
           <option value="PENDING">Pendiente</option>
           <option value="PAID">Pagada</option>
           <option value="CANCELLED">Cancelada</option>
         </select>
         <select value={filterClient} onChange={(e) => setFilterClient(e.target.value)}
-          className="h-10 px-3 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30">
+          className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
           <option value="">Todos los clientes</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>{c.full_name}</option>
           ))}
         </select>
         {(filterMonth || filterYear || filterStatus || filterClient) && (
-          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus(""); setFilterClient(""); }} className="text-xs text-[#9C8A82] hover:text-[#5C3E35] px-3">Limpiar filtros</button>
+          <button onClick={() => { setFilterMonth(""); setFilterYear(""); setFilterStatus(""); setFilterClient(""); }} className="text-xs text-[#5F6B72] hover:text-[#39484F] px-3">Limpiar filtros</button>
         )}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : invoices.length === 0 ? (
-        <div className="text-center py-16 text-[#9C8A82]">
+        <div className="text-center py-16 text-[#5F6B72]">
           <FileText size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">No hay facturas registradas</p>
         </div>
@@ -957,21 +957,21 @@ export default function FacturacionPage() {
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
-                  <Flower2 size={28} className="text-[#B8837E]" />
+                <div className="w-14 h-14 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <Flower2 size={28} className="text-[#BA4A3A]" />
                 </div>
                 <div>
-                    <h2 className="text-[27px] font-marca uppercase text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
-                    <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
-                    <p className="text-sm font-bold text-[#5C3E35] mt-2">Distribuidor Independiente Amway</p>
-                    <p className="text-xs text-[#9C8A82] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
-                    <p className="text-xs text-[#9C8A82]">República Dominicana</p>
+                    <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
+                    <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
+                    <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
+                    <p className="text-xs text-[#5F6B72] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
+                    <p className="text-xs text-[#5F6B72]">República Dominicana</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-block bg-[#F0EBE3] text-[#B8837E] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
-                  <p className="text-lg font-bold text-[#5C3E35] mt-3">{selectedInvoice.invoice_number}</p>
-                  <p className="text-xs text-[#9C8A82] mt-0.5">Fecha: {formatDate(selectedInvoice.invoice_date)}</p>
+                  <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
+                  <p className="text-lg font-bold text-[#39484F] mt-3">{selectedInvoice.invoice_number}</p>
+                  <p className="text-xs text-[#5F6B72] mt-0.5">Fecha: {formatDate(selectedInvoice.invoice_date)}</p>
                   <div className="mt-2">
                     <Badge variant={(statusMap[selectedInvoice.status] || statusMap.PENDING).variant}>
                       {(statusMap[selectedInvoice.status] || statusMap.PENDING).label}
@@ -980,17 +980,17 @@ export default function FacturacionPage() {
                 </div>
               </div>
 
-              <div className="border-t border-[#E8E0D8] mb-5" />
+              <div className="border-t border-[#E0DAD3] mb-5" />
 
               {/* B. CLIENTE / ADQUIRIENTE */}
-              <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
-                <p className="text-xs font-bold text-[#B8837E] mb-3">CLIENTE / ADQUIRIENTE</p>
+              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+                <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Nombre:</span> {selectedInvoice.clients?.full_name}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Teléfono:</span> {selectedInvoice.clients?.phone || "—"}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Email:</span> {selectedInvoice.clients?.email || "N/D"}</p>
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Nombre:</span> {selectedInvoice.clients?.full_name}</p>
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Teléfono:</span> {selectedInvoice.clients?.phone || "—"}</p>
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Email:</span> {selectedInvoice.clients?.email || "N/D"}</p>
                   {selectedInvoice.clients?.id_number && (
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula:</span> {selectedInvoice.clients.id_number}</p>
+                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula:</span> {selectedInvoice.clients.id_number}</p>
                   )}
                 </div>
               </div>
@@ -999,22 +999,22 @@ export default function FacturacionPage() {
               <table className="w-full text-sm mb-5">
                 <thead>
                   <tr className="bg-[#F0EBE3]">
-                    <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Submarca</th>
-                    <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripción / Producto</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
+                    <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Submarca</th>
+                    <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripción / Producto</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(selectedInvoice.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => {
                     return (
                       <tr key={i} className="border-b border-[#F0EBE3]">
-                        <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                        <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
-                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
+                        <td className="py-2.5 px-3 text-xs text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</td>
+                        <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
+                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
+                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#39484F]">{formatCurrency(Number(item.line_total))}</td>
                       </tr>
                     );
                   })}
@@ -1023,46 +1023,46 @@ export default function FacturacionPage() {
 
               {/* D. PAYMENT DATA */}
               {(selectedInvoice.show_all_bank_accounts ? bankAccounts.length > 0 : selectedInvoice.bank_accounts) && (
-                <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
-                  <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
+                <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+                  <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                   {selectedInvoice.show_all_bank_accounts ? (
                     <>
                       <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
-                        <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
-                        {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
-                        {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
+                        <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                        {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                        {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {bankAccounts[0].email}</p>}
                       </div>
-                      <div className="mt-2 pt-2 border-t border-[#E8E0D8]">
+                      <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                         {bankAccounts.map((b) => (
                           <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
-                            <p className="text-[#5C3E35] font-semibold">{b.bank_name}</p>
-                            <p className="text-[#5C3E35]">{b.account_type}</p>
-                            <p className="text-[#5C3E35]">No. {b.account_number}</p>
+                            <p className="text-[#39484F] font-semibold">{b.bank_name}</p>
+                            <p className="text-[#39484F]">{b.account_type}</p>
+                            <p className="text-[#39484F]">No. {b.account_number}</p>
                           </div>
                         ))}
                       </div>
                     </>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {(selectedInvoice.bank_accounts as BankAccountRef).holder_name}</p>
-                      {(selectedInvoice.bank_accounts as BankAccountRef).id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {(selectedInvoice.bank_accounts as BankAccountRef).id_number}</p>}
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {(selectedInvoice.bank_accounts as BankAccountRef).bank_name}</p>
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_type}</p>
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_number}</p>
-                      {(selectedInvoice.bank_accounts as BankAccountRef).email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {(selectedInvoice.bank_accounts as BankAccountRef).email}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {(selectedInvoice.bank_accounts as BankAccountRef).holder_name}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {(selectedInvoice.bank_accounts as BankAccountRef).id_number}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {(selectedInvoice.bank_accounts as BankAccountRef).bank_name}</p>
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_type}</p>
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. de Cuenta:</span> {(selectedInvoice.bank_accounts as BankAccountRef).account_number}</p>
+                      {(selectedInvoice.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {(selectedInvoice.bank_accounts as BankAccountRef).email}</p>}
                     </div>
                   )}
                 </div>
               )}
 
               {/* E. SUMMARY */}
-              <div className="border-t border-[#E8E0D8] pt-3 mb-5">
-                <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+              <div className="border-t border-[#E0DAD3] pt-3 mb-5">
+                <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
                   <span>Subtotal</span>
                   <span>{formatCurrency(Number(selectedInvoice.subtotal))}</span>
                 </div>
                 {Number(selectedInvoice.itbis_total) > 0 && (
-                  <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+                  <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
                     <span>ITBIS (18%)</span>
                     <span>{formatCurrency(Number(selectedInvoice.itbis_total))}</span>
                   </div>
@@ -1073,7 +1073,7 @@ export default function FacturacionPage() {
                     <span>-{formatCurrency(Number(selectedInvoice.discount_amount))}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold text-[#5C3E35] pt-1 border-t border-[#E8E0D8] mb-1">
+                <div className="flex justify-between text-base font-bold text-[#39484F] pt-1 border-t border-[#E0DAD3] mb-1">
                   <span>Total General</span>
                   <span>{formatCurrency(Number(selectedInvoice.total))}</span>
                 </div>
@@ -1084,7 +1084,7 @@ export default function FacturacionPage() {
                   </div>
                 )}
                 {(Number(selectedInvoice.total) - Number(selectedInvoice.amount_paid || 0)) > 0 && (
-                  <div className="flex justify-between text-sm font-bold text-[#B8837E]">
+                  <div className="flex justify-between text-sm font-bold text-[#BA4A3A]">
                     <span>Saldo Pendiente</span>
                     <span>{formatCurrency(Number(selectedInvoice.total) - Number(selectedInvoice.amount_paid || 0))}</span>
                   </div>
@@ -1093,39 +1093,39 @@ export default function FacturacionPage() {
 
               {/* Notes */}
               {selectedInvoice.notes && (
-                <div className="bg-[#FFF8F0] border border-[#E8E0D8] rounded-xl p-3 mb-2">
-                  <p className="text-xs text-[#9C8A82] mb-1">Notas:</p>
-                  <p className="text-sm text-[#5C3E35]">{selectedInvoice.notes}</p>
+                <div className="bg-[#FFF8F0] border border-[#E0DAD3] rounded-xl p-3 mb-2">
+                  <p className="text-xs text-[#5F6B72] mb-1">Notas:</p>
+                  <p className="text-sm text-[#39484F]">{selectedInvoice.notes}</p>
                 </div>
               )}
 
               {/* F. FOOTER */}
-              <div className="border-t border-[#E8E0D8] pt-2 flex justify-between items-end">
+              <div className="border-t border-[#E0DAD3] pt-2 flex justify-between items-end">
                 <div>
-                  <p className="text-xs italic text-[#B8837E]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
-                  <p className="text-xs text-[#9C8A82] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
+                  <p className="text-xs italic text-[#BA4A3A]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
+                  <p className="text-xs text-[#5F6B72] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
                 </div>
                 <div className="text-center">
                   {settings?.signature_url ? (
                     <img src={settings.signature_url} alt="Firma" style={{ height: 120 }} />
                   ) : (
-                    <p className="text-base text-[#5C3E35]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
+                    <p className="text-base text-[#39484F]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
                   )}
-                  <p className="text-[9px] text-[#9C8A82] mt-0.5">FIRMA AUTORIZADA</p>
+                  <p className="text-[9px] text-[#5F6B72] mt-0.5">FIRMA AUTORIZADA</p>
                 </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => handlePrintPdf(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+              <button onClick={() => handlePrintPdf(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <FileText size={18} /> PDF
               </button>
-              <button onClick={() => handlePrintJpg(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2">
+              <button onClick={() => handlePrintJpg(selectedInvoice)} className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2">
                 <Download size={18} /> JPG
               </button>
               {selectedInvoice.clients?.email && (
                 <button
                   onClick={() => setDraftModal({ type: "email" })}
-                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                  className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2"
                 >
                   <Mail size={18} /> Email
                 </button>
@@ -1133,7 +1133,7 @@ export default function FacturacionPage() {
               {selectedInvoice.clients?.phone && (
                 <button
                   onClick={() => setDraftModal({ type: "whatsapp" })}
-                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all flex items-center justify-center gap-2"
+                  className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={18} /> WhatsApp
                 </button>
@@ -1142,7 +1142,7 @@ export default function FacturacionPage() {
                 <button
                   onClick={handleSendReminder}
                   disabled={saving}
-                  className="flex-1 min-w-[120px] h-12 border border-[#E8E0D8] text-[#B8837E] rounded-xl text-sm font-medium hover:bg-[#B8837E]/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 min-w-[120px] h-12 border border-[#E0DAD3] text-[#BA4A3A] rounded-xl text-sm font-medium hover:bg-[#BA4A3A]/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Bell size={18} /> {saving ? "Enviando..." : "Recordar Cobro"}
                 </button>
@@ -1233,30 +1233,30 @@ export default function FacturacionPage() {
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Cliente</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente</label>
               <div className="flex gap-2">
                 <select
                   value={selectedClient}
                   onChange={(e) => setSelectedClient(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clients.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
                 </select>
                 <button
                   onClick={() => setShowNewClient(true)}
-                  className="h-12 px-4 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all flex items-center gap-1.5"
+                  className="h-12 px-4 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all flex items-center gap-1.5"
                 >
                   <Plus size={16} /> Cliente
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Margen</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
               <select
                 value={margin}
                 onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               >
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
@@ -1265,27 +1265,27 @@ export default function FacturacionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Fecha de factura</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de factura</label>
             <input
               type="date" value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#5C3E35]">Productos</label>
+              <label className="text-sm font-medium text-[#39484F]">Productos</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }}
-                  className="text-xs text-[#B8837E] hover:underline"
+                  className="text-xs text-[#BA4A3A] hover:underline"
                 >
                   {showProducts ? "Ocultar catálogo" : "Catálogo"}
                 </button>
                 <button
                   onClick={() => { setShowManualProduct(!showManualProduct); setShowProducts(false); }}
-                  className="text-xs text-[#B8837E] hover:underline"
+                  className="text-xs text-[#BA4A3A] hover:underline"
                 >
                   {showManualProduct ? "Cancelar" : "Manual"}
                 </button>
@@ -1293,36 +1293,36 @@ export default function FacturacionPage() {
             </div>
 
             {showProducts && (
-              <div className="mb-4 bg-[#FAF6F0] rounded-xl overflow-hidden">
+              <div className="mb-4 bg-[#F1E9DF] rounded-xl overflow-hidden">
                 <div className="p-2">
                   <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
                     <input
                       type="text"
                       placeholder="Buscar producto..."
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                       autoFocus
                     />
                   </div>
                 </div>
                 <div className="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
                   {productFiltered.length === 0 ? (
-                    <p className="text-sm text-[#9C8A82] py-3 text-center">Sin resultados</p>
+                    <p className="text-sm text-[#5F6B72] py-3 text-center">Sin resultados</p>
                   ) : productFiltered.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => { addProduct(p); setShowProducts(false); setProductSearch(""); }}
-                      className="w-full text-left px-3 py-2 text-sm text-[#5C3E35] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2"
+                      className="w-full text-left px-3 py-2 text-sm text-[#39484F] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2"
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="truncate">{p.name}</span>
                         {p.is_bundle && <Badge variant="warning">BUNDLE</Badge>}
                       </span>
-                      <span className="text-[#9C8A82] text-xs flex-shrink-0">
-                        <span className={margin === 30 ? "font-semibold text-[#5C3E35]" : ""}>30%: {formatCurrency(p.price_30)}</span>
+                      <span className="text-[#5F6B72] text-xs flex-shrink-0">
+                        <span className={margin === 30 ? "font-semibold text-[#39484F]" : ""}>30%: {formatCurrency(p.price_30)}</span>
                         {" | "}
-                        <span className={margin === 35 ? "font-semibold text-[#5C3E35]" : ""}>35%: {formatCurrency(p.price_35)}</span>
+                        <span className={margin === 35 ? "font-semibold text-[#39484F]" : ""}>35%: {formatCurrency(p.price_35)}</span>
                       </span>
                     </button>
                   ))}
@@ -1331,52 +1331,52 @@ export default function FacturacionPage() {
             )}
 
             {showManualProduct && (
-              <div className="mb-4 bg-[#FAF6F0] rounded-xl p-4 space-y-3">
+              <div className="mb-4 bg-[#F1E9DF] rounded-xl p-4 space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#5C3E35] mb-1">Nombre del producto / costo</label>
+                  <label className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto / costo</label>
                   <input
                     type="text"
                     value={manualProduct.name}
                     onChange={(e) => setManualProduct({ ...manualProduct, name: e.target.value })}
                     placeholder="Ej: Envío, flete, cargo adicional..."
-                    className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-[#5C3E35] placeholder:text-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                    className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     autoFocus
                   />
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Cantidad</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
                     <input
                       type="number" min={1} value={manualProduct.quantity}
                       onChange={(e) => setManualProduct({ ...manualProduct, quantity: Number(e.target.value) })}
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Precio Unit.</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
                     <input
                       type="number" step="0.01" min={0} value={manualProduct.unit_price}
                       onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
                       placeholder="0.00"
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#5C3E35] mb-1">Costo (opcional)</label>
+                    <label className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
                     <input
                       type="number" step="0.01" min={0} value={manualProduct.cost}
                       onChange={(e) => setManualProduct({ ...manualProduct, cost: Number(e.target.value) })}
                       placeholder="0.00"
-                      className="w-full h-10 px-3 rounded-lg border border-[#E8E0D8] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     />
                   </div>
                   <div className="flex items-end pb-2">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs font-medium text-[#5C3E35]">ITBIS</span>
+                      <span className="text-xs font-medium text-[#39484F]">ITBIS</span>
                       <button
                         type="button"
                         onClick={() => setManualProduct({ ...manualProduct, itbis: !manualProduct.itbis })}
-                        className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                        className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
                       >
                         <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${manualProduct.itbis ? "translate-x-5" : "translate-x-0.5"}`} />
                       </button>
@@ -1386,13 +1386,13 @@ export default function FacturacionPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowManualProduct(false); setManualProduct({ name: "", quantity: 1, unit_price: 0, cost: 0, itbis: false }); }}
-                    className="flex-1 h-9 border border-[#E8E0D8] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-white transition-all"
+                    className="flex-1 h-9 border border-[#E0DAD3] text-[#39484F] rounded-lg text-xs font-medium hover:bg-white transition-all"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={addManualProduct}
-                    className="flex-1 h-9 bg-[#B8837E] text-white rounded-lg text-xs font-medium hover:bg-[#9A6B66] transition-all"
+                    className="flex-1 h-9 bg-[#BA4A3A] text-white rounded-lg text-xs font-medium hover:bg-[#9C382A] transition-all"
                   >
                     Agregar a factura
                   </button>
@@ -1401,7 +1401,7 @@ export default function FacturacionPage() {
             )}
 
             {items.length === 0 ? (
-              <p className="text-sm text-[#9C8A82] py-3">No hay productos agregados</p>
+              <p className="text-sm text-[#5F6B72] py-3">No hay productos agregados</p>
             ) : (
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                 {items.map((item, i) => {
@@ -1411,19 +1411,19 @@ export default function FacturacionPage() {
                   const lineProfit = computeLineProfit(lineAmount, itemCost, item.quantity);
                   const hasKnownCost = itemCost > 0;
                   return (
-                    <div key={i} className="bg-white rounded-xl border border-[#E8E0D8] overflow-hidden">
-                      <div className="flex items-center gap-3 bg-[#FAF6F0] rounded-xl p-3 flex-wrap sm:flex-nowrap">
+                    <div key={i} className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
+                      <div className="flex items-center gap-3 bg-[#F1E9DF] rounded-xl p-3 flex-wrap sm:flex-nowrap">
                         {isBundle && (
                           <button
                             type="button"
                             onClick={() => toggleExpandRow(i)}
-                            className="p-1 text-[#B8837E] hover:bg-[#B8837E]/10 rounded-lg transition-colors flex-shrink-0"
+                            className="p-1 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg transition-colors flex-shrink-0"
                             title={expandedRows[i] ? "Ocultar componentes" : "Ver componentes del bundle"}
                           >
                             <ChevronDown size={16} className={`transition-transform ${expandedRows[i] ? "rotate-180" : ""}`} />
                           </button>
                         )}
-                        <div className="flex-1 text-sm text-[#5C3E35] min-w-[120px] sm:min-w-0">
+                        <div className="flex-1 text-sm text-[#39484F] min-w-[120px] sm:min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span>{item.name}</span>
                             {isBundle && <Badge variant="warning">BUNDLE</Badge>}
@@ -1437,7 +1437,7 @@ export default function FacturacionPage() {
                               newItems[i].quantity = Number(e.target.value);
                               setItems(newItems);
                             }}
-                            className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                            className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E0DAD3] text-center text-sm"
                           />
                           <input
                             type="number" step="0.01" value={math.lines[i]?.unit_price ?? effectivePrice(item)}
@@ -1448,13 +1448,13 @@ export default function FacturacionPage() {
                               delete newItems[i].price_35;
                               setItems(newItems);
                             }}
-                            className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E8E0D8] text-center text-sm"
+                            className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E0DAD3] text-center text-sm"
                           />
                         </div>
                         <div className="flex items-center gap-2">
                           <span
                             title="Ganancia según margen seleccionado"
-                            className={`text-xs font-semibold w-14 sm:w-16 text-right whitespace-nowrap ${!hasKnownCost ? "text-[#BFB0A8]" : lineProfit >= 0 ? "text-green-600" : "text-red-500"}`}
+                            className={`text-xs font-semibold w-14 sm:w-16 text-right whitespace-nowrap ${!hasKnownCost ? "text-[#A99B90]" : lineProfit >= 0 ? "text-green-600" : "text-red-500"}`}
                           >
                             {hasKnownCost ? `${lineProfit >= 0 ? "+" : ""}${formatCurrency(lineProfit)}` : "—"}
                           </span>
@@ -1465,11 +1465,11 @@ export default function FacturacionPage() {
                               newItems[i].itbis = !newItems[i].itbis;
                               setItems(newItems);
                             }}
-                            className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#B8837E]" : "bg-gray-300"}`}
+                            className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
                           >
                             <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
                           </button>
-                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#5C3E35]" : "text-[#9C8A82]"}`}>
+                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#39484F]" : "text-[#5F6B72]"}`}>
                             {formatCurrency(lineAmount)}
                           </span>
                           <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
@@ -1478,12 +1478,12 @@ export default function FacturacionPage() {
                         </div>
                       </div>
                       {expandedRows[i] && isBundle && (
-                        <div className="px-4 py-3 bg-white border-t border-[#E8E0D8] space-y-1.5">
-                          <p className="text-[10px] font-bold text-[#B8837E] uppercase tracking-wide">Componentes del bundle</p>
+                        <div className="px-4 py-3 bg-white border-t border-[#E0DAD3] space-y-1.5">
+                          <p className="text-[10px] font-bold text-[#BA4A3A] uppercase tracking-wide">Componentes del bundle</p>
                           {item.bundle_items?.map((bi: BundleItem) => (
                             <div key={bi.id} className="flex items-center justify-between text-xs">
-                              <span className="text-[#5C3E35] truncate pr-3">{bi.products?.name || "Producto"}</span>
-                              <span className="text-[#9C8A82] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
+                              <span className="text-[#39484F] truncate pr-3">{bi.products?.name || "Producto"}</span>
+                              <span className="text-[#5F6B72] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
                             </div>
                           ))}
                         </div>
@@ -1497,40 +1497,40 @@ export default function FacturacionPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descuento %</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
               <input
                 type="number" value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Descuento RD$</label>
+              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento RD$</label>
               <input
                 type="number" value={discountAmount}
                 onChange={(e) => { setDiscountAmount(Number(e.target.value)); setDiscountPercent(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Notas (opcional)</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Notas adicionales para la factura..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm placeholder:text-[#BFB0A8] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm placeholder:text-[#A99B90] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#5C3E35] mb-1.5">Banco para transferencia</label>
+            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Banco para transferencia</label>
             <select
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E8E0D8] bg-[#FCFAF7] text-[#5C3E35] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option value="">Seleccionar banco...</option>
               <option value="ALL">Todas las cuentas</option>
@@ -1542,57 +1542,57 @@ export default function FacturacionPage() {
               if (bankAccountId === "ALL") {
                 const first = bankAccounts[0];
                 return (
-                  <div className="mt-2 bg-[#FAF6F0] rounded-lg p-3 text-sm space-y-1">
+                  <div className="mt-2 bg-[#F1E9DF] rounded-lg p-3 text-sm space-y-1">
                     {first && <>
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {first.holder_name}</p>
-                      {first.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {first.id_number}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {first.holder_name}</p>
+                      {first.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {first.id_number}</p>}
                     </>}
-                    {bankAccounts.length === 0 && <p className="text-[#9C8A82] text-xs">No hay cuentas registradas.</p>}
+                    {bankAccounts.length === 0 && <p className="text-[#5F6B72] text-xs">No hay cuentas registradas.</p>}
                     {bankAccounts.map((b) => (
-                      <p key={b.id} className="text-[#5C3E35] text-xs"><span className="text-[#9C8A82]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
+                      <p key={b.id} className="text-[#39484F] text-xs"><span className="text-[#5F6B72]">{b.bank_name} — {b.account_type}:</span> No. {b.account_number}</p>
                     ))}
-                    {first?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {first.email}</p>}
+                    {first?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {first.email}</p>}
                   </div>
                 );
               }
               const selected = bankAccounts.find(b => b.id === bankAccountId);
               if (!selected) return null;
               return (
-                <div className="mt-2 bg-[#FAF6F0] rounded-lg p-3 text-sm space-y-1">
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {selected.holder_name}</p>
-                  {selected.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {selected.id_number}</p>}
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {selected.bank_name}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo:</span> {selected.account_type}</p>
-                  <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. Cuenta:</span> {selected.account_number}</p>
-                  {selected.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {selected.email}</p>}
+                <div className="mt-2 bg-[#F1E9DF] rounded-lg p-3 text-sm space-y-1">
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {selected.holder_name}</p>
+                  {selected.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {selected.id_number}</p>}
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {selected.bank_name}</p>
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo:</span> {selected.account_type}</p>
+                  <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. Cuenta:</span> {selected.account_number}</p>
+                  {selected.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {selected.email}</p>}
                 </div>
               );
             })()}
           </div>
 
-          <div className="bg-[#FAF6F0] rounded-xl p-4 space-y-1 text-sm">
-            <div className="flex justify-between"><span className="text-[#9C8A82]">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+          <div className="bg-[#F1E9DF] rounded-xl p-4 space-y-1 text-sm">
+            <div className="flex justify-between"><span className="text-[#5F6B72]">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             {itbisTotal > 0 && (
-              <div className="flex justify-between"><span className="text-[#9C8A82]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
+              <div className="flex justify-between"><span className="text-[#5F6B72]">ITBIS (18%)</span><span>{formatCurrency(itbisTotal)}</span></div>
             )}
-            <div className="flex justify-between"><span className="text-[#9C8A82]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
+            <div className="flex justify-between"><span className="text-[#5F6B72]">Descuento</span><span className="text-[#D4A0A0]">-{formatCurrency(discountValue)}</span></div>
             {items.length > 0 && (
-              <div className="flex justify-between"><span className="text-[#9C8A82]">Ganancia neta</span><span className={`font-medium ${netProfit >= 0 ? "text-green-600" : "text-red-500"}`}>{formatCurrency(netProfit)}</span></div>
+              <div className="flex justify-between"><span className="text-[#5F6B72]">Ganancia neta</span><span className={`font-medium ${netProfit >= 0 ? "text-green-600" : "text-red-500"}`}>{formatCurrency(netProfit)}</span></div>
             )}
-            <div className="flex justify-between text-base font-bold pt-1 border-t border-[#E8E0D8]"><span>Total</span><span>{formatCurrency(total)}</span></div>
+            <div className="flex justify-between text-base font-bold pt-1 border-t border-[#E0DAD3]"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={() => { setShowModal(false); resetForm(); }}
-              className="flex-1 h-12 border border-[#E8E0D8] text-[#5C3E35] rounded-xl text-sm font-medium hover:bg-[#FAF6F0] transition-all"
+              className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 h-12 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 h-12 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Save size={18} />
               {saving ? "Guardando..." : (editingId ? "Actualizar Factura" : "Guardar Factura")}
@@ -1617,93 +1617,93 @@ export default function FacturacionPage() {
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-14 h-14 rounded-full bg-[#B8837E]/10 flex items-center justify-center mt-1">
-                  <Flower2 size={28} className="text-[#B8837E]" />
+                <div className="w-14 h-14 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <Flower2 size={28} className="text-[#BA4A3A]" />
                 </div>
                 <div>
-                  <h2 className="text-[27px] font-marca uppercase text-[#5C3E35]">{settings?.business_name || "ALMAIA"}</h2>
-                  <p className="text-xs tracking-widest text-[#B8837E] uppercase mt-0.5">Bienestar & Salud</p>
-                  <p className="text-sm font-bold text-[#5C3E35] mt-2">Distribuidor Independiente Amway</p>
-                  <p className="text-xs text-[#9C8A82] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
-                  <p className="text-xs text-[#9C8A82]">República Dominicana</p>
+                  <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
+                  <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
+                  <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
+                  <p className="text-xs text-[#5F6B72] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
+                  <p className="text-xs text-[#5F6B72]">República Dominicana</p>
                 </div>
               </div>
               <div className="text-right">
-                <span className="inline-block bg-[#F0EBE3] text-[#B8837E] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
-                <p className="text-lg font-bold text-[#5C3E35] mt-3">{jpgData.invoice_number}</p>
-                <p className="text-xs text-[#9C8A82] mt-0.5">Fecha: {formatDate(jpgData.invoice_date)}</p>
+                <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
+                <p className="text-lg font-bold text-[#39484F] mt-3">{jpgData.invoice_number}</p>
+                <p className="text-xs text-[#5F6B72] mt-0.5">Fecha: {formatDate(jpgData.invoice_date)}</p>
               </div>
             </div>
-            <div className="border-t border-[#E8E0D8] mb-5" />
-            <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
-              <p className="text-xs font-bold text-[#B8837E] mb-3">CLIENTE / ADQUIRIENTE</p>
+            <div className="border-t border-[#E0DAD3] mb-5" />
+            <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+              <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Nombre:</span> {jpgData.clients?.full_name}</p>
-                <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Teléfono:</span> {jpgData.clients?.phone || "—"}</p>
-                <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Email:</span> {jpgData.clients?.email || "N/D"}</p>
+                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Nombre:</span> {jpgData.clients?.full_name}</p>
+                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Teléfono:</span> {jpgData.clients?.phone || "—"}</p>
+                <p className="text-[#39484F]"><span className="text-[#5F6B72]">Email:</span> {jpgData.clients?.email || "N/D"}</p>
               </div>
             </div>
             <table className="w-full text-sm mb-5">
               <thead>
                 <tr className="bg-[#F0EBE3]">
-                  <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Submarca</th>
-                  <th className="py-2.5 px-3 text-left text-xs text-[#5C3E35] font-bold">Descripción / Producto</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Cant.</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Precio Unit.</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#5C3E35] font-bold">Total</th>
+                  <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Submarca</th>
+                  <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripción / Producto</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
                 </tr>
               </thead>
               <tbody>
                   {(jpgData.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => (
                     <tr key={i} className="border-b border-[#F0EBE3]">
-                      <td className="py-2.5 px-3 text-xs text-[#9C8A82]">{item.products?.subbrands?.name || "—"}</td>
-                      <td className="py-2.5 px-3 text-sm text-[#5C3E35]">{item.products?.name || item.custom_name || "Producto"}</td>
-                      <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{item.quantity}</td>
-                      <td className="py-2.5 px-3 text-right text-sm text-[#5C3E35]">{formatCurrency(Number(item.unit_price))}</td>
-                      <td className="py-2.5 px-3 text-right text-sm font-medium text-[#5C3E35]">{formatCurrency(Number(item.line_total))}</td>
+                      <td className="py-2.5 px-3 text-xs text-[#5F6B72]">{item.products?.subbrands?.name || "—"}</td>
+                      <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
+                      <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
+                      <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
+                      <td className="py-2.5 px-3 text-right text-sm font-medium text-[#39484F]">{formatCurrency(Number(item.line_total))}</td>
                     </tr>
                   ))}
               </tbody>
             </table>
             {(jpgData.show_all_bank_accounts ? bankAccounts.length > 0 : jpgData.bank_accounts) && (
-              <div className="border border-[#E8E0D8] bg-[#FCFAF7] rounded-xl p-4 mb-5">
-                <p className="text-xs font-bold text-[#B8837E] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
+              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
+                <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                 {jpgData.show_all_bank_accounts ? (
                   <>
                     <div className="flex whitespace-nowrap gap-x-6 text-sm mb-2.5">
-                      <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
-                      {bankAccounts[0]?.id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
-                      {bankAccounts[0]?.email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {bankAccounts[0].email}</p>}
+                      <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {bankAccounts[0]?.holder_name}</p>
+                      {bankAccounts[0]?.id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {bankAccounts[0].id_number}</p>}
+                      {bankAccounts[0]?.email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {bankAccounts[0].email}</p>}
                     </div>
-                    <div className="mt-2 pt-2 border-t border-[#E8E0D8]">
+                    <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                       {bankAccounts.map((b) => (
                         <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
-                          <p className="text-[#5C3E35] font-semibold">{b.bank_name}</p>
-                          <p className="text-[#5C3E35]">{b.account_type}</p>
-                          <p className="text-[#5C3E35]">No. {b.account_number}</p>
+                          <p className="text-[#39484F] font-semibold">{b.bank_name}</p>
+                          <p className="text-[#39484F]">{b.account_type}</p>
+                          <p className="text-[#39484F]">No. {b.account_number}</p>
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Beneficiario:</span> {(jpgData.bank_accounts as BankAccountRef).holder_name}</p>
-                    {(jpgData.bank_accounts as BankAccountRef).id_number && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Cédula/RNC:</span> {(jpgData.bank_accounts as BankAccountRef).id_number}</p>}
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Banco:</span> {(jpgData.bank_accounts as BankAccountRef).bank_name}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Tipo de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_type}</p>
-                    <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">No. de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_number}</p>
-                    {(jpgData.bank_accounts as BankAccountRef).email && <p className="text-[#5C3E35]"><span className="text-[#9C8A82]">Correo:</span> {(jpgData.bank_accounts as BankAccountRef).email}</p>}
+                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Beneficiario:</span> {(jpgData.bank_accounts as BankAccountRef).holder_name}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).id_number && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Cédula/RNC:</span> {(jpgData.bank_accounts as BankAccountRef).id_number}</p>}
+                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Banco:</span> {(jpgData.bank_accounts as BankAccountRef).bank_name}</p>
+                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">Tipo de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_type}</p>
+                    <p className="text-[#39484F]"><span className="text-[#5F6B72]">No. de Cuenta:</span> {(jpgData.bank_accounts as BankAccountRef).account_number}</p>
+                    {(jpgData.bank_accounts as BankAccountRef).email && <p className="text-[#39484F]"><span className="text-[#5F6B72]">Correo:</span> {(jpgData.bank_accounts as BankAccountRef).email}</p>}
                   </div>
                 )}
               </div>
             )}
-            <div className="border-t border-[#E8E0D8] pt-3 mb-5">
-              <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+            <div className="border-t border-[#E0DAD3] pt-3 mb-5">
+              <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
                 <span>Subtotal</span>
                 <span>{formatCurrency(Number(jpgData.subtotal))}</span>
               </div>
               {Number(jpgData.itbis_total) > 0 && (
-                <div className="flex justify-between text-sm text-[#9C8A82] mb-1">
+                <div className="flex justify-between text-sm text-[#5F6B72] mb-1">
                   <span>ITBIS (18%)</span>
                   <span>{formatCurrency(Number(jpgData.itbis_total))}</span>
                 </div>
@@ -1714,7 +1714,7 @@ export default function FacturacionPage() {
                   <span>-{formatCurrency(Number(jpgData.discount_amount))}</span>
                 </div>
               )}
-              <div className="flex justify-between text-base font-bold text-[#5C3E35] pt-1 border-t border-[#E8E0D8] mb-1">
+              <div className="flex justify-between text-base font-bold text-[#39484F] pt-1 border-t border-[#E0DAD3] mb-1">
                 <span>Total General</span>
                 <span>{formatCurrency(Number(jpgData.total))}</span>
               </div>
@@ -1725,24 +1725,24 @@ export default function FacturacionPage() {
                 </div>
               )}
               {(Number(jpgData.total) - Number(jpgData.amount_paid || 0)) > 0 && (
-                <div className="flex justify-between text-sm font-bold text-[#B8837E]">
+                <div className="flex justify-between text-sm font-bold text-[#BA4A3A]">
                   <span>Saldo Pendiente</span>
                   <span>{formatCurrency(Number(jpgData.total) - Number(jpgData.amount_paid || 0))}</span>
                 </div>
               )}
             </div>
-            <div className="border-t border-[#E8E0D8] pt-4 flex justify-between items-end">
+            <div className="border-t border-[#E0DAD3] pt-4 flex justify-between items-end">
               <div>
-                <p className="text-xs italic text-[#B8837E]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
-                <p className="text-xs text-[#9C8A82] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
+                <p className="text-xs italic text-[#BA4A3A]">¡Gracias por tu compra y por apoyar a {settings?.business_name || "Almaia RD"}, aliados a tu bienestar!</p>
+                <p className="text-xs text-[#5F6B72] mt-1.5">Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home</p>
               </div>
               <div className="text-center">
                 {settings?.signature_url ? (
                   <img src={settings.signature_url} alt="Firma" style={{ height: 120 }} />
                 ) : (
-                  <p className="text-base text-[#5C3E35]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
+                  <p className="text-base text-[#39484F]" style={{ fontFamily: "var(--font-signature), cursive" }}>Yrahisa Mateo</p>
                 )}
-                <p className="text-[9px] text-[#9C8A82] mt-0.5">FIRMA AUTORIZADA</p>
+                <p className="text-[9px] text-[#5F6B72] mt-0.5">FIRMA AUTORIZADA</p>
               </div>
             </div>
           </div>

@@ -32,7 +32,7 @@ const PRODUCT_PATH = "/storage/v1/object/public/product-images/";
 const BLUR =
   "data:image/svg+xml;base64," +
   btoaFallback(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#FAF6F0"/><rect width="8" height="4" fill="#F3EBE1"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#F1E9DF"/><rect width="8" height="4" fill="#F3EBE1"/></svg>'
   );
 
 /** btoa no existe en Node durante el render de servidor. */

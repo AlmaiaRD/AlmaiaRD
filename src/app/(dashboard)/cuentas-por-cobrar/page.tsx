@@ -71,24 +71,24 @@ export default function CuentasPorCobrarPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <h1 className="text-[30px] font-marca text-[#5C3E35]">Cuentas por Cobrar</h1>
-        <p className="text-sm text-[#9C8A82] mt-1">Saldos pendientes de clientes</p>
+        <h1 className="text-[30px] font-marca text-[#39484F]">Cuentas por Cobrar</h1>
+        <p className="text-sm text-[#5F6B72] mt-1">Saldos pendientes de clientes</p>
       </div>
 
       <div className="flex items-start gap-4 mb-6">
-        <div className="flex-1 bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8]">
-          <p className="text-xs text-[#9C8A82] mb-1">Total Pendiente</p>
-          <p className="text-2xl font-bold text-[#5C3E35]">{formatCurrency(totalPending)}</p>
-          <p className="text-xs text-[#9C8A82] mt-1">
+        <div className="flex-1 bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
+          <p className="text-xs text-[#5F6B72] mb-1">Total Pendiente</p>
+          <p className="text-2xl font-bold text-[#39484F]">{formatCurrency(totalPending)}</p>
+          <p className="text-xs text-[#5F6B72] mt-1">
             {deferredSearch.trim()
               ? `${filtered.length} factura(s) en esta página`
               : `${totalInvoices} factura(s) pendientes`}
           </p>
         </div>
-        <a href="/creditos" className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all min-w-[180px] block">
+        <a href="/creditos" className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all min-w-[180px] block">
           <div className="flex items-center gap-2 mb-1">
             <Wallet size={16} className="text-[#86C7A3]" />
-            <p className="text-xs text-[#9C8A82]">Saldos a Favor</p>
+            <p className="text-xs text-[#5F6B72]">Saldos a Favor</p>
           </div>
           <p className="text-lg font-bold text-[#86C7A3]">{formatCurrency(totalCredits)}</p>
           <p className="text-xs text-[#86C7A3] mt-1 flex items-center gap-1">Ver créditos <ArrowUpRight size={12} /></p>
@@ -96,18 +96,18 @@ export default function CuentasPorCobrarPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
         <input
           type="text" value={searchQuery} onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Buscar por cliente o factura..."
-          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
         />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#9C8A82]">
+        <div className="text-center py-16 text-[#5F6B72]">
           <DollarSign size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">
             {deferredSearch.trim()
@@ -117,7 +117,7 @@ export default function CuentasPorCobrarPage() {
           {deferredSearch.trim() && (
             <button
               onClick={() => handleSearchChange("")}
-              className="mt-3 text-xs font-medium text-[#B8837E] hover:underline"
+              className="mt-3 text-xs font-medium text-[#BA4A3A] hover:underline"
             >
               Limpiar búsqueda
             </button>
@@ -129,20 +129,20 @@ export default function CuentasPorCobrarPage() {
             const due = Number(inv.total) - Number(inv.amount_paid || 0);
             const statusLabel = inv.status === "PENDING" ? "Pendiente" : inv.status === "PARTIAL" ? "Pago Parcial" : inv.status;
             return (
-              <div key={inv.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+              <div key={inv.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <span className="text-sm font-semibold text-[#5C3E35]">{inv.invoice_number}</span>
-                    <span className="text-xs text-[#9C8A82] ml-2">{inv.clients?.full_name}</span>
+                    <span className="text-sm font-semibold text-[#39484F]">{inv.invoice_number}</span>
+                    <span className="text-xs text-[#5F6B72] ml-2">{inv.clients?.full_name}</span>
                   </div>
                   <Badge variant={inv.status === "PENDING" ? "warning" : "info"}>{statusLabel}</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#9C8A82]">Total: {formatCurrency(inv.total)}</span>
-                  <span className="text-[#5C3E35] font-bold">{formatCurrency(due)}</span>
+                  <span className="text-[#5F6B72]">Total: {formatCurrency(inv.total)}</span>
+                  <span className="text-[#39484F] font-bold">{formatCurrency(due)}</span>
                 </div>
                 {inv.clients?.phone && (
-                  <div className="flex items-center gap-1.5 mt-2 text-xs text-[#9C8A82]">
+                  <div className="flex items-center gap-1.5 mt-2 text-xs text-[#5F6B72]">
                     <Phone size={12} />
                     <span>{inv.clients.phone}</span>
                   </div>

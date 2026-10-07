@@ -272,31 +272,31 @@ const debouncedSearch = useDebounce(searchQuery, 500);
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-[30px] font-marca text-[#5C3E35]">Clientes y Deudas</h1>
-              <p className="text-sm text-[#9C8A82] mt-1">Directorio de clientes</p>
+              <h1 className="text-[30px] font-marca text-[#39484F]">Clientes y Deudas</h1>
+              <p className="text-sm text-[#5F6B72] mt-1">Directorio de clientes</p>
             </div>
             <div className="flex items-center gap-2">
               <Link href="/cotizaciones?nueva=true" className="flex items-center gap-2 bg-[#C9A89C] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#B08E82] transition-all">
                 <ClipboardList size={16} /> Cotizar
               </Link>
-              <button onClick={openArchived} className="flex items-center gap-2 bg-white text-[#9C8A82] px-4 py-2.5 rounded-xl text-sm font-medium border border-[#E8E0D8] hover:bg-[#FAF6F0] transition-all">
+              <button onClick={openArchived} className="flex items-center gap-2 bg-white text-[#5F6B72] px-4 py-2.5 rounded-xl text-sm font-medium border border-[#E0DAD3] hover:bg-[#F1E9DF] transition-all">
                 <Archive size={16} /> Archivados
               </button>
-              <button onClick={openNew} className="flex items-center gap-2 bg-[#B8837E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all shadow-sm">
+              <button onClick={openNew} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
                 <Plus size={18} /> Añadir
               </button>
             </div>
           </div>
 
           <div className="relative mb-4">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9C8A82]" />
-            <input ref={searchInputRef} type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar cliente por nombre, teléfono o correo..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E8E0D8] bg-white text-[#5C3E35] placeholder-[#9C8A82] text-sm focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 focus:border-[#B8837E] transition-all" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6B72]" />
+            <input ref={searchInputRef} type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar cliente por nombre, teléfono o correo..." className="w-full h-12 pl-12 pr-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] placeholder-[#5F6B72] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
           ) : clients.length === 0 ? (
-            <div className="text-center py-16 text-[#9C8A82]">
+            <div className="text-center py-16 text-[#5F6B72]">
               <Users size={40} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No hay clientes registrados</p>
             </div>
@@ -308,11 +308,11 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 const credit = Number(client.credit_balance);
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
                 return (
-                  <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                  <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <button onClick={() => openDetail(client)} className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
+                          <h3 className="font-medium text-[#39484F] hover:text-[#BA4A3A] transition-colors">{client.full_name}</h3>
                           {stage && (
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${stage.bg} ${stage.color}`}>
                               {stage.label}
@@ -322,24 +322,24 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">Negocio</span>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#9C8A82]">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#5F6B72]">
                           {client.phone && <span className="flex items-center gap-1"><Phone size={12} />{client.phone}</span>}
                           {client.email && <span className="flex items-center gap-1"><Mail size={12} />{client.email}</span>}
                         </div>
                         <div className="flex items-center gap-4 mt-2">
                           {pending > 0 ? (
                             <>
-                              <span className="text-sm text-[#5C3E35]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
+                              <span className="text-sm text-[#39484F]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
                               <Badge variant="danger">DEBE {formatCurrency(pending)}</Badge>
                             </>
                           ) : credit > 0 ? (
                             <>
-                              <span className="text-sm text-[#5C3E35]">A favor: <strong>{formatCurrency(credit)}</strong></span>
+                              <span className="text-sm text-[#39484F]">A favor: <strong>{formatCurrency(credit)}</strong></span>
                               <Badge variant="success">A FAVOR {formatCurrency(credit)}</Badge>
                             </>
                           ) : (
                             <>
-                              <span className="text-sm text-[#5C3E35]">Saldo: <strong>{formatCurrency(0)}</strong></span>
+                              <span className="text-sm text-[#39484F]">Saldo: <strong>{formatCurrency(0)}</strong></span>
                               <Badge variant="neutral">SALDADO</Badge>
                             </>
                           )}
@@ -356,12 +356,12 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                               toast.success("Etapa actualizada");
                             } catch { toast.error("Error al actualizar"); }
                           }}
-                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 max-w-[150px]"
+                          className="h-8 px-2 rounded-lg border border-[#E0DAD3] bg-white text-xs text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 max-w-[150px]"
                         >
                           <option value="">Sin etapa</option>
                           {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
-                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
+                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
                       </div>
                     </div>
@@ -378,11 +378,11 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 const credit = Number(client.credit_balance);
                 const stage = getStagesForType((client.client_type as ClientType) || "comprador").find(s => s.key === client.stage);
                 return (
-                  <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E8E0D8] hover:shadow-md transition-all">
+                  <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3] hover:shadow-md transition-all">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <button onClick={() => openDetail(client)} className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-[#5C3E35] hover:text-[#B8837E] transition-colors">{client.full_name}</h3>
+                          <h3 className="font-medium text-[#39484F] hover:text-[#BA4A3A] transition-colors">{client.full_name}</h3>
                           {stage && (
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${stage.bg} ${stage.color}`}>
                               {stage.label}
@@ -392,24 +392,24 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">Negocio</span>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#9C8A82]">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#5F6B72]">
                           {client.phone && <span className="flex items-center gap-1"><Phone size={12} />{client.phone}</span>}
                           {client.email && <span className="flex items-center gap-1"><Mail size={12} />{client.email}</span>}
                         </div>
                         <div className="flex items-center gap-4 mt-2">
                           {pending > 0 ? (
                             <>
-                              <span className="text-sm text-[#5C3E35]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
+                              <span className="text-sm text-[#39484F]">Pendiente: <strong>{formatCurrency(pending)}</strong></span>
                               <Badge variant="danger">DEBE {formatCurrency(pending)}</Badge>
                             </>
                           ) : credit > 0 ? (
                             <>
-                              <span className="text-sm text-[#5C3E35]">A favor: <strong>{formatCurrency(credit)}</strong></span>
+                              <span className="text-sm text-[#39484F]">A favor: <strong>{formatCurrency(credit)}</strong></span>
                               <Badge variant="success">A FAVOR {formatCurrency(credit)}</Badge>
                             </>
                           ) : (
                             <>
-                              <span className="text-sm text-[#5C3E35]">Saldo: <strong>{formatCurrency(0)}</strong></span>
+                              <span className="text-sm text-[#39484F]">Saldo: <strong>{formatCurrency(0)}</strong></span>
                               <Badge variant="neutral">SALDADO</Badge>
                             </>
                           )}
@@ -426,12 +426,12 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                               toast.success("Etapa actualizada");
                             } catch { toast.error("Error al actualizar"); }
                           }}
-                          className="h-8 px-2 rounded-lg border border-[#E8E0D8] bg-white text-xs text-[#5C3E35] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30 max-w-[150px]"
+                          className="h-8 px-2 rounded-lg border border-[#E0DAD3] bg-white text-xs text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 max-w-[150px]"
                         >
                           <option value="">Sin etapa</option>
                           {getStagesForType((client.client_type as ClientType) || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
-                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#9C8A82] hover:bg-[#FAF6F0] rounded-lg"><Edit2 size={16} /></button>
+                        <button onClick={() => openEdit(client)} className="p-2.5 sm:p-2 text-[#5F6B72] hover:bg-[#F1E9DF] rounded-lg"><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(client.id, client.full_name)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg"><Trash2 size={16} /></button>
                       </div>
                     </div>
@@ -442,25 +442,25 @@ const debouncedSearch = useDebounce(searchQuery, 500);
           )}
         </div>
 
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E8E0D8] h-fit">
-          <h3 className="text-sm font-semibold text-[#5C3E35] mb-4">Estado de Cuenta Almaia RD</h3>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] h-fit">
+          <h3 className="text-sm font-semibold text-[#39484F] mb-4">Estado de Cuenta Almaia RD</h3>
           <div className="space-y-3 mb-6">
-            <div className="flex justify-between text-sm py-2 border-b border-[#E8E0D8]/50">
-              <span className="text-[#9C8A82]">Cartera total (pendiente)</span>
+            <div className="flex justify-between text-sm py-2 border-b border-[#E0DAD3]/50">
+              <span className="text-[#5F6B72]">Cartera total (pendiente)</span>
               <span className="font-medium">{formatCurrency(totalPortfolio)}</span>
             </div>
-            <div className="flex justify-between text-sm py-2 border-b border-[#E8E0D8]/50">
-              <span className="text-[#9C8A82]">Saldos a favor</span>
+            <div className="flex justify-between text-sm py-2 border-b border-[#E0DAD3]/50">
+              <span className="text-[#5F6B72]">Saldos a favor</span>
               <span className="font-medium text-[#86C7A3]">{formatCurrency(totalCreditBalance)}</span>
             </div>
           </div>
 
-          <h4 className="text-xs font-semibold text-[#9C8A82] uppercase tracking-wider mb-3">Accesos rápidos</h4>
+          <h4 className="text-xs font-semibold text-[#5F6B72] uppercase tracking-wider mb-3">Accesos rápidos</h4>
           <div className="space-y-2">
             <a href="/creditos" className="flex items-center gap-2 text-sm text-[#86C7A3] hover:underline">
               <Wallet size={14} /> Ver Saldos a Favor
             </a>
-            <a href="/crm" className="flex items-center gap-2 text-sm text-[#B8837E] hover:underline">
+            <a href="/crm" className="flex items-center gap-2 text-sm text-[#BA4A3A] hover:underline">
               <MessageSquare size={14} /> Ver Seguimiento
             </a>
           </div>
@@ -473,16 +473,16 @@ const debouncedSearch = useDebounce(searchQuery, 500);
           <div className="space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#B8837E]/10 flex items-center justify-center">
-                  <User size={22} className="text-[#B8837E]" />
+                <div className="w-12 h-12 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center">
+                  <User size={22} className="text-[#BA4A3A]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#9C8A82]">
+                  <p className="text-sm text-[#5F6B72]">
                     {detailClient.phone && `Tel: ${detailClient.phone}`}
                     {detailClient.phone && detailClient.email && " · "}
                     {detailClient.email && detailClient.email}
                   </p>
-                  {detailClient.ibo_number && <p className="text-xs text-[#9C8A82]">IBO: {detailClient.ibo_number}</p>}
+                  {detailClient.ibo_number && <p className="text-xs text-[#5F6B72]">IBO: {detailClient.ibo_number}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
@@ -496,37 +496,37 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 ) : (
                   <button 
                     onClick={() => handleConvertClientType(detailClient!, "comprador")} 
-                    className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"
+                    className="flex items-center gap-1.5 text-sm text-[#BA4A3A] hover:underline"
                   >
                     <User size={14} /> <span className="hidden sm:inline">Convertir a Comprador</span><span className="sm:hidden">Comprador</span>
                   </button>
                 )}
-                <button onClick={() => openEdit(detailClient!)} className="flex items-center gap-1.5 text-sm text-[#B8837E] hover:underline"><Edit2 size={14} /> Editar</button>
+                <button onClick={() => openEdit(detailClient!)} className="flex items-center gap-1.5 text-sm text-[#BA4A3A] hover:underline"><Edit2 size={14} /> Editar</button>
               </div>
             </div>
 
             {detailClient.previous_client_type && detailClient.client_type_changed_at && (
-              <div className="bg-[#FAF6F0] rounded-xl p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#B8837E]/10 flex items-center justify-center">
-                  <Briefcase size={14} className="text-[#B8837E]" />
+              <div className="bg-[#F1E9DF] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center">
+                  <Briefcase size={14} className="text-[#BA4A3A]" />
                 </div>
                 <div>
-                  <p className="text-xs text-[#9C8A82]">
+                  <p className="text-xs text-[#5F6B72]">
                     Fue {detailClient.previous_client_type === "comprador" ? "Cliente Comprador" : "Prospecto de Negocio"} por{" "}
                     {Math.floor((new Date(detailClient.client_type_changed_at).getTime() - new Date(detailClient.created_at).getTime()) / (1000 * 60 * 60 * 24))} días
                   </p>
-                  <p className="text-xs text-[#9C8A82]">
+                  <p className="text-xs text-[#5F6B72]">
                     Convertido el {formatDate(detailClient.client_type_changed_at)}
                   </p>
                 </div>
               </div>
             )}
 
-            <div className="flex gap-1 border-b border-[#E8E0D8] overflow-x-auto">
+            <div className="flex gap-1 border-b border-[#E0DAD3] overflow-x-auto">
               {(["info", "facturas", "pagos", "creditos", "seguimiento", "cotizaciones"] as DetailTab[]).map((tab) => (
                 <button key={tab} onClick={() => setDetailTab(tab)}
                   className={`pb-2.5 px-3 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${
-                    detailTab === tab ? "text-[#B8837E] border-[#B8837E]" : "text-[#9C8A82] border-transparent hover:text-[#5C3E35]"
+                    detailTab === tab ? "text-[#BA4A3A] border-[#BA4A3A]" : "text-[#5F6B72] border-transparent hover:text-[#39484F]"
                   }`}
                 >
                   {tab === "info" && "Información"}
@@ -541,44 +541,44 @@ const debouncedSearch = useDebounce(searchQuery, 500);
 
             {detailLoading ? (
               <div className="flex justify-center py-10">
-                <div className="w-6 h-6 border-2 border-[#B8837E] border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : detailTab === "info" ? (
               <div className="space-y-3">
                 {detailClient.notes && (
-                  <div className="bg-[#FAF6F0] rounded-xl p-4">
-                    <p className="text-xs text-[#9C8A82] mb-1">Notas</p>
-                    <p className="text-sm text-[#5C3E35]">{detailClient.notes}</p>
+                  <div className="bg-[#F1E9DF] rounded-xl p-4">
+                    <p className="text-xs text-[#5F6B72] mb-1">Notas</p>
+                    <p className="text-sm text-[#39484F]">{detailClient.notes}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white rounded-xl p-4 border border-[#E8E0D8]">
-                    <p className="text-xs text-[#9C8A82]">Total facturado</p>
-                    <p className="text-lg font-bold text-[#5C3E35]">{formatCurrency(totalInvoiced)}</p>
+                  <div className="bg-white rounded-xl p-4 border border-[#E0DAD3]">
+                    <p className="text-xs text-[#5F6B72]">Total facturado</p>
+                    <p className="text-lg font-bold text-[#39484F]">{formatCurrency(totalInvoiced)}</p>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-[#E8E0D8]">
-                    <p className="text-xs text-[#9C8A82]">Total pagado</p>
+                  <div className="bg-white rounded-xl p-4 border border-[#E0DAD3]">
+                    <p className="text-xs text-[#5F6B72]">Total pagado</p>
                     <p className="text-lg font-bold text-[#86C7A3]">{formatCurrency(totalPaid)}</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-[#E8E0D8]">
-                  <p className="text-xs text-[#9C8A82]">Saldo pendiente</p>
-                  <p className="text-lg font-bold text-[#B8837E]">{formatCurrency(Math.max(0, totalInvoiced - totalPaid))}</p>
+                <div className="bg-white rounded-xl p-4 border border-[#E0DAD3]">
+                  <p className="text-xs text-[#5F6B72]">Saldo pendiente</p>
+                  <p className="text-lg font-bold text-[#BA4A3A]">{formatCurrency(Math.max(0, totalInvoiced - totalPaid))}</p>
                 </div>
               </div>
             ) : detailTab === "facturas" ? (
               <div className="space-y-2">
                 {detailInvoices.length === 0 ? (
-                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin facturas registradas</div>
+                  <div className="text-center py-10 text-[#5F6B72] text-sm">Sin facturas registradas</div>
                 ) : (
                   detailInvoices.map((inv: Invoice & { clients?: { full_name?: string | null } }) => (
-                    <div key={inv.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                    <div key={inv.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{inv.invoice_number}</p>
-                        <p className="text-xs text-[#9C8A82]">{formatDate(inv.invoice_date)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{inv.invoice_number}</p>
+                        <p className="text-xs text-[#5F6B72]">{formatDate(inv.invoice_date)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(inv.total)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{formatCurrency(inv.total)}</p>
                         <Badge variant={statusColor[inv.status]}>{statusLabel[inv.status]}</Badge>
                       </div>
                     </div>
@@ -588,13 +588,13 @@ const debouncedSearch = useDebounce(searchQuery, 500);
             ) : detailTab === "pagos" ? (
               <div className="space-y-2">
                 {detailReceipts.length === 0 ? (
-                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin pagos registrados</div>
+                  <div className="text-center py-10 text-[#5F6B72] text-sm">Sin pagos registrados</div>
                 ) : (
                   detailReceipts.map((rec: Receipt & { clients?: { full_name?: string | null }; invoices?: { invoice_number?: string } }) => (
-                    <div key={rec.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                    <div key={rec.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{rec.receipt_number}</p>
-                        <p className="text-xs text-[#9C8A82]">
+                        <p className="text-sm font-medium text-[#39484F]">{rec.receipt_number}</p>
+                        <p className="text-xs text-[#5F6B72]">
                           {formatDate(rec.created_at)} · {rec.payment_method === "CASH" ? "Efectivo" : rec.payment_method === "TRANSFER" ? "Transferencia" : "Tarjeta"}
                           {rec.invoices?.invoice_number && ` · ${rec.invoices.invoice_number}`}
                         </p>
@@ -607,13 +607,13 @@ const debouncedSearch = useDebounce(searchQuery, 500);
             ) : detailTab === "creditos" ? (
               <div className="space-y-2">
                 {detailCredits.length === 0 ? (
-                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin créditos disponibles</div>
+                  <div className="text-center py-10 text-[#5F6B72] text-sm">Sin créditos disponibles</div>
                 ) : (
                   detailCredits.map((c: CreditBalance & { receipts?: { receipt_number: string; receipt_date: string } | null }) => (
-                    <div key={c.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                    <div key={c.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                       <div>
-                        <p className="text-sm text-[#5C3E35]">Recibo {c.receipts?.receipt_number || "—"}</p>
-                        <p className="text-xs text-[#9C8A82]">Monto: {formatCurrency(c.amount)}</p>
+                        <p className="text-sm text-[#39484F]">Recibo {c.receipts?.receipt_number || "—"}</p>
+                        <p className="text-xs text-[#5F6B72]">Monto: {formatCurrency(c.amount)}</p>
                       </div>
                       <div className="text-right">
                         <span className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -633,26 +633,26 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                     type="text" value={newFollowup} onChange={(e) => setNewFollowup(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddFollowup()}
                     placeholder="Nueva actividad de seguimiento..."
-                    className="flex-1 h-10 px-4 rounded-xl border border-[#E8E0D8] text-sm text-[#5C3E35] placeholder-[#9C8A82] focus:outline-none focus:ring-2 focus:ring-[#B8837E]/30"
+                    className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#5F6B72] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
-                  <button onClick={handleAddFollowup} className="h-10 px-4 bg-[#B8837E] text-white rounded-xl text-sm font-medium hover:bg-[#9A6B66] transition-all">
+                  <button onClick={handleAddFollowup} className="h-10 px-4 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all">
                     <Plus size={16} />
                   </button>
                 </div>
 
                 {detailFollowups.length === 0 ? (
-                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin actividades de seguimiento</div>
+                  <div className="text-center py-10 text-[#5F6B72] text-sm">Sin actividades de seguimiento</div>
                 ) : (
                   <>
                     <div className="space-y-2">
                       {detailFollowups.map((f) => (
-                        <div key={f.id} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#E8E0D8]">
-                          <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center flex-shrink-0">
-                            <MessageSquare size={14} className="text-[#B8837E]" />
+                        <div key={f.id} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#E0DAD3]">
+                          <div className="w-8 h-8 rounded-full bg-[#F1E9DF] flex items-center justify-center flex-shrink-0">
+                            <MessageSquare size={14} className="text-[#BA4A3A]" />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium text-[#5C3E35]">Seguimiento</p>
+                              <p className="text-sm font-medium text-[#39484F]">Seguimiento</p>
                               <button
                                 onClick={() => handleToggleFollowup(f.id, f.status)}
                                 className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
@@ -664,8 +664,8 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                                 {f.status === "COMPLETED" ? "Completada" : "Pendiente"}
                               </button>
                             </div>
-                            <p className="text-sm text-[#5C3E35] mt-1">{f.comments}</p>
-                            <p className="text-xs text-[#9C8A82] mt-1">{formatDate(f.contact_date)}</p>
+                            <p className="text-sm text-[#39484F] mt-1">{f.comments}</p>
+                            <p className="text-xs text-[#5F6B72] mt-1">{formatDate(f.contact_date)}</p>
                           </div>
                         </div>
                       ))}
@@ -677,19 +677,19 @@ const debouncedSearch = useDebounce(searchQuery, 500);
             ) : detailTab === "cotizaciones" ? (
               <div className="space-y-2">
                 {detailQuotes.length === 0 ? (
-                  <div className="text-center py-10 text-[#9C8A82] text-sm">Sin cotizaciones registradas</div>
+                  <div className="text-center py-10 text-[#5F6B72] text-sm">Sin cotizaciones registradas</div>
                 ) : (
                   detailQuotes.map((q) => (
-                    <div key={q.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+                    <div key={q.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                       <div>
-                        <p className="text-sm font-medium text-[#5C3E35]">{q.quote_number}</p>
-                        <p className="text-xs text-[#9C8A82]">{formatDate(q.quote_date)} · Válida hasta {formatDate(q.valid_until)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{q.quote_number}</p>
+                        <p className="text-xs text-[#5F6B72]">{formatDate(q.quote_date)} · Válida hasta {formatDate(q.valid_until)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-[#5C3E35]">{formatCurrency(q.total)}</p>
+                        <p className="text-sm font-medium text-[#39484F]">{formatCurrency(q.total)}</p>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                           q.status === "DRAFT" ? "bg-gray-100 text-gray-600" :
-                          q.status === "SENT" ? "bg-[#B8837E]/10 text-[#B8837E]" :
+                          q.status === "SENT" ? "bg-[#BA4A3A]/10 text-[#BA4A3A]" :
                           q.status === "ACCEPTED" || q.status === "CONVERTED" ? "bg-green-100 text-green-700" :
                           "bg-red-100 text-red-600"
                         }`}>
@@ -701,7 +701,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                 )}
               </div>
             ) : (
-              <div className="text-center py-10 text-[#9C8A82] text-sm">Selecciona una pestaña</div>
+              <div className="text-center py-10 text-[#5F6B72] text-sm">Selecciona una pestaña</div>
             )}
           </div>
         )}
@@ -718,18 +718,18 @@ const debouncedSearch = useDebounce(searchQuery, 500);
       />
       <Modal isOpen={showArchived} onClose={() => setShowArchived(false)} title="Clientes Archivados" subtitle="Restaura clientes previamente archivados">
         {archivedClients.length === 0 ? (
-          <div className="text-center py-10 text-[#9C8A82] text-sm">No hay clientes archivados</div>
+          <div className="text-center py-10 text-[#5F6B72] text-sm">No hay clientes archivados</div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {archivedClients.map((client) => (
-              <div key={client.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E8E0D8]">
+              <div key={client.id} className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#E0DAD3]">
                 <div>
-                  <p className="text-sm font-medium text-[#5C3E35]">{client.full_name}</p>
-                  <p className="text-xs text-[#9C8A82]">{client.phone || client.email || "Sin contacto"}</p>
+                  <p className="text-sm font-medium text-[#39484F]">{client.full_name}</p>
+                  <p className="text-xs text-[#5F6B72]">{client.phone || client.email || "Sin contacto"}</p>
                 </div>
                 <button
                   onClick={() => handleRestore(client.id, client.full_name)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF6F0] text-[#5C3E35] rounded-lg text-xs font-medium hover:bg-[#B8837E]/10 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F1E9DF] text-[#39484F] rounded-lg text-xs font-medium hover:bg-[#BA4A3A]/10 transition-all"
                 >
                   <RotateCcw size={14} /> Restaurar
                 </button>
