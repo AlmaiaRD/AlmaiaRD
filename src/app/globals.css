@@ -40,10 +40,10 @@ body {
 }
 
 /* Fuente de marca (Italiana, vía --font-display definido por next/font en <html>).
-   Peso fijo 400: Italiana solo trae un peso; así evitamos la negrita falsa del navegador. */
+   Italiana solo trae un peso (400); el peso (p. ej. font-bold, sintetizado por el navegador)
+   se controla con las utilidades de Tailwind en cada elemento, no aquí. */
 .font-marca {
   font-family: var(--font-display);
-  font-weight: 400;
 }
 
 @layer utilities {

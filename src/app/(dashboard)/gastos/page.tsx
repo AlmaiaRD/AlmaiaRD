@@ -490,7 +490,7 @@ export default function GastosPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-marca text-[#5C3E35]">Gastos</h1>
+          <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Gastos</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Registro de gastos operativos</p>
         </div>
         <button onClick={() => { resetForm(); setShowCreate(true); }}

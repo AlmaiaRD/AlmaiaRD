@@ -112,7 +112,7 @@ export default function CreditosPage() {
         <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver a CRM
         </button>
-        <h1 className="text-2xl font-marca text-[#5C3E35]">Saldos a Favor</h1>
+        <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Saldos a Favor</h1>
         <p className="text-sm text-[#9C8A82] mt-1">Abonos y créditos disponibles de clientes</p>
       </div>
 

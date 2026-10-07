@@ -135,7 +135,7 @@ export default function DashboardPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <h1 className="text-2xl font-marca text-[#5C3E35]">
+        <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">
           Buenas tardes, {user.name?.split(" ")[0] || "Admin"}
         </h1>
         <p className="text-sm text-[#9C8A82] mt-1">Resumen de tu negocio</p>

@@ -26,7 +26,7 @@ export default function Header() {
             <Flower2 size={22} className="sm:w-7 sm:h-7 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-marca text-foreground leading-tight tracking-wide">ALMAIA</h1>
+            <h1 className="text-[21px] sm:text-[23px] font-marca font-bold text-foreground leading-tight tracking-wide">ALMAIA</h1>
             <p className="text-[10px] sm:text-[11px] text-text-muted tracking-widest uppercase leading-tight font-medium">
               Bienestar & Salud
             </p>

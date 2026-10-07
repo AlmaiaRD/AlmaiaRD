@@ -387,7 +387,7 @@ Responde en español en máximo 3 oraciones:`,
   return (
     <PageContainer>
       <div className="mb-6">
-        <h1 className="text-2xl font-marca text-[#5C3E35]">Configuración</h1>
+        <h1 className="text-[27px] font-marca font-bold text-[#5C3E35]">Configuración</h1>
         <p className="text-sm text-[#9C8A82] mt-1">Personaliza tu sistema</p>
       </div>
 
