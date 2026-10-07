@@ -516,8 +516,8 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
       // Fallback to text signature
       setTextColor(doc, DARK);
       doc.setFont("Inspiration", "normal");
-      doc.setFontSize(11);
-      doc.text("Yrahisa Mateo", PW / 2, y - 6, { align: "center" });
+      doc.setFontSize(13);
+      doc.text("Yrahisa Mateo", PW / 2, y - 12, { align: "center" });
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
@@ -659,8 +659,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
       setColor(gray);
       doc.setFont("Inspiration", "normal");
-      doc.setFontSize(11);
-      doc.text("Yrahisa Mateo", pageWidth / 2, y - 6, { align: "center" });
+      doc.setFontSize(13);
+      doc.text("Yrahisa Mateo", pageWidth / 2, y - 12, { align: "center" });
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
@@ -675,8 +675,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
     setColor(gray);
     doc.setFont("Inspiration", "normal");
-    doc.setFontSize(11);
-    doc.text("Yrahisa Mateo", pageWidth / 2, y - 6, { align: "center" });
+    doc.setFontSize(13);
+    doc.text("Yrahisa Mateo", pageWidth / 2, y - 12, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
@@ -1088,8 +1088,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       y += 16;
     }
   } else {
-    setTextColor(doc, DARK); doc.setFont("Inspiration", "normal"); doc.setFontSize(11);
-    doc.text("Yrahisa Mateo", PW - M, y, { align: "right" });
+    setTextColor(doc, DARK); doc.setFont("Inspiration", "normal"); doc.setFontSize(13);
+    doc.text("Yrahisa Mateo", PW - M, y - 6, { align: "right" });
     setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
     doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
     y += 16;
