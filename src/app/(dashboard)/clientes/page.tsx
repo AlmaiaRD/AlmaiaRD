@@ -272,7 +272,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-[27px] font-marca text-[#5C3E35]">Clientes y Deudas</h1>
+              <h1 className="text-[30px] font-marca text-[#5C3E35]">Clientes y Deudas</h1>
               <p className="text-sm text-[#9C8A82] mt-1">Directorio de clientes</p>
             </div>
             <div className="flex items-center gap-2">

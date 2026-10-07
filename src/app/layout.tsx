@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Montserrat, Italiana, Great_Vibes } from "next/font/google";
+import { Montserrat, Italiana } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import KillServiceWorker from "@/components/KillServiceWorker";
@@ -21,9 +22,9 @@ const italiana = Italiana({
   display: "swap",
 });
 
-const greatVibes = Great_Vibes({
+const inspiration = localFont({
+  src: "../lib/fonts/Inspiration-Regular.ttf",
   weight: "400",
-  subsets: ["latin"],
   variable: "--font-signature",
   display: "swap",
 });
@@ -61,7 +62,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${montserrat.variable} ${italiana.variable} ${greatVibes.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${italiana.variable} ${inspiration.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <KillServiceWorker />

@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "scripts/**",
+    // Base64 del TTF de Inspiration incrustado para jsPDF. Son 2.1K lineas de
+    // concatenación de strings generadas por script; el parser se desborda
+    // (Maximum call stack size exceeded). El tipo queda cubierto por typecheck.
+    "src/lib/fonts/inspiration.ts",
   ]),
   {
     plugins: {

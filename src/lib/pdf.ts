@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
 import { registerItaliana } from "./fonts/italiana";
+import { registerInspiration } from "./fonts/inspiration";
 export type PDFDoc = InstanceType<typeof jsPDF>;
 
 interface InvoiceItemData {
@@ -152,6 +153,7 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
 export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   registerItaliana(doc);
+  registerInspiration(doc);
   const PW = doc.internal.pageSize.getWidth();
   let y = M;
   const bizName = invoice.business_name || "Almaia RD";
@@ -513,9 +515,9 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     } catch {
       // Fallback to text signature
       setTextColor(doc, DARK);
-      doc.setFont("helvetica", "italic");
+      doc.setFont("Inspiration", "normal");
       doc.setFontSize(11);
-      doc.text(bizName, PW / 2, y - 6, { align: "center" });
+      doc.text("Yrahisa Mateo", PW / 2, y - 6, { align: "center" });
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
@@ -543,6 +545,7 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   registerItaliana(doc);
+  registerInspiration(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = margin;
@@ -653,7 +656,14 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       doc.setFontSize(8);
       doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
     } catch {
+      // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
       setColor(gray);
+      doc.setFont("Inspiration", "normal");
+      doc.setFontSize(11);
+      doc.text("Yrahisa Mateo", pageWidth / 2, y - 6, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
@@ -662,7 +672,14 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       }
     }
   } else {
+    // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
     setColor(gray);
+    doc.setFont("Inspiration", "normal");
+    doc.setFontSize(11);
+    doc.text("Yrahisa Mateo", pageWidth / 2, y - 6, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
@@ -868,6 +885,7 @@ interface QuoteData {
 export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   registerItaliana(doc);
+  registerInspiration(doc);
   await drawQuotePdfContent(doc, quote);
   return doc;
 }
@@ -1070,8 +1088,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       y += 16;
     }
   } else {
-    setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-    doc.text(bizName, PW - M, y, { align: "right" });
+    setTextColor(doc, DARK); doc.setFont("Inspiration", "normal"); doc.setFontSize(11);
+    doc.text("Yrahisa Mateo", PW - M, y, { align: "right" });
     setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
     doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
     y += 16;

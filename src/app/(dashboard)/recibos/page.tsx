@@ -215,7 +215,7 @@ export default function RecibosPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8837E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
           </div>
           <div>
-            <h2 style="font-size:24px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#5C3E35;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#B8837E;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
             <p style="font-size:12px;color:#9C8A82;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
           </div>
@@ -274,7 +274,7 @@ export default function RecibosPage() {
       <div style="border-top:1px solid #E8E0D8;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">
         <p style="font-size:11px;font-style:italic;color:#B8837E;margin:0;">\u00a1Gracias por tu pago!</p>
         <div style="text-align:center;">
-          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:14px;font-style:italic;color:#5C3E35;font-weight:300;margin:0;font-family:Georgia,serif;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</p>`}
+          ${settings?.signature_url ? `<img src="${sanitizeHtml(settings.signature_url)}" alt="Firma" style="height:120px;margin:0 auto;display:block;" />` : `<p style="font-size:14px;color:#5C3E35;margin:0;font-family:var(--font-signature),cursive;">Yrahisa Mateo</p>`}
           <p style="font-size:9px;color:#9C8A82;margin:2px 0 0;">FIRMA AUTORIZADA</p>
         </div>
       </div>
@@ -423,7 +423,7 @@ export default function RecibosPage() {
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[27px] font-marca text-[#5C3E35]">Recibos</h1>
+          <h1 className="text-[30px] font-marca text-[#5C3E35]">Recibos</h1>
           <p className="text-sm text-[#9C8A82] mt-1">Comprobantes de pago emitidos a clientes</p>
         </div>
         <button

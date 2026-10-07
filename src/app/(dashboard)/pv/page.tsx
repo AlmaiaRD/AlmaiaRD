@@ -56,7 +56,7 @@ export default function PvPage() {
         <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver al Dashboard
         </button>
-        <h1 className="text-[27px] font-marca text-[#5C3E35]">PV — Puntos de Volumen</h1>
+        <h1 className="text-[30px] font-marca text-[#5C3E35]">PV — Puntos de Volumen</h1>
         <p className="text-sm text-[#9C8A82] mt-1">Control de puntos de volumen y comisiones generadas</p>
       </div>
 

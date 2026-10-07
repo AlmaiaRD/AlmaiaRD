@@ -226,7 +226,7 @@ export default function RecommendationsPage() {
             <Brain size={24} className="text-white" />
           </div>
           <div>
-            <h1 className="text-[27px] font-marca text-[#5C3E35]">Recomendaciones IA</h1>
+            <h1 className="text-[30px] font-marca text-[#5C3E35]">Recomendaciones IA</h1>
             <p className="text-sm text-[#9C8A82]">Sugerencias inteligentes para tu negocio</p>
           </div>
         </div>

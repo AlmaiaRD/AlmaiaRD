@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="w-16 h-16 rounded-full bg-[#B8837E]/10 flex items-center justify-center mb-6">
         <Flower2 size={32} className="text-[#B8837E]" />
       </div>
-      <h1 className="text-4xl font-marca text-[#5C3E35] mb-2">404</h1>
+      <h1 className="text-[39px] font-marca text-[#5C3E35] mb-2">404</h1>
       <p className="text-lg text-[#9C8A82] mb-8 text-center max-w-sm">
         La página que buscas no existe o fue movida.
       </p>

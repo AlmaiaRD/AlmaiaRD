@@ -585,7 +585,7 @@ export default function TelegramPage() {
         <button onClick={() => router.push("/crm")} className="flex items-center gap-2 text-sm text-[#9C8A82] hover:text-[#5C3E35] mb-3 transition-colors">
           <ArrowLeft size={16} /> Volver a CRM
         </button>
-        <h1 className="text-[27px] font-marca text-[#5C3E35]">Telegram</h1>
+        <h1 className="text-[30px] font-marca text-[#5C3E35]">Telegram</h1>
         <p className="text-sm text-[#9C8A82] mt-1">Mensajes, bots y avisos por Telegram (gratuito)</p>
       </div>
 
