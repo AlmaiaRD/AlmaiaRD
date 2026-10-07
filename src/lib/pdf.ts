@@ -525,9 +525,9 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     }
   } else {
     setTextColor(doc, DARK);
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(11);
-    doc.text(bizName, PW / 2, y - 6, { align: "center" });
+    doc.setFont("Inspiration", "normal");
+    doc.setFontSize(13);
+    doc.text("Yrahisa Mateo", PW / 2, y - 12, { align: "center" });
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
@@ -1081,8 +1081,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
       doc.text("FIRMA AUTORIZADA", sigX + sigW / 2, sigY + sigH + 4, { align: "center" });
       y += sigH + 12;
     } catch {
-      setTextColor(doc, DARK); doc.setFont("helvetica", "italic"); doc.setFontSize(11);
-      doc.text(bizName, PW - M, y, { align: "right" });
+      setTextColor(doc, DARK); doc.setFont("Inspiration", "normal"); doc.setFontSize(13);
+      doc.text("Yrahisa Mateo", PW - M, y - 6, { align: "right" });
       setTextColor(doc, DARK); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
       doc.text("FIRMA AUTORIZADA", PW - M, y + 6, { align: "right" });
       y += 16;
