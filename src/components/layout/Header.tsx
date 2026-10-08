@@ -36,7 +36,7 @@ export default function Header() {
         <div className="hidden lg:flex items-center gap-3">
           <Link
             href="/facturacion?nueva=true"
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-dark transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 bg-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#D3CAC0] transition-all duration-200"
           >
             <Plus size={18} />
             Nueva Factura
@@ -50,7 +50,7 @@ export default function Header() {
           </Link>
           <Link
             href="/recibos?nuevo=true"
-            className="flex items-center gap-2 bg-success text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#6DB08A] transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 bg-[#BEA995] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#AF9983] transition-all duration-200"
           >
             <Plus size={18} />
             Registrar Pago
@@ -64,7 +64,7 @@ export default function Header() {
           </Link>
           <Link
             href="/clientes?nuevo=true"
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-dark transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 bg-[#E0DAD3] text-[#39484F] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#D3CAC0] transition-all duration-200"
           >
             <UserPlus size={18} />
             Añadir Cliente
@@ -89,7 +89,7 @@ export default function Header() {
         <div className="lg:hidden relative">
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="flex items-center gap-1 bg-primary text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-primary-dark transition-all shadow-sm"
+            className="flex items-center gap-1 bg-[#E0DAD3] text-[#39484F] px-3 py-2 rounded-xl text-sm font-medium hover:bg-[#D3CAC0] transition-all"
           >
             <Plus size={18} />
             <ChevronDown size={14} className={`transition-transform ${showMobileMenu ? "rotate-180" : ""}`} />
