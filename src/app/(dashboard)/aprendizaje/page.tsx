@@ -171,13 +171,13 @@ export default function AprendizajePage() {
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Título *</label>
             <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Ej: No olvidar verificar ITBIS en facturas"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Nota / Lección</label>
             <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6}
               placeholder="Describe lo que aprendiste, el error que cometiste, o la idea que quieres recordar..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiquetas (separadas por coma)</label>
@@ -185,7 +185,7 @@ export default function AprendizajePage() {
               <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
               <input type="text" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="facturas, ITBIS, clientes"
-                className="w-full h-11 pl-9 pr-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                className="w-full h-11 pl-9 pr-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">

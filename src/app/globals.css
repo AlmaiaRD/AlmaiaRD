@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Identidad ALMAIA 2026 — fondo arena al 60% (#D8CBBF = arena #BEA995 60% sobre blanco)
-     Principales: pizarra #39484F (protagonista: encabezados, superficies, texto) · terracota #BA4A3A (acciones)
+  /* Identidad ALMAIA 2026 — fondo casi blanco
+     Principales: terracota #BA4A3A · pizarra #39484F (protagonista: encabezados, superficies, texto)
      Complementarios: perla #E0DAD3 (bordes) · arena #BEA995 (superficies marcadas)
-     Tonos derivados (soft): #D8CBBF (fondo), #F1E9DF (hover), #EBCFC3 (tint terracota) */
-  --color-background: #D8CBBF;
+     Tonos derivados (soft): #F5EFE9 (fondo), #F1E9DF (hover), #EBCFC3 (tint terracota) */
+  --color-background: #F5EFE9;
   --color-foreground: #39484F;
   --color-primary: #BA4A3A;
   --color-primary-light: #EBCFC3;

@@ -15,7 +15,7 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#D8CBBF] flex flex-col">
+    <div className="min-h-screen bg-[#F5EFE9] flex flex-col">
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -88,7 +88,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="px-6 py-4 border-t border-[#2C363D] bg-[#39484F]">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#D8CBBF]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#F5EFE9]">
           <span>&copy; {new Date().getFullYear()} ALMAIA RD — Distribuidora Autorizada Amway</span>
           <span>Versión 1.0.0</span>
         </div>

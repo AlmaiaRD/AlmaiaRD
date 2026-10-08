@@ -411,13 +411,13 @@ Responde en español en máximo 3 oraciones:`,
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre del Negocio</label>
                 <input type="text" value={form.business_name}
                   onChange={(e) => setForm({ ...form, business_name: e.target.value })}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Margen Predeterminado</label>
                 <select value={form.default_margin}
                   onChange={(e) => setForm({ ...form, default_margin: Number(e.target.value) })}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
                   <option value={30}>30%</option>
                   <option value={35}>35%</option>
                 </select>
@@ -426,7 +426,7 @@ Responde en español en máximo 3 oraciones:`,
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Moneda</label>
                 <select value={form.currency}
                   onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
                   <option value="DOP">DOP (RD$)</option>
                   <option value="USD">USD ($)</option>
                 </select>
@@ -436,21 +436,21 @@ Responde en español en máximo 3 oraciones:`,
                 <input type="email" value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="info@almaia-rd.com"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 1</label>
                 <input type="text" value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="809-000-0000"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 2</label>
                 <input type="text" value={form.phone_2}
                   onChange={(e) => setForm({ ...form, phone_2: e.target.value })}
                   placeholder="809-000-0000"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div className="col-span-2">
                 <label className="block text-xs font-medium text-[#4C5760] mb-2">Teléfono predeterminado (aparece en facturas, recibos, cotizaciones y demás documentos)</label>
@@ -474,7 +474,7 @@ Responde en español en máximo 3 oraciones:`,
                 <input type="text" value={form.sender_name}
                   onChange={(e) => setForm({ ...form, sender_name: e.target.value })}
                   placeholder="Yrahisa Mateo"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
             </div>
 
@@ -487,14 +487,14 @@ Responde en español en máximo 3 oraciones:`,
                   <textarea value={form.email_template} rows={8}
                     onChange={(e) => setForm({ ...form, email_template: e.target.value })}
                     placeholder="Hola, {{clientName}}..."
-                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla WhatsApp</label>
                   <textarea value={form.whatsapp_template} rows={5}
                     onChange={(e) => setForm({ ...form, whatsapp_template: e.target.value })}
                     placeholder="Hola {{clientName}}..."
-                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
               </div>
             </div>
@@ -508,28 +508,28 @@ Responde en español en máximo 3 oraciones:`,
                   <input type="text" value={form.smtp_host}
                     onChange={(e) => setForm({ ...form, smtp_host: e.target.value })}
                     placeholder="smtp.gmail.com"
-                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Puerto</label>
                   <input type="number" value={form.smtp_port}
                     onChange={(e) => setForm({ ...form, smtp_port: Number(e.target.value) })}
                     placeholder="587"
-                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Usuario (correo)</label>
                   <input type="text" value={form.smtp_user}
                     onChange={(e) => setForm({ ...form, smtp_user: e.target.value })}
                     placeholder="tucorreo@gmail.com"
-                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Contraseña / App Password</label>
                   <input type="password" value={form.smtp_pass}
                     onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                   {settings?.has_smtp_password && !form.smtp_pass && (
                     <p className="text-[11px] text-[#86C7A3] mt-1">Contraseña guardada. Déjala vacía para conservarla.</p>
                   )}
@@ -550,7 +550,7 @@ Responde en español en máximo 3 oraciones:`,
                   {form.logo_url && (
                     <img src={form.logo_url} alt="Logo" className="w-14 h-14 rounded-xl object-cover border border-[#E0DAD3]" />
                   )}
-                  <label className="flex-1 flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#D8CBBF] text-[#4C5760] text-sm cursor-pointer hover:bg-[#F1E9DF] hover:border-[#BA4A3A]/30 transition-all">
+                  <label className="flex-1 flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-[#4C5760] text-sm cursor-pointer hover:bg-[#F1E9DF] hover:border-[#BA4A3A]/30 transition-all">
                     <Upload size={16} />
                     {form.logo_url ? "Cambiar logo" : "Subir logo"}
                     <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -569,7 +569,7 @@ Responde en español en máximo 3 oraciones:`,
                   {form.signature_url && (
                     <img src={form.signature_url} alt="Firma" className="w-14 h-14 rounded-xl object-cover border border-[#E0DAD3]" />
                   )}
-                  <label className="flex-1 flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#D8CBBF] text-[#4C5760] text-sm cursor-pointer hover:bg-[#F1E9DF] hover:border-[#BA4A3A]/30 transition-all">
+                  <label className="flex-1 flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-[#4C5760] text-sm cursor-pointer hover:bg-[#F1E9DF] hover:border-[#BA4A3A]/30 transition-all">
                     <Upload size={16} />
                     {form.signature_url ? "Cambiar firma" : "Subir firma"}
                     <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -599,25 +599,25 @@ Responde en español en máximo 3 oraciones:`,
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Facturas</label>
                   <input type="text" value={form.invoice_prefix}
                     onChange={(e) => setForm({ ...form, invoice_prefix: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Recibos</label>
                   <input type="text" value={form.receipt_prefix}
                     onChange={(e) => setForm({ ...form, receipt_prefix: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Compras</label>
                   <input type="text" value={form.purchase_prefix}
                     onChange={(e) => setForm({ ...form, purchase_prefix: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#4C5760] mb-1">Cotizaciones</label>
                   <input type="text" value={form.quote_prefix || "COT-"}
                     onChange={(e) => setForm({ ...form, quote_prefix: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                    className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
               </div>
             </div>
@@ -658,7 +658,7 @@ Compras realizadas: {{numPurchases}}
 Productos favoritos: {{topProducts}}
 
 Destaca el valor del cliente, su comportamiento de pago, y sugiere oportunidades de venta."
-                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 font-mono text-[11px]"
+                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 font-mono text-[11px]"
               />
             </div>
 
@@ -679,7 +679,7 @@ Responde en formato:
 LECCIÓN: ...
 ERROR: ...
 ACCIÓN: ..."
-                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 font-mono text-[11px]"
+                className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 font-mono text-[11px]"
               />
             </div>
 
@@ -715,42 +715,42 @@ ACCIÓN: ..."
                 <input type="text" value={newBank.bank_name}
                   onChange={(e) => setNewBank({ ...newBank, bank_name: e.target.value })}
                   placeholder="Ej: Banco Popular Dominicano"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Tipo de Cuenta</label>
                 <input type="text" value={newBank.account_type}
                   onChange={(e) => setNewBank({ ...newBank, account_type: e.target.value })}
                   placeholder="Ej: Cuenta Corriente DOP"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Número de Cuenta</label>
                 <input type="text" value={newBank.account_number}
                   onChange={(e) => setNewBank({ ...newBank, account_number: e.target.value })}
                   placeholder="Ej: 772922126"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Titular</label>
                 <input type="text" value={newBank.holder_name}
                   onChange={(e) => setNewBank({ ...newBank, holder_name: e.target.value })}
                   placeholder="Ej: Yrahisa Mateo"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Cédula / RNC</label>
                 <input type="text" value={newBank.id_number}
                   onChange={(e) => setNewBank({ ...newBank, id_number: e.target.value })}
                   placeholder="Ej: 001-1234567-8"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Correo Electrónico</label>
                 <input type="email" value={newBank.email}
                   onChange={(e) => setNewBank({ ...newBank, email: e.target.value })}
                   placeholder="Ej: correo@ejemplo.com"
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
             </div>
             <div className="flex gap-3">

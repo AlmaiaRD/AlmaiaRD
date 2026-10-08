@@ -3,7 +3,7 @@ import { Flower2, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#D8CBBF] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F5EFE9] flex flex-col items-center justify-center px-4">
       <div className="w-16 h-16 rounded-full bg-[#39484F]/10 flex items-center justify-center mb-6">
         <Flower2 size={32} className="text-[#39484F]" />
       </div>

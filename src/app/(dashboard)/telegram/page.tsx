@@ -575,7 +575,7 @@ export default function TelegramPage() {
   }
 
   const inputCls =
-    "w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30";
+    "w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30";
 
   const templateCategories = ["General", ...Array.from(new Set(localTemplates.map((t) => t.category)))];
 
@@ -721,7 +721,7 @@ export default function TelegramPage() {
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
               />
               {messageText && (
                 <p className="text-xs text-[#4C5760] mt-1">{messageText.length} caracteres</p>
@@ -747,7 +747,7 @@ export default function TelegramPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#D8CBBF] text-sm text-[#4C5760] cursor-pointer hover:bg-[#F1E9DF] transition-all">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#4C5760] cursor-pointer hover:bg-[#F1E9DF] transition-all">
                   <Paperclip size={15} />
                   {mediaFile ? (
                     <span className="text-[#39484F] truncate">{mediaFile.name}</span>
@@ -774,7 +774,7 @@ export default function TelegramPage() {
                   value={mediaUrl}
                   onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
                   placeholder="o pega una URL pública..."
-                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {(mediaFile || mediaUrl) && (
@@ -1205,7 +1205,7 @@ export default function TelegramPage() {
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
               rows={5}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div>
@@ -1259,7 +1259,7 @@ export default function TelegramPage() {
                     value={previewVars[v] || ""}
                     onChange={(e) => setPreviewVars({ ...previewVars, [v]: e.target.value })}
                     placeholder={v}
-                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
                 ))}
               </div>
@@ -1303,7 +1303,7 @@ export default function TelegramPage() {
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Icono</label>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
             >
               {(() => {
                 const iconData = getIconComponent(actionForm.iconName);
@@ -1344,7 +1344,7 @@ export default function TelegramPage() {
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">

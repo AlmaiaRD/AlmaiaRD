@@ -227,7 +227,7 @@ export default function RecibosPage() {
         </div>
       </div>
       <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#6DB08A;margin:0 0 12px;">INFORMACI\u00d3N DEL PAGO</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
           <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Cliente:</span> ${sanitizeHtml(data.clients?.full_name || data.invoices?.clients?.full_name) || "\u2014"}</p>
@@ -680,7 +680,7 @@ export default function RecibosPage() {
               <input
                 type="number" step="0.01" value={editForm.amount}
                 onChange={(e) => setEditForm({ ...editForm, amount: Number(e.target.value) })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
@@ -688,7 +688,7 @@ export default function RecibosPage() {
               <select
                 value={editForm.payment_method}
                 onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as "CASH" | "TRANSFER" | "CARD", bank_account_id: "" })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -702,7 +702,7 @@ export default function RecibosPage() {
               <select
                 value={editForm.bank_account_id}
                 onChange={(e) => setEditForm({ ...editForm, bank_account_id: e.target.value })}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -717,7 +717,7 @@ export default function RecibosPage() {
               value={editForm.concept} onChange={(e) => setEditForm({ ...editForm, concept: e.target.value })}
               rows={3}
               placeholder="Notas del recibo..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -737,7 +737,7 @@ export default function RecibosPage() {
             <select
               value={selectedInvoice}
               onChange={(e) => { setSelectedInvoice(e.target.value); setAmount(0); }}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             >
               <option value="">Seleccionar factura...</option>
               {pendingInvoices.map((inv: InvoiceRef) => {
@@ -766,7 +766,7 @@ export default function RecibosPage() {
             <input
               type="date" value={receiptDate}
               onChange={(e) => setReceiptDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
             />
           </div>
 
@@ -776,7 +776,7 @@ export default function RecibosPage() {
               <input
                 type="number" step="0.01" value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
@@ -784,7 +784,7 @@ export default function RecibosPage() {
               <select
                 value={paymentMethod}
                 onChange={(e) => { setPaymentMethod(e.target.value as "CASH" | "TRANSFER" | "CARD"); setBankAccountId(""); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -799,7 +799,7 @@ export default function RecibosPage() {
               <select
                 value={bankAccountId}
                 onChange={(e) => setBankAccountId(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               >
                 <option value="">Seleccionar banco...</option>
                 {bankAccounts.map((b) => (
@@ -814,7 +814,7 @@ export default function RecibosPage() {
             <textarea
               value={notes} onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"
             />
           </div>
 

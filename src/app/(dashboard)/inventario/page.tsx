@@ -87,7 +87,7 @@ function getStockStatus(stock: number, minimum: number): { label: string; varian
 
 export default function InventarioPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#D8CBBF]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
       <InventarioContent />
     </Suspense>
   );

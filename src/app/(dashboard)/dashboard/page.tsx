@@ -171,7 +171,7 @@ export default function DashboardPage() {
               <span className="text-xs text-[#4C5760]">{goalMonth}</span>
             </div>
 
-            <div className="bg-[#D8CBBF] border border-dashed border-[#E0DAD3] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div className="bg-[#F5EFE9] border border-dashed border-[#E0DAD3] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <label className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Meta</label>
               <div className="flex items-center gap-2">
                 <input
@@ -229,17 +229,17 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <div className="flex-1 bg-[#D8CBBF] rounded-xl p-3 text-center border border-[#E0DAD3]">
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
                 <div className="text-[10px] font-semibold text-[#4C5760] uppercase tracking-wider">Cobrado</div>
                 <div className="text-base font-extrabold text-[#86C7A3] mt-1">{formatCurrency(cobrado)}</div>
                 <div className="text-xs text-[#4C5760] mt-0.5">{monthlyGoal > 0 ? cobradoPct.toFixed(1) + "%" : "—"}</div>
               </div>
-              <div className="flex-1 bg-[#D8CBBF] rounded-xl p-3 text-center border border-[#E0DAD3]">
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
                 <div className="text-[10px] font-semibold text-[#4C5760] uppercase tracking-wider">Vendido</div>
                 <div className="text-base font-extrabold text-[#BA4A3A] mt-1">{formatCurrency(vendido)}</div>
                 <div className="text-xs text-[#4C5760] mt-0.5">{monthlyGoal > 0 ? vendidoPct.toFixed(1) + "%" : "—"}</div>
               </div>
-              <div className="flex-1 bg-[#D8CBBF] rounded-xl p-3 text-center border border-[#E0DAD3]">
+              <div className="flex-1 bg-[#F5EFE9] rounded-xl p-3 text-center border border-[#E0DAD3]">
                 <div className="text-[10px] font-semibold text-[#4C5760] uppercase tracking-wider">Restante</div>
                 <div className="text-base font-extrabold text-[#39484F] mt-1">{formatCurrency(restanteKpi)}</div>
                 <div className="text-xs text-[#4C5760] mt-0.5">{monthlyGoal > 0 ? (Math.max(100 - vendidoPct, 0)).toFixed(1) + "%" : "—"}</div>

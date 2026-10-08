@@ -679,7 +679,7 @@ export default function WhatsAppPage() {
                   const config = configs.find((c) => c.id === e.target.value);
                   setSelectedConfig(config || null);
                 }}
-                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               >
                 <option value="">Seleccionar cuenta...</option>
                 {configs.map((config) => (
@@ -700,7 +700,7 @@ export default function WhatsAppPage() {
                   value={searchClient}
                   onChange={(e) => setSearchClient(e.target.value)}
                   placeholder="Nombre o teléfono..."
-                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {searchClient && filteredClients.length > 0 && (
@@ -728,7 +728,7 @@ export default function WhatsAppPage() {
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
                 placeholder="Ej: 8091234567"
-                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
               />
             </div>
 
@@ -749,7 +749,7 @@ export default function WhatsAppPage() {
                       setSelectedLocalTemplate("");
                     }
                   }}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 >
                   <option value="">Escribir mensaje manualmente...</option>
                   {localTemplates.map((tpl) => (
@@ -767,7 +767,7 @@ export default function WhatsAppPage() {
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
                 rows={5}
-                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
               />
               {messageText && (
                 <p className="text-xs text-[#4C5760] mt-1">{messageText.length} caracteres</p>
@@ -793,7 +793,7 @@ export default function WhatsAppPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#D8CBBF] text-sm text-[#4C5760] cursor-pointer hover:bg-[#F1E9DF] transition-all">
+                <label className="flex-1 flex items-center gap-2 h-10 px-4 rounded-xl border border-dashed border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#4C5760] cursor-pointer hover:bg-[#F1E9DF] transition-all">
                   <Paperclip size={15} />
                   {mediaFile ? (
                     <span className="text-[#39484F] truncate">{mediaFile.name}</span>
@@ -820,7 +820,7 @@ export default function WhatsAppPage() {
                   value={mediaUrl}
                   onChange={(e) => { setMediaUrl(e.target.value); if (mediaFile) setMediaFile(null); }}
                   placeholder="o pega una URL pública..."
-                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                  className="flex-1 h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 />
               </div>
               {(mediaFile || mediaUrl) && (
@@ -1199,7 +1199,7 @@ export default function WhatsAppPage() {
               value={templateForm.name}
               onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
               placeholder="Ej: Bienvenida Cliente"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
@@ -1207,7 +1207,7 @@ export default function WhatsAppPage() {
             <select
               value={templateForm.category}
               onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             >
               {templateCategories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -1221,7 +1221,7 @@ export default function WhatsAppPage() {
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
               rows={5}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div>
@@ -1231,7 +1231,7 @@ export default function WhatsAppPage() {
               value={templateForm.variables}
               onChange={(e) => setTemplateForm({ ...templateForm, variables: e.target.value })}
               placeholder="Ej: nombre, monto, fecha"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
             <p className="text-[10px] text-[#4C5760] mt-1">Usa {"{nombre}"} en el mensaje para insertar la variable</p>
           </div>
@@ -1275,7 +1275,7 @@ export default function WhatsAppPage() {
                     value={previewVars[v] || ""}
                     onChange={(e) => setPreviewVars({ ...previewVars, [v]: e.target.value })}
                     placeholder={v}
-                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                    className="w-full h-10 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                   />
                 ))}
               </div>
@@ -1302,7 +1302,7 @@ export default function WhatsAppPage() {
               value={actionForm.name}
               onChange={(e) => setActionForm({ ...actionForm, name: e.target.value })}
               placeholder="Ej: Enviar Catálogo"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
@@ -1312,14 +1312,14 @@ export default function WhatsAppPage() {
               value={actionForm.description}
               onChange={(e) => setActionForm({ ...actionForm, description: e.target.value })}
               placeholder="Breve descripción"
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Icono</label>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
-              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
+              className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
             >
               {(() => {
                 const iconData = getIconComponent(actionForm.iconName);
@@ -1360,7 +1360,7 @@ export default function WhatsAppPage() {
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -1379,23 +1379,23 @@ export default function WhatsAppPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiqueta</label>
-            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Phone Number ID</label>
-            <input type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Access Token</label>
-            <input type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Verify Token</label>
-            <input type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#4C5760] mb-1">Business Account ID</label>
-            <input type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>

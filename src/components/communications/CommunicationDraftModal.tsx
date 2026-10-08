@@ -156,7 +156,7 @@ export default function CommunicationDraftModal({
             <div>
               <label className="block text-xs font-medium text-[#4C5760] mb-1">Para</label>
               <input type="text" readOnly value={client.email || ""}
-                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm" />
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             <div>
               <label className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
@@ -171,7 +171,7 @@ export default function CommunicationDraftModal({
             <div>
               <label className="block text-xs font-medium text-[#4C5760] mb-1">Enviar a</label>
               <input type="text" readOnly value={client.phone || ""}
-                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm" />
+                className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             {whatsappConfigs.length > 0 && (
               <div>
@@ -179,7 +179,7 @@ export default function CommunicationDraftModal({
                 <select
                   value={selectedConfigId}
                   onChange={(e) => setSelectedConfigId(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
+                  className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
                 >
                   {whatsappConfigs.map((c) => (
                     <option key={c.id} value={c.id}>{c.label}</option>

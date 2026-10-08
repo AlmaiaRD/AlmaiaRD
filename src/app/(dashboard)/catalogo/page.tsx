@@ -848,7 +848,7 @@ export default function CatalogoPage() {
             <select value={filterSubbrand} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("subbrand"); setShowNewSubbrand(true); return; }
               setFilterSubbrand(e.target.value);
-            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Todas</option>
               {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               <option value="__new__">+ Otra...</option>
@@ -864,7 +864,7 @@ export default function CatalogoPage() {
             <select value={filterCategory} onChange={(e) => {
               if (e.target.value === "__new__") { setNewForFilter("category"); setShowNewCategory(true); return; }
               setFilterCategory(e.target.value);
-            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+            }} className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Todas</option>
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               <option value="__new__">+ Otra...</option>
@@ -944,12 +944,12 @@ export default function CatalogoPage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mt-4">
-                    <div className="p-3 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                       <label className="block text-[10px] font-medium text-[#4C5760] mb-0.5">Costo sugerido</label>
                       <p className="text-sm font-bold text-[#39484F]">{formatCurrency(product.cost)}</p>
                       <p className="text-[10px] text-[#4C5760] mt-0.5">Suma de componentes</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                       <label className="block text-[10px] font-medium text-[#4C5760] mb-0.5">PV total</label>
                       <p className="text-sm font-bold text-[#39484F]">{product.pv || 0}</p>
                       <p className="text-[10px] text-[#4C5760] mt-0.5">Suma de componentes</p>
@@ -964,7 +964,7 @@ export default function CatalogoPage() {
                       <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(invoiceLineTotalForUnit(product.cost * 1.35, product.cost || 0, hasItbisComponents))}</p>
                       <p className="text-[10px] text-[#4C5760] mt-0.5">{formatCurrency(product.cost * 1.35)} base · {hasItbisComponents ? "c/ITBIS" : "sin ITBIS"}</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+                    <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                       <label className="block text-[10px] font-medium text-[#4C5760] mb-0.5">Ganancia estimada</label>
                       <p className="text-sm font-bold text-[#86C7A3]">{formatCurrency((product.price_30 || 0) - product.cost)}</p>
                       <p className="text-[10px] text-[#4C5760] mt-0.5">Precio especial − costo</p>
@@ -1156,7 +1156,7 @@ export default function CatalogoPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Código *</label>
-              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="A12345" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
@@ -1164,7 +1164,7 @@ export default function CatalogoPage() {
                 const newName = e.target.value;
                 const isNutri = subbrands.find((s) => s.id === form.subbrand_id)?.name === "Nutrilite";
                 setForm({ ...form, name: newName, apply_itbis: isNutri ? isNutriliteItbisException(newName) : true });
-              }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              }} placeholder="Nombre del producto" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -1175,7 +1175,7 @@ export default function CatalogoPage() {
                 const sub = subbrands.find((s) => s.id === e.target.value);
                 const isNutri = sub?.name === "Nutrilite";
                 setForm({ ...form, subbrand_id: e.target.value, apply_itbis: !(isNutri && !isNutriliteItbisException(form.name)) });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value="">Seleccionar...</option>
                 {subbrands.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 <option value="__new__">+ Crear nueva...</option>
@@ -1186,7 +1186,7 @@ export default function CatalogoPage() {
               <select value={form.category_id} onChange={(e) => {
                 if (e.target.value === "__new__") { setNewForFilter(null); setShowNewCategory(true); return; }
                 setForm({ ...form, category_id: e.target.value });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value="">Seleccionar...</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 <option value="__new__">+ Crear nueva...</option>
@@ -1199,20 +1199,20 @@ export default function CatalogoPage() {
               <input type="number" step="0.01" value={form.cost} onChange={(e) => {
                 const c = Number(e.target.value);
                 setForm({ ...form, cost: c, price_30: Math.round(c * MARKUP_30 * 100) / 100, price_35: Math.round(c * MARKUP_35 * 100) / 100 });
-              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              }} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">PV</label>
-              <input type="number" step="0.01" value={form.pv} onChange={(e) => setForm({ ...form, pv: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="number" step="0.01" value={form.pv} onChange={(e) => setForm({ ...form, pv: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio 30%</label>
-              <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="number" step="0.01" value={form.price_30} onChange={(e) => setForm({ ...form, price_30: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
               <p className="text-[10px] text-[#4C5760] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_30)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_30) || Number(form.cost) * MARKUP_30, Number(form.cost), true))}</>}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio 35%</label>
-              <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="number" step="0.01" value={form.price_35} onChange={(e) => setForm({ ...form, price_35: Number(e.target.value) })} className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
               <p className="text-[10px] text-[#4C5760] mt-1">Base: {formatCurrency(Number(form.cost) * MARKUP_35)}{form.apply_itbis !== false && <> · Total c/ITBIS: {formatCurrency(invoiceLineTotalForUnit(Number(form.price_35) || Number(form.cost) * MARKUP_35, Number(form.cost), true))}</>}</p>
             </div>
           </div>
@@ -1255,7 +1255,7 @@ export default function CatalogoPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descripción</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => { setShowModal(false); resetForm(); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
@@ -1278,15 +1278,15 @@ export default function CatalogoPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Código *</label>
-              <input type="text" value={bundleForm.code} onChange={(e) => setBundleForm({ ...bundleForm, code: e.target.value })} placeholder="BUN-001" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="text" value={bundleForm.code} onChange={(e) => setBundleForm({ ...bundleForm, code: e.target.value })} placeholder="BUN-001" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre del bundle *</label>
-              <input type="text" value={bundleForm.name} onChange={(e) => setBundleForm({ ...bundleForm, name: e.target.value })} placeholder="Ej: Kit de Bienestar" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+              <input type="text" value={bundleForm.name} onChange={(e) => setBundleForm({ ...bundleForm, name: e.target.value })} placeholder="Ej: Kit de Bienestar" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Precio especial (RD$) *</label>
-              <input type="number" step="0.01" min="0" value={bundleForm.price} onChange={(e) => setBundleForm({ ...bundleForm, price: Number(e.target.value) })} placeholder="0.00" className="w-full h-12 px-4 rounded-xl border border-[#BA4A3A] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all font-semibold" />
+              <input type="number" step="0.01" min="0" value={bundleForm.price} onChange={(e) => setBundleForm({ ...bundleForm, price: Number(e.target.value) })} placeholder="0.00" className="w-full h-12 px-4 rounded-xl border border-[#BA4A3A] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all font-semibold" />
               <p className="text-[10px] text-[#4C5760] mt-1">Se aplica a ambos márgenes (30% y 35%)</p>
               {bundleComponents.length > 0 && (
                 <>
@@ -1424,7 +1424,7 @@ export default function CatalogoPage() {
                           <Trash2 size={16} />
                         </button>
                       </div>
-                      <div className="flex items-center justify-between px-3 py-2 bg-[#D8CBBF] border-t border-[#E0DAD3]">
+                      <div className="flex items-center justify-between px-3 py-2 bg-[#F5EFE9] border-t border-[#E0DAD3]">
                         <span className="text-xs text-[#4C5760]">Cantidad</span>
                         <div className="flex items-center gap-2">
                           <button
@@ -1492,7 +1492,7 @@ export default function CatalogoPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre de la submarca</label>
-            <input type="text" value={newSubbrandName} onChange={(e) => setNewSubbrandName(e.target.value)} placeholder="Ej: Nutrilite" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+            <input type="text" value={newSubbrandName} onChange={(e) => setNewSubbrandName(e.target.value)} placeholder="Ej: Nutrilite" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
           <div className="flex gap-3">
             <button onClick={() => { setShowNewSubbrand(false); setNewSubbrandName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
@@ -1505,7 +1505,7 @@ export default function CatalogoPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre de la categoría</label>
-            <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ej: Vitaminas" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+            <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ej: Vitaminas" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
           </div>
           <div className="flex gap-3">
             <button onClick={() => { setShowNewCategory(false); setNewCategoryName(""); setNewForFilter(null); }} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
@@ -1613,18 +1613,18 @@ export default function CatalogoPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+              <div className="p-4 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">Código</label>
                 <p className="text-sm font-semibold text-[#39484F]">{viewingProduct.code || "N/A"}</p>
               </div>
-              <div className="p-4 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+              <div className="p-4 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                 <label className="block text-xs font-medium text-[#4C5760] mb-1">PV</label>
                 <p className="text-sm font-semibold text-[#39484F]">{viewingProduct.pv || "N/A"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+              <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                 <label className="block text-[10px] font-medium text-[#4C5760] mb-0.5">Costo Amway</label>
                 <p className="text-sm font-bold text-[#39484F]">{formatCurrency(viewingProduct.cost)}</p>
                 {viewingProduct.apply_itbis !== false && <p className="text-[10px] text-[#4C5760] mt-0.5">+ ITBIS: {formatCurrency(viewingProduct.cost * (1 + ITBIS_RATE))}</p>}
@@ -1639,7 +1639,7 @@ export default function CatalogoPage() {
                 <p className="text-sm font-bold text-[#BA4A3A]">{formatCurrency(viewingProduct.price_35 || 0)}</p>
                 <p className="text-[10px] text-[#86C7A3] mt-0.5 font-medium">Ganancia: {formatCurrency((viewingProduct.price_35 || 0) - viewingProduct.cost)}</p>
               </div>
-              <div className="p-3 rounded-xl bg-[#D8CBBF] border border-[#E0DAD3]">
+              <div className="p-3 rounded-xl bg-[#F5EFE9] border border-[#E0DAD3]">
                 <label className="block text-[10px] font-medium text-[#4C5760] mb-0.5">Total c/ITBIS</label>
                 {viewingProduct.apply_itbis !== false ? (
                   <>
@@ -1763,11 +1763,11 @@ export default function CatalogoPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descripción</label>
-              <textarea value={descForm.description} onChange={(e) => setDescForm({ ...descForm, description: e.target.value })} rows={8} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Descripción completa del producto..." />
+              <textarea value={descForm.description} onChange={(e) => setDescForm({ ...descForm, description: e.target.value })} rows={8} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Descripción completa del producto..." />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Beneficios</label>
-              <textarea value={descForm.benefits} onChange={(e) => setDescForm({ ...descForm, benefits: e.target.value })} rows={4} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Beneficios del producto..." />
+              <textarea value={descForm.benefits} onChange={(e) => setDescForm({ ...descForm, benefits: e.target.value })} rows={4} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-y" placeholder="Beneficios del producto..." />
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setEditingDescription(null)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>
@@ -1811,13 +1811,13 @@ export default function CatalogoPage() {
             <div>
               <label className="block text-xs font-medium text-[#4C5760] mb-1">Número de catálogo</label>
               <input type="text" value={catalogPdfNumber} onChange={(e) => setCatalogPdfNumber(e.target.value)}
-                placeholder="001" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                placeholder="001" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               <p className="text-[11px] text-[#4C5760] mt-1">El archivo se llamará CAT-XXXX-MMAA.pdf (MMAA = mes y año actuales)</p>
             </div>
             <div>
               <label className="block text-xs font-medium text-[#4C5760] mb-1">Buscar producto</label>
               <input type="text" value={catalogPdfSearch} onChange={(e) => setCatalogPdfSearch(e.target.value)}
-                placeholder="Buscar por nombre o código..." className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+                placeholder="Buscar por nombre o código..." className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
 

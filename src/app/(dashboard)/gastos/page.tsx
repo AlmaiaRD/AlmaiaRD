@@ -773,7 +773,7 @@ export default function GastosPage() {
                 ))}
               </tbody>
             </table>
-            <div style={{ marginTop: "20px", padding: "16px", background: "#D8CBBF", borderRadius: "8px", textAlign: "center" }}>
+            <div style={{ marginTop: "20px", padding: "16px", background: "#F5EFE9", borderRadius: "8px", textAlign: "center" }}>
               <p style={{ fontSize: "20px", fontWeight: "bold", color: "#D4A0A0", margin: 0 }}>{formatCurrency(Number(jpgData.amount))}</p>
               <p style={{ fontSize: "10px", color: "#4C5760", margin: "4px 0 0" }}>{numberToWords(Number(jpgData.amount))}</p>
             </div>

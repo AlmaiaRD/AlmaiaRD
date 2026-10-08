@@ -105,7 +105,7 @@ export default function PurchaseModal({
             <input
               type="date" value={form.purchase_date}
               onChange={(e) => setForm({ ...form, purchase_date: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div className="relative">
@@ -116,7 +116,7 @@ export default function PurchaseModal({
                 onChange={(e) => { setForm({ ...form, supplier_name: e.target.value }); setSupplierSearch(e.target.value); setShowSupplierDropdown(true); }}
                 onFocus={() => setShowSupplierDropdown(true)}
                 placeholder="Buscar o escribir proveedor..."
-                className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
               <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4C5760] pointer-events-none" />
             </div>
@@ -151,7 +151,7 @@ export default function PurchaseModal({
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             placeholder="Notas adicionales..."
             rows={2}
-            className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
           />
         </div>
 
@@ -162,7 +162,7 @@ export default function PurchaseModal({
               type="number" step="0.01" min={0} value={form.discount_amount}
               onChange={(e) => setForm({ ...form, discount_amount: Number(e.target.value) })}
               placeholder="0"
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div>
@@ -170,7 +170,7 @@ export default function PurchaseModal({
             <select
               value={form.payment_method}
               onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option>Efectivo</option>
               <option>Transferencia</option>
@@ -187,7 +187,7 @@ export default function PurchaseModal({
             <select
               value={form.bank_account_id}
               onChange={(e) => setForm({ ...form, bank_account_id: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option value="">Seleccionar banco...</option>
               {bankAccounts.map((b) => (

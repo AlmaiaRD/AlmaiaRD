@@ -359,7 +359,7 @@ export default function FacturacionPage() {
         </div>
       </div>
       <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
           <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Nombre:</span> ${sanitizeHtml(data.clients?.full_name) || ""}</p>
@@ -395,7 +395,7 @@ export default function FacturacionPage() {
         </tbody>
       </table>
       ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
-        <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:flex;white-space:nowrap;gap:0 24px;font-size:13px;margin-bottom:10px;">
             <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Beneficiario:</span> ${sanitizeHtml(bankAccounts[0].holder_name)}</p>
@@ -413,7 +413,7 @@ export default function FacturacionPage() {
           </div>
         </div>
       ` : "") : data.bank_accounts ? `
-        <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
             <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Beneficiario:</span> ${sanitizeHtml((data.bank_accounts as BankAccountRef).holder_name)}</p>
@@ -983,7 +983,7 @@ export default function FacturacionPage() {
               <div className="border-t border-[#E0DAD3] mb-5" />
 
               {/* B. CLIENTE / ADQUIRIENTE */}
-              <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
+              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                   <p className="text-[#39484F]"><span className="text-[#4C5760]">Nombre:</span> {selectedInvoice.clients?.full_name}</p>
@@ -1023,7 +1023,7 @@ export default function FacturacionPage() {
 
               {/* D. PAYMENT DATA */}
               {(selectedInvoice.show_all_bank_accounts ? bankAccounts.length > 0 : selectedInvoice.bank_accounts) && (
-                <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
+                <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
                   <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                   {selectedInvoice.show_all_bank_accounts ? (
                     <>
@@ -1238,7 +1238,7 @@ export default function FacturacionPage() {
                 <select
                   value={selectedClient}
                   onChange={(e) => setSelectedClient(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clients.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
@@ -1256,7 +1256,7 @@ export default function FacturacionPage() {
               <select
                 value={margin}
                 onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               >
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
@@ -1269,7 +1269,7 @@ export default function FacturacionPage() {
             <input
               type="date" value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
 
@@ -1501,7 +1501,7 @@ export default function FacturacionPage() {
               <input
                 type="number" value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
             <div>
@@ -1509,7 +1509,7 @@ export default function FacturacionPage() {
               <input
                 type="number" value={discountAmount}
                 onChange={(e) => { setDiscountAmount(Number(e.target.value)); setDiscountPercent(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
           </div>
@@ -1521,7 +1521,7 @@ export default function FacturacionPage() {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Notas adicionales para la factura..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm placeholder:text-[#A99B90] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm placeholder:text-[#A99B90] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none"
             />
           </div>
 
@@ -1530,7 +1530,7 @@ export default function FacturacionPage() {
             <select
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             >
               <option value="">Seleccionar banco...</option>
               <option value="ALL">Todas las cuentas</option>
@@ -1635,7 +1635,7 @@ export default function FacturacionPage() {
               </div>
             </div>
             <div className="border-t border-[#E0DAD3] mb-5" />
-            <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
+            <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
               <p className="text-xs font-bold text-[#BA4A3A] mb-3">CLIENTE / ADQUIRIENTE</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                 <p className="text-[#39484F]"><span className="text-[#4C5760]">Nombre:</span> {jpgData.clients?.full_name}</p>
@@ -1666,7 +1666,7 @@ export default function FacturacionPage() {
               </tbody>
             </table>
             {(jpgData.show_all_bank_accounts ? bankAccounts.length > 0 : jpgData.bank_accounts) && (
-              <div className="border border-[#E0DAD3] bg-[#D8CBBF] rounded-xl p-4 mb-5">
+              <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
                 {jpgData.show_all_bank_accounts ? (
                   <>

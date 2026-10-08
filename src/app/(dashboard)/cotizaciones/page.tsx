@@ -61,7 +61,7 @@ interface CatalogEntry {
 
 export default function CotizacionesPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#D8CBBF]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5EFE9]"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>}>
       <CotizacionesContent />
     </Suspense>
   );
@@ -466,7 +466,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
         </div>
       </div>
       <div style="border-top:1px solid #E0DAD3;margin-bottom:20px;"></div>
-      <div style="border:1px solid #E0DAD3;background:#D8CBBF;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
         <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">CLIENTE / ADQUIRIENTE</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;">
           <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Nombre:</span> ${sanitizeHtml(data.client_name) || ""}</p>
@@ -1035,7 +1035,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                 <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clients.map((c) => (
@@ -1055,12 +1055,12 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha</label>
               <input type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Válida hasta</label>
               <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
           </div>
 
@@ -1068,7 +1068,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
               <select value={margin} onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
               </select>
@@ -1077,13 +1077,13 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
               <input type="number" min={0} max={100} value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
-                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             {editingId && (
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Estado</label>
                 <select value={editingStatus} onChange={(e) => setEditingStatus(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+                  className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                   <option value="DRAFT">Borrador</option>
                   <option value="SENT">Enviada</option>
                   <option value="ACCEPTED">Aceptada</option>
@@ -1208,17 +1208,17 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                           <td className="px-3 py-2 w-20">
                             <input type="number" min={0} value={item.quantity}
                               onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#D8CBBF] text-sm text-center text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-center text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
                           <td className="px-3 py-2 w-28">
                             <input type="number" step="0.01" min={0} value={effectivePrice(item)}
                               onChange={(e) => updateItem(i, { unit_price: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#D8CBBF] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
                           <td className="px-3 py-2 w-20">
                             <input type="number" step="0.01" min={0} value={item.pv}
                               onChange={(e) => updateItem(i, { pv: Number(e.target.value) })}
-                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#D8CBBF] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
+                              className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                           </td>
                           <td className="px-3 py-2 text-right font-semibold text-[#39484F]">
                             {formatCurrency((item.quantity || 0) * effectivePrice(item) + (math.lines[i]?.itbis_amount ?? 0))}
@@ -1239,7 +1239,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
               placeholder="Condiciones, tiempos de entrega, observaciones..."
-              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
+              className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
           </div>
 
           <div className="flex justify-end gap-3 bg-[#F1E9DF] rounded-xl p-4">

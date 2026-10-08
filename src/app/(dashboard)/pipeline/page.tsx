@@ -164,7 +164,7 @@ function KanbanCard({
             }}
             placeholder="Escribe una nota..."
             rows={3}
-            className="w-full px-2 py-1.5 text-xs text-[#39484F] bg-[#D8CBBF] border border-[#BA4A3A]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#BA4A3A] resize-none"
+            className="w-full px-2 py-1.5 text-xs text-[#39484F] bg-[#F5EFE9] border border-[#BA4A3A]/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#BA4A3A] resize-none"
           />
           <p className="text-[9px] text-[#4C5760] mt-1">Enter para guardar · Esc para cancelar</p>
         </div>
@@ -808,16 +808,16 @@ export default function PipelinePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
-            <input type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <input type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
-              <input type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <input type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Email</label>
-              <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex gap-3 pt-2">

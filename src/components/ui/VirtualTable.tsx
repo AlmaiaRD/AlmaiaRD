@@ -211,7 +211,7 @@ export function VirtualTable<T>({
     >
       <div
         role="row"
-        className={`flex border-b border-[#E0DAD3] bg-[#D8CBBF] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
+        className={`flex border-b border-[#E0DAD3] bg-[#F5EFE9] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
       >
         {columns.map((col) => {
           const active = sortBy === col.key;

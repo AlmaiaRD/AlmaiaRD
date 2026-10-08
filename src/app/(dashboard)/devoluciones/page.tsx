@@ -371,7 +371,7 @@ export default function DevolucionesPage() {
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
             <select value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
+              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Seleccionar factura...</option>
               {invoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>
@@ -391,7 +391,7 @@ export default function DevolucionesPage() {
                       if (e.target.value) { addReturnItem(e.target.value); e.target.value = ""; }
                     }}
                     disabled={loadingLines}
-                    className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 disabled:opacity-50"
+                    className="h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 disabled:opacity-50"
                   >
                     <option value="">{loadingLines ? "Cargando productos..." : "+ Agregar producto"}</option>
                     {invoiceLines
@@ -439,12 +439,12 @@ export default function DevolucionesPage() {
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Motivo</label>
                 <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas internas</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#D8CBBF] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
             </>
           )}
