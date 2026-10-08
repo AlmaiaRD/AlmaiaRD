@@ -37,6 +37,7 @@ interface InvoiceData {
   paid_amount: number;
   balance_due: number;
   bank_account?: BankAccountData;
+  bank_accounts?: BankAccountData[];
   logo_url?: string;
   signature_url?: string;
   business_name?: string;
@@ -61,11 +62,11 @@ interface ReceiptData {
 
 const M = 15;
 const CW = 215.9 - M * 2;
-const PRIMARY = "#BA4A3A"; // terracota — acciones y acentos
-const DARK = "#39484F";    // pizarra — protagonista (bandas, encabezados, texto)
-const GRAY = "#4C5760";    // muted — texto secundario (AA 4.65 sobre #D8CBBF)
-const ARENA = "#D8CBBF";   // arena al 60% — paneles/cartas (fondo de la marca web)
-const PEARL = "#E0DAD3";   // perla — bordes y divisores
+const PRIMARY = "#BA4A3A";     // terracota — acentos (badges, secciones, saldo)
+const DARK = "#39484F";        // pizarra — texto principal
+const GRAY = "#4C5760";        // muted — texto secundario
+const CREAM_PANEL = "#F4EFE9"; // crema — paneles (cliente, pagos); como el JPG de referencia
+const CREAM_HEADER = "#F0ECE3";// crema — cabecera de tabla y píldora de badge
 const DANGER = "#D4A0A0";
 const SUCCESS = "#86C7A3";
 
@@ -85,8 +86,7 @@ function setDrawFillColor(doc: jsPDF, hex: string) {
 }
 
 function drawCreamRoundedRect(doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 4) {
-  setDrawFillColor(doc, PEARL);
-  doc.setFillColor(216, 203, 191); // ARENA #D8CBBF
+  setDrawFillColor(doc, CREAM_PANEL);
   doc.roundedRect(x, y, w, h, r, r, "FD");
 }
 
@@ -117,9 +117,10 @@ function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   doc.circle(cx, cy, centerR * 0.55, "F");
 }
 
-// Banda superior pizarra full-bleed con marca Italiana blanca y badge terracota
-// (mismo lenguaje visual que el header de la web). Devuelve la Y inicial del cuerpo.
-function drawBrandHeader(
+// Header claro "estilo factura" (fondo blanco): marca Italiana con flor/logo a la
+// izquierda y píldora crema con el tipo de documento a la derecha. Replica la
+// factura de referencia (FAC-000024, JPG del usuario). Devuelve la Y del cuerpo.
+function drawLightHeader(
   doc: jsPDF,
   opts: {
     badgeLabel: string;
@@ -128,67 +129,61 @@ function drawBrandHeader(
   }
 ): number {
   const PW = doc.internal.pageSize.getWidth();
-  const H = 38;
 
-  setDrawFillColor(doc, DARK);
-  doc.rect(0, 0, PW, H, "F");
-
-  // Logo (si cargó) o flor vectorial a la izquierda
-  let logoOk = false;
+  // Logo (si cargó) o flor vectorial a la izquierda de la marca
+  let textX = M + 11;
   if (opts.logoBase64) {
     try {
       const props = doc.getImageProperties(opts.logoBase64);
       const ratio = props.width && props.height ? props.height / props.width : 1;
-      const lw = 17;
+      const lw = 13;
       const lh = lw * ratio;
-      doc.addImage(opts.logoBase64, "PNG", M, (H - lh) / 2, lw, lh);
-      logoOk = true;
+      doc.addImage(opts.logoBase64, "PNG", M, 16 - lh / 2, lw, lh);
+      textX = M + 16;
     } catch {
       /* usar flor vectorial */
     }
   }
-  if (!logoOk) drawFlowerIcon(doc, M + 9, H / 2, 18);
+  if (textX === M + 11) drawFlowerIcon(doc, M + 3, 16, 11);
 
-  // Marca (Italiana 22pt) + tagline en perla
-  doc.setTextColor(255, 255, 255);
+  // Marca Italiana 24pt pizarra
+  setTextColor(doc, DARK);
   doc.setFont("Italiana", "normal");
-  doc.setFontSize(22);
-  doc.text(opts.bizName.toUpperCase(), M + 25, H / 2 + 1);
+  doc.setFontSize(24);
+  doc.text(opts.bizName.toUpperCase(), textX, 16);
 
-  doc.setTextColor(224, 218, 211); // perla
+  // Tagline terracota
+  setTextColor(doc, PRIMARY);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.text("BIENESTAR & SALUD", M + 25, H / 2 + 7.5);
+  doc.text("BIENESTAR & SALUD", textX, 22.5);
 
-  doc.setFontSize(6);
-  doc.text("Distribuidora Autorizada Amway", M + 25, H / 2 + 12);
-
-  // Badge terracota sólido (píldora) a la derecha
-  const badgeH = 15;
+  // Distribuidor
+  setTextColor(doc, DARK);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  const bw = doc.getTextWidth(opts.badgeLabel) + 18;
-  const bx = PW - M - bw;
-  doc.setDrawColor(186, 74, 58);
-  doc.setFillColor(186, 74, 58);
-  doc.roundedRect(bx, H / 2 - badgeH / 2, bw, badgeH, badgeH / 2, badgeH / 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.text(opts.badgeLabel, bx + bw / 2, H / 2 + 2.5, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("Distribuidor Independiente Amway", textX, 28);
 
-  return H + 10;
-}
-
-// Banda inferior arena con las submarcas (pie de página)
-function drawBottomBand(doc: jsPDF) {
-  const pw = doc.internal.pageSize.getWidth();
-  const ph = doc.internal.pageSize.getHeight();
-  const h = 11;
-  setDrawFillColor(doc, ARENA);
-  doc.rect(0, ph - h, pw, h, "F");
+  // Descripción y país
   setTextColor(doc, GRAY);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  doc.text("Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home", pw / 2, ph - h / 2, { align: "center" });
+  doc.setFontSize(8);
+  doc.text("Suplementos, cosmética y bienestar para toda la familia", textX, 33.5);
+  doc.text("República Dominicana", textX, 38.5);
+
+  // Píldora crema con texto terracota a la derecha
+  const badgeH = 9;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  const bw = doc.getTextWidth(opts.badgeLabel) + 14;
+  const bx = PW - M - bw;
+  doc.setDrawColor(224, 218, 211);
+  doc.setFillColor(240, 236, 227); // crema #F0ECE3
+  doc.roundedRect(bx, 10, bw, badgeH, badgeH / 2, badgeH / 2, "FD");
+  setTextColor(doc, PRIMARY);
+  doc.text(opts.badgeLabel, bx + bw / 2, 10 + badgeH / 2 + 2.8, { align: "center" });
+
+  return 44;
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
@@ -239,56 +234,45 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   }
 
   // ============================================================
-  // A. HEADER (banda pizarra + marca italiana + badge terracota)
+  // A. HEADER (fondo blanco + píldora crema — como el JPG de referencia)
   // ============================================================
 
-  y = drawBrandHeader(doc, {
+  y = drawLightHeader(doc, {
     badgeLabel: "FACTURA DE VENTA",
     logoBase64,
     bizName,
   });
 
-  // Fila de contexto: marca a la izquierda, número/fecha a la derecha
+  // Número y fecha a la derecha, dentro del header claro
   setTextColor(doc, DARK);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text(invoice.invoice_number, PW - M, y, { align: "right" });
+  doc.setFontSize(16);
+  doc.text(invoice.invoice_number, PW - M, 25, { align: "right" });
 
   setTextColor(doc, GRAY);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.text(`Fecha: ${invoice.invoice_date}`, PW - M, y + 5, { align: "right" });
+  doc.setFontSize(9);
+  doc.text(`Fecha: ${invoice.invoice_date}`, PW - M, 31, { align: "right" });
 
-  setTextColor(doc, DARK);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.text("Tus aliados en el camino a tu bienestar y salud.", M, y);
-  setTextColor(doc, GRAY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.text("Suplementos, cosmética y bienestar para toda la familia", M, y + 4);
-  doc.text("República Dominicana", M, y + 8);
-
-  y += 14;
-
-  // Divisor perla
+  // Divisor perla bajo el header
   doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
-  doc.line(M, y, PW - M, y);
-  y += 8;
+  doc.line(M, 44, PW - M, 44);
+
+  y = 48;
 
   // ============================================================
   // B. CLIENT / ADQUIRIENTE
   // ============================================================
 
-  const clientSectionH = 34;
+  const clientSectionH = 26;
   drawCreamRoundedRect(doc, M, y, CW, clientSectionH, 5);
 
   // Section title
   setTextColor(doc, PRIMARY);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("CLIENTE / ADQUIRIENTE", M + 6, y + 6);
+  doc.text("CLIENTE / ADQUIRIENTE", M + 6, y + 5.5);
 
   // Client data
   setTextColor(doc, DARK);
@@ -298,18 +282,18 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   // Row 1: Nombre + Teléfono
   const clientName = `Nombre: ${invoice.client_name}`;
   const clientPhone = invoice.client_phone ? `Teléfono: ${invoice.client_phone}` : "";
-  doc.text(clientName, M + 6, y + 14);
+  doc.text(clientName, M + 6, y + 13.5);
   if (clientPhone) {
-    doc.text(clientPhone, M + CW / 2, y + 14);
+    doc.text(clientPhone, M + CW / 2, y + 13.5);
   }
 
   // Row 2: Email
   const clientEmail = `Email: ${invoice.client_email || "N/D"}`;
-  doc.text(clientEmail, M + 6, y + 21);
+  doc.text(clientEmail, M + 6, y + 19.5);
 
   // ID number if available
   if (invoice.client_id_number) {
-    doc.text(`Cédula: ${invoice.client_id_number}`, M + CW / 2, y + 21);
+    doc.text(`Cédula: ${invoice.client_id_number}`, M + CW / 2, y + 19.5);
   }
 
   y += clientSectionH + 8;
@@ -319,19 +303,19 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   // ============================================================
 
   const colDefs = [
-    { label: "Submarca", x: M, w: 28, align: "left" as const },
-    { label: "Descripción / Producto", x: M + 28, w: 65, align: "left" as const },
-    { label: "Cant.", x: M + 93, w: 12, align: "right" as const },
-    { label: "Precio Unit.", x: M + 105, w: 24, align: "right" as const },
-    { label: "Total", x: M + 129, w: 28, align: "right" as const },
+    { label: "Submarca", x: M, w: 30, align: "left" as const },
+    { label: "Descripción / Producto", x: M + 32, w: 75, align: "left" as const },
+    { label: "Cant.", x: M + 109, w: 12, align: "right" as const },
+    { label: "Precio Unit.", x: M + 123, w: 30, align: "right" as const },
+    { label: "Total", x: M + 155, w: 31, align: "right" as const },
   ];
 
-  // Table header background
-  doc.setFillColor(57, 72, 79);
+  // Table header background (crema, como el JPG de referencia)
+  setDrawFillColor(doc, CREAM_HEADER);
   doc.rect(M, y, CW, 8, "F");
 
   // Header text
-  doc.setTextColor(255, 255, 255);
+  setTextColor(doc, DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
   colDefs.forEach((c) => {
@@ -349,10 +333,10 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     if (y > 255) {
       doc.addPage();
       y = M;
-      // Repeat table header on new page
-      doc.setFillColor(57, 72, 79);
+      // Repeat table header on new page (crema)
+      setDrawFillColor(doc, CREAM_HEADER);
       doc.rect(M, y, CW, 8, "F");
-      doc.setTextColor(255, 255, 255);
+      setTextColor(doc, DARK);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
       colDefs.forEach((c) => {
@@ -390,9 +374,14 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   // D. PAYMENT DATA
   // ============================================================
 
-  if (invoice.bank_account) {
-    const bank = invoice.bank_account;
-    const paySectionH = 68;
+  const bankList = invoice.bank_accounts && invoice.bank_accounts.length > 0
+    ? invoice.bank_accounts
+    : (invoice.bank_account ? [invoice.bank_account] : []);
+
+  if (bankList.length > 0) {
+    const mainBank = bankList[0];
+    const bankRows = bankList.length;
+    const paySectionH = 20 + bankRows * 9 + 4;
     drawCreamRoundedRect(doc, M, y, CW, paySectionH, 5);
 
     setTextColor(doc, PRIMARY);
@@ -400,32 +389,22 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     doc.setFontSize(8);
     doc.text("DATOS DE PAGO POR TRANSFERENCIA", M + 6, y + 6);
 
+    // Beneficiario / Cédula / Correo en una sola fila (como el JPG)
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
+    const third = CW / 3;
+    doc.text(`Beneficiario: ${mainBank.holder_name}`, M + 6, y + 15);
+    if (mainBank.id_number) doc.text(`Cédula/RNC: ${mainBank.id_number}`, M + 6 + third, y + 15);
+    if (mainBank.email) doc.text(`Correo: ${mainBank.email}`, M + 6 + 2 * third, y + 15);
 
-    const payFields = [
-      { label: "Beneficiario:", value: bank.holder_name },
-      ...(bank.id_number ? [{ label: "Cédula/RNC:", value: bank.id_number }] : []),
-      { label: "Banco:", value: bank.bank_name },
-      { label: "Tipo de Cuenta:", value: bank.account_type },
-      { label: "No. de Cuenta:", value: bank.account_number },
-      ...(bank.email ? [{ label: "Correo:", value: bank.email }] : []),
-    ];
-
-    let payY = y + 14;
-    payFields.forEach((f) => {
-      setTextColor(doc, GRAY);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.text(f.label, M + 6, payY);
-
-      setTextColor(doc, DARK);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      const labelW = doc.getTextWidth(f.label);
-      doc.text(f.value, M + 8 + labelW, payY);
-      payY += 7.5;
+    // Una fila por banco: Banco | Tipo | No.
+    let bankY = y + 23;
+    bankList.forEach((bank) => {
+      doc.text(bank.bank_name, M + 6, bankY);
+      doc.text(bank.account_type, M + 6 + third, bankY);
+      doc.text(`No. ${bank.account_number}`, M + 6 + 2 * third, bankY);
+      bankY += 9;
     });
 
     y += paySectionH + 6;
@@ -435,8 +414,8 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   // E. SUMMARY
   // ============================================================
 
-  const summaryX = M + CW - 75;
-  const summaryW = 75;
+  const summaryX = M;
+  const summaryW = CW;
 
   setTextColor(doc, GRAY);
   doc.setFont("helvetica", "normal");
@@ -495,19 +474,11 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     y += 4;
   }
 
-  // Amount in words
+  // Amount in words (no aparece en la factura de referencia; se omite)
   doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
   doc.line(M, y, M + CW, y);
-  y += 5;
-
-  setTextColor(doc, GRAY);
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  const words = `Son: ${numberToWords(invoice.total)}`;
-  doc.text(words, M, y);
-
-  y += 10;
+  y += 4;
 
   // ============================================================
   // F. FOOTER
@@ -538,43 +509,43 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   const subbrands = "Nutrilite · Artistry · Glister · G&H · Satinique · Amway Home";
   doc.text(subbrands, M, y);
 
-  // Firma centrada sobre "FIRMA AUTORIZADA" (ratio real, sin deformar)
+  // Firma a la derecha sobre "FIRMA AUTORIZADA" (como el JPG de referencia)
+  const sigRight = PW - M;
   if (signatureBase64) {
     try {
       const props = doc.getImageProperties(signatureBase64);
       const ratio = props.width && props.height ? props.width / props.height : 1;
-      const maxW = PW - 2 * M;
-      const targetH = Math.max(120, Math.min(354, y - M));
+      const maxW = PW / 2 - M;
+      const targetH = Math.max(120, Math.min(300, y - M));
       const sigW = Math.min(targetH * ratio, maxW);
       const sigH = sigW / ratio;
-      doc.addImage(signatureBase64, "PNG", (PW - sigW) / 2, y - sigH, sigW, sigH);
+      const sigX = sigRight - sigW;
+      doc.addImage(signatureBase64, "PNG", sigX, y - sigH, sigW, sigH);
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, y + 4, { align: "center" });
+      doc.text("FIRMA AUTORIZADA", sigX + sigW / 2, y + 4, { align: "center" });
     } catch {
       // Fallback to text signature
       setTextColor(doc, DARK);
       doc.setFont("Inspiration", "normal");
       doc.setFontSize(16);
-      doc.text("Yrahisa Mateo", PW / 2, y - 14, { align: "center" });
+      doc.text("Yrahisa Mateo", sigRight, y - 6, { align: "right" });
       setTextColor(doc, DARK);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
+      doc.text("FIRMA AUTORIZADA", sigRight, y + 5, { align: "right" });
     }
   } else {
     setTextColor(doc, DARK);
     doc.setFont("Inspiration", "normal");
     doc.setFontSize(16);
-    doc.text("Yrahisa Mateo", PW / 2, y - 14, { align: "center" });
+    doc.text("Yrahisa Mateo", sigRight, y - 6, { align: "right" });
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", PW / 2, y, { align: "center" });
+    doc.text("FIRMA AUTORIZADA", sigRight, y + 5, { align: "right" });
   }
-
-  drawBottomBand(doc);
 
   return doc;
 }
@@ -616,8 +587,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     signatureBase64 = await loadImageAsBase64WithRetry(receipt.signature_url);
   }
 
-  // Header: banda pizarra + marca + badge terracota
-  y = drawBrandHeader(doc, {
+  // Header claro (marca + píldora crema — lenguaje visual del JPG de referencia)
+  y = drawLightHeader(doc, {
     badgeLabel: "COMPROBANTE DE PAGO",
     logoBase64,
     bizName,
@@ -625,14 +596,18 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
 
   setColor(dark);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text(receipt.receipt_number, pageWidth - margin, y, { align: "right" });
+  doc.setFontSize(14);
+  doc.text(receipt.receipt_number, pageWidth - margin, 25, { align: "right" });
   setColor(gray);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.text(`Fecha: ${receipt.receipt_date}`, pageWidth - margin, y + 5, { align: "right" });
+  doc.setFontSize(9);
+  doc.text(`Fecha: ${receipt.receipt_date}`, pageWidth - margin, 31, { align: "right" });
 
-  y += 12;
+  doc.setDrawColor(224, 218, 211);
+  doc.setLineWidth(0.3);
+  doc.line(margin, 44, pageWidth - margin, 44);
+
+  y = 48;
 
   drawCreamRoundedRect(doc, margin, y, pageWidth - margin * 2, 50, 5);
 
@@ -661,57 +636,50 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
   doc.text(`Son: ${receipt.amount_in_words || numberToWords(receipt.amount)}`, margin, y);
 
   y = doc.internal.pageSize.getHeight() - 30;
-  
-  // Footer with signature (centrada sobre "FIRMA AUTORIZADA")
-  if (signatureBase64) {
-    try {
-      const props = doc.getImageProperties(signatureBase64);
-      const ratio = props.width && props.height ? props.width / props.height : 1;
-      const maxW = pageWidth - 2 * margin;
-      const targetH = Math.min(220, y - margin);
-      const sigW = Math.min(targetH * ratio, maxW);
-      const sigH = sigW / ratio;
-      doc.addImage(signatureBase64, "PNG", (pageWidth - sigW) / 2, y - sigH, sigW, sigH);
-      setColor(gray);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 4, { align: "center" });
-      doc.setFontSize(8);
-      doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
-    } catch {
-      // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
-      setColor(gray);
-      doc.setFont("Inspiration", "normal");
-      doc.setFontSize(16);
-      doc.text("Yrahisa Mateo", pageWidth / 2, y - 14, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
-      if (bizPhone || bizEmail) {
-        doc.text(`Tel: ${bizPhone || "N/D"} | Email: ${bizEmail || "N/D"}`, margin, y + 4);
-      }
+
+  // Divider sobre el pie
+  doc.setDrawColor(224, 218, 211);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y - 10, pageWidth - margin, y - 10);
+
+  // Firma a la derecha sobre "FIRMA AUTORIZADA" (como el JPG de referencia)
+  const sigRight = pageWidth - margin;
+  const drawFirma = () => {
+    if (signatureBase64) {
+      try {
+        const props = doc.getImageProperties(signatureBase64);
+        const ratio = props.width && props.height ? props.width / props.height : 1;
+        const maxW = pageWidth / 2 - margin;
+        const targetH = Math.min(120, y - margin);
+        const sigW = Math.min(targetH * ratio, maxW);
+        const sigH = sigW / ratio;
+        const sigX = sigRight - sigW;
+        doc.addImage(signatureBase64, "PNG", sigX, y - sigH, sigW, sigH);
+        setColor(dark);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.text("FIRMA AUTORIZADA", sigX + sigW / 2, y + 4, { align: "center" });
+        return;
+      } catch { /* fallback */ }
     }
-  } else {
-    // Firma: "Yrahisa Mateo" en Inspiration aunque no haya imagen de firma
-    setColor(gray);
+    setColor(dark);
     doc.setFont("Inspiration", "normal");
     doc.setFontSize(16);
-    doc.text("Yrahisa Mateo", pageWidth / 2, y - 14, { align: "center" });
+    doc.text("Yrahisa Mateo", sigRight, y - 6, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.text("FIRMA AUTORIZADA", pageWidth / 2, y + 1, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
-    if (bizPhone || bizEmail) {
-      doc.text(`Tel: ${bizPhone || "N/D"} | Email: ${bizEmail || "N/D"}`, margin, y + 4);
-    }
-  }
+    doc.text("FIRMA AUTORIZADA", sigRight, y + 5, { align: "right" });
+  };
+  drawFirma();
 
-  drawBottomBand(doc);
+  // Empresa a la izquierda
+  setColor(gray);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(`${bizName} — Distribuidora Autorizada Amway`, margin, y);
+  if (bizPhone || bizEmail) {
+    doc.text(`Tel: ${bizPhone || "N/D"} | Email: ${bizEmail || "N/D"}`, margin, y + 4);
+  }
 
   return doc;
 }
@@ -768,8 +736,8 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
     logoBase64 = await loadImageAsBase64WithRetry(expense.logo_url);
   }
 
-  // Header: banda pizarra + marca + badge terracota
-  y = drawBrandHeader(doc, {
+  // Header claro (marca + píldora crema — lenguaje visual del JPG de referencia)
+  y = drawLightHeader(doc, {
     badgeLabel: "COMPROBANTE DE GASTO",
     logoBase64,
     bizName,
@@ -777,14 +745,18 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
 
   setColor(dark);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text(expense.category, pageWidth - margin, y, { align: "right" });
+  doc.setFontSize(14);
+  doc.text(expense.category, pageWidth - margin, 25, { align: "right" });
   setColor(gray);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.text(`Fecha: ${expense.expense_date}`, pageWidth - margin, y + 5, { align: "right" });
+  doc.setFontSize(9);
+  doc.text(`Fecha: ${expense.expense_date}`, pageWidth - margin, 31, { align: "right" });
 
-  y += 12;
+  doc.setDrawColor(224, 218, 211);
+  doc.setLineWidth(0.3);
+  doc.line(margin, 44, pageWidth - margin, 44);
+
+  y = 48;
 
   drawCreamRoundedRect(doc, margin, y, pageWidth - margin * 2, 60, 5);
 
@@ -846,6 +818,9 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
   }
 
   y = doc.internal.pageSize.getHeight() - 30;
+  doc.setDrawColor(224, 218, 211);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y - 10, pageWidth - margin, y - 10);
   setColor(gray);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -853,8 +828,6 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
   if (bizPhone || bizEmail) {
     doc.text(`Tel: ${bizPhone || "N/D"} | Email: ${bizEmail || "N/D"}`, margin, y + 4);
   }
-
-  drawBottomBand(doc);
 
   doc.save(`gasto-${expense.expense_date}.pdf`);
 }
@@ -917,24 +890,23 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     signatureBase64 = await loadImageAsBase64WithRetry(quote.signature_url);
   }
 
-  // Helper to draw header on any page (banda pizarra + marca + badge terracota)
+  // Helper to draw header on any page (fondo blanco + píldora crema — como el JPG)
   const drawHeader = () => {
-    let hy = drawBrandHeader(doc, {
+    drawLightHeader(doc, {
       badgeLabel: "COTIZACIÓN",
       logoBase64: almaiaLogoB64,
       bizName,
     });
 
-    setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-    doc.text(quote.quote_number, PW - M, hy, { align: "right" });
-    setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
-    doc.text(`Fecha: ${quote.quote_date}`, PW - M, hy + 5, { align: "right" });
-    doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, hy + 9.5, { align: "right" });
+    setTextColor(doc, DARK); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+    doc.text(quote.quote_number, PW - M, 25, { align: "right" });
+    setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+    doc.text(`Fecha: ${quote.quote_date}`, PW - M, 31, { align: "right" });
+    doc.text(`Válida hasta: ${quote.valid_until}`, PW - M, 36.5, { align: "right" });
 
-    hy += 14;
     doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.3);
-    doc.line(M, hy, PW - M, hy);
-    return hy + 8;
+    doc.line(M, 44, PW - M, 44);
+    return 48;
   };
 
   // ── PAGE 1: HEADER + CLIENT + TABLE + SUMMARY ──
@@ -1068,8 +1040,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   doc.addPage();
   y = M;
 
-  // Header on last page — banda pizarra con la marca
-  y = drawBrandHeader(doc, {
+  // Header on last page — header claro con la marca
+  y = drawLightHeader(doc, {
     badgeLabel: "COTIZACIÓN",
     logoBase64: almaiaLogoB64,
     bizName,
@@ -1130,8 +1102,6 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   setTextColor(doc, GRAY); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
   const version = "v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ");
   doc.text(`Generado: ${version}`, PW / 2, y, { align: "center" });
-
-  drawBottomBand(doc);
 }
 
 export async function generateQuotePdf(quote: QuoteData): Promise<void> {

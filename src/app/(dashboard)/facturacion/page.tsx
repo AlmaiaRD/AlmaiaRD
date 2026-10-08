@@ -508,6 +508,9 @@ export default function FacturacionPage() {
       const bankAccount = full.show_all_bank_accounts
         ? (bankAccounts[0] || undefined)
         : (full.bank_accounts || undefined);
+      const bankAccountsAll = full.show_all_bank_accounts
+        ? (bankAccounts || [])
+        : (full.bank_accounts ? [full.bank_accounts] : []);
       const doc = await buildInvoicePdfDoc({
         invoice_number: full.invoice_number,
         invoice_date: formatDate(full.invoice_date),
@@ -1190,6 +1193,9 @@ export default function FacturacionPage() {
             const bankAccount = full.show_all_bank_accounts
               ? (bankAccounts[0] || undefined)
               : (full.bank_accounts || undefined);
+            const bankAccountsAll = full.show_all_bank_accounts
+              ? (bankAccounts || [])
+              : (full.bank_accounts ? [full.bank_accounts] : []);
             const doc = await buildInvoicePdfDoc({
               invoice_number: full.invoice_number,
               invoice_date: formatDate(full.invoice_date),
@@ -1218,6 +1224,14 @@ export default function FacturacionPage() {
                 account_number: bankAccount.account_number,
                 email: bankAccount.email || undefined,
               } : undefined,
+              bank_accounts: bankAccountsAll.map((ba) => ({
+                holder_name: ba.holder_name,
+                id_number: ba.id_number || undefined,
+                bank_name: ba.bank_name,
+                account_type: ba.account_type,
+                account_number: ba.account_number,
+                email: ba.email || undefined,
+              })),
               logo_url: settings?.logo_url || undefined,
               signature_url: settings?.signature_url || undefined,
               business_name: settings?.business_name || "Almaia RD",
