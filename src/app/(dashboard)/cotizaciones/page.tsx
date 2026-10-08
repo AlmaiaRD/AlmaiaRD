@@ -18,7 +18,9 @@ import type { Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent } from "@/lib/pdf";
+import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent, drawTrackedText, trackedTextWidth, drawFlowerIcon } from "@/lib/pdf";
+import { registerItaliana } from "@/lib/fonts/italiana";
+import { registerInspiration } from "@/lib/fonts/inspiration";
 import { useAuth } from "@/hooks/useAuth";
 import jsPDF from "jspdf";
 import { ProductImage } from "@/components/ui/ProductImage";
@@ -661,6 +663,8 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "mm", format: "letter" });
+      registerItaliana(doc);
+      registerInspiration(doc);
       const PW = doc.internal.pageSize.getWidth();
       const PH = doc.internal.pageSize.getHeight();
       const M = 12;
@@ -719,7 +723,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             const box = 70;
             const imgX = photoX + (photoBox - box) / 2;
             const imgY = photoY;
-            doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2);
+            doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.2);
             doc.roundedRect(imgX, imgY, box, box, 3, 3, "D");
             try {
               const dims = doc.getImageProperties(img);
@@ -763,7 +767,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         }
 
         y = Math.max(y, photoY + 75, textY) + 6;
-        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2);
+        doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.2);
         doc.line(M, y, PW - M, y);
         return y + 4;
       };
@@ -772,9 +776,14 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
       const drawFooter = () => {
         let fy = PH - 20;
-        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-        doc.text(bizName, PW / 2, fy, { align: "center" });
-        fy += 4;
+        // Marca en Italiana en mayúscula con tracking (línea gráfica ALMAIA)
+        const fBrand = bizName.toUpperCase();
+        const fSize = 10;
+        const fTrack = fSize * 0.025; // tracking-wide de Tailwind (0.025em)
+        doc.setFont("Italiana", "normal");
+        const fw = trackedTextWidth(doc, fBrand, fSize, fTrack);
+        drawTrackedText(doc, fBrand, (PW - fw) / 2, fy, fSize, fTrack, "#39484F", "Italiana", "normal");
+        fy += 4.5;
         sc(doc, "#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
         doc.text("Tus aliados en el camino a tu bienestar y salud.", PW / 2, fy, { align: "center" });
         fy += 3;
@@ -786,24 +795,51 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
       const drawPageHeader = () => {
         const hTop = M;
-        let hLogoW = 0; let hLogoH = 13; let hLogoBottom = hTop + hLogoH;
+        // Logo (flor original de Almaia) a la izquierda, o flor vectorial
+        let textX = M + 5;
+        let hLogoBottom = hTop + 13;
         if (almaiaLogoB64) {
           try {
             const p = doc.getImageProperties(almaiaLogoB64);
             const ratio = p.width && p.height ? p.height / p.width : 0.8;
-            hLogoW = 20; hLogoH = hLogoW * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M, hTop, hLogoW, hLogoH);
-            hLogoBottom = hTop + hLogoH;
-          } catch { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
-        } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
-        const hCenterY = hTop + hLogoH / 2;
-        const hTextX = M + hLogoW + 4;
-        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
-        doc.text(bizName, hTextX, hCenterY);
-        sc(doc, "#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
-        const hy = hLogoBottom + 7;
-        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
+            const lw = 14; const lh = lw * ratio;
+            doc.addImage(almaiaLogoB64, "PNG", M, hTop, lw, lh);
+            textX = M + lw + 5;
+            hLogoBottom = hTop + lh;
+          } catch { textX = M + 16; }
+        } else {
+          drawFlowerIcon(doc, M + 6, hTop + 6, 12);
+          textX = M + 16;
+        }
+        // Marca Italiana en mayúscula con tracking-wide (lineamiento del header del sistema)
+        const brandText = bizName.toUpperCase();
+        const brandSize = 20;
+        const brandTrack = brandSize * 0.025;
+        drawTrackedText(doc, brandText, textX, hTop + 5.5, brandSize, brandTrack, "#39484F", "Italiana", "normal");
+        // Tagline terracota en mayúscula con tracking-widest, con el ancho alineado al de la marca
+        const taglineText = "BIENESTAR & SALUD";
+        doc.setFont("helvetica", "normal");
+        const refSize = 9; const refTrack = refSize * 0.1;
+        const taglineW = trackedTextWidth(doc, taglineText, refSize, refTrack);
+        const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
+        const scale = Math.min(1.4, Math.max(0.75, brandW / taglineW));
+        drawTrackedText(doc, taglineText, textX, hTop + 11.5, refSize * scale, refTrack * scale, "#BA4A3A", "helvetica", "normal");
+        // Distribuidora
+        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+        doc.text("Distribuidor Independiente Amway", textX, hTop + 18);
+        // Píldora crema "CATÁLOGO" a la derecha (mismo lenguaje que la factura)
+        const badgeH = 10;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+        const badgeLabel = "CATÁLOGO";
+        const bw = doc.getTextWidth(badgeLabel) + 16;
+        const bx = PW - M - bw;
+        doc.setDrawColor(224, 218, 211);
+        doc.setFillColor(240, 236, 227);
+        doc.roundedRect(bx, hTop, bw, badgeH, badgeH / 2, badgeH / 2, "FD");
+        sc(doc, "#BA4A3A");
+        doc.text(badgeLabel, bx + bw / 2, hTop + badgeH / 2 + 9 * 0.35 * 0.3528, { align: "center" });
+        const hy = Math.max(hTop + 22, hLogoBottom + 7);
+        doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
         return hy + 5;
       };
 

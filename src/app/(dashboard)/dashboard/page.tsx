@@ -263,7 +263,7 @@ export default function DashboardPage() {
                 <button
                   key={mod.href}
                   onClick={() => router.push(mod.href)}
-                  className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl shadow-sm border border-[#E0DAD3] hover:shadow-md hover:border-[#BA4A3A]/30 transition-all"
+                  className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl shadow-[0_2px_12px_rgba(186,74,58,0.15)] border border-[#E0DAD3] hover:shadow-[0_8px_24px_rgba(186,74,58,0.28)] hover:border-[#BA4A3A]/30 transition-all"
                 >
                   <div className={`p-3 rounded-xl ${mod.color}`}>
                     <mod.icon size={22} />
