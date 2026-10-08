@@ -538,6 +538,7 @@ export default function CatalogoPage() {
     try {
       const { jsPDF } = await import("jspdf");
       const { registerItaliana } = await import("@/lib/fonts/italiana");
+      const { drawLightHeader } = await import("@/lib/pdf");
       const doc = new jsPDF({ unit: "mm", format: "letter" });
       registerItaliana(doc);
       const PW = doc.internal.pageSize.getWidth();
@@ -599,28 +600,8 @@ export default function CatalogoPage() {
         doc.text(`Generado: ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, fy, { align: "center" });
       };
 
-      const drawPageHeader = () => {
-        const hTop = M;
-        let hLogoW = 0; let hLogoH = 13; let hLogoBottom = hTop + hLogoH;
-        if (almaiaLogoB64) {
-          try {
-            const p = doc.getImageProperties(almaiaLogoB64);
-            const ratio = p.width && p.height ? p.height / p.width : 0.8;
-            hLogoW = 20; hLogoH = hLogoW * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M, hTop, hLogoW, hLogoH);
-            hLogoBottom = hTop + hLogoH;
-          } catch { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
-        } else { hLogoH = 13; hLogoBottom = hTop + hLogoH; }
-        const hCenterY = hTop + hLogoH / 2;
-        const hTextX = M + hLogoW + 4;
-        sc("#39484F"); doc.setFont("Italiana", "normal"); doc.setFontSize(22);
-        doc.text(bizName.toUpperCase(), hTextX, hCenterY);
-        sc("#BA4A3A"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("BIENESTAR & SALUD", hTextX, hCenterY + 5);
-        const hy = hLogoBottom + 7;
-        doc.setDrawColor(232, 224, 216); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
-        return hy + 5;
-      };
+      const drawPageHeader = () =>
+        drawLightHeader(doc, { badgeLabel: "CATÁLOGO", logoBase64: almaiaLogoB64, bizName }) + 4;
 
       const drawEntry = async (p: CatalogProduct, startY: number): Promise<number> => {
         let y = startY;

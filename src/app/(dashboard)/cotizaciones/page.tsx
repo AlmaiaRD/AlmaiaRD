@@ -18,7 +18,7 @@ import type { Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent, drawTrackedText, trackedTextWidth, drawFlowerIcon } from "@/lib/pdf";
+import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent, drawTrackedText, trackedTextWidth, drawLightHeader } from "@/lib/pdf";
 import { registerItaliana } from "@/lib/fonts/italiana";
 import { registerInspiration } from "@/lib/fonts/inspiration";
 import { useAuth } from "@/hooks/useAuth";
@@ -793,55 +793,8 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         doc.text(`Generado: ${"v2.3-" + new Date().toISOString().slice(0, 16).replace("T", " ")}`, PW / 2, fy, { align: "center" });
       };
 
-      const drawPageHeader = () => {
-        const hTop = M;
-        // Logo (flor original de Almaia) a la izquierda, o flor vectorial
-        let textX = M + 5;
-        let hLogoBottom = hTop + 13;
-        if (almaiaLogoB64) {
-          try {
-            const p = doc.getImageProperties(almaiaLogoB64);
-            const ratio = p.width && p.height ? p.height / p.width : 0.8;
-            const lw = 14; const lh = lw * ratio;
-            doc.addImage(almaiaLogoB64, "PNG", M, hTop, lw, lh);
-            textX = M + lw + 5;
-            hLogoBottom = hTop + lh;
-          } catch { textX = M + 16; }
-        } else {
-          drawFlowerIcon(doc, M + 6, hTop + 6, 12);
-          textX = M + 16;
-        }
-        // Marca Italiana en mayúscula con tracking-wide (lineamiento del header del sistema)
-        const brandText = bizName.toUpperCase();
-        const brandSize = 20;
-        const brandTrack = brandSize * 0.025;
-        drawTrackedText(doc, brandText, textX, hTop + 5.5, brandSize, brandTrack, "#39484F", "Italiana", "normal");
-        // Tagline terracota en mayúscula con tracking-widest, con el ancho alineado al de la marca
-        const taglineText = "BIENESTAR & SALUD";
-        doc.setFont("helvetica", "normal");
-        const refSize = 9; const refTrack = refSize * 0.1;
-        const taglineW = trackedTextWidth(doc, taglineText, refSize, refTrack);
-        const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
-        const scale = Math.min(1.4, Math.max(0.75, brandW / taglineW));
-        drawTrackedText(doc, taglineText, textX, hTop + 11.5, refSize * scale, refTrack * scale, "#BA4A3A", "helvetica", "normal");
-        // Distribuidora
-        sc(doc, "#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
-        doc.text("Distribuidor Independiente Amway", textX, hTop + 18);
-        // Píldora crema "CATÁLOGO" a la derecha (mismo lenguaje que la factura)
-        const badgeH = 10;
-        doc.setFont("helvetica", "bold"); doc.setFontSize(9);
-        const badgeLabel = "CATÁLOGO";
-        const bw = doc.getTextWidth(badgeLabel) + 16;
-        const bx = PW - M - bw;
-        doc.setDrawColor(224, 218, 211);
-        doc.setFillColor(240, 236, 227);
-        doc.roundedRect(bx, hTop, bw, badgeH, badgeH / 2, badgeH / 2, "FD");
-        sc(doc, "#BA4A3A");
-        doc.text(badgeLabel, bx + bw / 2, hTop + badgeH / 2 + 9 * 0.35 * 0.3528, { align: "center" });
-        const hy = Math.max(hTop + 22, hLogoBottom + 7);
-        doc.setDrawColor(224, 218, 211); doc.setLineWidth(0.2); doc.line(M, hy, PW - M, hy);
-        return hy + 5;
-      };
+      const drawPageHeader = () =>
+        drawLightHeader(doc, { badgeLabel: "CATÁLOGO", logoBase64: almaiaLogoB64, bizName }) + 4;
 
       let y = drawPageHeader();
 

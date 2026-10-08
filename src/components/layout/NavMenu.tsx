@@ -99,7 +99,7 @@ export default function NavMenu() {
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap",
                     isActive
-                      ? "bg-foreground/10 text-foreground border-b-2 border-foreground"
+                      ? "bg-foreground/10 text-foreground border-b-2 border-[#BA4A3A] shadow-[0_2px_8px_rgba(186,74,58,0.15)]"
                       : "text-text-muted hover:text-foreground hover:bg-secondary-bg"
                   )}
                 >
