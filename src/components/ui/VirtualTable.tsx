@@ -84,11 +84,10 @@ function VirtualRow<T>({
       className={`flex ${stripe} ${hover}`}
       style={{
         position: "absolute",
-        top: 0,
+        top: `${offset}px`,
         left: 0,
         width: "100%",
         height: `${rowHeight}px`,
-        transform: `translateY(${offset}px)`,
       }}
       onClick={() => onRowClick?.(row, index)}
     >
@@ -128,11 +127,10 @@ function LoadingRow<T>({
       className="flex"
       style={{
         position: "absolute",
-        top: 0,
+        top: `${offset}px`,
         left: 0,
         width: "100%",
         height: `${rowHeight}px`,
-        transform: `translateY(${offset}px)`,
       }}
     >
       {columns.map((col) => (
