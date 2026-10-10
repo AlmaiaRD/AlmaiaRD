@@ -13,6 +13,8 @@ export interface UserPreferences {
   goal_history?: { month: string; goal: number; date: string }[];
   hidden_stock_ids?: string[];
   hidden_rotation_ids?: string[];
+  /** Módulos fijados como favoritos (hrefs), en orden de presentación. */
+  favorites?: string[];
 }
 
 export type ClientType = "comprador" | "negocio";

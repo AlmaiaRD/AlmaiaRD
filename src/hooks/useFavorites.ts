@@ -2,69 +2,86 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { MAX_FAVORITES } from "@/lib/modules";
+import { supabase } from "@/lib/supabase";
+import { getPreferences, updatePreferences } from "@/services/preferences";
 
 const STORAGE_KEY = "almaia.favorites.v1";
+
+function parseFavorites(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((h) => typeof h === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function readLocalFavorites(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? parseFavorites(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalFavorites(list: string[]) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    /* noop */
+  }
+}
+
+async function fetchServerFavorites(): Promise<string[]> {
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return [];
+    const prefs = await getPreferences(data.user.id);
+    return Array.isArray(prefs.favorites) ? prefs.favorites.filter((h) => typeof h === "string") : [];
+  } catch {
+    return []; // si falla la red, se mantiene la caché local
+  }
+}
+
+async function saveServerFavorites(list: string[]): Promise<void> {
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (data.user) await updatePreferences(data.user.id, { favorites: list });
+  } catch {
+    /* error de red: la próxima carga reintentará sincronizar */
+  }
+}
 
 /**
  * Favoritos del usuario: lista de `href` de módulos fijados.
  *
  * La fuente de verdad es `users.preferences.favorites` (por usuario),
- * persistida vía la API de preferencias. Se usa localStorage como
- * caché local para mostrar la UI de inmediato antes de sincronizar.
+ * persistida con el mismo servicio que usa el dashboard (metas), que ya
+ * funciona con RLS. localStorage actúa como caché local para mostrar la UI
+ * de inmediato antes de sincronizar.
  */
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
-      const local = raw ? JSON.parse(raw) : [];
-      return Array.isArray(local) ? local.filter((h) => typeof h === "string") : [];
-    } catch {
-      return [];
-    }
-  });
+  const [favorites, setFavorites] = useState<string[]>(readLocalFavorites);
   const [loading, setLoading] = useState(true);
 
-  /** Sincroniza desde el servidor (fuente de verdad por usuario). */
+  /** Sincroniza desde Supabase (fuente de verdad por usuario). */
   const refresh = useCallback(async () => {
-    try {
-      const res = await fetch("/api/preferences");
-      if (!res.ok) return;
-      const json = await res.json();
-      const serverFav: string[] = Array.isArray(json?.preferences?.favorites)
-        ? (json.preferences.favorites as string[]).filter((h) => typeof h === "string")
-        : [];
-      setFavorites(serverFav);
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serverFav));
-      } catch {
-        /* noop */
-      }
-    } catch {
-      /* si falla la red, mantenemos la caché local */
-    } finally {
-      setLoading(false);
-    }
+    const serverFav = await fetchServerFavorites();
+    setFavorites(serverFav);
+    writeLocalFavorites(serverFav);
+    setLoading(false);
   }, []);
 
+  // Sincronización inicial desde el servidor (fuente de verdad por usuario).
   useEffect(() => {
     let cancelled = false;
-
-    fetch("/api/preferences")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
+    fetchServerFavorites()
+      .then((serverFav) => {
         if (cancelled) return;
-        const serverFav: string[] = Array.isArray(json?.preferences?.favorites)
-          ? (json.preferences.favorites as string[]).filter((h) => typeof h === "string")
-          : [];
         setFavorites(serverFav);
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serverFav));
-        } catch {
-          /* noop */
-        }
-      })
-      .catch(() => {
-        /* si falla la red, mantenemos la caché local */
+        writeLocalFavorites(serverFav);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -74,12 +91,7 @@ export function useFavorites() {
     // pestaña, el menú se actualiza al recibir el evento storage.
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          if (Array.isArray(parsed)) setFavorites(parsed.filter((h) => typeof h === "string"));
-        } catch {
-          /* noop */
-        }
+        setFavorites(parseFavorites(e.newValue));
       }
     };
     window.addEventListener("storage", onStorage);
@@ -91,20 +103,8 @@ export function useFavorites() {
 
   const persist = useCallback(async (next: string[]) => {
     setFavorites(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      /* noop */
-    }
-    try {
-      await fetch("/api/preferences", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favorites: next }),
-      });
-    } catch {
-      /* error de red: la próxima carga reintentará sincronizar */
-    }
+    writeLocalFavorites(next);
+    await saveServerFavorites(next);
   }, []);
 
   /** Marca/desmarca un módulo como favorito (pin rápido). */

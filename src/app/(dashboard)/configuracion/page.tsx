@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { exportBackupToExcel } from "@/lib/excel";
 import MigrateImagesPanel from "@/components/catalogo/MigrateImagesPanel";
 import { FAMILIES, MAX_FAVORITES, modulesByFamily } from "@/lib/modules";
+import { getPreferences, updatePreferences } from "@/services/preferences";
 
 
 type Tab = "general" | "ai" | "banks" | "favorites" | "backup" | "images";
@@ -202,33 +203,34 @@ Responde en español en máximo 3 oraciones:`,
     })();
   }, []);
 
-  // Cargar favoritos del usuario
+  // Cargar favoritos del usuario (mismo servicio que el dashboard)
   useEffect(() => {
-    fetch("/api/preferences")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        const fav: string[] = Array.isArray(json?.preferences?.favorites)
-          ? (json.preferences.favorites as string[]).filter((h) => typeof h === "string")
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) return;
+        const prefs = await getPreferences(data.user.id);
+        const fav: string[] = Array.isArray(prefs.favorites)
+          ? prefs.favorites.filter((h) => typeof h === "string")
           : [];
         setFavoriteHrefs(fav);
-      })
-      .catch(() => {
+      } catch {
         /* si falla, se deja la lista predeterminada */
-      })
-      .finally(() => setFavoritesLoaded(true));
+      } finally {
+        setFavoritesLoaded(true);
+      }
+    })();
   }, []);
 
   async function handleSaveFavorites() {
     setSavingFavorites(true);
     try {
-      const res = await fetch("/api/preferences", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favorites: favoriteHrefs.slice(0, MAX_FAVORITES) }),
-      });
-      if (!res.ok) throw new Error("No se pudo guardar");
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) throw new Error("Sesión no disponible");
+      const next = favoriteHrefs.slice(0, MAX_FAVORITES);
+      await updatePreferences(data.user.id, { favorites: next });
       try {
-        window.localStorage.setItem("almaia.favorites.v1", JSON.stringify(favoriteHrefs.slice(0, MAX_FAVORITES)));
+        window.localStorage.setItem("almaia.favorites.v1", JSON.stringify(next));
       } catch {
         /* noop */
       }
