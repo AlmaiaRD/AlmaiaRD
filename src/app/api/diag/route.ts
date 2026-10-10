@@ -103,24 +103,35 @@ export async function GET(req: Request) {
 
     // 3) PRUEBA END-TO-END de la ruta real /api/preferences con cookie de sesión
     if (loginJson.access_token) {
-      const expiresAt = Math.floor(Date.now() / 1000) + (loginJson.expires_in ?? 3600);
-      const session = {
-        access_token: loginJson.access_token,
-        refresh_token: loginJson.refresh_token,
-        expires_at: expiresAt,
-        expires_in: loginJson.expires_in ?? 3600,
-        token_type: "bearer",
-        user: { id: createdId },
+      const mkCookie = (expiresAt: number) => {
+        const session = {
+          access_token: loginJson.access_token,
+          refresh_token: loginJson.refresh_token,
+          expires_at: expiresAt,
+          expires_in: loginJson.expires_in ?? 3600,
+          token_type: "bearer",
+          user: { id: createdId },
+        };
+        return `sb-${REF}-auth-token=base64-${b64url(session)}`;
       };
-      const cookieVal = "base64-" + b64url(session);
-      const cookie = `sb-${REF}-auth-token=${cookieVal}`;
-      const res = await fetch(`${origin}/api/preferences`, {
+      const future = Math.floor(Date.now() / 1000) + (loginJson.expires_in ?? 3600);
+      const past = Math.floor(Date.now() / 1000) - 3600;
+
+      const resValid = await fetch(`${origin}/api/preferences`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", cookie },
+        headers: { "Content-Type": "application/json", cookie: mkCookie(future) },
         body: JSON.stringify({ favorites: ["/inventario"] }),
         redirect: "manual",
       });
-      out.routeE2E = { status: res.status, body: (await res.text()).slice(0, 300) };
+      out.routeE2E_valid = { status: resValid.status, body: (await resValid.text()).slice(0, 250) };
+
+      const resExpired = await fetch(`${origin}/api/preferences`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", cookie: mkCookie(past) },
+        body: JSON.stringify({ favorites: ["/inventario"] }),
+        redirect: "manual",
+      });
+      out.routeE2E_expired = { status: resExpired.status, body: (await resExpired.text()).slice(0, 250) };
     }
   } catch (e) {
     out.error = e instanceof Error ? e.message : String(e);
