@@ -2,6 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  // TEMPORAL: permitir el endpoint de diagnóstico sin sesión. Se elimina luego.
+  if (req.nextUrl.pathname === "/api/diag") return NextResponse.next();
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
