@@ -674,7 +674,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       // Cargar la flor/logo original de Almaia para el header del catálogo
       let almaiaLogoB64: string | null = null;
       try {
-        const logoRes = await fetch("/almaia-logo.png");
+        const logoRes = await fetch("/almaia-logo.svg");
         if (logoRes.ok) {
           const blob = await logoRes.blob();
           almaiaLogoB64 = await new Promise<string>((resolve, reject) => {

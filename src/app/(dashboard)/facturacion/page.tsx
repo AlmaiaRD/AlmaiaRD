@@ -968,8 +968,8 @@ export default function FacturacionPage() {
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-14 h-14 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <Flower2 size={28} className="text-[#BA4A3A]" />
+                <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <img src="/almaia-logo-con-fondo.svg" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
                 </div>
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
@@ -1639,8 +1639,8 @@ export default function FacturacionPage() {
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-14 h-14 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <Flower2 size={28} className="text-[#BA4A3A]" />
+                <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <img src="/almaia-logo-con-fondo.svg" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
                 </div>
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>

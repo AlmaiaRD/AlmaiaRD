@@ -221,7 +221,7 @@ export default function RecibosPage() {
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="display:inline-block;background:#F0FAF4;color:#6DB08A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
+          <span style="display:inline-block;background:#F2E2DD;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">RECIBO DE PAGO</span>
           <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.receipt_number)}</p>
           <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.receipt_date || data.created_at))}</p>
         </div>

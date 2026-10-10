@@ -197,24 +197,24 @@ export function drawLightHeader(
   const PW = doc.internal.pageSize.getWidth();
 
   // Flor/logo a la izquierda de la marca
-  let logoW = 13;
-  let logoH = 13;
+  let logoW = 16;
+  let logoH = 16;
   if (opts.logoBase64) {
     try {
       const props = doc.getImageProperties(opts.logoBase64);
       const ratio = props.width && props.height ? props.height / props.width : 1;
-      logoW = 13;
+      logoW = 16;
       logoH = logoW * ratio;
       doc.addImage(opts.logoBase64, "PNG", M, 16 - logoH / 2, logoW, logoH);
     } catch {
-      logoW = 11;
-      logoH = 11;
-      drawFlowerIcon(doc, M + 5.5, 16, 11);
+      logoW = 14;
+      logoH = 14;
+      drawFlowerIcon(doc, M + 7, 16, 14);
     }
   } else {
-    logoW = 11;
-    logoH = 11;
-    drawFlowerIcon(doc, M + 5.5, 16, 11);
+    logoW = 14;
+    logoH = 14;
+    drawFlowerIcon(doc, M + 7, 16, 14);
   }
 
   // Marca Italiana 24pt pizarra con tracking-wide (0.025em)
@@ -223,7 +223,7 @@ export function drawLightHeader(
   const brandTrack = brandSize * 0.025;
   doc.setFont("Italiana", "normal");
   const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
-  const textX = M + logoW + 4;
+  const textX = M + logoW + 6;
   drawTrackedText(doc, brandText, textX, 16, brandSize, brandTrack, DARK, "Italiana", "normal");
 
   // Tagline terracota en mayúscula con tracking-widest (0.1em), escalada al ancho
@@ -1070,7 +1070,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   // Precargar el logo PNG original de Almaia (flor) para el header
   let almaiaLogoB64: string | null = null;
   try {
-    almaiaLogoB64 = await loadImageAsBase64("/almaia-logo.png");
+    almaiaLogoB64 = await loadImageAsBase64("/almaia-logo.svg");
   } catch {
     almaiaLogoB64 = null;
   }
