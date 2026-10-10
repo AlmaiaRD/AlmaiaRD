@@ -48,9 +48,11 @@ export default function LoginPage() {
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-[#39484F]/10 flex items-center justify-center">
-              <Flower2 size={22} className="text-[#39484F]" />
-            </div>
+            <img
+              src="/almaia-logo-con-fondo.svg"
+              alt="Almaia RD"
+              className="w-12 h-12 rounded-full object-contain"
+            />
             <div>
               <Wordmark
                 h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
