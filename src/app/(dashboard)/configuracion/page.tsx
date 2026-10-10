@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { getSettings, updateSettings, getBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from "@/services/settings";
 import type { Settings, BankAccount } from "@/types/database";
-import { Save, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet } from "lucide-react";
+import { Save, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet, Pin, PinOff, ChevronUp, ChevronDown, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { exportBackupToExcel } from "@/lib/excel";
 import MigrateImagesPanel from "@/components/catalogo/MigrateImagesPanel";
+import { FAMILIES, MAX_FAVORITES, modulesByFamily } from "@/lib/modules";
 
 
-type Tab = "general" | "ai" | "banks" | "backup" | "images";
+type Tab = "general" | "ai" | "banks" | "favorites" | "backup" | "images";
 
 function cropSignatureImage(src: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -136,6 +137,11 @@ Responde en español en máximo 3 oraciones:`,
 
   const [editingBank, setEditingBank] = useState<string | null>(null);
 
+  // Favoritos (acceso rápido en el nav)
+  const [favoriteHrefs, setFavoriteHrefs] = useState<string[]>([]);
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+  const [savingFavorites, setSavingFavorites] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
@@ -195,6 +201,61 @@ Responde en español en máximo 3 oraciones:`,
       }
     })();
   }, []);
+
+  // Cargar favoritos del usuario
+  useEffect(() => {
+    fetch("/api/preferences")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const fav: string[] = Array.isArray(json?.preferences?.favorites)
+          ? (json.preferences.favorites as string[]).filter((h) => typeof h === "string")
+          : [];
+        setFavoriteHrefs(fav);
+      })
+      .catch(() => {
+        /* si falla, se deja la lista predeterminada */
+      })
+      .finally(() => setFavoritesLoaded(true));
+  }, []);
+
+  async function handleSaveFavorites() {
+    setSavingFavorites(true);
+    try {
+      const res = await fetch("/api/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorites: favoriteHrefs.slice(0, MAX_FAVORITES) }),
+      });
+      if (!res.ok) throw new Error("No se pudo guardar");
+      toast.success("Favoritos actualizados");
+    } catch {
+      toast.error("Error al guardar favoritos");
+    } finally {
+      setSavingFavorites(false);
+    }
+  }
+
+  function toggleFavoriteModule(href: string) {
+    setFavoriteHrefs((prev) =>
+      prev.includes(href)
+        ? prev.filter((h) => h !== href)
+        : [...prev, href].slice(0, MAX_FAVORITES)
+    );
+  }
+
+  function moveFavorite(index: number, dir: -1 | 1) {
+    setFavoriteHrefs((prev) => {
+      const next = [...prev];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  const favoritesDraftModules = favoriteHrefs
+    .map((href) => ({ href, module: FAMILIES.flatMap((f) => modulesByFamily(f.id)).find((m) => m.href === href) }))
+    .filter((x): x is { href: string; module: NonNullable<typeof x.module> } => Boolean(x.module));
 
   async function handleSaveSettings() {
     if (!settings) {
@@ -393,7 +454,7 @@ Responde en español en máximo 3 oraciones:`,
 
       <div className="border-b border-[#E0DAD3] mb-6">
         <div className="flex gap-6">
-          {([["general", "Datos del Negocio"], ["ai", "Prompts IA"], ["banks", "Cuentas Bancarias"], ["images", "Migrar Imágenes"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
+          {([["general", "Datos del Negocio"], ["ai", "Prompts IA"], ["banks", "Cuentas Bancarias"], ["favorites", "Favoritos"], ["images", "Migrar Imágenes"], ["backup", "Backup"]] as [Tab, string][]).map(([key, label]) => (
             <button key={key} onClick={() => setActiveTab(key)}
               className={`pb-3 text-sm font-medium transition-colors ${
                 activeTab === key ? "text-[#BA4A3A] border-b-2 border-[#BA4A3A]" : "text-[#4C5760] hover:text-[#39484F]"
@@ -805,6 +866,136 @@ ACCIÓN: ..."
       {activeTab === "images" && (
         <div>
           <MigrateImagesPanel />
+        </div>
+      )}
+
+      {activeTab === "favorites" && (
+        <div className="max-w-3xl space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#F2E2DD] flex items-center justify-center">
+                  <Star size={20} className="text-[#BA4A3A]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[#39484F]">Favoritos / Acceso rápido</h3>
+                  <p className="text-xs text-[#4C5760] mt-0.5">
+                    Elige hasta {MAX_FAVORITES} módulos para mostrarlos en la línea de Favoritos del menú (color terracota). Puedes fijarlos también desde el propio menú con el pin.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lista ordenada de favoritos */}
+            <div className="mt-5">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#4C5760] mb-2">Seleccionados ({favoritesDraftModules.length}/{MAX_FAVORITES})</p>
+              {favoritesDraftModules.length === 0 ? (
+                <p className="text-sm text-[#A99B90] bg-[#F5EFE9] rounded-xl px-4 py-3">
+                  Aún no hay favoritos. Marca módulos abajo o usa el pin en el menú.
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {favoritesDraftModules.map(({ href, module }, index) => {
+                    const Icon = module.icon;
+                    return (
+                      <li key={href} className="flex items-center gap-2 bg-[#F5EFE9] rounded-xl px-3 py-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${index === 0 ? "bg-[#F2E2DD]" : "bg-white"}`}>
+                          <Icon size={16} className="text-[#BA4A3A]" />
+                        </div>
+                        <span className="flex-1 text-sm font-medium text-[#39484F]">
+                          {index + 1}. {module.label}
+                        </span>
+                        <span className="hidden sm:block text-[11px] text-[#A99B90]">{module.href}</span>
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => moveFavorite(index, -1)}
+                            disabled={index === 0}
+                            className="p-1.5 rounded-lg text-[#4C5760] hover:bg-white hover:text-[#BA4A3A] disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label="Subir"
+                          >
+                            <ChevronUp size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveFavorite(index, 1)}
+                            disabled={index === favoritesDraftModules.length - 1}
+                            className="p-1.5 rounded-lg text-[#4C5760] hover:bg-white hover:text-[#BA4A3A] disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label="Bajar"
+                          >
+                            <ChevronDown size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleFavoriteModule(href)}
+                            className="p-1.5 rounded-lg text-[#BEA995] hover:bg-white hover:text-[#BA4A3A]"
+                            aria-label="Quitar de favoritos"
+                          >
+                            <PinOff size={16} />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* Catálogo de módulos por familia */}
+            <div className="mt-6 space-y-4">
+              {FAMILIES.map((fam) => {
+                const modules = modulesByFamily(fam.id);
+                return (
+                  <div key={fam.id}>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-[#A99B90] mb-1.5">
+                      {fam.label}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {modules.map((item) => {
+                        const Icon = item.icon;
+                        const pinned = favoriteHrefs.includes(item.href);
+                        const full = favoriteHrefs.length >= MAX_FAVORITES && !pinned;
+                        return (
+                          <button
+                            key={item.href}
+                            type="button"
+                            disabled={full}
+                            onClick={() => toggleFavoriteModule(item.href)}
+                            title={full ? `Máximo ${MAX_FAVORITES} favoritos` : pinned ? "Quitar de favoritos" : "Fijar como favorito"}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+                              pinned
+                                ? "border-[#BA4A3A] bg-[#F2E2DD] text-[#9C382A] shadow-[0_2px_8px_rgba(186,74,58,0.18)]"
+                                : "border-[#E0DAD3] bg-white text-[#4C5760] hover:border-[#BA4A3A]/40 hover:text-[#BA4A3A]"
+                            }`}
+                          >
+                            {pinned ? <Pin size={15} className="text-[#BA4A3A]" /> : <Icon size={15} />}
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={handleSaveFavorites}
+                disabled={savingFavorites || !favoritesLoaded}
+                className="inline-flex items-center gap-2 h-11 px-6 bg-[#BA4A3A] text-white rounded-xl text-sm font-semibold hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-60"
+              >
+                <Save size={16} />
+                {savingFavorites ? "Guardando…" : "Guardar Favoritos"}
+              </button>
+              <button
+                onClick={() => setFavoriteHrefs([])}
+                className="h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm font-medium text-[#4C5760] hover:bg-[#F5EFE9] transition-all"
+              >
+                Limpiar
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
