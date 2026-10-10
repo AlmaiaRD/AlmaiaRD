@@ -282,6 +282,33 @@ export default function RecibosPage() {
     return el;
   }
 
+  // Datos que alimentan el PDF del recibo (replica el diseño del preview/JPG:
+  // píldora verde, panel de información del pago, tabla de productos y notas).
+  function receiptPdfInput(full: ReceiptFull) {
+    const method = methodLabel[full.payment_method as string] || full.payment_method || "";
+    return {
+      receipt_number: full.receipt_number || "",
+      receipt_date: formatDate(full.receipt_date || full.created_at),
+      client_name: full.invoices?.clients?.full_name || full.clients?.full_name || "",
+      invoice_number: full.invoices?.invoice_number || "",
+      amount: Number(full.amount) || 0,
+      amount_in_words: full.amount_in_words || "",
+      payment_method: full.bank_accounts ? `${method} — ${full.bank_accounts.bank_name}` : method,
+      items: (full.invoices?.invoice_items || []).map((it: ReceiptInvoiceItem) => ({
+        name: it.products?.name || it.custom_name || "Producto",
+        quantity: Number(it.quantity) || 0,
+        unit_price: Number(it.unit_price) || 0,
+        line_total: Number(it.line_total) || 0,
+      })),
+      concept: full.concept || undefined,
+      logo_url: settings?.logo_url || undefined,
+      signature_url: settings?.signature_url || undefined,
+      business_name: settings?.business_name || "Almaia RD",
+      email: settings?.email || undefined,
+      phone: resolveDefaultPhone(settings) || undefined,
+    };
+  }
+
   async function captureReceipt(rec: ReceiptRow) {
     const full = await getReceipt(rec.id);
     const el = await buildReceiptPreviewEl(full, settings);
@@ -296,20 +323,7 @@ export default function RecibosPage() {
   async function handlePrintPdf(rec: ReceiptRow) {
     try {
       const full = await getReceipt(rec.id);
-      const doc = await buildReceiptPdfDoc({
-        receipt_number: full.receipt_number,
-        receipt_date: formatDate(full.receipt_date),
-        client_name: full.invoices?.clients?.full_name || full.clients?.full_name || "",
-        invoice_number: full.invoices?.invoice_number || "",
-        amount: Number(full.amount) || 0,
-        amount_in_words: full.amount_in_words || "",
-        payment_method: full.payment_method || "",
-        logo_url: settings?.logo_url || undefined,
-        signature_url: settings?.signature_url || undefined,
-        business_name: settings?.business_name || "Almaia RD",
-        email: settings?.email || undefined,
-        phone: resolveDefaultPhone(settings) || undefined,
-      });
+      const doc = await buildReceiptPdfDoc(receiptPdfInput(full));
       const clientName = (full.invoices?.clients?.full_name || full.clients?.full_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
       doc.save(`recibo-${full.receipt_number}-${clientName}.pdf`);
       toast.success("PDF descargado");
@@ -652,20 +666,7 @@ export default function RecibosPage() {
           } : undefined}
           getAttachment={async () => {
             const full = await getReceipt(selectedReceipt.id);
-            const doc = await buildReceiptPdfDoc({
-              receipt_number: full.receipt_number,
-              receipt_date: formatDate(full.receipt_date),
-              client_name: full.invoices?.clients?.full_name || full.clients?.full_name || "",
-              invoice_number: full.invoices?.invoice_number || "",
-              amount: Number(full.amount) || 0,
-              amount_in_words: full.amount_in_words || "",
-              payment_method: full.payment_method || "",
-              logo_url: settings?.logo_url || undefined,
-              signature_url: settings?.signature_url || undefined,
-              business_name: settings?.business_name || "Almaia RD",
-              email: settings?.email || undefined,
-              phone: resolveDefaultPhone(settings) || undefined,
-            });
+            const doc = await buildReceiptPdfDoc(receiptPdfInput(full));
             return { filename: `recibo-${full.receipt_number}.pdf`, base64: doc.output("datauristring").split(",")[1] };
           }}
         />

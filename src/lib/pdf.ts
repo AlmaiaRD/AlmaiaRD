@@ -45,6 +45,13 @@ interface InvoiceData {
   phone?: string;
 }
 
+interface ReceiptItemData {
+  name: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+}
+
 interface ReceiptData {
   receipt_number: string;
   receipt_date: string;
@@ -53,6 +60,10 @@ interface ReceiptData {
   amount: number;
   amount_in_words: string;
   payment_method: string;
+  /** Productos de la factura asociada (mismos que muestra el preview/JPG). */
+  items?: ReceiptItemData[];
+  /** Notas del recibo (concepto). */
+  concept?: string;
   logo_url?: string;
   signature_url?: string;
   business_name?: string;
@@ -69,6 +80,8 @@ const CREAM_PANEL = "#F4EFE9"; // crema — paneles (cliente, pagos); como el JP
 const CREAM_HEADER = "#F0ECE3";// crema — cabecera de tabla y píldora de badge
 const DANGER = "#D4A0A0";
 const SUCCESS = "#86C7A3";
+const RECEIPT_GREEN = "#6DB08A";    // verde — píldora/título del recibo (como el JPG)
+const RECEIPT_GREEN_BG = "#F0FAF4"; // verde claro — fondo de la píldora del recibo
 
 function setTextColor(doc: jsPDF, hex: string) {
   const r = Number.parseInt(hex.slice(1, 3), 16);
@@ -164,92 +177,101 @@ export function trackedTextWidth(doc: jsPDF, text: string, fontSize: number, tra
   return doc.getTextWidth(text) + tracking * (text.length - 1);
 }
 
-// Header claro "estilo factura" con la marca y la frase CENTRALIZADAS (mismo
-// lineamiento del wordmark en todo el sistema: Italiana mayúscula con
-// tracking-wide + tagline terracota con tracking-widest escalada al ancho de la
-// marca). Flor/logo centrado sobre la marca, píldora crema con el tipo de
-// documento a la derecha. Devuelve la Y del cuerpo (tras el divisor perla).
+// Header claro "estilo factura": flor/logo a la izquierda y marca Italiana a su
+// derecha. La marca y la frase están CENTRADAS ENTRE SÍ y alineadas a la
+// izquierda: ambas inician y terminan juntas (la frase se escala al ancho de la
+// marca). Píldora crema con el tipo de documento a la derecha.
+// Devuelve la Y del cuerpo (tras el divisor perla).
 export function drawLightHeader(
   doc: jsPDF,
   opts: {
     badgeLabel: string;
     logoBase64?: string | null;
     bizName: string;
+    /** Color de fondo de la píldora (por defecto crema). El recibo la usa verde. */
+    badgeBg?: string;
+    /** Color del texto de la píldora (por defecto terracota). */
+    badgeText?: string;
   }
 ): number {
   const PW = doc.internal.pageSize.getWidth();
-  const cx = PW / 2;
 
-  // Medidas de la marca y la tagline para centrar y escalar al mismo ancho
+  // Flor/logo a la izquierda de la marca
+  let logoW = 13;
+  let logoH = 13;
+  if (opts.logoBase64) {
+    try {
+      const props = doc.getImageProperties(opts.logoBase64);
+      const ratio = props.width && props.height ? props.height / props.width : 1;
+      logoW = 13;
+      logoH = logoW * ratio;
+      doc.addImage(opts.logoBase64, "PNG", M, 16 - logoH / 2, logoW, logoH);
+    } catch {
+      logoW = 11;
+      logoH = 11;
+      drawFlowerIcon(doc, M + 5.5, 16, 11);
+    }
+  } else {
+    logoW = 11;
+    logoH = 11;
+    drawFlowerIcon(doc, M + 5.5, 16, 11);
+  }
+
+  // Marca Italiana 24pt pizarra con tracking-wide (0.025em)
   const brandText = opts.bizName.toUpperCase();
-  const brandSize = 20;
-  const brandTrack = brandSize * 0.025; // tracking-wide de Tailwind (0.025em)
+  const brandSize = 24;
+  const brandTrack = brandSize * 0.025;
   doc.setFont("Italiana", "normal");
   const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
+  const textX = M + logoW + 4;
+  drawTrackedText(doc, brandText, textX, 16, brandSize, brandTrack, DARK, "Italiana", "normal");
 
+  // Tagline terracota en mayúscula con tracking-widest (0.1em), escalada al ancho
+  // de la marca para que INICIE y TERMINE junto con el nombre (lockup compacto)
   const taglineText = "BIENESTAR & SALUD";
   doc.setFont("helvetica", "normal");
-  const refSize = 9;
-  const refTrack = refSize * 0.1; // tracking-widest de Tailwind
+  const refSize = 10;
+  const refTrack = refSize * 0.1;
   const taglineW = trackedTextWidth(doc, taglineText, refSize, refTrack);
   const scale = Math.min(1.4, Math.max(0.75, brandW / taglineW));
+  const taglineStart = textX + (brandW - taglineW * scale) / 2;
+  drawTrackedText(doc, taglineText, taglineStart, 22.5, refSize * scale, refTrack * scale, PRIMARY, "helvetica", "normal");
 
-  // Píldora crema con el tipo de documento (derecha, misma posición que antes)
+  // Distribuidor
+  setTextColor(doc, DARK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Distribuidor Independiente Amway", textX, 29);
+
+  // Descripción y país
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("Suplementos, cosmética y bienestar para toda la familia", textX, 34.5);
+  doc.text("República Dominicana", textX, 39.5);
+
+  // Píldora crema con el tipo de documento a la derecha
   const badgeH = 10;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   const bw = doc.getTextWidth(opts.badgeLabel) + 16;
   const bx = PW - M - bw;
   doc.setDrawColor(224, 218, 211);
-  doc.setFillColor(240, 236, 227); // crema #F0ECE3
+  const badgeFill = hexRgb(opts.badgeBg || CREAM_HEADER);
+  doc.setFillColor(badgeFill.r, badgeFill.g, badgeFill.b);
   doc.roundedRect(bx, 10, bw, badgeH, badgeH / 2, badgeH / 2, "FD");
-  setTextColor(doc, PRIMARY);
-  // Centrado óptico: baseline = centro de la píldora + media altura de mayúscula
-  // (0.35 * fontSize en pt, convertido a mm) — 1pt = 0.3528mm
+  setTextColor(doc, opts.badgeText || PRIMARY);
   const badgeBaseline = 10 + badgeH / 2 + 9 * 0.35 * 0.3528; // 16.1mm
   doc.text(opts.badgeLabel, bx + bw / 2, badgeBaseline, { align: "center" });
-
-  // Flor/logo centrado sobre la marca
-  if (opts.logoBase64) {
-    try {
-      const props = doc.getImageProperties(opts.logoBase64);
-      const ratio = props.width && props.height ? props.height / props.width : 1;
-      const lh = 9;
-      const lw = lh / (ratio || 1);
-      doc.addImage(opts.logoBase64, "PNG", cx - lw / 2, 2, lw, lh);
-    } catch {
-      drawFlowerIcon(doc, cx, 6.5, 9);
-    }
-  } else {
-    drawFlowerIcon(doc, cx, 6.5, 9);
-  }
-
-  // Marca Italiana centrada (baseline bajo la flor)
-  drawTrackedText(doc, brandText, cx - brandW / 2, 17.5, brandSize, brandTrack, DARK, "Italiana", "normal");
-
-  // Tagline terracota centrada, con el ancho escalado al de la marca
-  drawTrackedText(doc, taglineText, cx - (taglineW * scale) / 2, 24, refSize * scale, refTrack * scale, PRIMARY, "helvetica", "normal");
-
-  // Distribuidor
-  setTextColor(doc, DARK);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("Distribuidor Independiente Amway", cx, 30, { align: "center" });
-
-  // Descripción y país
-  setTextColor(doc, GRAY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("Suplementos, cosmética y bienestar para toda la familia", cx, 35.5, { align: "center" });
-  doc.text("República Dominicana", cx, 40.5, { align: "center" });
 
   // Divisor perla
   doc.setDrawColor(224, 218, 211);
   doc.setLineWidth(0.3);
-  doc.line(M, 44.5, PW - M, 44.5);
+  doc.line(M, 44, PW - M, 44);
 
   return 48;
 }
+
 
 // Pie compartido (factura, recibo, cotización): línea sobre la firma, mensaje a
 // la izquierda y firma a la derecha, BAJADA y con "FIRMA AUTORIZADA" centrada
@@ -678,13 +700,17 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     signatureBase64 = await loadImageAsBase64WithRetry(receipt.signature_url);
   }
 
-  // Header con la MISMA línea gráfica que la factura (marca + frase centralizadas)
+  // Header con la MISMA línea gráfica que la factura y, como en el JPG del
+  // recibo, la píldora verde "RECIBO DE PAGO".
   y = drawLightHeader(doc, {
-    badgeLabel: "COMPROBANTE DE PAGO",
+    badgeLabel: "RECIBO DE PAGO",
+    badgeBg: RECEIPT_GREEN_BG,
+    badgeText: RECEIPT_GREEN,
     logoBase64,
     bizName,
   });
 
+  // Número y fecha a la derecha, dentro del header claro (igual que el preview)
   setTextColor(doc, DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
@@ -697,36 +723,147 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
 
   y = 52;
 
-  // Panel de datos del pago (crema redondeado, como la factura)
-  const panelH = 44;
-  drawCreamRoundedRect(doc, M, y, PW - M * 2, panelH, 5);
+  // ── Panel "INFORMACIÓN DEL PAGO" (crema redondeado, título verde) ──
+  const panelH = 34;
+  drawCreamRoundedRect(doc, M, y, CW, panelH, 5);
 
-  setTextColor(doc, PRIMARY);
+  setTextColor(doc, RECEIPT_GREEN);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("DATOS DEL PAGO", M + 6, y + 6);
+  doc.text("INFORMACIÓN DEL PAGO", M + 6, y + 6);
 
   setTextColor(doc, DARK);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text(`Cliente: ${receipt.client_name}`, M + 6, y + 15);
-  doc.text(`Factura: ${receipt.invoice_number}`, M + 6, y + 22);
-  doc.text(`Método de Pago: ${receipt.payment_method}`, M + 6, y + 29);
+  // Fila 1: Cliente | Factura (dos columnas, como el preview)
+  doc.text(`Cliente: ${receipt.client_name || "—"}`, M + 6, y + 15);
+  doc.text(`Factura: ${receipt.invoice_number || "—"}`, M + CW / 2, y + 15);
+  // Fila 2: Método de pago
+  doc.text(`Método de pago: ${receipt.payment_method || "—"}`, M + 6, y + 22);
 
+  y += panelH + 8;
+
+  // ── Tabla de productos de la factura (si tiene ítems) ──
+  const items = receipt.items || [];
+  if (items.length > 0) {
+    const colDefs = [
+      { label: "Descripción / Producto", x: M + 4, w: 100, align: "left" as const },
+      { label: "Cant.", x: M + 104, w: 12, align: "right" as const },
+      { label: "Precio Unit.", x: M + 118, w: 28, align: "right" as const },
+      { label: "Total", x: M + 148, w: 28, align: "right" as const },
+    ];
+
+    const drawHead = (atY: number) => {
+      setDrawFillColor(doc, CREAM_HEADER);
+      doc.rect(M, atY, CW, 8, "F");
+      setTextColor(doc, DARK);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      colDefs.forEach((c) => {
+        doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
+      });
+    };
+
+    drawHead(y);
+    y += 10;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    setTextColor(doc, DARK);
+
+    items.forEach((item) => {
+      const nameLines = doc.splitTextToSize(item.name || "Producto", 98) as string[];
+      const rowHeight = Math.max(7, nameLines.length * 4.2 + 1);
+
+      if (y + rowHeight > 236) {
+        doc.addPage();
+        y = M;
+        drawHead(y);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        setTextColor(doc, DARK);
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      nameLines.forEach((line: string, i: number) => {
+        doc.text(line, M + 2, y + 3 + i * 4);
+      });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(String(item.quantity), M + 116, y + 3, { align: "right" });
+      doc.text(formatCurrency(item.unit_price), M + 146, y + 3, { align: "right" });
+      doc.text(formatCurrency(item.line_total), M + 176, y + 3, { align: "right" });
+
+      doc.setDrawColor(224, 218, 211);
+      doc.setLineWidth(0.2);
+      doc.line(M, y + 5.5, M + CW, y + 5.5);
+
+      y += rowHeight;
+    });
+
+    y += 4;
+  }
+
+  // ── Monto pagado (destacado en verde, como el preview/JPG) ──
+  if (y > 224) {
+    doc.addPage();
+    y = M;
+  }
+  doc.setDrawColor(224, 218, 211);
+  doc.setLineWidth(0.3);
+  doc.line(M, y, PW - M, y);
+  y += 8;
+
+  const amountText = formatCurrency(receipt.amount);
+  setTextColor(doc, SUCCESS);
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  const amountW = doc.getTextWidth(amountText);
+  doc.text(amountText, PW - M, y, { align: "right" });
+  setTextColor(doc, GRAY);
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text(`Monto: ${formatCurrency(receipt.amount)}`, M + 6, y + 37);
-
-  y += panelH + 10;
+  doc.text("Monto pagado", PW - M - amountW - 5, y);
+  y += 6;
 
   // Total en letras
-  setTextColor(doc, GRAY);
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(10);
-  doc.text(`Son: ${receipt.amount_in_words || numberToWords(receipt.amount)}`, M, y);
-  y += 12;
+  const words = receipt.amount_in_words || numberToWords(receipt.amount);
+  if (words) {
+    setTextColor(doc, GRAY);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.text(`Son: ${words}`, PW - M, y, { align: "right" });
+    y += 8;
+  }
 
-  // Pie con la misma línea gráfica que la factura
+  // ── Notas (concepto) ──
+  if (receipt.concept) {
+    if (y > 236) {
+      doc.addPage();
+      y = M;
+    }
+    doc.setDrawColor(224, 218, 211);
+    doc.setLineWidth(0.3);
+    doc.line(M, y, PW - M, y);
+    y += 6;
+    setTextColor(doc, GRAY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Notas:", M, y);
+    y += 5;
+    setTextColor(doc, DARK);
+    doc.setFontSize(9);
+    const noteLines = doc.splitTextToSize(receipt.concept, CW) as string[];
+    noteLines.forEach((line: string) => {
+      doc.text(line, M, y);
+      y += 4.5;
+    });
+  }
+
+  // ── Pie con la misma línea gráfica que la factura ("¡Gracias por tu pago!") ──
   if (y > 236) {
     doc.addPage();
     y = M;
@@ -735,7 +872,7 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     y,
     bizName,
     signatureBase64,
-    leftMessage: `¡Gracias por tu pago y por apoyar a ${bizName}, aliados a tu bienestar!`,
+    leftMessage: "¡Gracias por tu pago!",
   });
 
   return doc;
@@ -986,18 +1123,18 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     { label: "Total", x: M + 148, w: 28, align: "right" as const },
   ];
 
-  const drawTableHeader = () => {
+  const drawTableHeader = (atY: number) => {
     setDrawFillColor(doc, CREAM_HEADER);
-    doc.rect(M, M, CW, 8, "F");
+    doc.rect(M, atY, CW, 8, "F");
     setTextColor(doc, DARK);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     colDefs.forEach((c) => {
-      doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), M + 5.5, { align: c.align });
+      doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
     });
   };
 
-  drawTableHeader();
+  drawTableHeader(y);
   y += 10;
 
   doc.setFont("helvetica", "normal");
@@ -1011,7 +1148,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     if (y + rowHeight > 200) {
       doc.addPage();
       y = M;
-      drawTableHeader();
+      drawTableHeader(y);
       y += 10;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
@@ -1127,10 +1264,9 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     leftMessage: `¡Gracias por tu confianza y por apoyar a ${bizName}, aliados a tu bienestar!`,
     closing: {
       lines: [
-        "Nos sentimos honrados de poder apoyarte y orientarte",
+        "Nos sentimos honrados de apoyarte y orientarte",
         "en este camino hacia una mejor calidad de vida.",
-        "Estamos a tus órdenes y en la mejor disposición",
-        "de responder a tus preguntas e inquietudes.",
+        "Estamos a tus órdenes y en la mejor disposición de responder a tus preguntas e inquietudes.",
       ],
       contact: `Tel: ${quote.phone || "809-863-5602"}  |  Email: ${quote.email || "info@almaia-rd.com"}`,
     },
