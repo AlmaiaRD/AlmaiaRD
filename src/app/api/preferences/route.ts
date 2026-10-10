@@ -157,10 +157,13 @@ export async function PATCH(req: Request) {
 
   if (updatedRows === 0) {
     console.error("[preferences] FALLO TOTAL: 0 filas actualizadas para", user.id, "lastError:", lastError);
-    return NextResponse.json(
-      { error: "No se pudieron guardar las preferencias", detail: lastError?.message },
+    const detail = lastError?.message ?? (serviceDb ? "service role: 0 filas sin error" : "sin service role; sesión: 0 filas sin error");
+    const res = NextResponse.json(
+      { error: "No se pudieron guardar las preferencias", detail },
       { status: 500 }
     );
+    res.headers.set("X-Preferences-Error", detail);
+    return res;
   }
 
   return NextResponse.json({ preferences: merged });
