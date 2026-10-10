@@ -81,6 +81,8 @@ export async function PATCH(req: Request) {
   let serviceDb: SupabaseClient | null = null;
   if (serviceRoleKey) {
     serviceDb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+  } else {
+    console.warn("[preferences] SUPABASE_SERVICE_ROLE_KEY no definida — usando solo cliente autenticado");
   }
 
   // 2.a) Leer preferencias actuales (service role primero; si no, sesión propia).
@@ -119,37 +121,44 @@ export async function PATCH(req: Request) {
 
   // 3) Escribir y VERIFICAR que la fila se actualizó realmente.
   let updatedRows = 0;
+  let lastError: { message: string; code?: string } | null = null;
   if (serviceDb) {
+    console.log("[preferences] Intentando escribir con service role para user:", user.id);
     const { data, error } = await serviceDb
       .from("users")
       .update({ preferences: merged })
       .eq("id", user.id)
       .select("id");
     if (error) {
-      console.error("Error al guardar preferencias (service role):", error.message, error.code);
+      console.error("[preferences] Error service role:", error.message, error.code, error.details, error.hint);
+      lastError = { message: error.message, code: error.code };
     } else {
       updatedRows = data?.length ?? 0;
+      console.log("[preferences] Service role OK, filas:", updatedRows);
     }
   }
 
   if (updatedRows === 0) {
     // Respaldo con la sesión del usuario (funciona si la política RLS existe).
+    console.log("[preferences] Fallback: intentando escribir con sesión autenticada para user:", user.id);
     const { data, error } = await authClient
       .from("users")
       .update({ preferences: merged })
       .eq("id", user.id)
       .select("id");
     if (error) {
-      console.error("Error al guardar preferencias (sesión):", error.message, error.code);
+      console.error("[preferences] Error sesión:", error.message, error.code, error.details, error.hint);
+      lastError = { message: error.message, code: error.code };
     } else {
       updatedRows = data?.length ?? 0;
+      console.log("[preferences] Sesión OK, filas:", updatedRows);
     }
   }
 
   if (updatedRows === 0) {
-    console.error("No se pudo guardar preferencias: 0 filas actualizadas para", user.id);
+    console.error("[preferences] FALLO TOTAL: 0 filas actualizadas para", user.id, "lastError:", lastError);
     return NextResponse.json(
-      { error: "No se pudieron guardar las preferencias" },
+      { error: "No se pudieron guardar las preferencias", detail: lastError?.message },
       { status: 500 }
     );
   }
