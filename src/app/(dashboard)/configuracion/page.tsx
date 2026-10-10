@@ -235,8 +235,10 @@ Responde en español en máximo 3 oraciones:`,
         /* noop */
       }
       toast.success("Favoritos actualizados");
-    } catch {
-      toast.error("Error al guardar favoritos");
+    } catch (err) {
+      toast.error(
+        (err as { message?: string }).message || "Error al guardar favoritos"
+      );
     } finally {
       setSavingFavorites(false);
     }

@@ -68,6 +68,7 @@ export async function PATCH(req: Request) {
     .eq("id", user.id)
     .single();
   if (readError) {
+    console.error("Error al cargar preferencias:", readError.message, readError.code);
     return NextResponse.json({ error: "Error al cargar preferencias" }, { status: 500 });
   }
 
