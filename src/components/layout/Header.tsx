@@ -24,7 +24,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
         <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <img
-            src="/almaia-logo-con-fondo.svg"
+            src="/almaia-logo-con-fondo.svg?v=almaia2"
             alt="Almaia RD"
             className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-contain flex-shrink-0"
           />

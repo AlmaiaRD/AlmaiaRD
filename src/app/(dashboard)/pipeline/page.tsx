@@ -86,15 +86,11 @@ function KanbanCard({
   const [noteValue, setNoteValue] = useState(client.notes || "");
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sincronizar el borrador cuando la nota guardada cambia desde fuera.
-  // Se ajusta DURANTE el render (el patrón que recomienda React) y no en un
-  // efecto: un `setState` dentro del cuerpo del efecto provoca un segundo
-  // render en cascada y el texto tecleado parpadea un frame.
-  const [lastSavedNotes, setLastSavedNotes] = useState(client.notes || "");
-  if (client.notes !== lastSavedNotes) {
-    setLastSavedNotes(client.notes || "");
+  // Sincronizar borrador cuando la nota guardada cambia desde fuera.
+  // useEffect evita setState durante render (causa hydration mismatch #301).
+  useEffect(() => {
     if (!editingNote) setNoteValue(client.notes || "");
-  }
+  }, [client.notes, editingNote]);
 
   useEffect(() => {
     if (editingNote && noteRef.current) {
@@ -276,6 +272,12 @@ export default function PipelinePage() {
     }
     return map;
   }, [filtered]);
+
+  // Días desde creación hasta cambio de tipo (evita new Date() en render → hydration mismatch #301)
+  const daysSinceCreated = useMemo(() => {
+    if (!selectedClient?.client_type_changed_at || !selectedClient?.created_at) return 0;
+    return Math.floor((new Date(selectedClient.client_type_changed_at).getTime() - new Date(selectedClient.created_at).getTime()) / (1000 * 60 * 60 * 24));
+  }, [selectedClient?.client_type_changed_at, selectedClient?.created_at]);
 
   const handleStageChange = useCallback(async (clientId: string, newStage: string, extra?: { qualification_level?: string; closure_result?: string }) => {
     try {
@@ -601,7 +603,7 @@ export default function PipelinePage() {
                 <div>
                   <p className="text-xs text-[#4C5760]">
                     Fue {selectedClient.previous_client_type === "comprador" ? "Cliente Comprador" : "Prospecto de Negocio"} por{" "}
-                    {Math.floor((new Date(selectedClient.client_type_changed_at).getTime() - new Date(selectedClient.created_at).getTime()) / (1000 * 60 * 60 * 24))} días
+                    {daysSinceCreated} días
                   </p>
                   <p className="text-xs text-[#4C5760]">
                     Convertido el {formatDate(selectedClient.client_type_changed_at)}
