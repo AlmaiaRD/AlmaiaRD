@@ -1264,9 +1264,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     leftMessage: `¡Gracias por tu confianza y por apoyar a ${bizName}, aliados a tu bienestar!`,
     closing: {
       lines: [
-        "Nos sentimos honrados de apoyarte y orientarte",
-        "en este camino hacia una mejor calidad de vida.",
-        "Estamos a tus órdenes y en la mejor disposición de responder a tus preguntas e inquietudes.",
+        "Nos sentimos honrados de poder apoyarte y orientarte en este camino hacia una mejor calidad de vida.",
+        "Estamos a tus órdenes y en la mejor disposición de responder a tus preguntas e inquietudes."
       ],
       contact: `Tel: ${quote.phone || "809-863-5602"}  |  Email: ${quote.email || "info@almaia-rd.com"}`,
     },
