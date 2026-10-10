@@ -23,9 +23,11 @@ export default function Header() {
     <header className="bg-[#39484F] border-b border-[#2C363D] px-4 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
         <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-            <Flower2 size={22} className="sm:w-7 sm:h-7 text-[#F5EFE9]" />
-          </div>
+          <img
+            src="/almaia-logo-con-fondo.svg"
+            alt="Almaia RD"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-contain flex-shrink-0"
+          />
           <Wordmark
             h1ClassName="text-[24px] sm:text-[26px] font-marca text-[#F5EFE9] leading-tight tracking-wide"
             pClassName="text-[10px] sm:text-[11px] text-[#E0DAD3] tracking-widest uppercase leading-tight font-medium"
