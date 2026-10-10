@@ -34,7 +34,10 @@ export async function updatePreferences(
     let message = "Error al guardar preferencias";
     try {
       const json = await res.json();
-      if (json?.error) message = json.error;
+      if (json?.error) {
+        message = json.error;
+        if (json?.detail) message += `: ${json.detail}`;
+      }
     } catch {
       /* noop */
     }
