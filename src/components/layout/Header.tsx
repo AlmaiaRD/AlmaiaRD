@@ -22,7 +22,7 @@ export default function Header() {
   return (
     <header className="bg-[#39484F] border-b border-[#2C363D] px-4 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <img
             src="/almaia-logo-con-fondo.svg"
             alt="Almaia RD"
