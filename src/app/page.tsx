@@ -1,6 +1,6 @@
 "use client";
 
-import { Flower2, ArrowRight, BarChart3, FileText, Package, Users, Shield, Receipt } from "lucide-react";
+import { ArrowRight, BarChart3, FileText, Package, Users, Shield, Receipt } from "lucide-react";
 import Link from "next/link";
 import Wordmark from "@/components/layout/Wordmark";
 
@@ -19,9 +19,11 @@ export default function LandingPage() {
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center">
-              <Flower2 size={22} className="text-[#BA4A3A]" />
-            </div>
+            <img
+              src="/almaia-logo-con-fondo.svg"
+              alt="Almaia RD"
+              className="w-10 h-10 rounded-full object-contain"
+            />
             <Wordmark
               h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
               pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
