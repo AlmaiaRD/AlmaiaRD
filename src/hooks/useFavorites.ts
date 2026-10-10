@@ -24,6 +24,28 @@ export function useFavorites() {
   });
   const [loading, setLoading] = useState(true);
 
+  /** Sincroniza desde el servidor (fuente de verdad por usuario). */
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/preferences");
+      if (!res.ok) return;
+      const json = await res.json();
+      const serverFav: string[] = Array.isArray(json?.preferences?.favorites)
+        ? (json.preferences.favorites as string[]).filter((h) => typeof h === "string")
+        : [];
+      setFavorites(serverFav);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serverFav));
+      } catch {
+        /* noop */
+      }
+    } catch {
+      /* si falla la red, mantenemos la caché local */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -48,8 +70,22 @@ export function useFavorites() {
         if (!cancelled) setLoading(false);
       });
 
+    // Sincroniza entre pestañas: si Configuración guarda favoritos en otra
+    // pestaña, el menú se actualiza al recibir el evento storage.
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setFavorites(parsed.filter((h) => typeof h === "string"));
+        } catch {
+          /* noop */
+        }
+      }
+    };
+    window.addEventListener("storage", onStorage);
     return () => {
       cancelled = true;
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
@@ -97,7 +133,7 @@ export function useFavorites() {
 
   const isFavorite = useCallback((href: string) => favorites.includes(href), [favorites]);
 
-  return { favorites, loading, toggleFavorite, setFavoriteList, isFavorite };
+  return { favorites, loading, refresh, toggleFavorite, setFavoriteList, isFavorite };
 }
 
 export type UseFavorites = ReturnType<typeof useFavorites>;

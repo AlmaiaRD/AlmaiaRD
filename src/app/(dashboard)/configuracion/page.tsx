@@ -227,6 +227,11 @@ Responde en español en máximo 3 oraciones:`,
         body: JSON.stringify({ favorites: favoriteHrefs.slice(0, MAX_FAVORITES) }),
       });
       if (!res.ok) throw new Error("No se pudo guardar");
+      try {
+        window.localStorage.setItem("almaia.favorites.v1", JSON.stringify(favoriteHrefs.slice(0, MAX_FAVORITES)));
+      } catch {
+        /* noop */
+      }
       toast.success("Favoritos actualizados");
     } catch {
       toast.error("Error al guardar favoritos");

@@ -17,8 +17,14 @@ export default function NavMenu() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFamily, setOpenFamily] = useState<string | null>(null);
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { favorites, refresh, toggleFavorite, isFavorite } = useFavorites();
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // El layout permanece montado entre rutas: al navegar, re-sincronizamos los
+  // favoritos para que los cambios guardados en Configuración se reflejen.
+  useEffect(() => {
+    void refresh();
+  }, [pathname, refresh]);
 
   // Cerrar el dropdown de familia al hacer clic fuera o presionar Escape.
   useEffect(() => {
