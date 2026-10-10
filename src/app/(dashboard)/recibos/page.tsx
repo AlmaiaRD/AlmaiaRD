@@ -211,8 +211,8 @@ export default function RecibosPage() {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
-          <div style="width:56px;height:56px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BA4A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+          <div style="width:64px;height:64px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
+            <img src="/almaia-logo-con-fondo.svg?v=almaia" alt="Almaia RD" style="width:64px;height:64px;border-radius:50%;object-fit:contain;" />
           </div>
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>

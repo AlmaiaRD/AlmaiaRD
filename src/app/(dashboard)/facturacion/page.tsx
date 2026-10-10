@@ -969,7 +969,7 @@ export default function FacturacionPage() {
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
                 <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
+                  <img src="/almaia-logo-con-fondo.svg?v=almaia2" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
                 </div>
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
@@ -1640,7 +1640,7 @@ export default function FacturacionPage() {
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
                 <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
+                  <img src="/almaia-logo-con-fondo.svg?v=almaia2" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
                 </div>
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>

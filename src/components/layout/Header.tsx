@@ -26,7 +26,7 @@ export default function Header() {
           <img
             src="/almaia-logo-con-fondo.svg"
             alt="Almaia RD"
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-contain flex-shrink-0"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-contain flex-shrink-0"
           />
           <Wordmark
             h1ClassName="text-[24px] sm:text-[26px] font-marca text-[#F5EFE9] leading-tight tracking-wide"
