@@ -1,17 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getPreferences, updatePreferences } from "@/services/preferences";
 
 const mockUserId = "user-123";
 
 const mockSingle = vi.fn();
-const mockEqUpdate = vi.fn();
-const mockSelect = vi.fn(() => ({ eq: vi.fn(() => ({ single: mockSingle })) }));
-const mockUpdate = vi.fn(() => ({ eq: mockEqUpdate }));
 
 vi.mock("@/lib/supabase", () => {
   const mockFrom = vi.fn(() => ({
-    select: mockSelect,
-    update: mockUpdate,
+    select: vi.fn(() => ({ eq: vi.fn(() => ({ single: mockSingle })) })),
   }));
 
   return {
@@ -56,20 +52,32 @@ describe("updatePreferences", () => {
     vi.clearAllMocks();
   });
 
-  it("merges new preferences with existing ones", async () => {
-    mockSingle.mockResolvedValue({
-      data: { preferences: { monthly_goal: 50000 } },
-      error: null,
-    });
-    mockEqUpdate.mockResolvedValue({ error: null });
-
-    const result = await updatePreferences(mockUserId, { goal_month: "2024-07" });
-    expect(result).toEqual({ monthly_goal: 50000, goal_month: "2024-07" });
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it("throws on update error", async () => {
-    mockSingle.mockResolvedValue({ data: { preferences: {} }, error: null });
-    mockEqUpdate.mockResolvedValue({ error: new Error("Update failed") });
+  it("envía las preferencias al endpoint y devuelve lo combinado por el servidor", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ preferences: { monthly_goal: 50000, goal_month: "2024-07" } }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await updatePreferences(mockUserId, { goal_month: "2024-07" });
+
+    expect(result).toEqual({ monthly_goal: 50000, goal_month: "2024-07" });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/preferences",
+      expect.objectContaining({ method: "PATCH" })
+    );
+  });
+
+  it("lanza error con el mensaje devuelto por el endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Update failed" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     await expect(updatePreferences(mockUserId, { monthly_goal: 100 })).rejects.toThrow("Update failed");
   });
