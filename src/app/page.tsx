@@ -18,7 +18,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#F5EFE9] flex flex-col">
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-[3px]">
             <img
               src="/almaia-logo-con-fondo.svg?v=almaia4"
               alt="Almaia RD"
@@ -27,6 +27,7 @@ export default function LandingPage() {
             <Wordmark
               h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
               pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
+              gap={2}
             />
           </div>
           <div className="flex items-center gap-3">

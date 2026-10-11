@@ -965,7 +965,7 @@ export default function FacturacionPage() {
             <div id="invoice-preview" className="bg-white p-8 rounded-xl" style={{ fontFamily: "system-ui, sans-serif" }}>
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-1">
+              <div className="flex items-start gap-[3px]">
                 <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
@@ -1634,7 +1634,7 @@ export default function FacturacionPage() {
         {jpgData && (
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-1">
+              <div className="flex items-start gap-[3px]">
                 <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>

@@ -10,6 +10,8 @@ interface WordmarkProps {
   pClassName?: string;
   /** Frase inferior (por defecto "Bienestar & Salud"). */
   tagline?: string;
+  /** Espacio entre "ALMAIA" y el tagline (px). Por defecto 2px. */
+  gap?: number;
 }
 
 /**
@@ -21,6 +23,7 @@ export default function Wordmark({
   h1ClassName = "",
   pClassName = "",
   tagline = "Bienestar & Salud",
+  gap = 2,
 }: WordmarkProps) {
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const pRef = useRef<HTMLParagraphElement>(null);
@@ -52,7 +55,7 @@ export default function Wordmark({
   }, []);
 
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start" style={{ gap: `${gap}px` }}>
       <h1
         ref={h1Ref}
         className={h1ClassName}
