@@ -10,6 +10,8 @@ export interface Column<T> {
   width?: number;
   minWidth?: number;
   maxWidth?: number;
+  /** La columna crece para ocupar el espacio sobrante (hasta maxWidth). */
+  grow?: boolean;
   align?: "left" | "center" | "right";
   render?: (row: T, index: number) => React.ReactNode;
   sortable?: boolean;
@@ -51,8 +53,11 @@ function cellStyle<T>(col: Column<T>): React.CSSProperties {
     width: col.width ? `${col.width}px` : undefined,
     minWidth: col.minWidth ? `${col.minWidth}px` : "80px",
     maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
-    flex: "0 0 auto",           // evita que la celda crezca/encoga
-    overflow: "hidden",         // clave: corta el contenido que sobresale
+    // Ancho predecible: fija el ancho (no crece ni encoge) o la hace crecer
+    // para llenar el sobrante; el contenido que desborde se corta en vez de
+    // empujar a las demás columnas.
+    flex: col.width ? "0 0 auto" : col.grow ? "1 1 auto" : "0 1 auto",
+    overflow: "hidden",
   };
 }
 
@@ -100,7 +105,7 @@ function VirtualRow<T>({
           className={`flex items-center px-4 ${ALIGN_CLASS[col.align ?? "left"]} ${classNameCell ?? ""} ${col.className ?? ""}`}
           style={cellStyle(col)}
         >
-          <div className="w-full truncate" style={{ minWidth: 0 }}>
+          <div className="w-full min-w-0 overflow-hidden">
             {col.render ? (
               col.render(row, index)
             ) : (

@@ -38,5 +38,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|login|api/whatsapp/webhook(?![-/])|api/telegram/webhook(?![-/])|manifest\\.webmanifest|manifest\\.json|sw\\.js|icons/.*|apple-touch-icon\\.png|favicon-.*\\.png).*)"],
+  // OJO: los assets estáticos (svg, png, etc.) DEBEN quedar fuera del matcher.
+  // Si el middleware los intercepta, un usuario sin sesión recibe un 307 a
+  // /login en lugar de la imagen → el logo no se ve en /login ni en la landing.
+  matcher: [
+    "/((?!_next/static|_next/image|login|[^/]+\\.(?:svg|png|jpe?g|webp|gif|ico|css|js|woff2?|txt|xml|json)|manifest\\.webmanifest|sw\\.js|icons/.*).*)",
+  ],
 };

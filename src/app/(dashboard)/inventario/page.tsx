@@ -851,38 +851,40 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
   // meterla aqui haria que las columnas se reconstruyan siempre, que es
   // justo lo que este useMemo evita.
   const stockColumns: Column<InventoryItem>[] = useMemo(() => [
-    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#4C5760] truncate" title={item.products?.subbrands?.name || "—"}>
-      {item.products?.subbrands?.name || "—"}
-    </span> },
-    { key: "products.name", header: "Producto", minWidth: 300, sortable: true, render: (item) => (
-      <div className="flex flex-col min-w-0" title={item.products?.name || "—"}>
-        <span className="text-sm text-[#39484F] font-medium truncate">{item.products?.name || "—"}</span>
-        <span className="text-xs text-[#4C5760] truncate">{item.products?.code}</span>
+    { key: "products.subbrands.name", header: "Submarca", width: 140, sortable: true, render: (item) => (
+      <span className="text-sm text-[#4C5760] truncate block" title={item.products?.subbrands?.name || "—"}>
+        {item.products?.subbrands?.name || "—"}
+      </span>
+    )},
+    { key: "products.name", header: "Producto", minWidth: 220, maxWidth: 520, grow: true, sortable: true, render: (item) => (
+      <div className="flex flex-col min-w-0 w-full" title={item.products?.name || "—"}>
+        <span className="text-sm text-[#39484F] font-medium truncate block">{item.products?.name || "—"}</span>
+        <span className="text-xs text-[#4C5760] truncate block">{item.products?.code}</span>
       </div>
     )},
-    { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{purchasedMap[item.product_id] || "—"}</span> },
-    { key: "sold", header: "Vendidas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{soldMap[item.product_id]}</span> },
-    { key: "computedStock", header: "Stock", minWidth: 90, align: "right", sortable: true, render: (item) => {
+    { key: "purchased", header: "Compradas", width: 110, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] truncate block">{purchasedMap[item.product_id] || "—"}</span> },
+    { key: "sold", header: "Vendidas", width: 110, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] truncate block">{soldMap[item.product_id] ?? "—"}</span> },
+    { key: "computedStock", header: "Stock", width: 100, align: "right", sortable: true, render: (item) => {
       const sold = soldMap[item.product_id] || 0;
       const purchased = purchasedMap[item.product_id] || 0;
       const computedStock = Math.max(0, purchased - sold);
-      return <span className="text-sm text-[#39484F] text-right font-medium">{computedStock}</span>;
+      return <span className="text-sm text-[#39484F] truncate block font-medium">{computedStock}</span>;
     }},
-    { key: "computedPending", header: "Pend. Dev.", minWidth: 90, align: "right", sortable: true, render: (item) => {
+    { key: "computedPending", header: "Pend. Dev.", width: 110, align: "right", sortable: true, render: (item) => {
       const sold = soldMap[item.product_id] || 0;
       const purchased = purchasedMap[item.product_id] || 0;
       const computedPending = Math.max(0, sold - purchased);
-      return <span className="text-sm text-[#D4A0A0] text-right font-medium">{computedPending}</span>;
+      return <span className="text-sm text-[#D4A0A0] truncate block font-medium">{computedPending}</span>;
     }},
-    { key: "status", header: "Estado", minWidth: 100, align: "center", sortable: true, render: (item) => {
+    { key: "status", header: "Estado", width: 120, align: "center", sortable: true, render: (item) => {
       const sold = soldMap[item.product_id] || 0;
       const purchased = purchasedMap[item.product_id] || 0;
       const computedStock = Math.max(0, purchased - sold);
       const status = getStockStatus(computedStock, item.minimum_stock);
       return <Badge variant={status.variant}>{status.label}</Badge>;
     }},
-    { key: "movements", header: "Mov.", minWidth: 50, align: "center", render: () => <History size={14} className="text-[#4C5760] mx-auto" /> },
-    { key: "hide", header: "Ocultar", minWidth: 100, align: "center", render: (item) => (
+    { key: "movements", header: "Mov.", width: 70, align: "center", render: () => <History size={14} className="text-[#4C5760] mx-auto" /> },
+    { key: "hide", header: "Ocultar", width: 180, align: "center", render: (item) => (
       <div className="flex items-center justify-center gap-1">
         <button
           onClick={(e) => { e.stopPropagation(); toggleHideStockProduct(item.product_id); }}

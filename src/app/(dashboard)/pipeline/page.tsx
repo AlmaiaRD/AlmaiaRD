@@ -17,6 +17,7 @@ import {
   Search, Phone, Mail, Tag, ShoppingCart, DollarSign, TrendingUp, Users,
   UserPlus, BarChart3, Zap, FileText, CheckCircle2, Handshake, AlertTriangle, MessageSquare, Presentation, Briefcase, HelpCircle,
   ShoppingCart as CartIcon, Briefcase as BriefcaseIcon, UserCheck, User, Edit2,
+  LayoutGrid, List as ListIcon, ArrowUpDown,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { LucideIcon } from "lucide-react";
@@ -111,7 +112,7 @@ function KanbanCard({
 
   return (
     <div
-      className={`bg-white rounded-xl border p-3 cursor-pointer hover:shadow-md transition-all ${isStagnant ? "border-[#E8C87A]" : "border-[#E0DAD3]"} ${draggingId === client.id ? "opacity-50" : ""}`}
+      className={`bg-white rounded-xl border p-2.5 cursor-pointer hover:shadow-md transition-all ${isStagnant ? "border-[#E8C87A]" : "border-[#E0DAD3]"} ${draggingId === client.id ? "opacity-50" : ""}`}
       draggable={!editingNote}
       onDragStart={e => onDragStart(e, client.id)}
       onClick={() => {
@@ -119,23 +120,15 @@ function KanbanCard({
         if (editingNote) return;
         onOpen(client);
       }}
+      title={client.notes ? `Nota: ${client.notes}` : undefined}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {batchMode && <input type="checkbox" checked={isSelected} onChange={() => onToggleSelect(client.id)} onClick={e => e.stopPropagation()} className="rounded border-[#E0DAD3] text-[#BA4A3A]" />}
-          <div className="w-8 h-8 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center flex-shrink-0">
-            <User size={14} className="text-[#BA4A3A]" />
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-[#39484F] truncate">{client.full_name}</h4>
-            {client.phone && (
-              <a href={`https://wa.me/1${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#4C5760] hover:text-[#86C7A3] flex items-center gap-1">
-                <Phone size={10} /> {client.phone}
-              </a>
-            )}
-          </div>
+          <span className={`w-2 h-2 rounded-full shrink-0 ${ct === "negocio" ? "bg-purple-500" : "bg-[#86C7A3]"}`} />
+          <h4 className="text-sm font-semibold text-[#39484F] truncate">{client.full_name}</h4>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {isStagnant && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E8C87A]/20 text-[#B8860B] font-medium whitespace-nowrap">⚠ {client.days_in_stage}d</span>}
           <button
             onClick={e => { e.stopPropagation(); setEditingNote(!editingNote); }}
@@ -165,30 +158,18 @@ function KanbanCard({
           <p className="text-[9px] text-[#4C5760] mt-1">Enter para guardar · Esc para cancelar</p>
         </div>
       ) : (
-        client.notes && (
-          <div className="mt-2 p-2 bg-[#F1E9DF] rounded-lg">
-            <p className="text-[10px] text-[#39484F] line-clamp-2 leading-relaxed">{client.notes}</p>
-          </div>
-        )
-      )}
-
-      <div className="flex items-center gap-2 text-[10px] text-[#4C5760] mt-2">
-        {ct === "comprador" && (
-          <>
-            <span className="flex items-center gap-0.5"><DollarSign size={10} /> {formatCurrency(client.total_spent)}</span>
-            <span className="flex items-center gap-0.5"><ShoppingCart size={10} /> {client.num_purchases}x</span>
-          </>
-        )}
-        {client.pending_balance > 0 && (
-          <span className="text-[#D4A0A0] font-medium">Pend: {formatCurrency(client.pending_balance)}</span>
-        )}
-      </div>
-
-      {client.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {client.tags.slice(0, 2).map(t => (
-            <span key={t.id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#BA4A3A]/10 text-[#BA4A3A]">{t.name}</span>
-          ))}
+        <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#4C5760]">
+          {ct === "comprador" ? (
+            <>
+              <span className="flex items-center gap-0.5"><DollarSign size={10} /> {formatCurrency(client.total_spent)}</span>
+              <span className="flex items-center gap-0.5"><ShoppingCart size={10} /> {client.num_purchases}x</span>
+            </>
+          ) : (
+            <span className="flex items-center gap-0.5"><Users size={10} /> {formatDate(client.created_at)}</span>
+          )}
+          {client.pending_balance > 0 && (
+            <span className="text-[#D4A0A0] font-medium ml-auto">Pend: {formatCurrency(client.pending_balance)}</span>
+          )}
         </div>
       )}
     </div>
@@ -214,6 +195,9 @@ export default function PipelinePage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: "", phone: "", email: "", client_type: "comprador" as ClientType, stage: "prospecto" });
   const [saving, setSaving] = useState(false);
+  // Vista: lista (tabla, fácil de leer/seguir) por defecto; tablero kanban opcional.
+  const [view, setView] = useState<"lista" | "tablero">("lista");
+  const [listSort, setListSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "days_in_stage", dir: "desc" });
 
   useEffect(() => {
     async function load() {
@@ -277,7 +261,31 @@ export default function PipelinePage() {
   const daysSinceCreated = useMemo(() => {
     if (!selectedClient?.client_type_changed_at || !selectedClient?.created_at) return 0;
     return Math.floor((new Date(selectedClient.client_type_changed_at).getTime() - new Date(selectedClient.created_at).getTime()) / (1000 * 60 * 60 * 24));
-  }, [selectedClient?.client_type_changed_at, selectedClient?.created_at]);
+  }, [selectedClient]);
+
+  // Lista ordenable: una fila por cliente, fácil de leer y seguir.
+  const listRows = useMemo(() => {
+    const val = (c: ClientCardData): string | number => {
+      switch (listSort.key) {
+        case "name": return c.full_name;
+        case "type": return c.client_type === "negocio" ? "1" : "0";
+        case "stage": return getStagesForType(c.client_type || "comprador").findIndex(s => s.key === c.stage);
+        case "total": return c.total_spent;
+        case "pending": return c.pending_balance;
+        case "purchases": return c.num_purchases;
+        default: return c.days_in_stage ?? -1;
+      }
+    };
+    return [...filtered].sort((a, b) => {
+      const av = val(a); const bv = val(b);
+      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+      return listSort.dir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, listSort]);
+
+  function toggleListSort(key: string) {
+    setListSort(prev => prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
+  }
 
   const handleStageChange = useCallback(async (clientId: string, newStage: string, extra?: { qualification_level?: string; closure_result?: string }) => {
     try {
@@ -419,6 +427,14 @@ export default function PipelinePage() {
           <p className="text-sm text-[#4C5760] mt-1">Arrastra clientes entre etapas</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-xl border border-[#E0DAD3] overflow-hidden bg-white">
+            <button onClick={() => setView("lista")} title="Vista lista" className={`px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all ${view === "lista" ? "bg-[#BA4A3A] text-white" : "text-[#4C5760] hover:bg-[#F1E9DF]"}`}>
+              <ListIcon size={15} /> <span className="hidden sm:inline">Lista</span>
+            </button>
+            <button onClick={() => setView("tablero")} title="Vista tablero" className={`px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all ${view === "tablero" ? "bg-[#BA4A3A] text-white" : "text-[#4C5760] hover:bg-[#F1E9DF]"}`}>
+              <LayoutGrid size={15} /> <span className="hidden sm:inline">Tablero</span>
+            </button>
+          </div>
           <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-[#BA4A3A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
             <UserPlus size={16} /> <span className="hidden sm:inline">Agregar al Pipeline</span><span className="sm:hidden">Agregar</span>
           </button>
@@ -455,6 +471,73 @@ export default function PipelinePage() {
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" /></div>
+      ) : view === "lista" ? (
+        /* ── Vista Lista: una fila por cliente, ordenable ─────────────── */
+        <div className="bg-white rounded-2xl border border-[#E0DAD3] shadow-sm overflow-x-auto">
+          <table className="w-full text-sm min-w-[760px]">
+            <thead>
+              <tr className="border-b border-[#E0DAD3] bg-[#F5EFE9] text-xs font-semibold uppercase tracking-wider text-[#4C5760]">
+                {[
+                  { key: "name", label: "Cliente" },
+                  { key: "type", label: "Tipo" },
+                  { key: "stage", label: "Etapa" },
+                  { key: "days_in_stage", label: "Días en etapa" },
+                  { key: "total", label: "Total gastado" },
+                  { key: "purchases", label: "Compras" },
+                  { key: "pending", label: "Pendiente" },
+                ].map(col => (
+                  <th key={col.key} className="text-left px-4 py-3 whitespace-nowrap cursor-pointer select-none hover:text-[#39484F]" onClick={() => toggleListSort(col.key)}>
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      <ArrowUpDown size={11} className={listSort.key === col.key ? "text-[#BA4A3A]" : "opacity-40"} />
+                    </span>
+                  </th>
+                ))}
+                <th className="text-left px-4 py-3">Etapa (cambio rápido)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {listRows.length === 0 && (
+                <tr><td colSpan={8} className="text-center py-12 text-sm text-[#4C5760]">Sin clientes que coincidan</td></tr>
+              )}
+              {listRows.map(c => {
+                const stagnant = c.days_in_stage !== null && c.days_in_stage >= STAGNATION_THRESHOLD_DAYS;
+                return (
+                  <tr key={c.id} className="border-b border-[#F0EBE3] hover:bg-[#F1E9DF] cursor-pointer transition-colors" onClick={() => openClient(c)}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${(c.client_type || "comprador") === "negocio" ? "bg-purple-500" : "bg-[#86C7A3]"}`} />
+                        <span className="font-medium text-[#39484F] truncate max-w-[220px]" title={c.full_name}>{c.full_name}</span>
+                        {c.notes && <span title={`Nota: ${c.notes}`} className="text-[10px] text-[#A99B90]">📝</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-[#4C5760] whitespace-nowrap">{(c.client_type || "comprador") === "negocio" ? "Negocio" : "Comprador"}</td>
+                    <td className="px-4 py-3"><StageBadge stage={c.stage} clientType={c.client_type || "comprador"} qualificationLevel={c.qualification_level} /></td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`text-sm font-semibold ${stagnant ? "text-[#B8860B] bg-[#E8C87A]/20 px-2 py-0.5 rounded-lg" : "text-[#4C5760]"}`}>
+                        {c.days_in_stage ?? "—"}{stagnant ? " ⚠" : ""}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-[#39484F] whitespace-nowrap">{formatCurrency(c.total_spent)}</td>
+                    <td className="px-4 py-3 text-[#4C5760]">{c.num_purchases}x</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {c.pending_balance > 0 ? <span className="text-[#D4A0A0] font-semibold">{formatCurrency(c.pending_balance)}</span> : <span className="text-[#E0DAD3]">—</span>}
+                    </td>
+                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <select
+                        value={c.stage}
+                        onChange={e => handleStageChange(c.id, e.target.value)}
+                        className="h-9 px-2 rounded-lg border border-[#E0DAD3] bg-white text-xs text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 max-w-[180px]"
+                      >
+                        {getStagesForType(c.client_type || "comprador").map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="space-y-8">
           {/* Buyers Kanban */}
