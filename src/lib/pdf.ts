@@ -403,6 +403,17 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
   return null;
 }
 
+// Logo oficial de Almaia (monograma "A") precargado y cacheado. Se usa como
+// respaldo en los PDFs cuando no hay logo personalizado en ajustes, en lugar
+// de la flor antigua (drawFlowerIcon). Nota: jsPDF NO soporta SVG en addImage,
+// por eso se usa el PNG derivado (almaia-logo-mark.png).
+let almaiaLogoCache: string | null = null;
+async function loadAlmaiaLogo(): Promise<string | null> {
+  if (almaiaLogoCache) return almaiaLogoCache;
+  almaiaLogoCache = await loadImageAsBase64WithRetry("/almaia-logo-mark.png", 1);
+  return almaiaLogoCache;
+}
+
 export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   registerItaliana(doc);
@@ -414,10 +425,12 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   // Load logo and signature images
   let logoBase64: string | null = null;
   let signatureBase64: string | null = null;
-  
+
   if (invoice.logo_url) {
     logoBase64 = await loadImageAsBase64WithRetry(invoice.logo_url);
   }
+  // Respaldo: logo oficial de Almaia (no la flor antigua)
+  if (!logoBase64) logoBase64 = await loadAlmaiaLogo();
   if (invoice.signature_url) {
     signatureBase64 = await loadImageAsBase64WithRetry(invoice.signature_url);
   }
@@ -696,6 +709,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
   if (receipt.logo_url) {
     logoBase64 = await loadImageAsBase64WithRetry(receipt.logo_url);
   }
+  // Respaldo: logo oficial de Almaia (no la flor antigua)
+  if (!logoBase64) logoBase64 = await loadAlmaiaLogo();
   if (receipt.signature_url) {
     signatureBase64 = await loadImageAsBase64WithRetry(receipt.signature_url);
   }
@@ -925,10 +940,12 @@ export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
 
   // Load logo image
   let logoBase64: string | null = null;
-  
+
   if (expense.logo_url) {
     logoBase64 = await loadImageAsBase64WithRetry(expense.logo_url);
   }
+  // Respaldo: logo oficial de Almaia (no la flor antigua)
+  if (!logoBase64) logoBase64 = await loadAlmaiaLogo();
 
   // Header claro (marca + píldora crema — lenguaje visual del JPG de referencia)
   y = drawLightHeader(doc, {
@@ -1067,13 +1084,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   let y = M;
   const bizName = quote.business_name || "Almaia RD";
 
-  // Precargar el logo PNG original de Almaia (flor) para el header
-  let almaiaLogoB64: string | null = null;
-  try {
-    almaiaLogoB64 = await loadImageAsBase64("/almaia-logo.svg");
-  } catch {
-    almaiaLogoB64 = null;
-  }
+  // Precargar el logo oficial de Almaia (PNG, porque jsPDF no soporta SVG)
+  const almaiaLogoB64: string | null = await loadAlmaiaLogo();
 
   let signatureBase64: string | null = null;
   if (quote.signature_url) {

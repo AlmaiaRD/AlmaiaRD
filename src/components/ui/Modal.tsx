@@ -26,8 +26,8 @@ const FIELD_SELECTOR =
 const SAVE_BUTTON_REGEX =
   /(guardar|registrar|crear|confirmar|aceptar|aplicar|enviar|añadir|agregar|agendar|pagar|cobrar|emitir|finalizar)/i;
 
-// TTL del borrador: 7 días. Si el usuario no vuelve antes, se ignora.
-const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// TTL del borrador: 2 semanas (15 días). Si el usuario no vuelve antes, se ignora.
+const DRAFT_TTL_MS = 15 * 24 * 60 * 60 * 1000;
 const DRAFT_PREFIX = "almaia-modal-draft:";
 
 type DraftField = { t: string; v: string | boolean };
@@ -349,7 +349,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
                       <button
                         type="button"
                         onClick={() => setShowConfirm(false)}
-                        className="flex-1 h-10 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all"
+                        className="flex-1 h-10 bg-[#819E82] text-white rounded-xl text-sm font-medium hover:bg-[#6E8A6F] transition-all"
                       >
                         Seguir editando
                       </button>

@@ -567,7 +567,7 @@ export default function CatalogoPage() {
 
       let almaiaLogoB64: string | null = null;
       try {
-        const logoRes = await fetch("/almaia-logo.svg");
+        const logoRes = await fetch("/almaia-logo-mark.png");
         if (logoRes.ok) {
           const blob = await logoRes.blob();
           almaiaLogoB64 = await new Promise<string>((resolve, reject) => {
