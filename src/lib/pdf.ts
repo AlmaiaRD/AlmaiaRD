@@ -196,7 +196,9 @@ export function drawLightHeader(
 ): number {
   const PW = doc.internal.pageSize.getWidth();
 
-  // Flor/logo a la izquierda de la marca
+  // Logo con fondo (monograma Almaia en círculo crema) a la izquierda de la
+  // marca. Si no se puede dibujar, se omite el ícono (la flor antigua ya no
+  // se usa en ningún documento).
   let logoW = 16;
   let logoH = 16;
   if (opts.logoBase64) {
@@ -207,14 +209,12 @@ export function drawLightHeader(
       logoH = logoW * ratio;
       doc.addImage(opts.logoBase64, "PNG", M, 16 - logoH / 2, logoW, logoH);
     } catch {
-      logoW = 14;
-      logoH = 14;
-      drawFlowerIcon(doc, M + 7, 16, 14);
+      logoW = 0;
+      logoH = 0;
     }
   } else {
-    logoW = 14;
-    logoH = 14;
-    drawFlowerIcon(doc, M + 7, 16, 14);
+    logoW = 0;
+    logoH = 0;
   }
 
   // Marca Italiana 24pt pizarra con tracking-wide (0.025em)
@@ -403,14 +403,14 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
   return null;
 }
 
-// Logo oficial de Almaia (monograma "A") precargado y cacheado. Se usa como
-// respaldo en los PDFs cuando no hay logo personalizado en ajustes, en lugar
-// de la flor antigua (drawFlowerIcon). Nota: jsPDF NO soporta SVG en addImage,
-// por eso se usa el PNG derivado (almaia-logo-mark.png).
+// Logo oficial de Almaia (monograma "A" con fondo crema) precargado y
+// cacheado. Se usa como respaldo en los PDFs cuando no hay logo personalizado
+// en ajustes, en lugar de la flor antigua (drawFlowerIcon). Nota: jsPDF NO
+// soporta SVG en addImage, por eso se usa el PNG derivado.
 let almaiaLogoCache: string | null = null;
 async function loadAlmaiaLogo(): Promise<string | null> {
   if (almaiaLogoCache) return almaiaLogoCache;
-  almaiaLogoCache = await loadImageAsBase64WithRetry("/almaia-logo-mark.png", 1);
+  almaiaLogoCache = await loadImageAsBase64WithRetry("/almaia-logo-con-fondo.png", 1);
   return almaiaLogoCache;
 }
 
