@@ -341,9 +341,7 @@ export default function FacturacionPage() {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:3px;">
-          <div style="width:56px;height:56px;overflow:hidden;margin-top:4px;">
-            <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
-          </div>
+          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:2px 0 0;">Bienestar & Salud</p>
@@ -968,9 +966,7 @@ export default function FacturacionPage() {
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-1">
-                <div className="w-16 h-16 bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain" />
-                </div>
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                     <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
@@ -1638,10 +1634,8 @@ export default function FacturacionPage() {
         {jpgData && (
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-2">
-                <div className="w-16 h-16 bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain" />
-                </div>
+              <div className="flex items-start gap-1">
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-0.5">Bienestar & Salud</p>
