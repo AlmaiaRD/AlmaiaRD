@@ -212,7 +212,7 @@ export default function RecibosPage() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <div style="width:64px;height:64px;border-radius:50%;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
-            <img src="/almaia-logo-con-fondo.svg?v=almaia" alt="Almaia RD" style="width:64px;height:64px;border-radius:50%;object-fit:contain;" />
+            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:64px;height:64px;border-radius:50%;object-fit:contain;" />
           </div>
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>

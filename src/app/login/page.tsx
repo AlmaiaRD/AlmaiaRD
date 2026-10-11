@@ -49,7 +49,7 @@ export default function LoginPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img
-              src="/almaia-logo-con-fondo.svg?v=almaia2"
+              src="/almaia-logo-con-fondo.svg?v=almaia3"
               alt="Almaia RD"
               className="w-20 h-20 rounded-full object-contain"
             />

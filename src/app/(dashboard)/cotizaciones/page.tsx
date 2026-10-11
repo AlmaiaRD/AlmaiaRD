@@ -449,7 +449,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;margin-top:4px;">
-            <img src="/almaia-logo-con-fondo.svg?v=almaia2" alt="Almaia RD" style="width:56px;height:56px;border-radius:50%;object-fit:contain;" />
+            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;border-radius:50%;object-fit:contain;" />
           </div>
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
@@ -674,7 +674,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       // Cargar el logo original de Almaia (con fondo) para el header del catálogo
       let almaiaLogoB64: string | null = null;
       try {
-        const logoRes = await fetch("/almaia-logo-con-fondo.png");
+        const logoRes = await fetch("/almaia-logo-con-fondo.png?v=almaia3");
         if (logoRes.ok) {
           const blob = await logoRes.blob();
           almaiaLogoB64 = await new Promise<string>((resolve, reject) => {
