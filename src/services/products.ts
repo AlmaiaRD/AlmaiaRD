@@ -35,6 +35,23 @@ export async function getProduct(id: string) {
   return data;
 }
 
+// ¿Ya existe un producto con ese código exacto? La restricción única
+// products_code_key aplica a TODOS los registros —incluso inactivos—, así que
+// se consulta la base de datos completa y no solo la lista visible en pantalla.
+// `excludeId` permite ignorar el producto que se está editando (para no marcar
+// como duplicado su propio código).
+export async function productCodeExists(code: string, excludeId?: string): Promise<boolean> {
+  let query = supabase
+    .from("products")
+    .select("id")
+    .eq("code", code)
+    .limit(1);
+  if (excludeId) query = query.neq("id", excludeId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
+}
+
 export async function createProduct(product: Partial<Product>) {
   const { data, error } = await supabase.from("products").insert(product).select().single();
   if (error) throw error;

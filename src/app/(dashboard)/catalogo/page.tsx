@@ -6,7 +6,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
-import { createProduct, updateProduct, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, createBundle, updateBundle, removeProductImage } from "@/services/products";
+import { createProduct, updateProduct, productCodeExists, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, createBundle, updateBundle, removeProductImage } from "@/services/products";
 import { useCatalog, catalogKey as catalogQueryKey } from "@/lib/queries/catalogo";
 import type { CatalogProduct, CatalogBundleItem } from "@/types/relations";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
@@ -194,13 +194,21 @@ export default function CatalogoPage() {
       toast.error("Nombre y código son requeridos");
       return;
     }
+    const code = form.code.trim();
     setSaving(true);
     try {
+      // Evitar códigos repetidos: la BD tiene una restricción única sobre
+      // `code`. Se verifica antes (incluye productos inactivos) para no
+      // llegar a lanzar un error técnico.
+      if (await productCodeExists(code, editingProduct?.id)) {
+        toast.error(`El código "${code}" ya está en uso. Elige otro.`);
+        return;
+      }
       const cost = Number(form.cost);
       const auto30 = Math.round(cost * MARKUP_30 * 100) / 100;
       const auto35 = Math.round(cost * MARKUP_35 * 100) / 100;
       const productData: ProductInsertFields = {
-        code: form.code,
+        code,
         name: form.name,
         description: form.description || null,
         benefits: form.benefits || null,
@@ -225,7 +233,14 @@ export default function CatalogoPage() {
       resetForm();
       loadProducts();
     } catch (e: unknown) {
-      toast.error((e as { message?: string }).message || "Error al guardar producto");
+      // Red de seguridad: si aún así llega un error de código duplicado
+      // (p. ej. por una carrera), se muestra entendible y no técnico.
+      const msg = (e as { message?: string }).message || "";
+      if (msg.includes("products_code_key") || msg.toLowerCase().includes("duplicate")) {
+        toast.error(`El código "${code}" ya está en uso. Elige otro.`);
+      } else {
+        toast.error(msg || "Error al guardar producto");
+      }
     } finally {
       setSaving(false);
     }
@@ -410,10 +425,17 @@ export default function CatalogoPage() {
       toast.error("Define el precio especial del combo");
       return;
     }
+    const code = bundleForm.code.trim();
     setSavingBundle(true);
     try {
+      // Los bundles también se guardan en `products` (misma restricción única
+      // sobre `code`), así que se revisa antes de guardar.
+      if (await productCodeExists(code, editingBundle?.id)) {
+        toast.error(`El código "${code}" ya está en uso. Elige otro.`);
+        return;
+      }
       const productData: ProductInsertFields = {
-        code: bundleForm.code.trim(),
+        code,
         name: bundleForm.name.trim(),
         description: bundleSummary(),
         benefits: null,
@@ -438,7 +460,12 @@ export default function CatalogoPage() {
       setShowBundleModal(false);
       loadProducts();
     } catch (e: unknown) {
-      toast.error((e as { message?: string }).message || "Error al guardar bundle");
+      const msg = (e as { message?: string }).message || "";
+      if (msg.includes("products_code_key") || msg.toLowerCase().includes("duplicate")) {
+        toast.error(`El código "${code}" ya está en uso. Elige otro.`);
+      } else {
+        toast.error(msg || "Error al guardar bundle");
+      }
     } finally {
       setSavingBundle(false);
     }
