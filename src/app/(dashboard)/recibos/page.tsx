@@ -210,7 +210,7 @@ export default function RecibosPage() {
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:3px;">
           <div style="width:64px;height:64px;background:rgba(184,131,126,0.1);display:flex;align-items:center;justify-content:center;margin-top:4px;">
             <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:64px;height:64px;object-fit:contain;" />
           </div>

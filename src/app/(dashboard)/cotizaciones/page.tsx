@@ -447,7 +447,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
     const statusLabel = statusMap[data.status]?.label || data.status;
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:3px;">
           <div style="width:56px;height:56px;overflow:hidden;margin-top:4px;">
             <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           </div>

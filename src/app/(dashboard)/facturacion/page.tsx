@@ -340,7 +340,7 @@ export default function FacturacionPage() {
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:3px;">
           <div style="width:56px;height:56px;overflow:hidden;margin-top:4px;">
             <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           </div>
@@ -967,7 +967,7 @@ export default function FacturacionPage() {
             <div id="invoice-preview" className="bg-white p-8 rounded-xl" style={{ fontFamily: "system-ui, sans-serif" }}>
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-1">
                 <div className="w-16 h-16 bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
                   <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" className="w-16 h-16 object-contain" />
                 </div>
