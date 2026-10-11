@@ -1,8 +1,20 @@
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 import { formatCurrency, numberToWords } from "./utils";
 import { registerItaliana } from "./fonts/italiana";
 import { registerInspiration } from "./fonts/inspiration";
-export type PDFDoc = InstanceType<typeof jsPDF>;
+
+// jsPDF se carga bajo demanda (dynamic import) para NO incluir su librería
+// pesada en el bundle inicial de cada página. Solo se usa al generar un PDF,
+// así que se descarga justo en ese momento. `import type` conserva los tipos
+// sin arrastrar el código al bundle.
+type JsPDFClass = (typeof import("jspdf"))["jsPDF"];
+let jsPDFClass: JsPDFClass | null = null;
+async function loadJsPDF(): Promise<JsPDFClass> {
+  if (!jsPDFClass) jsPDFClass = (await import("jspdf")).jsPDF;
+  return jsPDFClass;
+}
+
+export type PDFDoc = jsPDF;
 
 interface InvoiceItemData {
   subbrand?: string;
@@ -415,7 +427,7 @@ async function loadAlmaiaLogo(): Promise<string | null> {
 }
 
 export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> {
-  const doc = new jsPDF({ unit: "mm", format: "letter" });
+  const doc = new (await loadJsPDF())({ unit: "mm", format: "letter" });
   registerItaliana(doc);
   registerInspiration(doc);
   const PW = doc.internal.pageSize.getWidth();
@@ -696,7 +708,7 @@ export async function generateInvoicePdf(invoice: InvoiceData): Promise<void> {
 }
 
 export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> {
-  const doc = new jsPDF({ unit: "mm", format: "letter" });
+  const doc = new (await loadJsPDF())({ unit: "mm", format: "letter" });
   registerItaliana(doc);
   registerInspiration(doc);
   const PW = doc.internal.pageSize.getWidth();
@@ -919,7 +931,7 @@ interface ExpenseData {
 }
 
 export async function generateExpensePdf(expense: ExpenseData): Promise<void> {
-  const doc = new jsPDF({ unit: "mm", format: "letter" });
+  const doc = new (await loadJsPDF())({ unit: "mm", format: "letter" });
   registerItaliana(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
@@ -1072,7 +1084,7 @@ interface QuoteData {
 }
 
 export async function buildQuotePdfDoc(quote: QuoteData): Promise<PDFDoc> {
-  const doc = new jsPDF({ unit: "mm", format: "letter" });
+  const doc = new (await loadJsPDF())({ unit: "mm", format: "letter" });
   registerItaliana(doc);
   registerInspiration(doc);
   await drawQuotePdfContent(doc, quote);

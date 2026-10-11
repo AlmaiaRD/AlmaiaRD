@@ -22,7 +22,7 @@ import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent, drawTrackedTex
 import { registerItaliana } from "@/lib/fonts/italiana";
 import { registerInspiration } from "@/lib/fonts/inspiration";
 import { useAuth } from "@/hooks/useAuth";
-import jsPDF from "jspdf";
+import type { jsPDF } from "jspdf";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { Plus, Search, Printer, Edit2, Trash2, X, Save, Mail, MessageCircle, FileText, CheckCircle2, XCircle, Ban, ArrowRightLeft, Send, Image as ImageIcon, Copy, Undo2 } from "lucide-react";
 import toast from "react-hot-toast";

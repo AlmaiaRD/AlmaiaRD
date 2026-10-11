@@ -6,7 +6,6 @@ import { getInventoryMovements } from "@/services/inventory";
 import { formatDate, toCsv } from "@/lib/utils";
 import { Package, EyeOff, Download, FileText, BarChart3, Loader, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
 import type { InventoryMovement } from "@/types/database";
 
 const movementLabel: Record<string, string> = {
@@ -327,9 +326,10 @@ export default function RotationTab({
                     <div className="fixed inset-0 z-10" onClick={() => setRotationExportOpen(false)} />
                     <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-lg border border-[#E0DAD3] py-1 z-20">
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           setRotationExportOpen(false);
-                          const doc = new jsPDF({ unit: "mm", format: "letter" });
+                          const { jsPDF: JsPDF } = await import("jspdf");
+                          const doc = new JsPDF({ unit: "mm", format: "letter" });
                           let y = 20;
                           const margin = 15;
                           doc.setFontSize(16);

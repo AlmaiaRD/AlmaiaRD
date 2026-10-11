@@ -8,6 +8,7 @@ import KpiCard from "@/components/ui/KpiCard";
 import { SkeletonCard, SkeletonTable } from "@/components/ui/Skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { getPreferences, updatePreferences } from "@/services/preferences";
+import { getRecentActivity } from "@/services/dashboard";
 import { useDashboard, EMPTY_DASHBOARD } from "@/lib/queries/dashboard";
 import {
   DollarSign,
@@ -21,6 +22,7 @@ import {
   Award,
   FileText,
   ShoppingCart,
+  History,
 } from "lucide-react";
 import {
   BarChart,
@@ -38,6 +40,18 @@ import {
 } from "recharts";
 
 const PIE_COLORS = ["#86C7A3", "#BA4A3A", "#E8C87A"];
+
+// Nombres legibles de las tablas auditadas (audit_logs.entity).
+const ENTITY_LABELS: Record<string, string> = {
+  clients: "Cliente",
+  invoices: "Factura",
+  purchases: "Compra",
+  products: "Producto",
+  receipts: "Recibo",
+  expenses: "Gasto",
+  returns: "Devolución",
+  suppliers: "Proveedor",
+};
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -57,6 +71,20 @@ export default function DashboardPage() {
   const [goalInput, setGoalInput] = useState("");
   const defaultMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
   const [goalMonth, setGoalMonth] = useState(defaultMonth);
+
+  // Actividad reciente (audit_logs): quién creó/modificó/eliminó registros.
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{ id: string; action: string; entity: string; description: string | null; created_at: string }>
+  >([]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    getRecentActivity()
+      .then((rows) => { if (!cancelled) setRecentActivity((rows as typeof recentActivity) || []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -452,6 +480,32 @@ export default function DashboardPage() {
                           {rec.payment_method === "CASH" ? "Efectivo" : rec.payment_method === "TRANSFER" ? "Transferencia" : "Tarjeta"}
                         </span>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#39484F]">Actividad Reciente</h3>
+                <History size={14} className="text-[#4C5760]" />
+              </div>
+              {recentActivity.length === 0 ? (
+                <div className="text-center py-8 text-[#4C5760] text-sm">Sin actividad registrada</div>
+              ) : (
+                <div className="divide-y divide-[#F0EBE3]">
+                  {recentActivity.map((act) => (
+                    <div key={act.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                      <div>
+                        <p className="text-sm font-medium text-[#39484F]">{act.description || act.action}</p>
+                        <p className="text-xs text-[#4C5760]">{ENTITY_LABELS[act.entity] || act.entity}</p>
+                      </div>
+                      <span className={`text-xs font-medium ${
+                        act.action === "DELETE" ? "text-[#BA4A3A]" : act.action === "INSERT" ? "text-[#819E82]" : "text-[#E8C87A]"
+                      }`}>
+                        {act.action === "INSERT" ? "Creado" : act.action === "UPDATE" ? "Modificado" : "Eliminado"}
+                      </span>
                     </div>
                   ))}
                 </div>

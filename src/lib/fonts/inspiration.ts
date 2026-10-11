@@ -1,7 +1,7 @@
 // Inspiration 1.000 - Copyright (c) 2011, Robert E. Leuschke (www.impallari.com), OFL-1.1 (ver OFL-Inspiration.txt).
 // TTF embebido como base64 para incrustar en PDF (jsPDF) la firma "Yrahisa Mateo". No se sirve al navegador.
 // En la app se carga via next/font/google (self-hosted por Next).
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 
 export const INSPIRATION_TTF_BASE64 =
   "AAEAAAARAQAABAAQR0RFRt8v5yEAAjM0AAAEHEdQT1Nmung9AAI3UAAAIKhHU1VCF+UldQACV/gAACH+T1MvMoLgXjYAAAGYAAAA" +

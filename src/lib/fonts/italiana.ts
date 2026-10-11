@@ -2,7 +2,7 @@
 // Licensed under the SIL Open Font License 1.1 (ver OFL.txt en esta carpeta).
 // Archivo TTF embebido como base64 para incrustar en PDF (jsPDF). No se sirve al navegador.
 // La app usa Italiana via next/font/google (self-hosted por Next).
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 
 export const ITALIANA_TTF_BASE64 =
   "AAEAAAAPAIAAAwBwR0RFRgARANMAAE38AAAAFkdQT1OYV4PgAABOFAAAGHRHU1VCbIp0hQAAZogAAAAYT1MvMoREHdkAAAF4AAAA" +

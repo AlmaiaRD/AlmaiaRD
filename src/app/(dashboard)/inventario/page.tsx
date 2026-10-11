@@ -25,7 +25,6 @@ import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/
 import { VirtualTable, Column } from "@/components/ui/VirtualTable";
 import { ITBIS_RATE } from "@/lib/constants";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface InventoryItem {
@@ -171,8 +170,9 @@ function InventarioContent() {
     })();
   }, []);
 
-  function generatePurchasePdfLocal(purchase: PurchaseWithItems) {
-    const doc = new jsPDF({ unit: "mm", format: "letter" });
+  async function generatePurchasePdfLocal(purchase: PurchaseWithItems) {
+    const { jsPDF: JsPDF } = await import("jspdf");
+    const doc = new JsPDF({ unit: "mm", format: "letter" });
     const pageW = 216;
     let y = 30;
     const margin = 20;
