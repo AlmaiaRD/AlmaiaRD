@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LogIn, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
 import Wordmark from "@/components/layout/Wordmark";
@@ -46,7 +47,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#F5EFE9] flex flex-col">
       <header className="px-6 py-4 border-b border-[#E0DAD3] bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img
               src="/almaia-logo-con-fondo.svg?v=almaia2"
               alt="Almaia RD"
@@ -58,7 +59,13 @@ export default function LoginPage() {
                 pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
               />
             </div>
-          </div>
+          </Link>
+          <Link
+            href="/"
+            className="h-9 px-4 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all flex items-center gap-2"
+          >
+            <ArrowLeft size={15} /> Volver
+          </Link>
         </div>
       </header>
 

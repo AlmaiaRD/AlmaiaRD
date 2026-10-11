@@ -2,6 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  // La página de bienvenida (/) es PÚBLICA: es la puerta de entrada al
+  // sistema (muestra qué es y da acceso al login). No contiene datos
+  // privados, así que no requiere sesión. Todo lo demás sí la exige.
+  if (req.nextUrl.pathname === "/") {
+    return NextResponse.next();
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
