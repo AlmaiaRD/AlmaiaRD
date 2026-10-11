@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useSWUpdate } from "@/hooks/useSWUpdate";
 import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
 import Footer from "@/components/layout/Footer";
@@ -17,6 +18,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  useSWUpdate();
 
   useEffect(() => {
     if (!loading && !user) {

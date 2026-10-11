@@ -51,6 +51,8 @@ function cellStyle<T>(col: Column<T>): React.CSSProperties {
     width: col.width ? `${col.width}px` : undefined,
     minWidth: col.minWidth ? `${col.minWidth}px` : "80px",
     maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
+    flex: "0 0 auto",           // evita que la celda crezca/encoga
+    overflow: "hidden",         // clave: corta el contenido que sobresale
   };
 }
 
@@ -98,13 +100,15 @@ function VirtualRow<T>({
           className={`flex items-center px-4 ${ALIGN_CLASS[col.align ?? "left"]} ${classNameCell ?? ""} ${col.className ?? ""}`}
           style={cellStyle(col)}
         >
-          {col.render ? (
-            col.render(row, index)
-          ) : (
-            <span className="text-sm text-[#39484F]">
-              {String((row as Record<string, unknown>)[col.key] ?? "")}
-            </span>
-          )}
+          <div className="w-full truncate" style={{ minWidth: 0 }}>
+            {col.render ? (
+              col.render(row, index)
+            ) : (
+              <span className="text-sm text-[#39484F] truncate block">
+                {String((row as Record<string, unknown>)[col.key] ?? "")}
+              </span>
+            )}
+          </div>
         </div>
       ))}
     </div>
@@ -222,16 +226,16 @@ export function VirtualTable<T>({
               style={cellStyle(col)}
               onClick={() => col.sortable && onSort?.(col.key)}
             >
-              <span className="flex items-center gap-1">{col.header}</span>
+              <span className="flex items-center gap-1 truncate">{col.header}</span>
               {col.sortable &&
                 (active ? (
                   sortOrder === "asc" ? (
-                    <ChevronUp size={14} className="text-[#BA4A3A]" />
+                    <ChevronUp size={14} className="text-[#BA4A3A] flex-shrink-0" />
                   ) : (
-                    <ChevronDown size={14} className="text-[#BA4A3A]" />
+                    <ChevronDown size={14} className="text-[#BA4A3A] flex-shrink-0" />
                   )
                 ) : (
-                  <ChevronUp size={14} className="opacity-40" />
+                  <ChevronUp size={14} className="opacity-40 flex-shrink-0" />
                 ))}
             </div>
           );

@@ -851,11 +851,13 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
   // meterla aqui haria que las columnas se reconstruyan siempre, que es
   // justo lo que este useMemo evita.
   const stockColumns: Column<InventoryItem>[] = useMemo(() => [
-    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#4C5760]">{item.products?.subbrands?.name || "—"}</span> },
-    { key: "products.name", header: "Producto", minWidth: 200, sortable: true, render: (item) => (
-      <div className="flex flex-col">
-        <span className="text-sm text-[#39484F] font-medium">{item.products?.name || "—"}</span>
-        <span className="text-xs text-[#4C5760]">{item.products?.code}</span>
+    { key: "products.subbrands.name", header: "Submarca", minWidth: 120, sortable: true, render: (item) => <span className="text-sm text-[#4C5760] truncate" title={item.products?.subbrands?.name || "—"}>
+      {item.products?.subbrands?.name || "—"}
+    </span> },
+    { key: "products.name", header: "Producto", minWidth: 300, sortable: true, render: (item) => (
+      <div className="flex flex-col min-w-0" title={item.products?.name || "—"}>
+        <span className="text-sm text-[#39484F] font-medium truncate">{item.products?.name || "—"}</span>
+        <span className="text-xs text-[#4C5760] truncate">{item.products?.code}</span>
       </div>
     )},
     { key: "purchased", header: "Compradas", minWidth: 90, align: "right", sortable: true, render: (item) => <span className="text-sm text-[#39484F] text-right">{purchasedMap[item.product_id] || "—"}</span> },
