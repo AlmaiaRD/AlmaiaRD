@@ -91,7 +91,7 @@ export default function LandingPage() {
 
       <footer className="px-6 py-4 border-t border-[#2C363D] bg-[#39484F]">
         <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#F5EFE9]">
-          <span>&copy; {new Date().getFullYear()} ALMAIA RD — Distribuidora Autorizada Amway</span>
+          <span suppressHydrationWarning>&copy; {new Date().getFullYear()} ALMAIA RD — Distribuidora Autorizada Amway</span>
           <span>Versión 1.0.0</span>
         </div>
       </footer>

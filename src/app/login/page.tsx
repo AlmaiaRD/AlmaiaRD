@@ -148,7 +148,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-[#A99B90] mt-6">
+          <p suppressHydrationWarning className="text-center text-xs text-[#A99B90] mt-6">
             &copy; {new Date().getFullYear()} ALMAIA RD — Distribuidora Autorizada Amway
           </p>
         </div>

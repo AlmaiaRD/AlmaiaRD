@@ -46,8 +46,79 @@ function buildPurchaseItems(purchaseId: string, items: PurchaseData["items"]) {
 }
 
 export async function createPurchase(data: PurchaseData) {
+  const { subtotal, itbis, impuestoRecogida, cargoAdministracion, discount, total } = computePurchaseTotals(data);
   const { data: sessData } = await supabase.auth.getSession();
   const userId = sessData.session?.user?.id;
+
+  const settings = await getSettings().catch(() => null);
+  const prefix = settings?.purchase_prefix || "COM-";
+
+  // Todo en UNA transacción en la base de datos: compra + items + inventario.
+  // Si se corta internet a mitad de camino, Postgres revierte TODO (antes el
+  // rollback era manual en el navegador y no se ejecutaba si la conexión caía,
+  // dejando compras fantasma sin items ni stock).
+  const rpcPayload = {
+    p_prefix: prefix,
+    p_supplier_name: data.supplier_name || null,
+    p_purchase_date: data.purchase_date,
+    p_subtotal: subtotal,
+    p_itbis: itbis,
+    p_discount_amount: discount,
+    p_impuesto_recogida: impuestoRecogida,
+    p_cargo_administracion: cargoAdministracion,
+    p_total: total,
+    p_notes: data.notes || null,
+    p_payment_method: data.payment_method || "Efectivo",
+    p_bank_account_id: data.bank_account_id || null,
+    p_items: (data.items || []).map((item) => {
+      const quantity = Number(item.quantity) || 0;
+      const unitCost = round2(Number(item.unit_cost) || 0);
+      const hasItbis = item.itbis !== false;
+      return {
+        product_id: item.product_id || null,
+        quantity,
+        unit_cost: unitCost,
+        line_total: round2(quantity * unitCost),
+        line_itbis: hasItbis ? round2(quantity * unitCost * ITBIS_RATE) : 0,
+        itbis: hasItbis,
+      };
+    }),
+  };
+
+  const { data: rpcResult, error: rpcError } = await supabase.rpc("create_purchase_atomic", rpcPayload);
+
+  if (!rpcError) {
+    return { id: rpcResult.p_purchase_id as string, purchase_number: rpcResult.p_purchase_number as string };
+  }
+
+  // La migración aún no está aplicada (la app suele desplegarse antes): se
+  // conserva el comportamiento previo multi-paso con rollback manual.
+  if (!isRpcMissing(rpcError)) throw rpcError;
+  return createPurchaseLegacy(data, { userId, prefix, subtotal, itbis, impuestoRecogida, cargoAdministracion, discount, total });
+}
+
+/** ¿Falta la RPC en la base de datos? (criterio igual a services/inventory.ts) */
+function isRpcMissing(error: { code?: string; message?: string } | null): boolean {
+  return Boolean(
+    error?.code === "PGRST202" || /could not find the function/i.test(error?.message || "")
+  );
+}
+
+/** Camino previo a la RPC atómica. Ver createPurchase. */
+async function createPurchaseLegacy(
+  data: PurchaseData,
+  ctx: {
+    userId?: string;
+    prefix: string;
+    subtotal: number;
+    itbis: number;
+    impuestoRecogida: number;
+    cargoAdministracion: number;
+    discount: number;
+    total: number;
+  }
+) {
+  const { userId, prefix, subtotal, itbis, impuestoRecogida, cargoAdministracion, discount, total } = ctx;
 
   const { data: lastPur } = await supabase
     .from("purchases")
@@ -55,14 +126,10 @@ export async function createPurchase(data: PurchaseData) {
     .order("created_at", { ascending: false })
     .limit(1);
 
-  const settings = await getSettings().catch(() => null);
-  const prefix = settings?.purchase_prefix || "COM-";
   const lastNum = lastPur?.[0]?.purchase_number || `${prefix}000000`;
   const numPart = parseInt(lastNum.replace(prefix, ""), 10);
   const nextNum = isNaN(numPart) ? 1 : numPart + 1;
   const purchaseNumber = `${prefix}${String(nextNum).padStart(6, "0")}`;
-
-  const { subtotal, itbis, impuestoRecogida, cargoAdministracion, discount, total } = computePurchaseTotals(data);
 
   const { data: purchase, error: purError } = await supabase
     .from("purchases")
