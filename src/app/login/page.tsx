@@ -51,7 +51,7 @@ export default function LoginPage() {
             <img
               src="/almaia-logo-con-fondo.svg?v=almaia3"
               alt="Almaia RD"
-              className="w-20 h-20 rounded-full object-contain"
+              className="w-20 h-20 object-contain"
             />
             <div>
               <Wordmark

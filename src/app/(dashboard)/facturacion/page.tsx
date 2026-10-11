@@ -341,8 +341,8 @@ export default function FacturacionPage() {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
-          <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;margin-top:4px;">
-            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;border-radius:50%;object-fit:contain;" />
+          <div style="width:56px;height:56px;overflow:hidden;margin-top:4px;">
+            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           </div>
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
@@ -968,8 +968,8 @@ export default function FacturacionPage() {
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
+                <div className="w-16 h-16 bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" className="w-16 h-16 object-contain" />
                 </div>
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
@@ -1639,8 +1639,8 @@ export default function FacturacionPage() {
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-2">
-                <div className="w-16 h-16 rounded-full bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
-                  <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" className="w-16 h-16 rounded-full object-contain" />
+                <div className="w-16 h-16 bg-[#BA4A3A]/10 flex items-center justify-center mt-1">
+                  <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" className="w-16 h-16 object-contain" />
                 </div>
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>

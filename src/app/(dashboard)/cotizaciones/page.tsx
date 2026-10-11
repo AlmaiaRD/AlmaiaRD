@@ -448,8 +448,8 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
-          <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;margin-top:4px;">
-            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;border-radius:50%;object-fit:contain;" />
+          <div style="width:56px;height:56px;overflow:hidden;margin-top:4px;">
+            <img src="/almaia-logo-con-fondo.svg?v=almaia3" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           </div>
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
