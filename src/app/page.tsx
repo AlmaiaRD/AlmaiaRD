@@ -20,7 +20,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-1">
             <img
-              src="/almaia-logo-con-fondo.svg?v=almaia3"
+              src="/almaia-logo-con-fondo.svg?v=almaia4"
               alt="Almaia RD"
               className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
             />

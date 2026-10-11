@@ -422,7 +422,7 @@ async function loadImageAsBase64WithRetry(url: string, retries = 2): Promise<str
 let almaiaLogoCache: string | null = null;
 async function loadAlmaiaLogo(): Promise<string | null> {
   if (almaiaLogoCache) return almaiaLogoCache;
-  almaiaLogoCache = await loadImageAsBase64WithRetry("/almaia-logo-con-fondo.png?v=almaia3", 1);
+  almaiaLogoCache = await loadImageAsBase64WithRetry("/almaia-logo-con-fondo.png?v=almaia4", 1);
   return almaiaLogoCache;
 }
 
