@@ -22,11 +22,25 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
   const [expanded, setExpanded] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // Guardamos onClose en un ref para que el efecto NO se re-ejecute cuando el
+  // padre pasa una función inline nueva en cada render. Si no, el enfoque del
+  // panel se robaba el cursor de los inputs al escribir (tenías que hacer
+  // click letra por letra).
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    if (!isOpen) return;
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Solo enfocamos el panel UNA VEZ por apertura, no en cada re-render.
+  const hasFocusedRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen) {
+      hasFocusedRef.current = false;
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === "Tab" && panelRef.current) {
@@ -51,13 +65,21 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, wide
       }
     };
     document.addEventListener("keydown", handleKeyDown);
-    // Enfocar el panel al abrir (fuera de React para evitar warning de framer-motion)
-    const timer = window.setTimeout(() => panelRef.current?.focus(), 30);
+    // Enfocar el panel UNA sola vez por apertura (fuera de React para evitar
+    // warning de framer-motion). Antes se enfocaba en cada re-render y eso
+    // quitaba el cursor a los campos de texto mientras el usuario escribía.
+    if (!hasFocusedRef.current) {
+      hasFocusedRef.current = true;
+      const timer = window.setTimeout(() => panelRef.current?.focus(), 30);
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        window.clearTimeout(timer);
+      };
+    }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      window.clearTimeout(timer);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
