@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-type BadgeVariant = "success" | "warning" | "danger" | "neutral" | "info";
+type BadgeVariant = "success" | "warning" | "danger" | "neutral" | "info" | "moss";
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -16,6 +16,7 @@ const variantMap: Record<BadgeVariant, string> = {
   danger: "bg-danger/15 text-danger",
   neutral: "bg-border/50 text-text-muted",
   info: "bg-primary/10 text-primary",
+  moss: "bg-moss/15 text-moss",
 };
 
 export default function Badge({ children, variant = "neutral", className }: BadgeProps) {

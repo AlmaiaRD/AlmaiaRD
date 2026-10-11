@@ -32,7 +32,7 @@ export function getStagesForType(clientType: ClientType) {
 // ── Sub-calificaciones para "Calificación" (ventas) ──────────
 export const QUALIFICATION_OPTIONS = [
   { key: "interesado", label: "Interesado", color: "text-blue-600", bg: "bg-blue-50" },
-  { key: "calificado", label: "Calificado", color: "text-green-600", bg: "bg-green-50" },
+  { key: "calificado", label: "Calificado", color: "text-moss", bg: "bg-moss/10" },
   { key: "no_calificado", label: "No Calificado", color: "text-red-500", bg: "bg-red-50" },
   { key: "en_espera", label: "En Espera", color: "text-yellow-600", bg: "bg-yellow-50" },
 ] as const;
@@ -41,7 +41,7 @@ export type QualificationLevel = typeof QUALIFICATION_OPTIONS[number]["key"];
 
 // ── Resultados de cierre (ventas) ────────────────────────────
 export const CLOSURE_RESULTS = [
-  { key: "ganado", label: "Ganado", color: "text-green-600", bg: "bg-green-50" },
+  { key: "ganado", label: "Ganado", color: "text-moss", bg: "bg-moss/10" },
   { key: "perdido", label: "Perdido", color: "text-red-500", bg: "bg-red-50" },
   { key: "pospuesto", label: "Pospuesto", color: "text-yellow-600", bg: "bg-yellow-50" },
 ] as const;
@@ -50,7 +50,7 @@ export type ClosureResult = typeof CLOSURE_RESULTS[number]["key"];
 
 // ── Resultados de inscripción (reclutamiento) ────────────────
 export const ENROLLMENT_RESULTS = [
-  { key: "inscrito", label: "Inscrito", color: "text-green-600", bg: "bg-green-50" },
+  { key: "inscrito", label: "Inscrito", color: "text-moss", bg: "bg-moss/10" },
   { key: "rechazado", label: "Rechazado", color: "text-red-500", bg: "bg-red-50" },
   { key: "pendiente", label: "Pendiente", color: "text-yellow-600", bg: "bg-yellow-50" },
 ] as const;

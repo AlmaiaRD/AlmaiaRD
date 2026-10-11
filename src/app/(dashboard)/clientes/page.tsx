@@ -558,7 +558,7 @@ const debouncedSearch = useDebounce(searchQuery, 500);
                   </div>
                   <div className="bg-white rounded-xl p-4 border border-[#E0DAD3]">
                     <p className="text-xs text-[#4C5760]">Total pagado</p>
-                    <p className="text-lg font-bold text-[#86C7A3]">{formatCurrency(totalPaid)}</p>
+                    <p className="text-lg font-bold text-[#819E82]">{formatCurrency(totalPaid)}</p>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl p-4 border border-[#E0DAD3]">

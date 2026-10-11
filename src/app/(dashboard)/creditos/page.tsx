@@ -118,7 +118,7 @@ export default function CreditosPage() {
 
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E0DAD3] mb-6">
         <p className="text-xs text-[#4C5760] mb-1">Total Disponible</p>
-        <p className="text-2xl font-bold text-[#86C7A3]">{formatCurrency(totalAvailable)}</p>
+        <p className="text-2xl font-bold text-[#819E82]">{formatCurrency(totalAvailable)}</p>
       </div>
 
       <div className="relative mb-6">
@@ -146,7 +146,7 @@ export default function CreditosPage() {
                   <p className="text-sm font-medium text-[#39484F]">{c.clients?.full_name || "Sin cliente"}</p>
                   <p className="text-xs text-[#4C5760]">{c.receipts?.receipt_number || "—"} &middot; {formatDate(c.created_at)}</p>
                 </div>
-                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">Disponible</span>
+                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-[#819E82]/15 text-[#819E82]">Disponible</span>
               </div>
               <div className="flex items-center justify-between">
                 <div>

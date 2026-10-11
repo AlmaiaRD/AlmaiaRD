@@ -11,7 +11,7 @@ export default function KpiCard({
 }) {
   const colorMap = {
     primary: "bg-[#BA4A3A]/10 text-[#BA4A3A]",
-    green: "bg-[#86C7A3]/10 text-[#86C7A3]",
+    green: "bg-[#819E82]/10 text-[#819E82]",
     amber: "bg-[#E8C87A]/10 text-[#E8C87A]",
     rose: "bg-[#D4A0A0]/10 text-[#D4A0A0]",
   };

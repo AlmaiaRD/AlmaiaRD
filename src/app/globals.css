@@ -18,6 +18,10 @@
   --color-danger: #D4A0A0;
   --color-text-muted: #4C5760;
   --color-border: #E0DAD3;
+  /* Verde Musgo Suave — éxito/salud del SISTEMA (stock OK, saldo a favor,
+     resultados del pipeline). El salvia #86C7A3 se reserva para el tipo de
+     persona (comprador) — ver "cuidado" de la propuesta de color. */
+  --color-moss: #819E82;
 
   --font-sans: "Montserrat", sans-serif;
   --font-signature: "Inspiration", cursive;
@@ -37,6 +41,7 @@
   --color-danger: #D4A0A0;
   --color-text-muted: #9AA7AC;
   --color-border: #3A454B;
+  --color-moss: #96B397;
 }
 
 body {

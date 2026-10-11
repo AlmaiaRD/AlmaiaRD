@@ -79,10 +79,10 @@ interface RotationItem {
   minimum_stock: number;
 }
 
-function getStockStatus(stock: number, minimum: number): { label: string; variant: "success" | "warning" | "danger" } {
+function getStockStatus(stock: number, minimum: number): { label: string; variant: "moss" | "warning" | "danger" } {
   if (stock <= 0) return { label: "Agotado", variant: "danger" };
   if (stock <= minimum) return { label: "Bajo Stock", variant: "warning" };
-  return { label: "Suficiente", variant: "success" };
+  return { label: "Suficiente", variant: "moss" };
 }
 
 export default function InventarioPage() {
