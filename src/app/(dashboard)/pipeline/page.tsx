@@ -33,17 +33,38 @@ const CLIENT_TYPE_CONFIG = {
   negocio: { label: "Prospectos de Negocio", icon: BriefcaseIcon, color: "text-purple-500", bg: "bg-purple-50", stages: RECRUITMENT_STAGES },
 };
 
-function StageBadge({ stage, clientType, qualificationLevel }: { stage: string; clientType: ClientType; qualificationLevel?: string | null }) {
+function StageBadge({ stage, clientType, qualificationLevel, closureResult }: {
+  stage: string;
+  clientType: ClientType;
+  qualificationLevel?: string | null;
+  closureResult?: string | null;
+}) {
   const stages = getStagesForType(clientType);
   const s = stages.find(x => x.key === stage);
   if (!s) return <Badge variant="neutral">{stage}</Badge>;
   const Icon = ICON_MAP[s.icon] || UserPlus;
-  const qual = clientType === "comprador" && qualificationLevel ? QUALIFICATION_OPTIONS.find(q => q.key === qualificationLevel) : null;
+
+  // Si la etapa tiene un sub-estado (calificación, cierre, inscripción),
+  // se muestra SOLO el sub-estado: "Calificado" en lugar de
+  // "Calificación · Calificado" (texto redundante).
+  let label: string = s.label;
+  let sub: { label: string; color: string; bg: string } | null = null;
+  if (stage === "calificacion" && qualificationLevel) {
+    sub = QUALIFICATION_OPTIONS.find(q => q.key === qualificationLevel) ?? null;
+  } else if (stage === "cierre" && closureResult) {
+    sub = CLOSURE_RESULTS.find(c => c.key === closureResult) ?? null;
+  } else if (stage === "inscripcion" && closureResult) {
+    sub = ENROLLMENT_RESULTS.find(e => e.key === closureResult) ?? null;
+  }
+  if (sub) label = sub.label;
+
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.bg} ${s.color}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${sub ? `${sub.bg} ${sub.color}` : `${s.bg} ${s.color}`}`}
+      title={sub && sub.label !== s.label ? s.label : undefined}
+    >
       <Icon size={12} />
-      {s.label}
-      {qual && <span className="ml-1 opacity-70">· {qual.label}</span>}
+      {label}
     </span>
   );
 }
@@ -512,7 +533,7 @@ export default function PipelinePage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-[#4C5760] whitespace-nowrap">{(c.client_type || "comprador") === "negocio" ? "Negocio" : "Comprador"}</td>
-                    <td className="px-4 py-3"><StageBadge stage={c.stage} clientType={c.client_type || "comprador"} qualificationLevel={c.qualification_level} /></td>
+                    <td className="px-4 py-3"><StageBadge stage={c.stage} clientType={c.client_type || "comprador"} qualificationLevel={c.qualification_level} closureResult={c.closure_result} /></td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`text-sm font-semibold ${stagnant ? "text-[#B8860B] bg-[#E8C87A]/20 px-2 py-0.5 rounded-lg" : "text-[#4C5760]"}`}>
                         {c.days_in_stage ?? "—"}{stagnant ? " ⚠" : ""}
@@ -656,7 +677,7 @@ export default function PipelinePage() {
           <div className="space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <StageBadge stage={selectedClient.stage} clientType={selectedClient.client_type || "comprador"} qualificationLevel={selectedClient.qualification_level} />
+                <StageBadge stage={selectedClient.stage} clientType={selectedClient.client_type || "comprador"} qualificationLevel={selectedClient.qualification_level} closureResult={selectedClient.closure_result} />
                 {selectedClient.tags.map(t => (
                   <span key={t.id} className="text-xs px-2 py-0.5 rounded-full bg-[#BA4A3A]/10 text-[#BA4A3A] font-medium">{t.name}</span>
                 ))}
