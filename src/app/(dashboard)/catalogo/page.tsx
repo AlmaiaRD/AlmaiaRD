@@ -946,7 +946,10 @@ export default function CatalogoPage() {
                           <button onClick={() => requestDeleteProduct(product)} className="p-2.5 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={16} /></button>
                         </>
                       ) : (
-                        <button onClick={() => handleArchiveProduct(product)} className="p-2.5 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={16} /></button>
+                        <>
+                          <button onClick={() => handleArchiveProduct(product)} className="p-2.5 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={16} /></button>
+                          <button onClick={() => requestDeleteProduct(product)} className="p-2.5 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={16} /></button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -1079,7 +1082,10 @@ export default function CatalogoPage() {
                         <button onClick={() => requestDeleteProduct(product)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
                       </>
                     ) : (
-                      <button onClick={() => handleArchiveProduct(product)} className="p-2.5 sm:p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
+                      <>
+                        <button onClick={() => handleArchiveProduct(product)} className="p-2.5 sm:p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg transition-colors" title="Archivar"><Archive size={14} /></button>
+                        <button onClick={() => requestDeleteProduct(product)} className="p-2.5 sm:p-2 text-[#D4A0A0] hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Eliminar"><Trash2 size={14} /></button>
+                      </>
                     )}
                   </div>
                 </div>
