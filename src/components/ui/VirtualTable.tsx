@@ -103,10 +103,10 @@ function VirtualRow<T>({
         <div
           key={col.key}
           role="gridcell"
-          className={`flex items-center px-4 ${ALIGN_CLASS[col.align ?? "left"]} ${classNameCell ?? ""} ${col.className ?? ""}`}
+          className={`flex items-center px-4 ${classNameCell ?? ""} ${col.className ?? ""}`}
           style={cellStyle(col)}
         >
-          <div className="w-full min-w-0 overflow-hidden">
+          <div className={`w-full min-w-0 overflow-hidden flex ${ALIGN_CLASS[col.align ?? "left"]}`}>
             {col.render ? (
               col.render(row, index)
             ) : (
