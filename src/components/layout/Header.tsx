@@ -31,7 +31,7 @@ export default function Header() {
           <Wordmark
             h1ClassName="text-[24px] sm:text-[26px] font-marca text-[#F5EFE9] leading-tight tracking-wide"
             pClassName="text-[10px] sm:text-[11px] text-[#E0DAD3] tracking-widest uppercase leading-tight font-medium"
-            gap={2}
+            gap={1}
           />
         </Link>
 

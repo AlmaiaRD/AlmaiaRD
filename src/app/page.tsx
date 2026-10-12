@@ -27,7 +27,7 @@ export default function LandingPage() {
             <Wordmark
               h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"
               pClassName="text-[10px] text-[#4C5760] tracking-widest uppercase leading-tight"
-              gap={2}
+              gap={1}
             />
           </div>
           <div className="flex items-center gap-3">
