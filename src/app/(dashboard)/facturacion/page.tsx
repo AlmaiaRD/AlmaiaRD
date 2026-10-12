@@ -812,7 +812,6 @@ export default function FacturacionPage() {
         key: "total",
         header: "Total",
         minWidth: 130,
-        align: "right",
         grow: true,
         sortable: true,
         render: (inv) => <span className="text-sm font-medium text-[#39484F]">{formatCurrency(inv.total)}</span>,
@@ -821,7 +820,6 @@ export default function FacturacionPage() {
         key: "status",
         header: "Estado",
         minWidth: 120,
-        align: "center",
         grow: true,
         sortable: true,
         render: (inv) => {
