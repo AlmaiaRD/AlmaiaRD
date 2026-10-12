@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -17,6 +17,7 @@ import type { BankAccount, Settings } from "@/types/database";
 import toast from "react-hot-toast";
 import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 interface InvoiceClientRef {
   full_name?: string | null;
@@ -175,6 +176,19 @@ export default function RecibosPage() {
 
   const selectedInvoiceData = pendingInvoices.find((i: InvoiceRef) => i.id === selectedInvoice);
   const balanceDue = selectedInvoiceData ? Number(selectedInvoiceData.total) - Number(selectedInvoiceData.amount_paid || 0) : 0;
+
+  // Opciones del buscador de facturas (número + cliente + saldo pendiente)
+  const invoiceOptions = useMemo(
+    () => pendingInvoices.map((inv: InvoiceRef) => {
+      const due = Number(inv.total) - Number(inv.amount_paid || 0);
+      return {
+        value: inv.id,
+        label: inv.invoice_number || "—",
+        sublabel: `${inv.clients?.full_name || "—"} · Pend. ${formatCurrency(due)}`,
+      };
+    }),
+    [pendingInvoices],
+  );
 
   const receiptSearchFiltered = receipts.filter((r: ReceiptRow) => {
     // Filter by status
@@ -750,21 +764,15 @@ export default function RecibosPage() {
         <div className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
-            <select
+            <SearchableSelect
               value={selectedInvoice}
-              onChange={(e) => { setSelectedInvoice(e.target.value); setAmount(0); }}
-              className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
-            >
-              <option value="">Seleccionar factura...</option>
-              {pendingInvoices.map((inv: InvoiceRef) => {
-                const due = Number(inv.total) - Number(inv.amount_paid || 0);
-                return (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.invoice_number} — {inv.clients?.full_name} — Pend. {formatCurrency(due)}
-                  </option>
-                );
-              })}
-            </select>
+              onChange={(v) => { setSelectedInvoice(v); setAmount(0); }}
+              options={invoiceOptions}
+              placeholder="Seleccionar factura..."
+              searchPlaceholder="Buscar por # factura o cliente..."
+              tone="success"
+              clearable
+            />
           </div>
 
           {selectedInvoiceData && (

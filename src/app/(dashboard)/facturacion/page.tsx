@@ -13,6 +13,7 @@ import CommunicationDraftModal from "@/components/communications/CommunicationDr
 import { getWhatsAppConfigs, sendViaApi, logWhatsAppMessage } from "@/services/whatsapp";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import type { Client, BankAccount, Settings, Product, BundleItem } from "@/types/database";
@@ -131,6 +132,16 @@ export default function FacturacionPage() {
       return String(av).localeCompare(String(bv)) * direction;
     });
   }, [invoices, filterMonth, filterYear, filterStatus, filterClient, sortBy, sortOrder]);
+
+  // Opciones del buscador de clientes (nombre + teléfono/correo como apoyo)
+  const clientOptions = useMemo(
+    () => clients.map(c => ({
+      value: c.id,
+      label: c.full_name,
+      sublabel: c.phone || c.email || undefined,
+    })),
+    [clients],
+  );
 
   // Todos los productos (activos e inactivos). Los archivados se muestran con
   // un color distinto para poder elegirlos sabiendo que estan archivados. Se
@@ -1278,14 +1289,15 @@ export default function FacturacionPage() {
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente</label>
               <div className="flex gap-2">
-                <select
+                <SearchableSelect
                   value={selectedClient}
-                  onChange={(e) => setSelectedClient(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
-                >
-                  <option value="">Seleccionar cliente...</option>
-                  {clients.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-                </select>
+                  onChange={setSelectedClient}
+                  options={clientOptions}
+                  placeholder="Seleccionar cliente..."
+                  searchPlaceholder="Buscar cliente..."
+                  className="flex-1"
+                  clearable
+                />
                 <button
                   onClick={() => setShowNewClient(true)}
                   className="h-12 px-4 bg-[#BA4A3A] text-white rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all flex items-center gap-1.5"

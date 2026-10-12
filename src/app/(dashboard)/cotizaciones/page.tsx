@@ -9,6 +9,7 @@ import CommunicationDraftModal from "@/components/communications/CommunicationDr
 import { getQuotes, getQuote, createQuote, updateQuote, deleteQuote, updateQuoteStatus, type QuoteWithClient, type QuoteItemWithProduct } from "@/services/quotes";
 import { getClients } from "@/services/clients";
 import ClientFormModal from "@/components/clients/ClientFormModal";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { getProducts } from "@/services/products";
 import type { ProductWithRelations } from "@/types/relations";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
@@ -127,6 +128,16 @@ function CotizacionesContent() {
       toast.error("Cliente creado, pero no se pudo actualizar la lista");
     }
   }
+
+  // Opciones del buscador de clientes (nombre + teléfono/correo como apoyo)
+  const clientOptions = useMemo(
+    () => clients.map(c => ({
+      value: c.id,
+      label: c.full_name,
+      sublabel: c.phone || c.email || undefined,
+    })),
+    [clients],
+  );
 
   const load = useCallback(async () => {
     try {
@@ -1023,16 +1034,15 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
             <div>
               <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente *</label>
               <div className="flex gap-2">
-                <select
+                <SearchableSelect
                   value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
-                >
-                  <option value="">Seleccionar cliente...</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.full_name}</option>
-                  ))}
-                </select>
+                  onChange={setClientId}
+                  options={clientOptions}
+                  placeholder="Seleccionar cliente..."
+                  searchPlaceholder="Buscar cliente..."
+                  className="flex-1"
+                  clearable
+                />
                 <button
                   type="button"
                   onClick={() => setShowNewClient(true)}

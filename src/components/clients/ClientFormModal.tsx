@@ -55,7 +55,12 @@ export default function ClientFormModal({
   const prevInitialRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!isOpen) return;
+    // Al cerrarse, limpiamos la marca para que la próxima apertura
+    // siempre reinicie el formulario (aunque se abra como "nuevo cliente").
+    if (!isOpen) {
+      prevInitialRef.current = undefined;
+      return;
+    }
     const initialKey = initial ? JSON.stringify(initial) : "empty";
     if (initialKey === prevInitialRef.current) return;
     prevInitialRef.current = initialKey;
