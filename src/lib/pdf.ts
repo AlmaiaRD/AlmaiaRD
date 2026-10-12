@@ -133,6 +133,20 @@ function drawCreamRoundedRect(
   doc.roundedRect(x, y, w, h, r, r, "FD");
 }
 
+// Cabecera de tabla con esquinas SUPERIORES redondeadas (estándar Cotizaciones)
+function drawRoundedTableHeader(doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 2.5) {
+  setDrawFillColor(doc, CREAM_HEADER);
+  doc.roundedRect(x, y, w, h, r, r, "F");
+  doc.rect(x, y + h / 2, w, h / 2, "F"); // cuadra las esquinas inferiores
+}
+
+// Borde redondeado que enmarca la tabla (esquinas bordeadas — estándar Cotizaciones)
+function drawTableBorder(doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 2.5) {
+  doc.setDrawColor(224, 218, 211); // borde perla #E0DAD3
+  doc.setLineWidth(0.2);
+  doc.roundedRect(x, y, w, h, r, r, "S");
+}
+
 export function drawFlowerIcon(doc: jsPDF, cx: number, cy: number, size: number) {
   const petalCount = 6;
   const petalR = size * 0.2;
@@ -531,9 +545,10 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     { label: "Total", x: M + 153, w: 27, align: "right" as const },
   ];
 
-  // Table header background (crema, como el JPG de referencia)
-  setDrawFillColor(doc, CREAM_HEADER);
-  doc.rect(M, y, CW, 8, "F");
+  // Table header background (crema, esquinas superiores redondeadas — estándar Cotizaciones)
+  const tableTop = y;
+  let broke = false;
+  drawRoundedTableHeader(doc, M, y, CW, 8);
 
   // Header text (mayúsculas, muted — estándar Cotizaciones)
   setTextColor(doc, GRAY);
@@ -555,8 +570,8 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
       doc.addPage();
       y = M;
       // Repeat table header on new page (crema, estándar Cotizaciones)
-      setDrawFillColor(doc, CREAM_HEADER);
-      doc.rect(M, y, CW, 8, "F");
+      broke = true;
+      drawRoundedTableHeader(doc, M, y, CW, 8);
       setTextColor(doc, GRAY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
@@ -589,12 +604,12 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     y += 7;
   });
 
+  if (!broke) drawTableBorder(doc, M, tableTop, CW, y - tableTop - 1.5);
   y += 4;
 
   // ============================================================
   // D. PAYMENT DATA
   // ============================================================
-
   const bankList = invoice.bank_accounts && invoice.bank_accounts.length > 0
     ? invoice.bank_accounts
     : (invoice.bank_account ? [invoice.bank_account] : []);
@@ -789,8 +804,7 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     ];
 
     const drawHead = (atY: number) => {
-      setDrawFillColor(doc, CREAM_HEADER);
-      doc.rect(M, atY, CW, 8, "F");
+      drawRoundedTableHeader(doc, M, atY, CW, 8);
       setTextColor(doc, GRAY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
@@ -799,6 +813,8 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       });
     };
 
+    const tableTop = y;
+    let broke = false;
     drawHead(y);
     y += 10;
 
@@ -813,6 +829,7 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       if (y + rowHeight > 236) {
         doc.addPage();
         y = M;
+        broke = true;
         drawHead(y);
         y += 10;
         doc.setFont("helvetica", "normal");
@@ -839,6 +856,7 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
       y += rowHeight;
     });
 
+    if (!broke) drawTableBorder(doc, M, tableTop, CW, y - tableTop - 1.5);
     y += 4;
   }
 
@@ -1156,8 +1174,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   ];
 
   const drawTableHeader = (atY: number) => {
-    setDrawFillColor(doc, CREAM_HEADER);
-    doc.rect(M, atY, CW, 8, "F");
+    drawRoundedTableHeader(doc, M, atY, CW, 8);
     setTextColor(doc, GRAY);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
@@ -1166,6 +1183,8 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     });
   };
 
+  const tableTop = y;
+  let broke = false;
   drawTableHeader(y);
   y += 10;
 
@@ -1180,6 +1199,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
     if (y + rowHeight > 200) {
       doc.addPage();
       y = M;
+      broke = true;
       drawTableHeader(y);
       y += 10;
       doc.setFont("helvetica", "normal");
@@ -1205,6 +1225,7 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
 
     y += rowHeight;
   });
+  if (!broke) drawTableBorder(doc, M, tableTop, CW, y - tableTop);
   y += 4;
 
   // Resumen

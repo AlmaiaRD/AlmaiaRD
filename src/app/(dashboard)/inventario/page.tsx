@@ -333,10 +333,12 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       '<hr style="border-color:#E0DAD3;margin-bottom:8px;"/>' +
       '<p style="font-size:10px;"><b>Fecha:</b> ' + sanitizeHtml(formatDate(purchase.purchase_date)) + ' &nbsp;&nbsp; <b>Proveedor:</b> ' + (sanitizeHtml(purchase.supplier_name) || "—") + '</p>' +
       '<hr style="border-color:#E0DAD3;margin:8px 0;"/>' +
+      '<div style="border:1px solid #E0DAD3;border-radius:8px;overflow:hidden;">' +
       '<table style="width:100%;font-size:9px;border-collapse:collapse;">' +
-      '<thead><tr style="background:#F1E9DF;"><th style="text-align:left;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Producto</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Costo U.</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">ITBIS</th><th style="text-align:right;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Total</th></tr></thead>' +
+      '<thead><tr style="background:#F1E9DF;border-bottom:1px solid #E0DAD3;"><th style="text-align:left;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Producto</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Costo U.</th><th style="text-align:center;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">ITBIS</th><th style="text-align:right;padding:4px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Total</th></tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
       '</table>' +
+      '</div>' +
       '<hr style="border-color:#E0DAD3;margin:8px 0;"/>' +
       '<div style="text-align:right;font-size:10px;">' +
       '<p>Subtotal: ' + sanitizeHtml(formatCurrency(purchase.subtotal)) + '</p>' +

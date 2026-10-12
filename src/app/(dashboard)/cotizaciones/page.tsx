@@ -489,9 +489,10 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
           <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Email:</span> ${sanitizeHtml(data.client_email) || "N/D"}</p>
         </div>
       </div>
-      <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
+      <div style="border:1px solid #E0DAD3;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
         <thead>
-          <tr style="background:#F1E9DF;">
+          <tr style="background:#F1E9DF;border-bottom:1px solid #E0DAD3;">
             <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Descripci\u00f3n / Producto</th>
             <th style="padding:10px 12px;text-align:center;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th>
             <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Precio Unit.</th>
@@ -509,6 +510,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
           `).join("")}
         </tbody>
       </table>
+      </div>
       <div style="border-top:1px solid #E0DAD3;padding-top:12px;margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#4C5760;margin-bottom:4px;">
           <span>Subtotal</span>

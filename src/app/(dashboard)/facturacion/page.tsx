@@ -384,9 +384,10 @@ export default function FacturacionPage() {
           <p style="color:#39484F;margin:0;"><span style="color:#4C5760;">Email:</span> ${sanitizeHtml(data.clients?.email) || "N/D"}</p>
         </div>
       </div>
-      <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
+      <div style="border:1px solid #E0DAD3;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
         <thead>
-          <tr style="background:#F1E9DF;">
+          <tr style="background:#F1E9DF;border-bottom:1px solid #E0DAD3;">
             <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Submarca</th>
             <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Descripci\u00f3n / Producto</th>
             <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th>
@@ -411,6 +412,7 @@ export default function FacturacionPage() {
           `).join("")}
         </tbody>
       </table>
+      </div>
       ${data.show_all_bank_accounts ? (bankAccounts.length > 0 ? `
         <div style="border:1px solid #E0DAD3;background:#F5EFE9;border-radius:12px;padding:16px;margin-bottom:20px;">
           <p style="font-size:11px;font-weight:700;color:#BA4A3A;margin:0 0 12px;">DATOS DE PAGO POR TRANSFERENCIA</p>
@@ -1039,9 +1041,10 @@ export default function FacturacionPage() {
               </div>
 
               {/* C. PRODUCTS TABLE */}
-              <table className="w-full text-sm mb-5">
+              <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden mb-5">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#F1E9DF]">
+                  <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
                     <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Submarca</th>
                     <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Descripción / Producto</th>
                     <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Cant.</th>
@@ -1063,6 +1066,7 @@ export default function FacturacionPage() {
                   })}
                 </tbody>
               </table>
+              </div>
 
               {/* D. PAYMENT DATA */}
               {(selectedInvoice.show_all_bank_accounts ? bankAccounts.length > 0 : selectedInvoice.bank_accounts) && (
@@ -1727,9 +1731,10 @@ export default function FacturacionPage() {
                 <p className="text-[#39484F]"><span className="text-[#4C5760]">Email:</span> {jpgData.clients?.email || "N/D"}</p>
               </div>
             </div>
-            <table className="w-full text-sm mb-5">
+            <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden mb-5">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#F1E9DF]">
+                <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
                   <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Submarca</th>
                   <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Descripción / Producto</th>
                   <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Cant.</th>
@@ -1749,6 +1754,7 @@ export default function FacturacionPage() {
                   ))}
               </tbody>
             </table>
+            </div>
             {(jpgData.show_all_bank_accounts ? bankAccounts.length > 0 : jpgData.bank_accounts) && (
               <div className="border border-[#E0DAD3] bg-[#F5EFE9] rounded-xl p-4 mb-5">
                 <p className="text-xs font-bold text-[#BA4A3A] mb-3">DATOS DE PAGO POR TRANSFERENCIA</p>
