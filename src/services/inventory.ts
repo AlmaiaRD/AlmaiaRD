@@ -191,22 +191,20 @@ export async function deleteProduct(productId: string) {
 }
 
 export async function forceDeleteProduct(productId: string) {
-  const { count: invoiceCount } = await supabase
-    .from("invoice_items")
+  // Tras migración 20261012:
+  // - invoice_items, purchase_items, return_items: FK ON DELETE SET NULL
+  //   (product_id pasa a NULL, líneas se conservan intactas).
+  // - inventory / inventory_movements: ON DELETE CASCADE (se borran solos).
+  // - bundle_items: ON DELETE CASCADE (se borran, bundle queda sin ese componente).
+  // Solo bloqueamos si es componente de bundle (para no dejar bundles rotos).
+  const { count: bundleCount } = await supabase
+    .from("bundle_items")
     .select("*", { count: "exact", head: true })
     .eq("product_id", productId);
-  if ((invoiceCount ?? 0) > 0) {
-    throw new Error("No se puede eliminar el producto porque está asociado a facturas");
+  if ((bundleCount ?? 0) > 0) {
+    throw new Error("No se puede eliminar el producto porque es componente de un bundle");
   }
-  const { count: purchaseCount } = await supabase
-    .from("purchase_items")
-    .select("*", { count: "exact", head: true })
-    .eq("product_id", productId);
-  if ((purchaseCount ?? 0) > 0) {
-    throw new Error("No se puede eliminar el producto porque está asociado a compras");
-  }
-  const { error: mvError } = await supabase.from("inventory_movements").delete().eq("product_id", productId);
-  if (mvError) throw mvError;
+
   const { error } = await supabase.from("products").delete().eq("id", productId);
   if (error) throw error;
   return true;

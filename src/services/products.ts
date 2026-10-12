@@ -90,31 +90,8 @@ export async function deactivateProduct(id: string) {
 }
 
 export async function deleteProduct(id: string) {
-  // Verificar dependencias antes de borrar (FK sin ON DELETE CASCADE)
-  const { count: invoiceCount } = await supabase
-    .from("invoice_items")
-    .select("*", { count: "exact", head: true })
-    .eq("product_id", id);
-  if ((invoiceCount ?? 0) > 0) {
-    throw new Error("No se puede eliminar el producto porque está asociado a facturas");
-  }
-
-  const { count: purchaseCount } = await supabase
-    .from("purchase_items")
-    .select("*", { count: "exact", head: true })
-    .eq("product_id", id);
-  if ((purchaseCount ?? 0) > 0) {
-    throw new Error("No se puede eliminar el producto porque está asociado a compras");
-  }
-
-  const { count: returnCount } = await supabase
-    .from("return_items")
-    .select("*", { count: "exact", head: true })
-    .eq("product_id", id);
-  if ((returnCount ?? 0) > 0) {
-    throw new Error("No se puede eliminar el producto porque está asociado a devoluciones");
-  }
-
+  // Verificar SOLO dependencias que NO tienen ON DELETE SET NULL/CASCADE:
+  // - bundle_items (CASCADE, pero el bundle quedaría huérfano; avisamos)
   const { count: bundleCount } = await supabase
     .from("bundle_items")
     .select("*", { count: "exact", head: true })
@@ -123,7 +100,10 @@ export async function deleteProduct(id: string) {
     throw new Error("No se puede eliminar el producto porque es componente de un bundle");
   }
 
-  // inventory e inventory_movements tienen ON DELETE CASCADE, se borran solos
+  // invoice_items, purchase_items, return_items: FK con ON DELETE SET NULL
+  // (tras migración 20261012). Se borra el producto y product_id pasa a NULL
+  // en las líneas históricas — conservan nombre, precio, cantidad.
+  // inventory / inventory_movements: ON DELETE CASCADE (se limpian solos).
 
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
