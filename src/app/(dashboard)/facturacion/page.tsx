@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/layout/PageContainer";
 import Modal from "@/components/ui/Modal";
@@ -1458,96 +1458,125 @@ export default function FacturacionPage() {
             )}
 
             {items.length === 0 ? (
-              <p className="text-sm text-[#4C5760] py-3">No hay productos agregados</p>
+              <div className="border-2 border-dashed border-[#E0DAD3] rounded-xl p-6 text-center">
+                <p className="text-sm text-[#4C5760]">Agrega productos desde el catálogo o manualmente</p>
+              </div>
             ) : (
-              <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                {items.map((item, i) => {
-                  const isBundle = !!item.bundle_items && item.bundle_items.length > 0;
-                  const lineAmount = math.lines[i]?.line_total ?? item.quantity * effectivePrice(item);
-                  const itemCost = item.cost ?? 0;
-                  const lineProfit = computeLineProfit(lineAmount, itemCost, item.quantity);
-                  const hasKnownCost = itemCost > 0;
-                  return (
-                    <div key={i} className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
-                      <div className="flex items-center gap-3 bg-[#F1E9DF] rounded-xl p-3 flex-wrap sm:flex-nowrap">
-                        {isBundle && (
-                          <button
-                            type="button"
-                            onClick={() => toggleExpandRow(i)}
-                            className="p-1 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg transition-colors flex-shrink-0"
-                            title={expandedRows[i] ? "Ocultar componentes" : "Ver componentes del bundle"}
-                          >
-                            <ChevronDown size={16} className={`transition-transform ${expandedRows[i] ? "rotate-180" : ""}`} />
-                          </button>
-                        )}
-                        <div className="flex-1 text-sm text-[#39484F] min-w-[120px] sm:min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span>{item.name}</span>
-                            {isBundle && <Badge variant="warning">BUNDLE</Badge>}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number" min={1} value={item.quantity}
-                            onChange={(e) => {
-                              const newItems = [...items];
-                              newItems[i].quantity = Number(e.target.value);
-                              setItems(newItems);
-                            }}
-                            className="w-14 sm:w-16 h-9 px-2 rounded-lg border border-[#E0DAD3] text-center text-sm"
-                          />
-                          <input
-                            type="number" step="0.01" value={math.lines[i]?.unit_price ?? effectivePrice(item)}
-                            onChange={(e) => {
-                              const newItems = [...items];
-                              newItems[i].unit_price = Number(e.target.value);
-                              delete newItems[i].price_30;
-                              delete newItems[i].price_35;
-                              setItems(newItems);
-                            }}
-                            className="w-20 sm:w-24 h-9 px-2 rounded-lg border border-[#E0DAD3] text-center text-sm"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            title="Ganancia según margen seleccionado"
-                            className={`text-xs font-semibold w-14 sm:w-16 text-right whitespace-nowrap ${!hasKnownCost ? "text-[#A99B90]" : lineProfit >= 0 ? "text-green-600" : "text-red-500"}`}
-                          >
-                            {hasKnownCost ? `${lineProfit >= 0 ? "+" : ""}${formatCurrency(lineProfit)}` : "—"}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newItems = [...items];
-                              newItems[i].itbis = !newItems[i].itbis;
-                              setItems(newItems);
-                            }}
-                            className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors flex-shrink-0 ${item.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
-                          >
-                            <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
-                          </button>
-                          <span className={`text-sm font-medium w-16 sm:w-20 text-right ${item.itbis ? "text-[#39484F]" : "text-[#4C5760]"}`}>
-                            {formatCurrency(lineAmount)}
-                          </span>
-                          <button onClick={() => removeItem(i)} className="p-1 text-[#D4A0A0] hover:bg-white rounded-lg">
-                            <X size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      {expandedRows[i] && isBundle && (
-                        <div className="px-4 py-3 bg-white border-t border-[#E0DAD3] space-y-1.5">
-                          <p className="text-[10px] font-bold text-[#BA4A3A] uppercase tracking-wide">Componentes del bundle</p>
-                          {item.bundle_items?.map((bi: BundleItem) => (
-                            <div key={bi.id} className="flex items-center justify-between text-xs">
-                              <span className="text-[#39484F] truncate pr-3">{bi.products?.name || "Producto"}</span>
-                              <span className="text-[#4C5760] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3] sticky top-0 z-10">
+                        <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Producto</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Cant.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Precio Unit.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Ganancia</th>
+                        <th className="text-center px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">ITBIS</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Total</th>
+                        <th className="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, i) => {
+                        const isBundle = !!item.bundle_items && item.bundle_items.length > 0;
+                        const lineAmount = math.lines[i]?.line_total ?? item.quantity * effectivePrice(item);
+                        const itemCost = item.cost ?? 0;
+                        const lineProfit = computeLineProfit(lineAmount, itemCost, item.quantity);
+                        const hasKnownCost = itemCost > 0;
+                        return (
+                          <Fragment key={i}>
+                            <tr className="border-b border-[#E0DAD3] last:border-0">
+                              <td className="px-3 py-2 text-[#39484F]">
+                                <div className="flex items-center gap-2">
+                                  {isBundle && (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleExpandRow(i)}
+                                      className="p-1 text-[#BA4A3A] hover:bg-[#BA4A3A]/10 rounded-lg transition-colors flex-shrink-0"
+                                      title={expandedRows[i] ? "Ocultar componentes" : "Ver componentes del bundle"}
+                                    >
+                                      <ChevronDown size={16} className={`transition-transform ${expandedRows[i] ? "rotate-180" : ""}`} />
+                                    </button>
+                                  )}
+                                  <span>{item.name}</span>
+                                  {isBundle && <Badge variant="warning">BUNDLE</Badge>}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 w-20">
+                                <input
+                                  type="number" min={1} value={item.quantity}
+                                  onChange={(e) => {
+                                    const newItems = [...items];
+                                    newItems[i].quantity = Number(e.target.value);
+                                    setItems(newItems);
+                                  }}
+                                  className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-center text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                                />
+                              </td>
+                              <td className="px-3 py-2 w-28">
+                                <input
+                                  type="number" step="0.01" value={math.lines[i]?.unit_price ?? effectivePrice(item)}
+                                  onChange={(e) => {
+                                    const newItems = [...items];
+                                    newItems[i].unit_price = Number(e.target.value);
+                                    delete newItems[i].price_30;
+                                    delete newItems[i].price_35;
+                                    setItems(newItems);
+                                  }}
+                                  className="w-full h-9 px-2 rounded-lg border border-[#E0DAD3] bg-[#F5EFE9] text-sm text-right text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span
+                                  title="Ganancia según margen seleccionado"
+                                  className={`text-xs font-semibold whitespace-nowrap ${!hasKnownCost ? "text-[#A99B90]" : lineProfit >= 0 ? "text-green-600" : "text-red-500"}`}
+                                >
+                                  {hasKnownCost ? `${lineProfit >= 0 ? "+" : ""}${formatCurrency(lineProfit)}` : "—"}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newItems = [...items];
+                                    newItems[i].itbis = !newItems[i].itbis;
+                                    setItems(newItems);
+                                  }}
+                                  className={`relative w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors inline-block ${item.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}
+                                >
+                                  <div className={`absolute top-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-transform ${item.itbis ? "translate-x-[18px] sm:translate-x-6" : "translate-x-0.5"}`} />
+                                </button>
+                              </td>
+                              <td className={`px-3 py-2 text-right font-semibold ${item.itbis ? "text-[#39484F]" : "text-[#4C5760]"}`}>
+                                {formatCurrency(lineAmount)}
+                              </td>
+                              <td className="px-3 py-2">
+                                <button onClick={() => removeItem(i)} className="p-1.5 text-[#D4A0A0] hover:bg-[#D4A0A0]/10 rounded-lg">
+                                  <X size={15} />
+                                </button>
+                              </td>
+                            </tr>
+                            {expandedRows[i] && isBundle && (
+                              <tr className="border-b border-[#E0DAD3]">
+                                <td colSpan={7} className="px-3 py-3 bg-[#F1E9DF]/40">
+                                  <p className="text-[10px] font-bold text-[#BA4A3A] uppercase tracking-wide mb-1.5">Componentes del bundle</p>
+                                  <div className="space-y-1.5">
+                                    {item.bundle_items?.map((bi: BundleItem) => (
+                                      <div key={bi.id} className="flex items-center justify-between text-xs">
+                                        <span className="text-[#39484F] truncate pr-3">{bi.products?.name || "Producto"}</span>
+                                        <span className="text-[#4C5760] flex-shrink-0">{bi.quantity} × {item.quantity} = {bi.quantity * item.quantity}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

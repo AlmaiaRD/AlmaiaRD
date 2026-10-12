@@ -521,36 +521,36 @@ export default function RecibosPage() {
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-y-2">
+            <table className="w-full text-sm">
               <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">No. Recibo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#4C5760] uppercase">Factura</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#4C5760] uppercase">Monto</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Método</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Estado</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-[#4C5760] uppercase">Acciones</th>
+                <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">No. Recibo</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Fecha</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Factura</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Monto</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Método</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Estado</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {receiptSearchFiltered.map((rec: ReceiptRow) => {
                 const m = methodMap[rec.payment_method as string] || methodMap.CASH;
                 return (
-                  <tr key={rec.id} className="bg-white rounded-xl shadow-sm border border-[#E0DAD3] hover:shadow-md transition-shadow">
-                    <td className="px-4 py-3.5 text-sm font-medium text-[#39484F]">{rec.receipt_number}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#4C5760]">{formatDate(rec.receipt_date || rec.created_at)}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#39484F]">{rec.invoices?.invoice_number || "—"}</td>
-                    <td className="px-4 py-3.5 text-sm text-[#39484F] text-right font-medium">{formatCurrency(rec.amount)}</td>
-                    <td className="px-4 py-3.5 text-center"><Badge variant={m.variant}>{m.label}</Badge></td>
-                    <td className="px-4 py-3.5 text-center">
+                  <tr key={rec.id} className="border-b border-[#E0DAD3] last:border-0 hover:bg-[#F1E9DF]/50 transition-colors">
+                    <td className="px-4 py-3 text-sm font-medium text-[#39484F]">{rec.receipt_number}</td>
+                    <td className="px-4 py-3 text-sm text-[#4C5760]">{formatDate(rec.receipt_date || rec.created_at)}</td>
+                    <td className="px-4 py-3 text-sm text-[#39484F]">{rec.clients?.full_name || rec.invoices?.clients?.full_name || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-[#39484F]">{rec.invoices?.invoice_number || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-[#39484F] text-right font-medium">{formatCurrency(rec.amount)}</td>
+                    <td className="px-4 py-3 text-center"><Badge variant={m.variant}>{m.label}</Badge></td>
+                    <td className="px-4 py-3 text-center">
                       <Badge variant={rec.invoices?.status === "PAID" ? "success" : "warning"}>
                         {rec.invoices?.status === "PAID" ? "Pagado" : "Pendiente"}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => { setSelectedReceipt(rec); setShowDetail(true); }} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="Ver"><Eye size={15} /></button>
                         <button onClick={() => openEdit(rec)} className="p-2 text-[#4C5760] hover:bg-[#F1E9DF] rounded-lg" title="Editar"><Edit2 size={15} /></button>
@@ -603,26 +603,29 @@ export default function RecibosPage() {
 
             {(selectedReceipt.invoices?.invoice_items || []).length > 0 && (
               <div>
-                <table className="w-full text-sm mb-5">
-                  <thead>
-                    <tr className="bg-[#F0EBE3]">
-                      <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripci\u00f3n / Producto</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
-                      <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(selectedReceipt.invoices?.invoice_items || []).map((item: ReceiptInvoiceItem, i: number) => (
-                      <tr key={i} className="border-b border-[#F0EBE3]">
-                        <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
-                        <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{formatCurrency(Number(item.unit_price))}</td>
-                        <td className="py-2.5 px-3 text-right text-sm font-medium text-[#39484F]">{formatCurrency(Number(item.line_total))}</td>
+                <p className="text-sm font-medium text-[#39484F] mb-2">Productos</p>
+                <div className="bg-white rounded-xl border border-[#E0DAD3] overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-[#F1E9DF] border-b border-[#E0DAD3]">
+                        <th className="text-left px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Descripci\u00f3n / Producto</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Cant.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Precio Unit.</th>
+                        <th className="text-right px-3 py-2.5 text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {(selectedReceipt.invoices?.invoice_items || []).map((item: ReceiptInvoiceItem, i: number) => (
+                        <tr key={i} className="border-b border-[#E0DAD3] last:border-0">
+                          <td className="px-3 py-2.5 text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
+                          <td className="px-3 py-2.5 text-right text-[#4C5760]">{item.quantity}</td>
+                          <td className="px-3 py-2.5 text-right text-[#4C5760]">{formatCurrency(Number(item.unit_price))}</td>
+                          <td className="px-3 py-2.5 text-right font-semibold text-[#39484F]">{formatCurrency(Number(item.line_total))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

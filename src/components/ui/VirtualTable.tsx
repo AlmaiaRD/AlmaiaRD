@@ -82,13 +82,13 @@ function VirtualRow<T>({
   onRowClick?: (row: T, index: number) => void;
   classNameCell?: string;
 }) {
-  const stripe = striped && index % 2 === 1 ? "bg-[#F1E9DF]" : "";
-  const hover = hoverable && onRowClick ? "hover:bg-[#F1E9DF] cursor-pointer transition-colors" : "";
+  const stripe = striped && index % 2 === 1 ? "bg-[#F1E9DF]/40" : "";
+  const hover = hoverable && onRowClick ? "hover:bg-[#F1E9DF]/50 cursor-pointer transition-colors" : "";
 
   return (
     <div
       role="row"
-      className={`flex ${stripe} ${hover}`}
+      className={`flex border-b border-[#E0DAD3] ${stripe} ${hover}`}
       style={{
         position: "absolute",
         top: `${offset}px`,
@@ -167,7 +167,7 @@ export function VirtualTable<T>({
   emptyMessage = "No hay datos para mostrar",
   emptyIcon,
   onRowClick,
-  striped = true,
+  striped = false,
   hoverable = true,
   stickyHeader = true,
   className = "",
@@ -218,7 +218,7 @@ export function VirtualTable<T>({
     >
       <div
         role="row"
-        className={`flex border-b border-[#E0DAD3] bg-[#F5EFE9] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
+        className={`flex border-b border-[#E0DAD3] bg-[#F1E9DF] ${classNameHeader} ${stickyHeader ? "sticky top-0 z-10" : ""}`}
       >
         {columns.map((col) => {
           const active = sortBy === col.key;
