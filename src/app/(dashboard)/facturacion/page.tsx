@@ -788,6 +788,7 @@ export default function FacturacionPage() {
         key: "invoice_number",
         header: "No. Factura",
         minWidth: 150,
+        grow: true,
         sortable: true,
         render: (inv) => <span className="text-sm font-medium text-[#39484F]">{inv.invoice_number}</span>,
       },
@@ -795,6 +796,7 @@ export default function FacturacionPage() {
         key: "invoice_date",
         header: "Fecha",
         minWidth: 120,
+        grow: true,
         sortable: true,
         render: (inv) => <span className="text-sm text-[#4C5760]">{formatDate(inv.invoice_date)}</span>,
       },
@@ -802,6 +804,7 @@ export default function FacturacionPage() {
         key: "client",
         header: "Cliente",
         minWidth: 200,
+        grow: true,
         sortable: true,
         render: (inv) => <span className="text-sm text-[#39484F]">{inv.clients?.full_name || "—"}</span>,
       },
@@ -810,6 +813,7 @@ export default function FacturacionPage() {
         header: "Total",
         minWidth: 130,
         align: "right",
+        grow: true,
         sortable: true,
         render: (inv) => <span className="text-sm font-medium text-[#39484F]">{formatCurrency(inv.total)}</span>,
       },
@@ -818,6 +822,7 @@ export default function FacturacionPage() {
         header: "Estado",
         minWidth: 120,
         align: "center",
+        grow: true,
         sortable: true,
         render: (inv) => {
           const s = statusMap[inv.status] || statusMap.PENDING;
@@ -829,6 +834,7 @@ export default function FacturacionPage() {
         header: "Acciones",
         minWidth: 170,
         align: "center",
+        grow: true,
         render: (inv) => (
           <div className="relative flex items-center justify-center gap-1">
             <button
