@@ -340,11 +340,11 @@ export default function FacturacionPage() {
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:800px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:3px;">
+        <div style="display:flex;align-items:flex-start;gap:2px;">
           <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:1px 0 0;">Bienestar & Salud</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;line-height:1;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:0.5px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#39484F;margin:8px 0 0;">Distribuidor Independiente Amway</p>
             <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
             <p style="font-size:12px;color:#4C5760;margin:0;">Rep\u00fablica Dominicana</p>
@@ -930,6 +930,21 @@ export default function FacturacionPage() {
         )}
       </div>
 
+      {/* Stats - estilo cotizaciones */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {[
+          { label: "Pendientes", value: invoices.filter(i => i.status === "PENDING").length, color: "text-[#BA4A3A]" },
+          { label: "Pagadas", value: invoices.filter(i => i.status === "PAID").length, color: "text-[#86C7A3]" },
+          { label: "Canceladas", value: invoices.filter(i => i.status === "CANCELLED").length, color: "text-[#D4A0A0]" },
+          { label: "Total", value: invoices.length, color: "text-[#39484F]" },
+        ].map((s) => (
+          <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-[#4C5760] mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="w-8 h-8 border-2 border-[#BA4A3A] border-t-transparent rounded-full animate-spin" />
@@ -940,7 +955,7 @@ export default function FacturacionPage() {
           <p className="text-sm">No hay facturas registradas</p>
         </div>
       ) : (
-        <>
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
           <VirtualTable<InvoiceListRow>
             data={visibleInvoices}
             columns={invoiceColumns}
@@ -955,8 +970,10 @@ export default function FacturacionPage() {
             emptyMessage="No hay facturas que coincidan con el filtro"
             emptyIcon={<FileText size={40} className="mx-auto mb-3 opacity-40" />}
           />
-          <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
-        </>
+          <div className="px-4 py-3 border-t border-[#E0DAD3]">
+            <Pagination page={page} pageSize={pageSize} total={totalInvoices} onPageChange={handlePageChange} />
+          </div>
+        </div>
       )}
 
       <Modal isOpen={showDetail} onClose={() => { setShowDetail(false); setSelectedInvoice(null); }} title={selectedInvoice?.invoice_number || "Detalle"} wide>
@@ -965,11 +982,11 @@ export default function FacturacionPage() {
             <div id="invoice-preview" className="bg-white p-8 rounded-xl" style={{ fontFamily: "system-ui, sans-serif" }}>
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-[3px]">
-                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
+              <div className="flex items-start gap-[2px]">
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-[27px] h-[27px] object-contain" />
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
-                    <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[1px]">Bienestar & Salud</p>
+                    <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[0.5px]">Bienestar & Salud</p>
                     <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
                     <p className="text-xs text-[#4C5760] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
                     <p className="text-xs text-[#4C5760]">República Dominicana</p>
@@ -1634,11 +1651,11 @@ export default function FacturacionPage() {
         {jpgData && (
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
-              <div className="flex items-start gap-[3px]">
-                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-16 h-16 object-contain mt-1" />
+              <div className="flex items-start gap-[2px]">
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-[27px] h-[27px] object-contain" />
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
-                  <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[1px]">Bienestar & Salud</p>
+                  <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[0.5px]">Bienestar & Salud</p>
                   <p className="text-sm font-bold text-[#39484F] mt-2">Distribuidor Independiente Amway</p>
                   <p className="text-xs text-[#4C5760] mt-0.5">Suplementos, cosmética y bienestar para toda la familia</p>
                   <p className="text-xs text-[#4C5760]">República Dominicana</p>

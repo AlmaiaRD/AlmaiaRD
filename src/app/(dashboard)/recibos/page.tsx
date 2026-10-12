@@ -210,11 +210,11 @@ export default function RecibosPage() {
     el.style.cssText = "position:fixed;top:0;left:0;z-index:9999;background:#fff;width:600px;padding:32px;font-family:system-ui,sans-serif;font-size:16px;";
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:3px;">
-          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:64px;height:64px;object-fit:contain;" />
+        <div style="display:flex;align-items:flex-start;gap:2px;">
+          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:27px;height:27px;object-fit:contain;" />
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:1px 0 0;">Bienestar & Salud</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;line-height:1;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:0.5px 0 0;">Bienestar & Salud</p>
             <p style="font-size:12px;color:#4C5760;margin:4px 0 0;">Distribuidor Independiente Amway &middot; Rep\u00fablica Dominicana</p>
           </div>
         </div>
@@ -482,6 +482,21 @@ export default function RecibosPage() {
         )}
       </div>
 
+      {/* Stats - estilo cotizaciones */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {[
+          { label: "Total", value: receipts.length, color: "text-[#39484F]" },
+          { label: "Monto Total", value: formatCurrency(receipts.reduce((sum, r) => sum + Number(r.amount), 0)), color: "text-[#86C7A3]" },
+          { label: "Con Factura", value: receipts.filter(r => r.invoice_id).length, color: "text-[#86C7A3]" },
+          { label: "Sin Factura", value: receipts.filter(r => !r.invoice_id).length, color: "text-[#BA4A3A]" },
+        ].map((s) => (
+          <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-[#E0DAD3]">
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-[#4C5760] mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#86C7A3] border-t-transparent rounded-full animate-spin" /></div>
       ) : receiptSearchFiltered.length === 0 ? (
@@ -490,7 +505,7 @@ export default function RecibosPage() {
           <p className="text-sm">No hay recibos registrados</p>
         </div>
       ) : (
-        <>
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-separate border-spacing-y-2">
               <thead>
@@ -536,8 +551,10 @@ export default function RecibosPage() {
             </tbody>
           </table>
         </div>
-        <Pagination page={page} pageSize={pageSize} total={totalReceipts} onPageChange={handlePageChange} />
-        </>
+        <div className="px-4 py-3 border-t border-[#E0DAD3]">
+          <Pagination page={page} pageSize={pageSize} total={totalReceipts} onPageChange={handlePageChange} />
+        </div>
+      </div>
       )}
 
       {/* Detail modal */}

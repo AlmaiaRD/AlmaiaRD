@@ -447,11 +447,11 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
     const statusLabel = statusMap[data.status]?.label || data.status;
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-        <div style="display:flex;align-items:flex-start;gap:3px;">
-          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
+        <div style="display:flex;align-items:flex-start;gap:2px;">
+          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:27px;height:27px;object-fit:contain;" />
           <div>
-            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
-            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:1px 0 0;">Bienestar & Salud</p>
+            <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;line-height:1;">${sanitizeHtml(st?.business_name) || "ALMAIA"}</h2>
+            <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:0.5px 0 0;">Bienestar & Salud</p>
             <p style="font-size:14px;font-weight:700;color:#39484F;margin:8px 0 0;">Tus aliados en el camino a tu bienestar y salud.</p>
             <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Suplementos, cosmética y bienestar para toda la familia</p>
             <p style="font-size:12px;color:#4C5760;margin:0;">Rep\u00fablica Dominicana</p>

@@ -1103,7 +1103,7 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       )}
 
       {activeTab === "stock" && (
-        <>
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E0DAD3] overflow-hidden">
           <VirtualTable<InventoryItem>
             data={sortedFiltered}
             columns={stockColumns}
@@ -1118,8 +1118,10 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             emptyMessage="No hay productos en inventario"
             emptyIcon={<Package size={40} className="mx-auto mb-3 opacity-40" />}
           />
-          <Pagination page={page} pageSize={pageSize} total={totalInventory} onPageChange={handlePageChange} />
-        </>
+          <div className="px-4 py-3 border-t border-[#E0DAD3]">
+            <Pagination page={page} pageSize={pageSize} total={totalInventory} onPageChange={handlePageChange} />
+          </div>
+        </div>
       )}
 
       {activeTab === "rotation" && (

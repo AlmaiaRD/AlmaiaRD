@@ -22,16 +22,16 @@ export default function Header() {
   return (
     <header className="bg-[#39484F] border-b border-[#2C363D] px-4 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <Link href="/dashboard" className="flex items-center gap-[3px] flex-shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-[2px] flex-shrink-0">
           <img
             src="/almaia-logo-con-fondo.svg?v=almaia4"
             alt="Almaia RD"
-            className="w-14 h-14 sm:w-16 sm:h-16 object-contain flex-shrink-0"
+            className="h-6 sm:h-[26px] w-auto object-contain flex-shrink-0"
           />
           <Wordmark
             h1ClassName="text-[24px] sm:text-[26px] font-marca text-[#F5EFE9] leading-tight tracking-wide"
             pClassName="text-[10px] sm:text-[11px] text-[#E0DAD3] tracking-widest uppercase leading-tight font-medium"
-            gap={1}
+            gap={0.5}
           />
         </Link>
 

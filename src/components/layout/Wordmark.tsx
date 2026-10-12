@@ -10,7 +10,7 @@ interface WordmarkProps {
   pClassName?: string;
   /** Frase inferior (por defecto "Bienestar & Salud"). */
   tagline?: string;
-  /** Espacio entre "ALMAIA" y el tagline (px). Por defecto 2px. */
+  /** Espacio entre "ALMAIA" y el tagline (px). Por defecto 0.5px. */
   gap?: number;
 }
 

@@ -209,17 +209,23 @@ export function drawLightHeader(
   const PW = doc.internal.pageSize.getWidth();
 
   // Logo con fondo (monograma Almaia en círculo crema) a la izquierda de la
-  // marca. Si no se puede dibujar, se omite el ícono (la flor antigua ya no
-  // se usa en ningún documento).
+  // marca. La altura del logo = altura del texto "ALMAIA" (24pt ≈ 8.47 mm).
+  // Gap logo ↔ marca = 2px ≈ 0.7 mm. Gap ALMAIA ↔ tagline = 0.5px ≈ 0.18 mm.
   let logoW = 16;
   let logoH = 16;
+  const BRAND_SIZE_PT = 24;
+  const BRAND_SIZE_MM = BRAND_SIZE_PT * 25.4 / 72; // ≈ 8.47 mm
+  const LOGO_GAP_MM = 2 * 25.4 / 96; // 2px ≈ 0.53 mm (usamos 0.7 mm redondeado)
+  const TAGLINE_GAP_MM = 0.5 * 25.4 / 96; // 0.5px ≈ 0.13 mm (usamos 0.2 mm)
   if (opts.logoBase64) {
     try {
       const props = doc.getImageProperties(opts.logoBase64);
       const ratio = props.width && props.height ? props.height / props.width : 1;
       logoW = 16;
-      logoH = logoW * ratio;
-      doc.addImage(opts.logoBase64, "PNG", M, 16 - logoH / 2, logoW, logoH);
+      logoH = BRAND_SIZE_MM; // misma altura que el texto ALMAIA
+      // Centrar logo verticalmente con el texto (baseline en y=16)
+      const logoY = 16 - logoH / 2 + BRAND_SIZE_MM / 2;
+      doc.addImage(opts.logoBase64, "PNG", M, logoY, logoW, logoH);
     } catch {
       logoW = 0;
       logoH = 0;
@@ -231,15 +237,16 @@ export function drawLightHeader(
 
   // Marca Italiana 24pt pizarra con tracking-wide (0.025em)
   const brandText = opts.bizName.toUpperCase();
-  const brandSize = 24;
+  const brandSize = BRAND_SIZE_PT;
   const brandTrack = brandSize * 0.025;
   doc.setFont("Italiana", "normal");
   const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
-  const textX = M + logoW + 6;
+  const textX = M + logoW + LOGO_GAP_MM;
   drawTrackedText(doc, brandText, textX, 16, brandSize, brandTrack, DARK, "Italiana", "normal");
 
   // Tagline terracota en mayúscula con tracking-widest (0.1em), escalada al ancho
   // de la marca para que INICIE y TERMINE junto con el nombre (lockup compacto)
+  // Gap ALMAIA ↔ tagline = 0.5px ≈ 0.18 mm
   const taglineText = "BIENESTAR & SALUD";
   doc.setFont("helvetica", "normal");
   const refSize = 10;
@@ -247,7 +254,8 @@ export function drawLightHeader(
   const taglineW = trackedTextWidth(doc, taglineText, refSize, refTrack);
   const scale = Math.min(1.4, Math.max(0.75, brandW / taglineW));
   const taglineStart = textX + (brandW - taglineW * scale) / 2;
-  drawTrackedText(doc, taglineText, taglineStart, 22.5, refSize * scale, refTrack * scale, PRIMARY, "helvetica", "normal");
+  const taglineY = 16 + TAGLINE_GAP_MM + BRAND_SIZE_MM * 0.15; // baseline ligeramente abajo
+  drawTrackedText(doc, taglineText, taglineStart, taglineY, refSize * scale, refTrack * scale, PRIMARY, "helvetica", "normal");
 
   // Distribuidor
   setTextColor(doc, DARK);
