@@ -251,16 +251,16 @@ export default function RecibosPage() {
       ${(data.invoices?.invoice_items || []).length > 0 ? `
         <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
           <thead>
-            <tr style="background:#F0EBE3;">
-              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
-              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
+            <tr style="background:#F1E9DF;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Descripci\u00f3n / Producto</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Precio Unit.</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Total</th>
             </tr>
           </thead>
           <tbody>
             ${((data.invoices as { invoice_items: ReceiptInvoiceItem[] }).invoice_items).map((item: ReceiptInvoiceItem) => `
-              <tr style="border-bottom:1px solid #F0EBE3;">
+              <tr style="border-bottom:1px solid #E0DAD3;">
                 <td style="padding:10px 12px;font-size:13px;color:#39484F;">${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${item.quantity}</td>
                 <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${formatCurrency(Number(item.unit_price))}</td>

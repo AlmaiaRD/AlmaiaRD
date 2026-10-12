@@ -89,7 +89,7 @@ const PRIMARY = "#BA4A3A";     // terracota — acentos (badges, secciones, sald
 const DARK = "#39484F";        // pizarra — texto principal
 const GRAY = "#4C5760";        // muted — texto secundario
 const CREAM_PANEL = "#F4EFE9"; // crema — paneles (cliente, pagos); como el JPG de referencia
-const CREAM_HEADER = "#F0ECE3";// crema — cabecera de tabla y píldora de badge
+const CREAM_HEADER = "#F1E9DF";// crema — cabecera de tabla y píldora de badge (estándar Cotizaciones)
 const DANGER = "#D4A0A0";
 const SUCCESS = "#86C7A3";
 const RECEIPT_GREEN = "#6DB08A";    // verde — píldora/título del recibo (como el JPG)
@@ -535,12 +535,12 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
   setDrawFillColor(doc, CREAM_HEADER);
   doc.rect(M, y, CW, 8, "F");
 
-  // Header text
-  setTextColor(doc, DARK);
+  // Header text (mayúsculas, muted — estándar Cotizaciones)
+  setTextColor(doc, GRAY);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
   colDefs.forEach((c) => {
-    doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
+    doc.text(c.label.toUpperCase(), c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
   });
   y += 10;
 
@@ -554,14 +554,14 @@ export async function buildInvoicePdfDoc(invoice: InvoiceData): Promise<PDFDoc> 
     if (y > 240) {
       doc.addPage();
       y = M;
-      // Repeat table header on new page (crema)
+      // Repeat table header on new page (crema, estándar Cotizaciones)
       setDrawFillColor(doc, CREAM_HEADER);
       doc.rect(M, y, CW, 8, "F");
-      setTextColor(doc, DARK);
+      setTextColor(doc, GRAY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
       colDefs.forEach((c) => {
-        doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
+        doc.text(c.label.toUpperCase(), c.x + (c.align === "right" ? c.w : 0), y + 5.5, { align: c.align });
       });
       y += 10;
       doc.setFont("helvetica", "normal");
@@ -791,11 +791,11 @@ export async function buildReceiptPdfDoc(receipt: ReceiptData): Promise<PDFDoc> 
     const drawHead = (atY: number) => {
       setDrawFillColor(doc, CREAM_HEADER);
       doc.rect(M, atY, CW, 8, "F");
-      setTextColor(doc, DARK);
+      setTextColor(doc, GRAY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
       colDefs.forEach((c) => {
-        doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
+        doc.text(c.label.toUpperCase(), c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
       });
     };
 
@@ -1158,11 +1158,11 @@ export async function drawQuotePdfContent(doc: PDFDoc, quote: QuoteData): Promis
   const drawTableHeader = (atY: number) => {
     setDrawFillColor(doc, CREAM_HEADER);
     doc.rect(M, atY, CW, 8, "F");
-    setTextColor(doc, DARK);
+    setTextColor(doc, GRAY);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     colDefs.forEach((c) => {
-      doc.text(c.label, c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
+      doc.text(c.label.toUpperCase(), c.x + (c.align === "right" ? c.w : 0), atY + 5.5, { align: c.align });
     });
   };
 

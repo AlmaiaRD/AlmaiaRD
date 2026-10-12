@@ -473,7 +473,7 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="display:inline-block;background:#F0EBE3;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
+          <span style="display:inline-block;background:#F1E9DF;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">COTIZACI\u00d3N</span>
           <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.quote_number)}</p>
           <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Fecha: ${sanitizeHtml(data.quote_date)}</p>
           <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">V\u00e1lida hasta: ${sanitizeHtml(data.valid_until)}</p>
@@ -491,16 +491,16 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
         <thead>
-          <tr style="background:#F0EBE3;">
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
-            <th style="padding:10px 12px;text-align:center;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
+          <tr style="background:#F1E9DF;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${(data.items || []).map((item) => `
-            <tr style="border-bottom:1px solid #F0EBE3;">
+            <tr style="border-bottom:1px solid #E0DAD3;">
               <td style="padding:10px 12px;font-size:13px;color:#39484F;">${sanitizeHtml(item.name) || "Producto"}</td>
               <td style="padding:10px 12px;text-align:center;font-size:13px;color:#39484F;">${item.quantity}</td>
               <td style="padding:10px 12px;text-align:right;font-size:13px;color:#39484F;">${sanitizeHtml(formatCurrency(Number(item.unit_price)))}</td>

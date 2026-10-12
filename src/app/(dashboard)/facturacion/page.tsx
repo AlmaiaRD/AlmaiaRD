@@ -370,7 +370,7 @@ export default function FacturacionPage() {
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="display:inline-block;background:#F0EBE3;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
+          <span style="display:inline-block;background:#F1E9DF;color:#BA4A3A;font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;white-space:nowrap;">FACTURA DE VENTA</span>
           <p style="font-size:18px;font-weight:700;color:#39484F;margin:12px 0 0;">${sanitizeHtml(data.invoice_number)}</p>
           <p style="font-size:12px;color:#4C5760;margin:2px 0 0;">Fecha: ${sanitizeHtml(formatDate(data.invoice_date))}</p>
         </div>
@@ -386,17 +386,17 @@ export default function FacturacionPage() {
       </div>
       <table style="width:100%;font-size:13px;margin-bottom:20px;border-collapse:collapse;">
         <thead>
-          <tr style="background:#F0EBE3;">
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Submarca</th>
-            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#39484F;font-weight:700;">Descripci\u00f3n / Producto</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Cant.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Precio Unit.</th>
-            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#39484F;font-weight:700;">Total</th>
+          <tr style="background:#F1E9DF;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Submarca</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Descripci\u00f3n / Producto</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cant.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Precio Unit.</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;color:#4C5760;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${(data.invoice_items || []).map((item: InvoiceLineWithProduct) => `
-            <tr style="border-bottom:1px solid #F0EBE3;">
+            <tr style="border-bottom:1px solid #E0DAD3;">
               <td style="padding:10px 12px;font-size:11px;color:#4C5760;">${sanitizeHtml(item.products?.subbrands?.name) || "\u2014"}</td>
               <td style="padding:10px 12px;font-size:13px;color:#39484F;">
                 ${sanitizeHtml(item.products?.name || item.custom_name) || "Producto"}
@@ -421,7 +421,7 @@ export default function FacturacionPage() {
           </div>
           <div style="margin-top:10px;border-top:1px solid #E0DAD3;padding-top:10px;">
             ${bankAccounts.map((b) => `
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:7px 0;border-bottom:1px solid #F0EBE3;font-size:13px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:7px 0;border-bottom:1px solid #E0DAD3;font-size:13px;">
                 <span style="color:#39484F;font-weight:600;">${sanitizeHtml(b.bank_name)}</span>
                 <span style="color:#39484F;">${sanitizeHtml(b.account_type)}</span>
                 <span style="color:#39484F;">No. ${sanitizeHtml(b.account_number)}</span>
@@ -1012,7 +1012,7 @@ export default function FacturacionPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
+                  <span className="inline-block bg-[#F1E9DF] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
                   <p className="text-lg font-bold text-[#39484F] mt-3">{selectedInvoice.invoice_number}</p>
                   <p className="text-xs text-[#4C5760] mt-0.5">Fecha: {formatDate(selectedInvoice.invoice_date)}</p>
                   <div className="mt-2">
@@ -1041,18 +1041,18 @@ export default function FacturacionPage() {
               {/* C. PRODUCTS TABLE */}
               <table className="w-full text-sm mb-5">
                 <thead>
-                  <tr className="bg-[#F0EBE3]">
-                    <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Submarca</th>
-                    <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripción / Producto</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
-                    <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
+                  <tr className="bg-[#F1E9DF]">
+                    <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Submarca</th>
+                    <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Descripción / Producto</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Cant.</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Precio Unit.</th>
+                    <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(selectedInvoice.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => {
                     return (
-                      <tr key={i} className="border-b border-[#F0EBE3]">
+                      <tr key={i} className="border-b border-[#E0DAD3]">
                         <td className="py-2.5 px-3 text-xs text-[#4C5760]">{item.products?.subbrands?.name || "—"}</td>
                         <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
                         <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
@@ -1077,7 +1077,7 @@ export default function FacturacionPage() {
                       </div>
                       <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                         {bankAccounts.map((b) => (
-                          <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
+                          <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#E0DAD3]">
                             <p className="text-[#39484F] font-semibold">{b.bank_name}</p>
                             <p className="text-[#39484F]">{b.account_type}</p>
                             <p className="text-[#39484F]">No. {b.account_number}</p>
@@ -1713,7 +1713,7 @@ export default function FacturacionPage() {
                 </div>
               </div>
               <div className="text-right">
-                <span className="inline-block bg-[#F0EBE3] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
+                <span className="inline-block bg-[#F1E9DF] text-[#BA4A3A] text-xs font-bold px-4 py-2 rounded-full">FACTURA DE VENTA</span>
                 <p className="text-lg font-bold text-[#39484F] mt-3">{jpgData.invoice_number}</p>
                 <p className="text-xs text-[#4C5760] mt-0.5">Fecha: {formatDate(jpgData.invoice_date)}</p>
               </div>
@@ -1729,17 +1729,17 @@ export default function FacturacionPage() {
             </div>
             <table className="w-full text-sm mb-5">
               <thead>
-                <tr className="bg-[#F0EBE3]">
-                  <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Submarca</th>
-                  <th className="py-2.5 px-3 text-left text-xs text-[#39484F] font-bold">Descripción / Producto</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Cant.</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Precio Unit.</th>
-                  <th className="py-2.5 px-3 text-right text-xs text-[#39484F] font-bold">Total</th>
+                <tr className="bg-[#F1E9DF]">
+                  <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Submarca</th>
+                  <th className="py-2.5 px-3 text-left text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Descripción / Producto</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Cant.</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Precio Unit.</th>
+                  <th className="py-2.5 px-3 text-right text-xs text-[#4C5760] uppercase tracking-wider font-semibold">Total</th>
                 </tr>
               </thead>
               <tbody>
                   {(jpgData.invoice_items || []).map((item: InvoiceLineWithProduct, i: number) => (
-                    <tr key={i} className="border-b border-[#F0EBE3]">
+                    <tr key={i} className="border-b border-[#E0DAD3]">
                       <td className="py-2.5 px-3 text-xs text-[#4C5760]">{item.products?.subbrands?.name || "—"}</td>
                       <td className="py-2.5 px-3 text-sm text-[#39484F]">{item.products?.name || item.custom_name || "Producto"}</td>
                       <td className="py-2.5 px-3 text-right text-sm text-[#39484F]">{item.quantity}</td>
@@ -1761,7 +1761,7 @@ export default function FacturacionPage() {
                     </div>
                     <div className="mt-2 pt-2 border-t border-[#E0DAD3]">
                       {bankAccounts.map((b) => (
-                        <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#F0EBE3]">
+                        <div key={b.id} className="grid grid-cols-3 gap-4 py-1.5 text-sm border-b border-[#E0DAD3]">
                           <p className="text-[#39484F] font-semibold">{b.bank_name}</p>
                           <p className="text-[#39484F]">{b.account_type}</p>
                           <p className="text-[#39484F]">No. {b.account_number}</p>
