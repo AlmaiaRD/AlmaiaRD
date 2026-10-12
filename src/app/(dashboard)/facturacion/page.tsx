@@ -132,14 +132,22 @@ export default function FacturacionPage() {
     });
   }, [invoices, filterMonth, filterYear, filterStatus, filterClient, sortBy, sortOrder]);
 
-  const productFiltered = products.filter(p => p.active && (!productSearch || normalize(p.name).includes(normalize(productSearch))));
+  // Todos los productos (activos e inactivos). Los archivados se muestran con
+  // un color distinto para poder elegirlos sabiendo que estan archivados. Se
+  // busca por nombre o por codigo (antes solo por nombre) y los activos salen
+  // primero.
+  const productFiltered = products
+    .filter(p => !productSearch
+      || normalize(p.name).includes(normalize(productSearch))
+      || (p.code && normalize(p.code).includes(normalize(productSearch))))
+    .sort((a, b) => (Number(b.active) - Number(a.active)) || a.name.localeCompare(b.name));
 
   const load = useCallback(async (query: string) => {
     try {
       const [inv, cl, pr, ba, st] = await Promise.all([
         query ? searchInvoices(query) : getInvoicesPaginated(page, pageSize).then(r => { setTotalInvoices(r.total); return r.data || []; }),
         getClients(),
-        getProducts(),
+        getProducts(true),
         getBankAccounts(),
         getSettings().catch(() => null),
       ]);
@@ -162,7 +170,7 @@ export default function FacturacionPage() {
         const [inv, cl, pr, ba, st] = await Promise.all([
           searchRef.current ? searchInvoices(searchRef.current) : getInvoicesPaginated(page, pageSize).then(r => { if (!cancelled) setTotalInvoices(r.total); return r.data || []; }),
           getClients(),
-          getProducts(),
+          getProducts(true),
           getBankAccounts(),
           getSettings().catch(() => null),
         ]);
@@ -1348,11 +1356,13 @@ export default function FacturacionPage() {
                     <button
                       key={p.id}
                       onClick={() => { addProduct(p); setShowProducts(false); setProductSearch(""); }}
-                      className="w-full text-left px-3 py-2 text-sm text-[#39484F] hover:bg-white rounded-lg transition-colors flex justify-between items-center gap-2"
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex justify-between items-center gap-2 hover:bg-white ${p.active ? "text-[#39484F]" : "text-[#A89B8E]"}`}
+                      title={p.active ? undefined : "Producto archivado: se puede facturar igual"}
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="truncate">{p.name}</span>
                         {p.is_bundle && <Badge variant="warning">BUNDLE</Badge>}
+                        {!p.active && <Badge variant="danger">Inactivo</Badge>}
                       </span>
                       <span className="text-[#4C5760] text-xs flex-shrink-0">
                         <span className={margin === 30 ? "font-semibold text-[#39484F]" : ""}>30%: {formatCurrency(p.price_30)}</span>

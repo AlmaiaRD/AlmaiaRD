@@ -82,7 +82,7 @@ export function useCatalog<T extends CatalogProductLike>(filters: CatalogFilters
   return useQuery({
     queryKey: catalogKey(filters),
     queryFn: async (): Promise<T[]> => {
-      const base = trimmed ? await searchProducts(trimmed) : await getProducts(true);
+      const base = trimmed ? await searchProducts(trimmed, true) : await getProducts(true);
       let rows = base as T[];
 
       if (filters.subbrandId) rows = rows.filter((p) => p.subbrand_id === filters.subbrandId);

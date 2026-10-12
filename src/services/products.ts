@@ -3,14 +3,34 @@ import { normalize } from "@/lib/search";
 import { getCached, setCache, invalidateCache } from "@/lib/cache";
 import type { Product, Category, Subbrand, BundleItem } from "@/types/database";
 
-export async function getProducts(includeInactive = false) {
+// Supabase/PostgREST devuelve como maximo 1000 filas por peticion. Sin paginar,
+// un catalogo de mas de 1000 productos dejaba productos "invisibles" en
+// Facturacion, Cotizaciones y Catalogo (aunque existieran: el buscador de
+// duplicados, que consulta por codigo, si los encontraba). Se recorre la tabla
+// en bloques de 1000 hasta agotarla. El orden por nombre+codigo garantiza que
+// los bloques no se solapen ni dejen huecos (el codigo es unico).
+const PRODUCTS_PAGE_SIZE = 1000;
+
+function fetchProductsPage(from: number, includeInactive: boolean) {
   let query = supabase
     .from("products")
     .select("*, categories(*), subbrands(*)");
   if (!includeInactive) query = query.eq("active", true);
-  const { data, error } = await query.order("name");
-  if (error) throw error;
-  return data;
+  return query.order("name").order("code").range(from, from + PRODUCTS_PAGE_SIZE - 1);
+}
+
+export async function getProducts(includeInactive = false) {
+  let from = 0;
+  const all: Awaited<ReturnType<typeof fetchProductsPage>>["data"] = [];
+  for (;;) {
+    const { data, error } = await fetchProductsPage(from, includeInactive);
+    if (error) throw error;
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < PRODUCTS_PAGE_SIZE) break;
+    from += PRODUCTS_PAGE_SIZE;
+  }
+  return all;
 }
 
 export async function getProductsPaginated(page: number, pageSize = 50, includeInactive = false) {
@@ -187,11 +207,11 @@ export async function updateBundle(
   return data as Product;
 }
 
-export async function searchProducts(query: string) {
-  const all = await getProducts();
+export async function searchProducts(query: string, includeInactive = false) {
+  const all = await getProducts(includeInactive);
   const q = normalize(query);
   return all.filter(
-    (p: unknown) => {
+    (p) => {
       const pp = p as Record<string, unknown>;
       return normalize(pp.name as string).includes(q) ||
         (pp.code && normalize(pp.code as string).includes(q));
