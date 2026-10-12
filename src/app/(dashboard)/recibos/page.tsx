@@ -211,7 +211,7 @@ export default function RecibosPage() {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:2px;">
-          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:27px;height:27px;object-fit:contain;" />
+          <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" style="width:56px;height:56px;object-fit:contain;" />
           <div>
             <h2 style="font-size:27px;font-weight:400;font-family:var(--font-display),serif;text-transform:uppercase;color:#39484F;margin:0;line-height:1;">${sanitizeHtml(settings?.business_name) || "ALMAIA"}</h2>
             <p style="font-size:12px;letter-spacing:0.1em;color:#BA4A3A;text-transform:uppercase;margin:0.5px 0 0;">Bienestar & Salud</p>

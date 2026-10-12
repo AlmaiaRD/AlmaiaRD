@@ -22,7 +22,7 @@ export default function LandingPage() {
             <img
               src="/almaia-logo-con-fondo.svg?v=almaia4"
               alt="Almaia RD"
-              className="h-6 sm:h-[26px] w-auto object-contain"
+              className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
             />
             <Wordmark
               h1ClassName="text-[24px] font-marca text-[#39484F] leading-tight"

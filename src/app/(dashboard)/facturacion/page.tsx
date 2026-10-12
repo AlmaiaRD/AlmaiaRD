@@ -983,7 +983,7 @@ export default function FacturacionPage() {
               {/* A. HEADER */}
               <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-[2px]">
-                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-[27px] h-[27px] object-contain" />
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-14 h-14 object-contain" />
                 <div>
                     <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                     <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[0.5px]">Bienestar & Salud</p>
@@ -1652,7 +1652,7 @@ export default function FacturacionPage() {
           <div id="invoice-preview" className="bg-white p-8" style={{ fontFamily: "system-ui, sans-serif" }}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-[2px]">
-                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-[27px] h-[27px] object-contain" />
+                <img src="/almaia-logo-con-fondo.svg?v=almaia4" alt="Almaia RD" className="w-14 h-14 object-contain" />
                 <div>
                   <h2 className="text-[27px] font-marca uppercase text-[#39484F]">{settings?.business_name || "ALMAIA"}</h2>
                   <p className="text-xs tracking-widest text-[#BA4A3A] uppercase mt-[0.5px]">Bienestar & Salud</p>
