@@ -55,8 +55,9 @@ function cellStyle<T>(col: Column<T>): React.CSSProperties {
     maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
     // Ancho predecible: fija el ancho (no crece ni encoge) o la hace crecer
     // para llenar el sobrante; el contenido que desborde se corta en vez de
-    // empujar a las demás columnas.
-    flex: col.width ? "0 0 auto" : col.grow ? "1 1 auto" : "0 1 auto",
+    // empujar a las demás columnas. Base 0: el reparto del sobrante es igual
+    // entre columnas y las anchuras no dependen del contenido de cada fila.
+    flex: col.width ? "0 0 auto" : col.grow ? "1 1 0%" : "0 1 auto",
     overflow: "hidden",
   };
 }
