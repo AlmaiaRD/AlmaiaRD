@@ -23,7 +23,7 @@ export default function Wordmark({
   h1ClassName = "",
   pClassName = "",
   tagline = "Bienestar & Salud",
-  gap = 2,
+  gap = 0.5,
 }: WordmarkProps) {
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const pRef = useRef<HTMLParagraphElement>(null);
