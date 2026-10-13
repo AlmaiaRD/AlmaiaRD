@@ -765,7 +765,7 @@ Responde en español en máximo 3 oraciones:`,
               )}
             </div>
             <p className="text-[10px] text-[#4C5760]">
-              Funciona en Chrome/Edge de escritorio. En otros navegadores (Safari/iOS) los documentos se descargan como siempre.
+              Funciona en Chrome/Edge de escritorio. Si aún no eliges carpeta, la primera descarga te lo preguntará automáticamente. En otros navegadores (Safari/iOS) los documentos se descargan como siempre.
             </p>
           </div>
         </div>

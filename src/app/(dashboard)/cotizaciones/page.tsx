@@ -889,9 +889,15 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
       const catDate = quoteSource?.quote_date ? new Date(quoteSource.quote_date) : null;
       const mm = catDate ? String(catDate.getMonth() + 1).padStart(2, "0") : "";
       const aa = catDate ? String(catDate.getFullYear()).slice(-2) : "";
-      doc.save(`${catQuoteNum}-${catClientName}-Detalle.${mm}${aa}.pdf`);
+      const filename = `${catQuoteNum}-${catClientName}-Detalle.${mm}${aa}.pdf`;
+      const saved = await saveOrDownload({
+        kind: "cotizacion", ext: "pdf",
+        year: documentYear(quoteSource?.quote_date),
+        filename,
+        blob: doc.output("blob"),
+      });
       setShowCatalogEditor(false);
-      toast.success("Catálogo PDF generado");
+      toast.success(saved ? "Catálogo PDF guardado en tu carpeta" : "Catálogo PDF descargado");
     } catch (e) {
       console.error("[generateCatalogPdf] error:", e);
       toast.error(e instanceof Error ? e.message : "Error al generar el catálogo");

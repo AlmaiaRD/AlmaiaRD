@@ -116,11 +116,8 @@ export interface SaveTarget {
   blob: Blob;
 }
 
-/** Guarda el archivo en la carpeta correspondiente. Devuelve true si se guardó en carpeta. */
-export async function saveDocumentToFolder(opts: SaveTarget): Promise<boolean> {
-  if (!fsFolderSupported()) return false;
-  const base = await idbGet();
-  if (!base) return false;
+/** Escribe el archivo dentro de una carpeta base ya autorizada. */
+async function writeToFolder(base: FileSystemDirectoryHandle, opts: SaveTarget): Promise<boolean> {
   // En esta versión de lib.dom los métodos de permiso no vienen tipados en
   // FileSystemDirectoryHandle, aunque existen en Chrome/Edge.
   const handle = base as FileSystemDirectoryHandle & {
@@ -142,9 +139,17 @@ export async function saveDocumentToFolder(opts: SaveTarget): Promise<boolean> {
     await writable.close();
     return true;
   } catch (e) {
-    console.warn("[saveDocumentToFolder]", e);
+    console.warn("[writeToFolder]", e);
     return false;
   }
+}
+
+/** Guarda el archivo en la carpeta correspondiente. Devuelve true si se guardó en carpeta. */
+export async function saveDocumentToFolder(opts: SaveTarget): Promise<boolean> {
+  if (!fsFolderSupported()) return false;
+  const base = await idbGet();
+  if (!base) return false;
+  return writeToFolder(base, opts);
 }
 
 /** Descarga normal (fallback cuando no hay carpeta configurada ni soporte). */
@@ -159,9 +164,23 @@ export function fallbackDownload(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-/** Intenta guardar en la carpeta; si no puede, descarga normal. Devuelve true si fue a carpeta. */
+/**
+ * Guarda el documento en su carpeta. Si todavía no hay carpeta configurada,
+ * se le pregunta al usuario en ese momento para elegirla (una sola vez) y se
+ * guarda ahí; si no hay soporte o el usuario declina, descarga normal.
+ * Devuelve true si el archivo quedó guardado en la carpeta.
+ */
 export async function saveOrDownload(opts: SaveTarget): Promise<boolean> {
-  const saved = await saveDocumentToFolder(opts);
+  let base = await idbGet();
+  if (!base && fsFolderSupported()) {
+    const want = window.confirm(
+      `¿Guardar este documento en tu carpeta?\n\n${KIND_FOLDER[opts.kind]}/${opts.year}/${opts.ext === "pdf" ? `${opts.kind} pdf` : `${opts.kind} jpg`}/\n\nNecesito que elijas la carpeta base una sola vez; de ahí en adelante se guardará solo en su carpeta, sin pasar por Descargas.\n\n· Aceptar → elegir carpeta y guardar ahí\n· Cancelar → descargar normal`
+    );
+    if (want && (await pickDocumentFolder())) {
+      base = await idbGet();
+    }
+  }
+  const saved = base ? await writeToFolder(base, opts) : false;
   if (!saved) fallbackDownload(opts.blob, opts.filename);
   return saved;
 }
