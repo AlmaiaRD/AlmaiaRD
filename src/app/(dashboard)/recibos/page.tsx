@@ -7,6 +7,7 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import { getReceipt, createReceipt, deleteReceipt, updateReceiptWithInvoice, getReceiptsPaginated } from "@/services/receipts";
+import { saveOrDownload, canvasToJpegBlob, documentYear } from "@/services/saveDocument";
 import { getInvoices, getBankAccounts } from "@/services/invoices";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { getLocalDateString } from "@/lib/utils";
@@ -339,8 +340,14 @@ export default function RecibosPage() {
       const full = await getReceipt(rec.id);
       const doc = await buildReceiptPdfDoc(receiptPdfInput(full));
       const clientName = (full.invoices?.clients?.full_name || full.clients?.full_name || "cliente").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      doc.save(`recibo-${full.receipt_number}-${clientName}.pdf`);
-      toast.success("PDF descargado");
+      const filename = `recibo-${full.receipt_number}-${clientName}.pdf`;
+      const saved = await saveOrDownload({
+        kind: "recibo", ext: "pdf",
+        year: documentYear(full.receipt_date ?? full.created_at),
+        filename,
+        blob: doc.output("blob"),
+      });
+      toast.success(saved ? "PDF guardado en tu carpeta" : "PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
       toast.error("Error al generar PDF");
@@ -351,12 +358,15 @@ export default function RecibosPage() {
   async function handlePrintJpg(rec: ReceiptRow) {
     try {
       const { canvas, receipt_number } = await captureReceipt(rec);
-      const link = document.createElement("a");
       const clientName = rec.invoices?.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      link.download = `recibo-${receipt_number}-${clientName}.jpg`;
-      link.href = canvas.toDataURL("image/jpeg", 0.95);
-      link.click();
-      toast.success("JPG descargado");
+      const filename = `recibo-${receipt_number}-${clientName}.jpg`;
+      const blob = await canvasToJpegBlob(canvas);
+      const saved = await saveOrDownload({
+        kind: "recibo", ext: "jpg",
+        year: documentYear(rec.receipt_date ?? rec.created_at),
+        filename, blob,
+      });
+      toast.success(saved ? "JPG guardado en tu carpeta" : "JPG descargado");
     } catch (e) {
       console.error("[handlePrintJpg]", e);
       toast.error("Error al generar JPG");

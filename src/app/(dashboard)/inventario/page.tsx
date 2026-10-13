@@ -14,6 +14,7 @@ import type { Product } from "@/types/database";
 import { createPurchase, getPurchases, getPurchase, updatePurchase, deletePurchase, getSoldQuantities, getPurchasedQuantities } from "@/services/purchases";
 import type { Purchase } from "@/types/database";
 import { normalize } from "@/lib/search";
+import { saveOrDownload, canvasToJpegBlob, documentYear } from "@/services/saveDocument";
 import { getSuppliers } from "@/services/suppliers";
 import type { Supplier } from "@/types/database";
 import { getBankAccounts } from "@/services/invoices";
@@ -307,7 +308,13 @@ function InventarioContent() {
     setTextColor("#BA4A3A");
     doc.text(`${settings?.business_name || "Almaia RD"} - ${formatDate(new Date().toISOString())}`, pageW - margin, y, { align: "right" });
 
-    doc.save(`COMPRA-${purchase.purchase_number}.pdf`);
+    const saved = await saveOrDownload({
+      kind: "compra", ext: "pdf",
+      year: documentYear(purchase.purchase_date),
+      filename: `COMPRA-${purchase.purchase_number}.pdf`,
+      blob: doc.output("blob"),
+    });
+    toast.success(saved ? "PDF guardado en tu carpeta" : "PDF descargado");
   }
 
 function generateHtmlForJpg(purchase: PurchaseWithItems): string {
@@ -360,11 +367,14 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
       document.body.appendChild(tmpDiv);
       const canvas = await html2canvas(tmpDiv, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       document.body.removeChild(tmpDiv);
-      const link = document.createElement("a");
-      link.download = `COMPRA-${purchase.purchase_number}.jpg`;
-      link.href = canvas.toDataURL("image/jpeg", 0.95);
-      link.click();
-      toast.success("JPG descargado");
+      const filename = `COMPRA-${purchase.purchase_number}.jpg`;
+      const blob = await canvasToJpegBlob(canvas);
+      const saved = await saveOrDownload({
+        kind: "compra", ext: "jpg",
+        year: documentYear(purchase.purchase_date),
+        filename, blob,
+      });
+      toast.success(saved ? "JPG guardado en tu carpeta" : "JPG descargado");
     } catch {
       toast.error("Error al generar JPG");
     }

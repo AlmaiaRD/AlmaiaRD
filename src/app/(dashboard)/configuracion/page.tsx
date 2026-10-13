@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import { getSettings, updateSettings, getBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from "@/services/settings";
 import type { Settings, BankAccount } from "@/types/database";
-import { Save, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet, Pin, PinOff, ChevronUp, ChevronDown, Star } from "lucide-react";
+import { Save, Trash2, Building2, Upload, Download, Database, Edit2, Cloud, FileSpreadsheet, Pin, PinOff, ChevronUp, ChevronDown, Star, FolderOpen, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { exportBackupToExcel } from "@/lib/excel";
 import MigrateImagesPanel from "@/components/catalogo/MigrateImagesPanel";
 import { FAMILIES, MAX_FAVORITES, modulesByFamily } from "@/lib/modules";
 import { getPreferences, updatePreferences } from "@/services/preferences";
+import { pickDocumentFolder, hasDocumentFolder, clearDocumentFolder, fsFolderSupported } from "@/services/saveDocument";
 
 
 type Tab = "general" | "ai" | "banks" | "favorites" | "backup" | "images";
@@ -65,6 +66,33 @@ export default function ConfiguracionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("general");
+  const [folderSet, setFolderSet] = useState(false);
+
+  useEffect(() => {
+    (async () => setFolderSet(await hasDocumentFolder()))();
+  }, []);
+
+  async function handlePickFolder() {
+    try {
+      const ok = await pickDocumentFolder();
+      if (ok) {
+        setFolderSet(true);
+        toast.success("Carpeta configurada: los documentos se guardarán ahí");
+      } else if (!fsFolderSupported()) {
+        toast.error("Tu navegador no soporta carpetas (usa Chrome/Edge de escritorio)");
+      } else {
+        toast("No se eligió carpeta");
+      }
+    } catch {
+      toast.error("Error al configurar la carpeta");
+    }
+  }
+
+  async function handleRemoveFolder() {
+    await clearDocumentFolder();
+    setFolderSet(false);
+    toast.success("Carpeta eliminada: los documentos volverán a Descargas");
+  }
 
   const [form, setForm] = useState({
     business_name: "Almaia RD",
@@ -697,6 +725,49 @@ Responde en español en máximo 3 oraciones:`,
             className="flex items-center gap-2 bg-[#BA4A3A] text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm disabled:opacity-50">
             <Save size={18} /> {saving ? "Guardando..." : "Guardar Configuración"}
           </button>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3] space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-[#39484F]">Guardado automático de documentos</h3>
+              <p className="text-xs text-[#4C5760] mt-1">
+                Guarda cada PDF/JPG directo en una carpeta que elijas, organizado por tipo y año, sin pasar por Descargas ni la papelera.
+              </p>
+            </div>
+
+            <div className="bg-[#F1E9DF] rounded-xl p-4 border border-[#E0DAD3]">
+              <h4 className="text-xs font-semibold text-[#39484F] mb-2">Estructura que se crea sola</h4>
+              <pre className="text-[10px] text-[#4C5760] font-mono leading-relaxed">{`📁 Facturas/2026/factura pdf
+📁 Facturas/2026/factura jpg
+📁 Recibos/2026/recibo pdf
+📁 Recibos/2026/recibo jpg
+📁 Cotizaciones/2026/cotizacion pdf
+📁 Cotizaciones/2026/cotizacion jpg
+📁 Compras/2026/compra pdf
+📁 Compras/2026/compra jpg`}</pre>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {folderSet ? (
+                <>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4C5760]">
+                    <CheckCircle2 size={15} className="text-emerald-600" /> Carpeta configurada
+                  </span>
+                  <button onClick={handleRemoveFolder}
+                    className="text-xs font-medium text-[#BA4A3A] hover:underline">
+                    Quitar carpeta
+                  </button>
+                </>
+              ) : (
+                <button onClick={handlePickFolder}
+                  className="flex items-center gap-2 bg-[#BA4A3A] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#9C382A] transition-all shadow-sm">
+                  <FolderOpen size={16} /> Elegir carpeta
+                </button>
+              )}
+            </div>
+            <p className="text-[10px] text-[#4C5760]">
+              Funciona en Chrome/Edge de escritorio. En otros navegadores (Safari/iOS) los documentos se descargan como siempre.
+            </p>
+          </div>
         </div>
       )}
 

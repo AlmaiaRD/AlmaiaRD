@@ -19,7 +19,8 @@ import type { Settings } from "@/types/database";
 import { formatCurrency, formatDate, getLocalDateString, sanitizeHtml } from "@/lib/utils";
 import { normalize } from "@/lib/search";
 import { computeInvoiceMath } from "@/lib/invoiceMath";
-import { buildQuotePdfDoc, generateQuotePdf, drawQuotePdfContent, drawTrackedText, trackedTextWidth, drawLightHeader } from "@/lib/pdf";
+import { buildQuotePdfDoc, drawQuotePdfContent, drawTrackedText, trackedTextWidth, drawLightHeader } from "@/lib/pdf";
+import { saveOrDownload, canvasToJpegBlob, documentYear } from "@/services/saveDocument";
 import { registerItaliana } from "@/lib/fonts/italiana";
 import { registerInspiration } from "@/lib/fonts/inspiration";
 import { useAuth } from "@/hooks/useAuth";
@@ -405,7 +406,7 @@ function CotizacionesContent() {
   async function handlePdf(quote: QuoteWithClient) {
     try {
       const { quote: full, items: qItems } = await getQuote(quote.id);
-      await generateQuotePdf({
+      const doc = await buildQuotePdfDoc({
         quote_number: full.quote_number,
         quote_date: full.quote_date,
         valid_until: full.valid_until,
@@ -433,6 +434,15 @@ function CotizacionesContent() {
         email: settings?.email || undefined,
         phone: resolveDefaultPhone(settings) || undefined,
       });
+      const clientName = (full.clients?.full_name || "").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
+      const filename = `${full.quote_number}_${clientName}.pdf`;
+      const saved = await saveOrDownload({
+        kind: "cotizacion", ext: "pdf",
+        year: documentYear(full.quote_date),
+        filename,
+        blob: doc.output("blob"),
+      });
+      toast.success(saved ? "PDF guardado en tu carpeta" : "PDF descargado");
     } catch (e) {
       console.error("[handlePdf] error:", e);
       toast.error(e instanceof Error ? e.message : "Error al generar el PDF");
@@ -589,12 +599,15 @@ function buildQuotePreviewEl(data: QuotePreviewData, st: Settings | null) {
   async function handleJpg(quote: QuoteWithClient) {
     try {
       const { canvas, quote_number } = await captureQuote(quote);
-      const link = document.createElement("a");
       const clientName = quote.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      link.download = `${quote_number}_${clientName}.jpg`;
-      link.href = canvas.toDataURL("image/jpeg", 0.95);
-      link.click();
-      toast.success("JPG descargado");
+      const filename = `${quote_number}_${clientName}.jpg`;
+      const blob = await canvasToJpegBlob(canvas);
+      const saved = await saveOrDownload({
+        kind: "cotizacion", ext: "jpg",
+        year: documentYear(quote.quote_date),
+        filename, blob,
+      });
+      toast.success(saved ? "JPG guardado en tu carpeta" : "JPG descargado");
     } catch (e) {
       console.error("[handleJpg] error:", e);
       toast.error(e instanceof Error ? e.message : "Error al generar el JPG");

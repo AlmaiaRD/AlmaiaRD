@@ -12,6 +12,7 @@ import { normalize } from "@/lib/search";
 import CommunicationDraftModal from "@/components/communications/CommunicationDraftModal";
 import { getWhatsAppConfigs, sendViaApi, logWhatsAppMessage } from "@/services/whatsapp";
 import { getClients } from "@/services/clients";
+import { saveOrDownload, canvasToJpegBlob, documentYear } from "@/services/saveDocument";
 import ClientFormModal from "@/components/clients/ClientFormModal";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { getProducts, getBundleItemsBatch } from "@/services/products";
@@ -573,8 +574,14 @@ export default function FacturacionPage() {
         phone: resolveDefaultPhone(settings) || undefined,
       });
       const clientName = full.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      doc.save(`factura-${full.invoice_number}-${clientName}.pdf`);
-      toast.success("PDF descargado");
+      const filename = `factura-${full.invoice_number}-${clientName}.pdf`;
+      const saved = await saveOrDownload({
+        kind: "factura", ext: "pdf",
+        year: documentYear(full.invoice_date),
+        filename,
+        blob: doc.output("blob"),
+      });
+      toast.success(saved ? "PDF guardado en tu carpeta" : "PDF descargado");
     } catch (e) {
       console.error("[handlePrintPdf]", e);
       toast.error("Error al generar PDF");
@@ -584,12 +591,16 @@ export default function FacturacionPage() {
   async function handlePrintJpg(inv: InvoiceRowLike) {
     try {
       const { canvas, invoice_number } = await captureInvoice(inv);
-      const link = document.createElement("a");
       const clientName = inv.clients?.full_name?.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/\s+/g, '-') || 'cliente';
-      link.download = `factura-${invoice_number}-${clientName}.jpg`;
-      link.href = canvas.toDataURL("image/jpeg", 0.95);
-      link.click();
-      toast.success("JPG descargado");
+      const filename = `factura-${invoice_number}-${clientName}.jpg`;
+      const blob = await canvasToJpegBlob(canvas);
+      const saved = await saveOrDownload({
+        kind: "factura", ext: "jpg",
+        year: documentYear(inv.invoice_date),
+        filename,
+        blob,
+      });
+      toast.success(saved ? "JPG guardado en tu carpeta" : "JPG descargado");
     } catch (e) {
       console.error("[handlePrintJpg]", e);
       toast.error("Error al generar JPG");
