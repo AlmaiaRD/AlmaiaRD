@@ -12,6 +12,12 @@ export function useSWUpdate() {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
     let refreshing = false;
+    // Si la pagina aun no tenia un service worker controlando, este registro es
+    // el primero: el SW simplemente toma control (clients.claim) y NO hay version
+    // nueva que recargar. Recargar solo cuando ya habia uno evita un bucle de
+    // recarga (registro -> claim -> controllerchange -> reload -> registro) que
+    // abortaba las peticiones en vuelo y las mostraba como "Failed to fetch".
+    const hadController = !!navigator.serviceWorker.controller;
 
     navigator.serviceWorker.register("/sw.js").then((reg) => {
       // Comprobar actualización al cargar y cada 30 min
@@ -36,7 +42,7 @@ export function useSWUpdate() {
 
       // Escuchar mensaje del SW (skipWaiting)
       navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (refreshing) return;
+        if (!hadController || refreshing) return;
         refreshing = true;
         window.location.reload();
       });

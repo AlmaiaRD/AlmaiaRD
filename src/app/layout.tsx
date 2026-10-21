@@ -3,7 +3,6 @@ import { Montserrat, Italiana } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
-import KillServiceWorker from "@/components/KillServiceWorker";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ToastProvider from "@/components/ui/ToastProvider";
 
@@ -65,7 +64,6 @@ export default function RootLayout({
       className={`${montserrat.variable} ${italiana.variable} ${inspiration.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <KillServiceWorker />
         <ErrorBoundary>
           <AuthProvider>
             <ToastProvider />
