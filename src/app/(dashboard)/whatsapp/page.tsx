@@ -672,8 +672,8 @@ export default function WhatsAppPage() {
 
             {/* Select Config */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Cuenta de WhatsApp</label>
-              <select
+              <label htmlFor="campo-675" className="block text-xs font-medium text-[#4C5760] mb-1">Cuenta de WhatsApp</label>
+              <select id="campo-675"
                 value={selectedConfig?.id || ""}
                 onChange={(e) => {
                   const config = configs.find((c) => c.id === e.target.value);
@@ -692,10 +692,11 @@ export default function WhatsAppPage() {
 
             {/* Client Search */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Buscar Cliente</label>
+              <label htmlFor="buscar-cliente-wa" className="block text-xs font-medium text-[#4C5760] mb-1">Buscar Cliente</label>
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                 <input
+                  id="buscar-cliente-wa"
                   type="text"
                   value={searchClient}
                   onChange={(e) => setSearchClient(e.target.value)}
@@ -722,8 +723,8 @@ export default function WhatsAppPage() {
 
             {/* Phone */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono</label>
-              <input
+              <label htmlFor="campo-725" className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono</label>
+              <input id="campo-725"
                 type="tel"
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
@@ -735,8 +736,8 @@ export default function WhatsAppPage() {
             {/* Template selector */}
             {localTemplates.length > 0 && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla rápida</label>
-                <select
+                <label htmlFor="campo-738" className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla rápida</label>
+                <select id="campo-738"
                   value={selectedLocalTemplate}
                   onChange={(e) => {
                     const tpl = localTemplates.find((t) => t.id === e.target.value);
@@ -761,8 +762,8 @@ export default function WhatsAppPage() {
 
             {/* Message */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-              <textarea
+              <label htmlFor="campo-764" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+              <textarea id="campo-764"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
@@ -776,7 +777,7 @@ export default function WhatsAppPage() {
 
             {/* Adjunto (imagen / documento / video / audio) */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Adjuntar (opcional)</label>
+              <span className="block text-xs font-medium text-[#4C5760] mb-1">Adjuntar (opcional)</span>
               <div className="flex items-center gap-2 mb-2">
                 {(["image", "document", "video", "audio"] as const).map((t) => (
                   <button
@@ -1193,8 +1194,8 @@ export default function WhatsAppPage() {
       <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title={editingTemplate ? "Editar Plantilla" : "Nueva Plantilla"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
-            <input
+            <label htmlFor="campo-1196" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
+            <input id="campo-1196"
               type="text"
               value={templateForm.name}
               onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
@@ -1203,8 +1204,8 @@ export default function WhatsAppPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Categoría</label>
-            <select
+            <label htmlFor="campo-1206" className="block text-xs font-medium text-[#4C5760] mb-1">Categoría</label>
+            <select id="campo-1206"
               value={templateForm.category}
               onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
@@ -1215,8 +1216,8 @@ export default function WhatsAppPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-            <textarea
+            <label htmlFor="campo-1218" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+            <textarea id="campo-1218"
               value={templateForm.message}
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
@@ -1225,8 +1226,8 @@ export default function WhatsAppPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Variables (separadas por coma)</label>
-            <input
+            <label htmlFor="campo-1228" className="block text-xs font-medium text-[#4C5760] mb-1">Variables (separadas por coma)</label>
+            <input id="campo-1228"
               type="text"
               value={templateForm.variables}
               onChange={(e) => setTemplateForm({ ...templateForm, variables: e.target.value })}
@@ -1296,8 +1297,8 @@ export default function WhatsAppPage() {
       <Modal isOpen={showActionModal} onClose={() => setShowActionModal(false)} title={editingAction ? "Editar Acción" : "Nueva Acción Rápida"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
-            <input
+            <label htmlFor="campo-1299" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
+            <input id="campo-1299"
               type="text"
               value={actionForm.name}
               onChange={(e) => setActionForm({ ...actionForm, name: e.target.value })}
@@ -1306,8 +1307,8 @@ export default function WhatsAppPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Descripción</label>
-            <input
+            <label htmlFor="campo-1309" className="block text-xs font-medium text-[#4C5760] mb-1">Descripción</label>
+            <input id="campo-1309"
               type="text"
               value={actionForm.description}
               onChange={(e) => setActionForm({ ...actionForm, description: e.target.value })}
@@ -1316,7 +1317,7 @@ export default function WhatsAppPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Icono</label>
+            <span className="block text-xs font-medium text-[#4C5760] mb-1">Icono</span>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
@@ -1354,8 +1355,8 @@ export default function WhatsAppPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje predeterminado</label>
-            <textarea
+            <label htmlFor="campo-1357" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje predeterminado</label>
+            <textarea id="campo-1357"
               value={actionForm.message}
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
@@ -1378,24 +1379,24 @@ export default function WhatsAppPage() {
       <Modal isOpen={showAddConfig} onClose={() => setShowAddConfig(false)} title="Agregar Cuenta de WhatsApp">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiqueta</label>
-            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-1381" className="block text-xs font-medium text-[#4C5760] mb-1">Etiqueta</label>
+            <input id="campo-1381" type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: WhatsApp Principal" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Phone Number ID</label>
-            <input type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-1385" className="block text-xs font-medium text-[#4C5760] mb-1">Phone Number ID</label>
+            <input id="campo-1385" type="text" value={configForm.phone_number_id} onChange={(e) => setConfigForm({ ...configForm, phone_number_id: e.target.value })} placeholder="ID del número de teléfono desde Meta" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Access Token</label>
-            <input type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-1389" className="block text-xs font-medium text-[#4C5760] mb-1">Access Token</label>
+            <input id="campo-1389" type="password" value={configForm.access_token} onChange={(e) => setConfigForm({ ...configForm, access_token: e.target.value })} placeholder="Token de acceso permanente" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Verify Token</label>
-            <input type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-1393" className="block text-xs font-medium text-[#4C5760] mb-1">Verify Token</label>
+            <input id="campo-1393" type="text" value={configForm.verify_token} onChange={(e) => setConfigForm({ ...configForm, verify_token: e.target.value })} placeholder="Token de verificación del webhook" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Business Account ID</label>
-            <input type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-1397" className="block text-xs font-medium text-[#4C5760] mb-1">Business Account ID</label>
+            <input id="campo-1397" type="text" value={configForm.business_account_id} onChange={(e) => setConfigForm({ ...configForm, business_account_id: e.target.value })} placeholder="ID de la cuenta de WhatsApp Business" className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => setShowAddConfig(false)} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>

@@ -93,7 +93,7 @@ export default function ClientFormModal({
     <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Tipo de cliente *</label>
+          <span className="block text-sm font-medium text-[#39484F] mb-1.5">Tipo de cliente *</span>
           <div className="flex gap-3">
             {([["comprador", "Cliente Comprador", "Compra productos"], ["negocio", "Prospecto de Negocio", "Posible IBO / Demo"]] as const).map(([value, label, desc]) => (
               <button key={value} type="button" onClick={() => setForm({ ...form, client_type: value })}
@@ -105,35 +105,35 @@ export default function ClientFormModal({
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre completo *</label>
-          <input type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nombre y apellidos" className={inputCls} />
+          <label htmlFor="campo-108" className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre completo *</label>
+          <input id="campo-108" type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nombre y apellidos" className={inputCls} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
-            <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="809-000-0000" className={inputCls} />
+            <label htmlFor="campo-113" className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
+            <input id="campo-113" type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="809-000-0000" className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Correo electrónico</label>
-            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" className={inputCls} />
+            <label htmlFor="campo-117" className="block text-sm font-medium text-[#39484F] mb-1.5">Correo electrónico</label>
+            <input id="campo-117" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" className={inputCls} />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de cumpleaños</label>
-          <input type="date" value={form.birthday} onChange={(e) => setForm({ ...form, birthday: e.target.value })} className={inputCls} />
+          <label htmlFor="campo-122" className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de cumpleaños</label>
+          <input id="campo-122" type="date" value={form.birthday} onChange={(e) => setForm({ ...form, birthday: e.target.value })} className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Número IBO (opcional)</label>
-          <input type="text" value={form.ibo_number} onChange={(e) => setForm({ ...form, ibo_number: e.target.value })} placeholder="IBO" className={inputCls} />
+          <label htmlFor="campo-126" className="block text-sm font-medium text-[#39484F] mb-1.5">Número IBO (opcional)</label>
+          <input id="campo-126" type="text" value={form.ibo_number} onChange={(e) => setForm({ ...form, ibo_number: e.target.value })} placeholder="IBO" className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Telegram Chat ID (opcional)</label>
-          <input type="text" value={form.telegram_chat_id || ""} onChange={(e) => setForm({ ...form, telegram_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
+          <label htmlFor="campo-130" className="block text-sm font-medium text-[#39484F] mb-1.5">Telegram Chat ID (opcional)</label>
+          <input id="campo-130" type="text" value={form.telegram_chat_id || ""} onChange={(e) => setForm({ ...form, telegram_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
           <p className="text-[11px] text-[#4C5760] mt-1">Para enviar avisos por Telegram. Escríbele /start al bot para obtener el chat_id.</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
+          <label htmlFor="campo-135" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
+          <textarea id="campo-135" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Información adicional del cliente..." rows={3} className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
         </div>
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 h-12 border border-[#E0DAD3] text-[#39484F] rounded-xl text-sm font-medium hover:bg-[#F1E9DF] transition-all">Cancelar</button>

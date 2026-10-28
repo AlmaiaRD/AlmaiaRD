@@ -10,6 +10,8 @@ export interface SearchableOption {
 }
 
 interface Props {
+  /** Id del botón que abre la lista, para asociarlo con su <label>. */
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   options: SearchableOption[];
@@ -33,6 +35,7 @@ function norm(s: string) {
 }
 
 export default function SearchableSelect({
+  id,
   value,
   onChange,
   options,
@@ -130,6 +133,7 @@ export default function SearchableSelect({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}

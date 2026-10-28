@@ -154,14 +154,14 @@ export default function BonificacionesPage() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha</label>
-          <input type="date" value={form.bonus_date}
+          <label htmlFor="campo-157" className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha</label>
+          <input id="campo-157" type="date" value={form.bonus_date}
             onChange={(e) => setForm({ ...form, bonus_date: e.target.value })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo</label>
-          <select value={form.bonus_type}
+          <label htmlFor="campo-163" className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo</label>
+          <select id="campo-163" value={form.bonus_type}
             onChange={(e) => setForm({ ...form, bonus_type: e.target.value as BonusType })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
             {BONUS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -169,14 +169,14 @@ export default function BonificacionesPage() {
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Monto RD$</label>
-        <input type="number" step="0.01" min="0" value={form.amount}
+        <label htmlFor="campo-172" className="block text-xs font-medium text-[#39484F] mb-1.5">Monto RD$</label>
+        <input id="campo-172" type="number" step="0.01" min="0" value={form.amount}
           onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
           className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
       </div>
       <div>
-        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Descripción <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-        <textarea value={form.description}
+        <label htmlFor="campo-178" className="block text-xs font-medium text-[#39484F] mb-1.5">Descripción <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+        <textarea id="campo-178" value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={2} placeholder="Describe la bonificación..."
           className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />

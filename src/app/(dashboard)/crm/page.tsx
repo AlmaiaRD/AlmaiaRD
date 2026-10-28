@@ -646,8 +646,8 @@ export default function CrmPage() {
       <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Nueva Actividad" subtitle="Registrar seguimiento a un cliente">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#39484F] mb-1.5">Cliente</label>
-            <select
+            <label htmlFor="campo-649" className="block text-xs font-medium text-[#39484F] mb-1.5">Cliente</label>
+            <select id="campo-649"
               value={createForm.client_id}
               onChange={(e) => setCreateForm({ ...createForm, client_id: e.target.value })}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none"
@@ -660,19 +660,19 @@ export default function CrmPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha de contacto</label>
-              <input type="date" value={createForm.contact_date} onChange={(e) => setCreateForm({ ...createForm, contact_date: e.target.value })}
+              <label htmlFor="campo-663" className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha de contacto</label>
+              <input id="campo-663" type="date" value={createForm.contact_date} onChange={(e) => setCreateForm({ ...createForm, contact_date: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#39484F] mb-1.5">Próximo contacto (opcional)</label>
-              <input type="date" value={createForm.next_followup} onChange={(e) => setCreateForm({ ...createForm, next_followup: e.target.value })}
+              <label htmlFor="campo-668" className="block text-xs font-medium text-[#39484F] mb-1.5">Próximo contacto (opcional)</label>
+              <input id="campo-668" type="date" value={createForm.next_followup} onChange={(e) => setCreateForm({ ...createForm, next_followup: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo de actividad</label>
-            <select value={createForm.activity_type}
+            <label htmlFor="campo-674" className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo de actividad</label>
+            <select id="campo-674" value={createForm.activity_type}
               onChange={(e) => setCreateForm({ ...createForm, activity_type: e.target.value })}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
               <option value="">Seleccionar tipo...</option>
@@ -681,12 +681,12 @@ export default function CrmPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
-            <textarea value={createForm.comments} onChange={(e) => setCreateForm({ ...createForm, comments: e.target.value })} rows={3}
+            <label htmlFor="campo-684" className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
+            <textarea id="campo-684" value={createForm.comments} onChange={(e) => setCreateForm({ ...createForm, comments: e.target.value })} rows={3}
               placeholder="Detalles de la actividad..." className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-xs font-medium text-[#39484F]">Estado:</label>
+            <span className="text-xs font-medium text-[#39484F]">Estado:</span>
             {(["PENDING", "COMPLETED"] as const).map((s) => (
               <button key={s} onClick={() => setCreateForm({ ...createForm, status: s })}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${createForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#4C5760]"}`}>
@@ -708,19 +708,19 @@ export default function CrmPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha de contacto</label>
-              <input type="date" value={editForm.contact_date} onChange={(e) => setEditForm({ ...editForm, contact_date: e.target.value })}
+              <label htmlFor="campo-711" className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha de contacto</label>
+              <input id="campo-711" type="date" value={editForm.contact_date} onChange={(e) => setEditForm({ ...editForm, contact_date: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#39484F] mb-1.5">Próximo contacto (opcional)</label>
-              <input type="date" value={editForm.next_followup} onChange={(e) => setEditForm({ ...editForm, next_followup: e.target.value })}
+              <label htmlFor="campo-716" className="block text-xs font-medium text-[#39484F] mb-1.5">Próximo contacto (opcional)</label>
+              <input id="campo-716" type="date" value={editForm.next_followup} onChange={(e) => setEditForm({ ...editForm, next_followup: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo de actividad</label>
-            <select value={editForm.activity_type}
+            <label htmlFor="campo-722" className="block text-xs font-medium text-[#39484F] mb-1.5">Tipo de actividad</label>
+            <select id="campo-722" value={editForm.activity_type}
               onChange={(e) => setEditForm({ ...editForm, activity_type: e.target.value })}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
               <option value="">Seleccionar tipo...</option>
@@ -729,12 +729,12 @@ export default function CrmPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
-            <textarea value={editForm.comments} onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })} rows={3}
+            <label htmlFor="campo-732" className="block text-xs font-medium text-[#39484F] mb-1.5">Notas</label>
+            <textarea id="campo-732" value={editForm.comments} onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })} rows={3}
               className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-xs font-medium text-[#39484F]">Estado:</label>
+            <span className="text-xs font-medium text-[#39484F]">Estado:</span>
             {(["PENDING", "COMPLETED", "OVERDUE"] as const).map((s) => (
               <button key={s} onClick={() => setEditForm({ ...editForm, status: s })}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${editForm.status === s ? (s === "COMPLETED" ? "bg-green-100 text-green-700" : s === "OVERDUE" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700") : "bg-[#F5F0EB] text-[#4C5760]"}`}>

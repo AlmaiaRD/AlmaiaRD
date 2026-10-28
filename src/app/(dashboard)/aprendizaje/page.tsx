@@ -168,19 +168,19 @@ export default function AprendizajePage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editingNote ? "Editar Nota" : "Nueva Nota"} subtitle="Registra lo que has aprendido">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Título *</label>
-            <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+            <label htmlFor="campo-171" className="block text-xs font-medium text-[#4C5760] mb-1">Título *</label>
+            <input id="campo-171" type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Ej: No olvidar verificar ITBIS en facturas"
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nota / Lección</label>
-            <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6}
+            <label htmlFor="campo-177" className="block text-xs font-medium text-[#4C5760] mb-1">Nota / Lección</label>
+            <textarea id="campo-177" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6}
               placeholder="Describe lo que aprendiste, el error que cometiste, o la idea que quieres recordar..."
               className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiquetas (separadas por coma)</label>
+            <span className="block text-xs font-medium text-[#4C5760] mb-1">Etiquetas (separadas por coma)</span>
             <div className="relative">
               <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4C5760]" />
               <input type="text" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}

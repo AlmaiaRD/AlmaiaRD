@@ -203,13 +203,13 @@ export default function ReportesPage() {
           <h3 className="text-sm font-semibold text-[#39484F] mb-4">{activeReport.label}</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Desde</label>
-              <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPreviewData(null); }}
+              <label htmlFor="campo-206" className="block text-xs font-medium text-[#4C5760] mb-1">Desde</label>
+              <input id="campo-206" type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPreviewData(null); }}
                 className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Hasta</label>
-              <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPreviewData(null); }}
+              <label htmlFor="campo-211" className="block text-xs font-medium text-[#4C5760] mb-1">Hasta</label>
+              <input id="campo-211" type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPreviewData(null); }}
                 className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>

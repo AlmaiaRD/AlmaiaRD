@@ -369,8 +369,8 @@ export default function DevolucionesPage() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nueva Devolución" wide>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
-            <select value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
+            <label htmlFor="campo-372" className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
+            <select id="campo-372" value={selectedInvoice?.id || ""} onChange={(e) => handleSelectInvoice(e.target.value)}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
               <option value="">Seleccionar factura...</option>
               {invoices.map((inv) => (
@@ -437,13 +437,13 @@ export default function DevolucionesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Motivo</label>
-                <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
+                <label htmlFor="campo-440" className="block text-sm font-medium text-[#39484F] mb-1.5">Motivo</label>
+                <textarea id="campo-440" value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
                   className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas internas</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+                <label htmlFor="campo-445" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas internas</label>
+                <textarea id="campo-445" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
                   className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 transition-all resize-none" />
               </div>
             </>
@@ -472,18 +472,18 @@ export default function DevolucionesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Cliente</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Cliente</span>
                 <p className="text-sm text-[#39484F]">{viewingReturn.clients?.full_name || "N/A"}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Factura</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Factura</span>
                 <p className="text-sm text-[#39484F]">{viewingReturn.invoices?.invoice_number || "N/A"}</p>
               </div>
             </div>
 
             {viewingReturn.reason && (
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Motivo</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Motivo</span>
                 <p className="text-sm text-[#39484F]">{viewingReturn.reason}</p>
               </div>
             )}
@@ -516,7 +516,7 @@ export default function DevolucionesPage() {
 
             {viewingReturn.notes && (
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Notas internas</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Notas internas</span>
                 <p className="text-sm text-[#39484F]">{viewingReturn.notes}</p>
               </div>
             )}

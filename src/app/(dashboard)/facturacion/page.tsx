@@ -1306,9 +1306,10 @@ export default function FacturacionPage() {
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente</label>
+              <label htmlFor="factura-cliente" className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente</label>
               <div className="flex gap-2">
                 <SearchableSelect
+                  id="factura-cliente"
                   value={selectedClient}
                   onChange={setSelectedClient}
                   options={clientOptions}
@@ -1326,8 +1327,8 @@ export default function FacturacionPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
-              <select
+              <label htmlFor="campo-1329" className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
+              <select id="campo-1329"
                 value={margin}
                 onChange={(e) => setMargin(Number(e.target.value))}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
@@ -1339,8 +1340,8 @@ export default function FacturacionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de factura</label>
-            <input
+            <label htmlFor="campo-1342" className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de factura</label>
+            <input id="campo-1342"
               type="date" value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
@@ -1349,7 +1350,7 @@ export default function FacturacionPage() {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#39484F]">Productos</label>
+              <span className="text-sm font-medium text-[#39484F]">Productos</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }}
@@ -1409,8 +1410,8 @@ export default function FacturacionPage() {
             {showManualProduct && (
               <div className="mb-4 bg-[#F1E9DF] rounded-xl p-4 space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto / costo</label>
-                  <input
+                  <label htmlFor="campo-1412" className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto / costo</label>
+                  <input id="campo-1412"
                     type="text"
                     value={manualProduct.name}
                     onChange={(e) => setManualProduct({ ...manualProduct, name: e.target.value })}
@@ -1421,16 +1422,16 @@ export default function FacturacionPage() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
-                    <input
+                    <label htmlFor="campo-1424" className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
+                    <input id="campo-1424"
                       type="number" min={1} value={manualProduct.quantity}
                       onChange={(e) => setManualProduct({ ...manualProduct, quantity: Number(e.target.value) })}
                       className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
-                    <input
+                    <label htmlFor="campo-1432" className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
+                    <input id="campo-1432"
                       type="number" step="0.01" min={0} value={manualProduct.unit_price}
                       onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
                       placeholder="0.00"
@@ -1438,8 +1439,8 @@ export default function FacturacionPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
-                    <input
+                    <label htmlFor="campo-1441" className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
+                    <input id="campo-1441"
                       type="number" step="0.01" min={0} value={manualProduct.cost}
                       onChange={(e) => setManualProduct({ ...manualProduct, cost: Number(e.target.value) })}
                       placeholder="0.00"
@@ -1447,7 +1448,7 @@ export default function FacturacionPage() {
                     />
                   </div>
                   <div className="flex items-end pb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex items-center gap-2 cursor-pointer">
                       <span className="text-xs font-medium text-[#39484F]">ITBIS</span>
                       <button
                         type="button"
@@ -1456,7 +1457,7 @@ export default function FacturacionPage() {
                       >
                         <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${manualProduct.itbis ? "translate-x-5" : "translate-x-0.5"}`} />
                       </button>
-                    </label>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -1602,16 +1603,16 @@ export default function FacturacionPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
-              <input
+              <label htmlFor="campo-1605" className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
+              <input id="campo-1605"
                 type="number" value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento RD$</label>
-              <input
+              <label htmlFor="campo-1613" className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento RD$</label>
+              <input id="campo-1613"
                 type="number" value={discountAmount}
                 onChange={(e) => { setDiscountAmount(Number(e.target.value)); setDiscountPercent(0); }}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
@@ -1620,8 +1621,8 @@ export default function FacturacionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
-            <textarea
+            <label htmlFor="campo-1623" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
+            <textarea id="campo-1623"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -1631,8 +1632,8 @@ export default function FacturacionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Banco para transferencia</label>
-            <select
+            <label htmlFor="campo-1634" className="block text-sm font-medium text-[#39484F] mb-1.5">Banco para transferencia</label>
+            <select id="campo-1634"
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"

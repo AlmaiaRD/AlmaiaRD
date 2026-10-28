@@ -277,3 +277,110 @@ Archivos modificados: `package.json`, `package-lock.json`, `eslint.config.mjs`, 
 
 Sigue pendiente H1 (créditos ficticios: decisión del negocio), H4 (`BUN-001`) y H5 (renovar credenciales de auditoría).
 
+---
+
+## 9. Segunda tanda de correcciones (2026-10-28)
+
+### 9.1 Trigger de créditos — verificado de forma indirecta
+
+La migración `20260910_fix_receipt_credit_excess_fallback.sql` está envuelta en un
+único `BEGIN … COMMIT`. Dentro de esa transacción se ejecutan, en este orden:
+
+1. `ALTER TABLE receipts ALTER COLUMN credit_excess DROP DEFAULT`
+2. `COMMENT ON COLUMN receipts.credit_excess`
+3. `DROP TRIGGER` + `CREATE OR REPLACE FUNCTION fn_sync_receipt_credit`
+4. `CREATE TRIGGER trg_sync_receipt_credit`
+
+Comprobado contra la base de producción (OpenAPI de PostgREST):
+
+- `receipts.credit_excess` **ya no tiene default**.
+- El comentario de la columna es **exactamente** el de la migración.
+
+Si el `CREATE OR REPLACE FUNCTION` o el `CREATE TRIGGER` hubieran fallado, la
+transacción completa se habría revertido y no existirían ni el `DROP DEFAULT` ni
+el comentario. Por tanto, **la migración se aplicó completa**. Además, ninguna
+migración posterior redefine `fn_sync_receipt_credit`.
+
+Para una comprobación directa del cuerpo de la función sigue haciendo falta un
+token de Management API (`SUPABASE_ACCESS_TOKEN`) o la contraseña de la base de
+datos; ninguno está disponible en el entorno local.
+
+### 9.2 `middleware.ts` → `proxy.ts`
+
+Migración al convenio de Next 16:
+
+- `src/middleware.ts` → `src/proxy.ts`.
+- `export async function middleware` → `export async function proxy`.
+- Se mantiene el `config.matcher` (assets, login, manifest y service worker
+  siguen fuera) y la lógica de sesión con Supabase.
+- El build reconoce el archivo como **Proxy** y `/dashboard` sin sesión sigue
+  devolviendo `307 → /login`.
+
+### 9.3 Accesibilidad de formularios
+
+Antes: **239** `<label>`, solo **2** con `htmlFor`, 9 implícitos y **228** sin
+asociar.
+
+Después:
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| `<label>` con `htmlFor` | 2 | **186** |
+| `<label>` implícitos (control dentro) | 9 | **9** |
+| `<label>` sin asociar | 228 | **0** |
+| `<label>` convertidos en texto visual (`span`/`div`) | — | 44 |
+
+Detalles:
+
+- 160 campos nativos recibieron `htmlFor` + `id`.
+- Campos dentro de `.map()` usan ids dinámicos (`entry.key`, `field.key`,
+  `r.id`, `key`) para no duplicar ids.
+- `SearchableSelect` acepta `id` y lo aplica al botón que abre la lista;
+  `CategorySelect`/`SubcategorySelect` aceptan `id` y lo aplican al `<select>`.
+- Las etiquetas que no describían un campo (títulos de sección, grupos de
+  botones, pares etiqueta/valor de solo lectura) se convirtieron en `span` o
+  `div` para no dejar `label` huérfanos.
+
+### 9.4 CSP
+
+`next.config.ts` ahora calcula la política en función del entorno:
+
+- **Producción:** `script-src 'self' 'unsafe-inline'` (sin `'unsafe-eval'`).
+- **Desarrollo:** añade `'unsafe-eval'`, que React necesita para las pilas de
+  error.
+- Se añadieron `script-src-attr 'none'`, `worker-src 'self'`,
+  `manifest-src 'self'`, `frame-src 'none'` y `upgrade-insecure-requests`
+  (solo en producción).
+- Se eliminaron orígenes que no se usan desde el navegador:
+  `googletagmanager`, `google-analytics`, `api.openai.com`,
+  `graph.facebook.com`, `www.googleapis.com`, `fonts.googleapis.com` y
+  `fonts.gstatic.com`. OpenAI y Meta se llaman solo desde rutas `/api`; las
+  fuentes son self-hosted por `next/font`.
+- `connect-src` queda en `'self' https://*.supabase.co https://www.amway.com.do`
+  (el service worker descarga fotos de producto de `amway.com.do`).
+
+**`'unsafe-inline'` en `script-src` no se puede quitar todavía.** Next inyecta
+scripts de arranque inline en páginas **estáticas**; un nonce solo funciona con
+renderizado dinámico, y aplicarlo obliga a:
+
+1. Poner `export const dynamic = "force-dynamic"` en el layout raíz.
+2. Generar un nonce por petición en `proxy.ts`.
+3. Convertir las 24 rutas de `○` (estáticas) a `ƒ` (dinámicas).
+
+Eso aumenta el coste y la latencia en Vercel y cambia el modelo de caché del que
+depende el modo offline. Se deja como cambio separado, con prueba explícita del
+PWA offline. En `style-src` el `'unsafe-inline'` es inevitable mientras haya
+`style={{...}}` de React, porque los atributos `style` no aceptan nonce.
+
+### 9.5 Verificación de la segunda tanda
+
+| Puerta | Resultado |
+|---|---|
+| `tsc --noEmit` | ✅ 0 errores |
+| `eslint` | ✅ 0 errores · 16 warnings preexistentes |
+| `vitest` | ✅ 220/220 |
+| `next build` | ✅ OK (Proxy reconocido) |
+| Smoke test producción local | ✅ `/login` 200 · `/manifest.webmanifest` 200 · `/sw.js` 200 · `/dashboard` 307 |
+| CSP en producción | ✅ sin `'unsafe-eval'`, con `script-src-attr 'none'` |
+| CSP en desarrollo | ✅ con `'unsafe-eval'` |
+

@@ -32,14 +32,15 @@ const BRANCHES = ["Principal", "Sucursal 1", "Sucursal 2", "Online"];
 const AGREGAR_NUEVA = "__AGREGAR_NUEVA__";
 
 interface CatSelectProps {
+  id?: string;
   value: string; onChange: (v: string) => void;
   allCategories: string[]; newInput: string; setNewInput: (v: string) => void;
 }
 
-function CategorySelect({ value, onChange, allCategories, newInput, setNewInput }: CatSelectProps) {
+function CategorySelect({ id, value, onChange, allCategories, newInput, setNewInput }: CatSelectProps) {
   return (
     <div>
-      <select value={value}
+      <select id={id} value={value}
         onChange={(e) => { onChange(e.target.value); }}
         className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
         {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -56,12 +57,13 @@ function CategorySelect({ value, onChange, allCategories, newInput, setNewInput 
 }
 
 interface SubcatSelectProps {
+  id?: string;
   value: string; onChange: (v: string) => void;
   category: string; newCatInput: string; customSubcats: string[];
   newInput: string; setNewInput: (v: string) => void;
 }
 
-function SubcategorySelect({ value, onChange, category, newCatInput, customSubcats, newInput, setNewInput }: SubcatSelectProps) {
+function SubcategorySelect({ id, value, onChange, category, newCatInput, customSubcats, newInput, setNewInput }: SubcatSelectProps) {
   const cat = category === AGREGAR_NUEVA ? newCatInput || category : category;
   const allPredefined = Object.values(SUBCATEGORIES).flat();
   const options = category === AGREGAR_NUEVA || !DEFAULT_CATEGORIES.includes(cat)
@@ -69,7 +71,7 @@ function SubcategorySelect({ value, onChange, category, newCatInput, customSubca
     : [...(SUBCATEGORIES[cat] || []), ...customSubcats];
   return (
     <div>
-      <select value={value}
+      <select id={id} value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
         <option value="">Sin subcategoría</option>
@@ -383,27 +385,27 @@ export default function GastosPage() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha</label>
-          <input type="date" value={form.expense_date}
+          <label htmlFor="campo-386" className="block text-xs font-medium text-[#39484F] mb-1.5">Fecha</label>
+          <input id="campo-386" type="date" value={form.expense_date}
             onChange={(e) => setForm({ ...form, expense_date: e.target.value })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Categoría</label>
-          <CategorySelect value={form.category} onChange={(v) => setForm({ ...form, category: v, subcategory: "" })}
+          <label htmlFor="gasto-categoria" className="block text-xs font-medium text-[#39484F] mb-1.5">Categoría</label>
+          <CategorySelect id="gasto-categoria" value={form.category} onChange={(v) => setForm({ ...form, category: v, subcategory: "" })}
             allCategories={allCategories} newInput={newCategoryInput} setNewInput={setNewCategoryInput} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Subcategoría <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-          <SubcategorySelect value={form.subcategory} onChange={(v) => setForm({ ...form, subcategory: v })}
+          <label htmlFor="gasto-subcategoria" className="block text-xs font-medium text-[#39484F] mb-1.5">Subcategoría <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+          <SubcategorySelect id="gasto-subcategoria" value={form.subcategory} onChange={(v) => setForm({ ...form, subcategory: v })}
             category={form.category} newCatInput={newCategoryInput}
             customSubcats={customSubcategories} newInput={newSubcategoryInput} setNewInput={setNewSubcategoryInput} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Método de Pago</label>
-          <select value={form.payment_method}
+          <label htmlFor="campo-405" className="block text-xs font-medium text-[#39484F] mb-1.5">Método de Pago</label>
+          <select id="campo-405" value={form.payment_method}
             onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
             {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -411,29 +413,29 @@ export default function GastosPage() {
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Concepto</label>
-        <input type="text" value={form.concept}
+        <label htmlFor="campo-414" className="block text-xs font-medium text-[#39484F] mb-1.5">Concepto</label>
+        <input id="campo-414" type="text" value={form.concept}
           onChange={(e) => setForm({ ...form, concept: e.target.value })}
           placeholder="Describe el gasto..."
           className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Monto RD$</label>
-          <input type="number" step="0.01" min="0" value={form.amount}
+          <label htmlFor="campo-422" className="block text-xs font-medium text-[#39484F] mb-1.5">Monto RD$</label>
+          <input id="campo-422" type="number" step="0.01" min="0" value={form.amount}
             onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Beneficiario <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-          <input type="text" value={form.beneficiary}
+          <label htmlFor="campo-428" className="block text-xs font-medium text-[#39484F] mb-1.5">Beneficiario <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+          <input id="campo-428" type="text" value={form.beneficiary}
             onChange={(e) => setForm({ ...form, beneficiary: e.target.value })}
             placeholder="A quién se pagó..."
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">N° Comprobante <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-          <input type="text" value={form.receipt_number}
+          <label htmlFor="campo-435" className="block text-xs font-medium text-[#39484F] mb-1.5">N° Comprobante <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+          <input id="campo-435" type="text" value={form.receipt_number}
             onChange={(e) => setForm({ ...form, receipt_number: e.target.value })}
             placeholder="Factura o recibo..."
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -441,8 +443,8 @@ export default function GastosPage() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Sucursal <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-          <select value={form.branch}
+          <label htmlFor="campo-444" className="block text-xs font-medium text-[#39484F] mb-1.5">Sucursal <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+          <select id="campo-444" value={form.branch}
             onChange={(e) => setForm({ ...form, branch: e.target.value })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
             <option value="">Sin asignar</option>
@@ -468,8 +470,8 @@ export default function GastosPage() {
       </div>
       {form.is_recurring && (
         <div>
-          <label className="block text-xs font-medium text-[#39484F] mb-1.5">Periodicidad</label>
-          <select value={form.recurring_period}
+          <label htmlFor="campo-471" className="block text-xs font-medium text-[#39484F] mb-1.5">Periodicidad</label>
+          <select id="campo-471" value={form.recurring_period}
             onChange={(e) => setForm({ ...form, recurring_period: e.target.value })}
             className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] bg-white focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 appearance-none">
             {RECURRING_PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -477,8 +479,8 @@ export default function GastosPage() {
         </div>
       )}
       <div>
-        <label className="block text-xs font-medium text-[#39484F] mb-1.5">Notas <span className="text-[#4C5760] font-normal">(opcional)</span></label>
-        <textarea value={form.comments}
+        <label htmlFor="campo-480" className="block text-xs font-medium text-[#39484F] mb-1.5">Notas <span className="text-[#4C5760] font-normal">(opcional)</span></label>
+        <textarea id="campo-480" value={form.comments}
           onChange={(e) => setForm({ ...form, comments: e.target.value })}
           rows={2} placeholder="Notas adicionales..."
           className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] text-sm text-[#39484F] placeholder-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 resize-none" />

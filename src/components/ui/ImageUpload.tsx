@@ -66,7 +66,7 @@ export function ImageUpload({ currentUrl, onUploaded, maxSizeMB = 2 }: ImageUplo
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-[#39484F] mb-1.5">Imagen del producto</label>
+      <span className="block text-sm font-medium text-[#39484F] mb-1.5">Imagen del producto</span>
       <div className="flex items-start gap-4">
         {preview ? (
           <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-[#E0DAD3] bg-[#F1E9DF] flex-shrink-0">

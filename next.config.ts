@@ -1,6 +1,38 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+const isDev = process.env.NODE_ENV === "development";
+
+// `'unsafe-eval'` solo hace falta en desarrollo: React lo usa para reconstruir
+// las pilas de error en el navegador. En produccion ni React ni Next lo usan.
+//
+// `'unsafe-inline'` se mantiene en `script-src` porque las paginas se generan
+// de forma estatica y Next inyecta sus scripts de arranque inline; sustituirlo
+// por un nonce obliga a renderizar TODAS las paginas de forma dinamica (ver
+// docs/auditoria/AUDITORIA-2026-10-28.md). En `style-src` tambien es necesario
+// por los `style={{...}}` de React, que no admiten nonce.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // Ningun manejador inline (onclick="...") debe ejecutarse.
+  "script-src-attr 'none'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https:",
+  "font-src 'self' data:",
+  // El service worker descarga fotos de amway.com.do con fetch(), y toda la
+  // aplicacion habla con Supabase. No hay llamadas de navegador a OpenAI ni a
+  // Meta: esas van por rutas /api del servidor.
+  "connect-src 'self' https://*.supabase.co https://www.amway.com.do",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+].join("; ");
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
@@ -48,8 +80,7 @@ const nextConfig: NextConfig = {
           { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.openai.com https://graph.facebook.com https://www.googleapis.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+            value: contentSecurityPolicy,
           },
         ],
       },

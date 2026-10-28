@@ -721,16 +721,16 @@ export default function RecibosPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
-              <input
+              <label htmlFor="campo-724" className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
+              <input id="campo-724"
                 type="number" step="0.01" value={editForm.amount}
                 onChange={(e) => setEditForm({ ...editForm, amount: Number(e.target.value) })}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
-              <select
+              <label htmlFor="campo-732" className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
+              <select id="campo-732"
                 value={editForm.payment_method}
                 onChange={(e) => setEditForm({ ...editForm, payment_method: e.target.value as "CASH" | "TRANSFER" | "CARD", bank_account_id: "" })}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
@@ -743,8 +743,8 @@ export default function RecibosPage() {
           </div>
           {editForm.payment_method === "TRANSFER" && (
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
-              <select
+              <label htmlFor="campo-746" className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
+              <select id="campo-746"
                 value={editForm.bank_account_id}
                 onChange={(e) => setEditForm({ ...editForm, bank_account_id: e.target.value })}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
@@ -757,8 +757,8 @@ export default function RecibosPage() {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
-            <textarea
+            <label htmlFor="campo-760" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
+            <textarea id="campo-760"
               value={editForm.concept} onChange={(e) => setEditForm({ ...editForm, concept: e.target.value })}
               rows={3}
               placeholder="Notas del recibo..."
@@ -778,8 +778,9 @@ export default function RecibosPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Registrar Pago" subtitle={selectedInvoiceData?.clients?.full_name ? `Cliente: ${selectedInvoiceData.clients.full_name}` : undefined} wide>
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
+            <label htmlFor="recibo-factura" className="block text-sm font-medium text-[#39484F] mb-1.5">Factura</label>
             <SearchableSelect
+              id="recibo-factura"
               value={selectedInvoice}
               onChange={(v) => { setSelectedInvoice(v); setAmount(0); }}
               options={invoiceOptions}
@@ -801,8 +802,8 @@ export default function RecibosPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha del recibo</label>
-            <input
+            <label htmlFor="campo-804" className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha del recibo</label>
+            <input id="campo-804"
               type="date" value={receiptDate}
               onChange={(e) => setReceiptDate(e.target.value)}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
@@ -811,16 +812,16 @@ export default function RecibosPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
-              <input
+              <label htmlFor="campo-814" className="block text-sm font-medium text-[#39484F] mb-1.5">Monto</label>
+              <input id="campo-814"
                 type="number" step="0.01" value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
-              <select
+              <label htmlFor="campo-822" className="block text-sm font-medium text-[#39484F] mb-1.5">Método de pago</label>
+              <select id="campo-822"
                 value={paymentMethod}
                 onChange={(e) => { setPaymentMethod(e.target.value as "CASH" | "TRANSFER" | "CARD"); setBankAccountId(""); }}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
@@ -834,8 +835,8 @@ export default function RecibosPage() {
 
           {paymentMethod === "TRANSFER" && (
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
-              <select
+              <label htmlFor="campo-837" className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta bancaria destino</label>
+              <select id="campo-837"
                 value={bankAccountId}
                 onChange={(e) => setBankAccountId(e.target.value)}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all"
@@ -849,8 +850,8 @@ export default function RecibosPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
-            <textarea
+            <label htmlFor="campo-852" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
+            <textarea id="campo-852"
               value={notes} onChange={(e) => setNotes(e.target.value)}
               rows={2}
               className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#86C7A3]/30 focus:border-[#86C7A3] transition-all resize-none"

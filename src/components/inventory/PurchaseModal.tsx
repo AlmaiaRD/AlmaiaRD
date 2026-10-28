@@ -101,17 +101,18 @@ export default function PurchaseModal({
       <div className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de la compra</label>
-            <input
+            <label htmlFor="campo-104" className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha de la compra</label>
+            <input id="campo-104"
               type="date" value={form.purchase_date}
               onChange={(e) => setForm({ ...form, purchase_date: e.target.value })}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
             />
           </div>
           <div className="relative">
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Proveedor</label>
+            <label htmlFor="compra-proveedor" className="block text-sm font-medium text-[#39484F] mb-1.5">Proveedor</label>
             <div className="relative">
               <input
+                id="compra-proveedor"
                 type="text" value={form.supplier_name}
                 onChange={(e) => { setForm({ ...form, supplier_name: e.target.value }); setSupplierSearch(e.target.value); setShowSupplierDropdown(true); }}
                 onFocus={() => setShowSupplierDropdown(true)}
@@ -145,8 +146,8 @@ export default function PurchaseModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
-          <textarea
+          <label htmlFor="campo-148" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas (opcional)</label>
+          <textarea id="campo-148"
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             placeholder="Notas adicionales..."
@@ -157,8 +158,8 @@ export default function PurchaseModal({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento (RD$)</label>
-            <input
+            <label htmlFor="campo-160" className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento (RD$)</label>
+            <input id="campo-160"
               type="number" step="0.01" min={0} value={form.discount_amount}
               onChange={(e) => setForm({ ...form, discount_amount: Number(e.target.value) })}
               placeholder="0"
@@ -166,8 +167,8 @@ export default function PurchaseModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Forma de Pago</label>
-            <select
+            <label htmlFor="campo-169" className="block text-sm font-medium text-[#39484F] mb-1.5">Forma de Pago</label>
+            <select id="campo-169"
               value={form.payment_method}
               onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
@@ -183,8 +184,8 @@ export default function PurchaseModal({
 
         {form.payment_method === "Transferencia" && (
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta Bancaria</label>
-            <select
+            <label htmlFor="campo-186" className="block text-sm font-medium text-[#39484F] mb-1.5">Cuenta Bancaria</label>
+            <select id="campo-186"
               value={form.bank_account_id}
               onChange={(e) => setForm({ ...form, bank_account_id: e.target.value })}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all"
@@ -199,7 +200,7 @@ export default function PurchaseModal({
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-[#39484F]">Productos</label>
+            <span className="text-sm font-medium text-[#39484F]">Productos</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowPdfImport(!showPdfImport)}

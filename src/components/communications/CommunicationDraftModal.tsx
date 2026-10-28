@@ -154,13 +154,13 @@ export default function CommunicationDraftModal({
         {isEmail && (
           <>
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Para</label>
-              <input type="text" readOnly value={client.email || ""}
+              <label htmlFor="campo-157" className="block text-xs font-medium text-[#4C5760] mb-1">Para</label>
+              <input id="campo-157" type="text" readOnly value={client.email || ""}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
-              <input type="text" value={subject}
+              <label htmlFor="campo-162" className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
+              <input id="campo-162" type="text" value={subject}
                 onChange={e => setSubject(e.target.value)}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
@@ -169,14 +169,14 @@ export default function CommunicationDraftModal({
         {!isEmail && (
           <>
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Enviar a</label>
-              <input type="text" readOnly value={client.phone || ""}
+              <label htmlFor="campo-172" className="block text-xs font-medium text-[#4C5760] mb-1">Enviar a</label>
+              <input id="campo-172" type="text" readOnly value={client.phone || ""}
                 className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm" />
             </div>
             {whatsappConfigs.length > 0 && (
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Cuenta de WhatsApp</label>
-                <select
+                <label htmlFor="campo-178" className="block text-xs font-medium text-[#4C5760] mb-1">Cuenta de WhatsApp</label>
+                <select id="campo-178"
                   value={selectedConfigId}
                   onChange={(e) => setSelectedConfigId(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30"
@@ -190,8 +190,8 @@ export default function CommunicationDraftModal({
           </>
         )}
         <div>
-          <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-          <textarea value={body} rows={10}
+          <label htmlFor="campo-193" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+          <textarea id="campo-193" value={body} rows={10}
             onChange={e => setBody(e.target.value)}
             className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
         </div>

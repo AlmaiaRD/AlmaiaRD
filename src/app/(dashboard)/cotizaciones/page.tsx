@@ -1053,9 +1053,10 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente *</label>
+              <label htmlFor="cotizacion-cliente" className="block text-sm font-medium text-[#39484F] mb-1.5">Cliente *</label>
               <div className="flex gap-2">
                 <SearchableSelect
+                  id="cotizacion-cliente"
                   value={clientId}
                   onChange={setClientId}
                   options={clientOptions}
@@ -1075,36 +1076,36 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha</label>
-              <input type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)}
+              <label htmlFor="campo-1078" className="block text-sm font-medium text-[#39484F] mb-1.5">Fecha</label>
+              <input id="campo-1078" type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Válida hasta</label>
-              <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)}
+              <label htmlFor="campo-1083" className="block text-sm font-medium text-[#39484F] mb-1.5">Válida hasta</label>
+              <input id="campo-1083" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
-              <select value={margin} onChange={(e) => setMargin(Number(e.target.value))}
+              <label htmlFor="campo-1091" className="block text-sm font-medium text-[#39484F] mb-1.5">Margen</label>
+              <select id="campo-1091" value={margin} onChange={(e) => setMargin(Number(e.target.value))}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                 <option value={30}>30%</option>
                 <option value={35}>35%</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
-              <input type="number" min={0} max={100} value={discountPercent}
+              <label htmlFor="campo-1099" className="block text-sm font-medium text-[#39484F] mb-1.5">Descuento %</label>
+              <input id="campo-1099" type="number" min={0} max={100} value={discountPercent}
                 onChange={(e) => { setDiscountPercent(Number(e.target.value)); setDiscountAmount(0); }}
                 className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
             </div>
             {editingId && (
               <div>
-                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Estado</label>
-                <select value={editingStatus} onChange={(e) => setEditingStatus(e.target.value)}
+                <label htmlFor="campo-1106" className="block text-sm font-medium text-[#39484F] mb-1.5">Estado</label>
+                <select id="campo-1106" value={editingStatus} onChange={(e) => setEditingStatus(e.target.value)}
                   className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all">
                   <option value="DRAFT">Borrador</option>
                   <option value="SENT">Enviada</option>
@@ -1118,7 +1119,7 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-[#39484F]">Productos</label>
+              <span className="text-sm font-medium text-[#39484F]">Productos</span>
               <div className="flex gap-3">
                 <button onClick={() => { setShowProducts(!showProducts); setShowManualProduct(false); }} className="text-xs text-[#BA4A3A] hover:underline">
                   {showProducts ? "Ocultar catálogo" : "Catálogo"}
@@ -1175,31 +1176,31 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                   className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] placeholder:text-[#4C5760] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
-                    <input type="number" min={1} value={manualProduct.quantity}
+                    <label htmlFor="campo-1178" className="block text-xs font-medium text-[#39484F] mb-1">Cantidad</label>
+                    <input id="campo-1178" type="number" min={1} value={manualProduct.quantity}
                       onChange={(e) => setManualProduct({ ...manualProduct, quantity: Number(e.target.value) })}
                       className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
-                    <input type="number" step="0.01" min={0} value={manualProduct.unit_price}
+                    <label htmlFor="campo-1184" className="block text-xs font-medium text-[#39484F] mb-1">Precio Unit.</label>
+                    <input id="campo-1184" type="number" step="0.01" min={0} value={manualProduct.unit_price}
                       onChange={(e) => setManualProduct({ ...manualProduct, unit_price: Number(e.target.value) })}
                       className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
-                    <input type="number" step="0.01" min={0} value={manualProduct.cost}
+                    <label htmlFor="campo-1190" className="block text-xs font-medium text-[#39484F] mb-1">Costo (opcional)</label>
+                    <input id="campo-1190" type="number" step="0.01" min={0} value={manualProduct.cost}
                       onChange={(e) => setManualProduct({ ...manualProduct, cost: Number(e.target.value) })}
                       className="w-full h-10 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all" />
                   </div>
                   <div className="flex items-end pb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex items-center gap-2 cursor-pointer">
                       <span className="text-xs font-medium text-[#39484F]">ITBIS</span>
                       <button type="button" onClick={() => setManualProduct({ ...manualProduct, itbis: !manualProduct.itbis })}
                         className={`relative w-10 h-5 rounded-full transition-colors ${manualProduct.itbis ? "bg-[#BA4A3A]" : "bg-gray-300"}`}>
                         <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${manualProduct.itbis ? "translate-x-5" : "translate-x-0.5"}`} />
                       </button>
-                    </label>
+                    </div>
                     <button onClick={addManualProduct} className="ml-3 h-10 px-3 bg-[#BA4A3A] text-white text-xs rounded-lg hover:bg-[#9C382A] transition-colors flex items-center gap-1">
                       <Plus size={14} /> Agregar
                     </button>
@@ -1261,8 +1262,8 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+            <label htmlFor="campo-1264" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
+            <textarea id="campo-1264" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
               placeholder="Condiciones, tiempos de entrega, observaciones..."
               className="w-full px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] transition-all resize-none" />
           </div>
@@ -1511,28 +1512,28 @@ async function generateCatalogPdf(entries: CatalogEntry[]) {
                       <div className="w-16 h-16 rounded-lg bg-[#F1E9DF] border border-[#E0DAD3] flex items-center justify-center text-[#4C5760] text-xs flex-shrink-0">Sin foto</div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto</label>
-                      <input type="text" value={entry.name} onChange={(e) => updateCatalogEntry(entry.key, "name", e.target.value)}
+                      <label htmlFor={`catalogo-nombre-${entry.key}`} className="block text-xs font-medium text-[#39484F] mb-1">Nombre del producto</label>
+                      <input id={`catalogo-nombre-${entry.key}`} type="text" value={entry.name} onChange={(e) => updateCatalogEntry(entry.key, "name", e.target.value)}
                         className="w-full h-9 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A]" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-[#39484F] mb-1">Descripción</label>
-                      <textarea value={entry.description} onChange={(e) => updateCatalogEntry(entry.key, "description", e.target.value)} rows={3}
+                      <label htmlFor={`catalogo-descripcion-${entry.key}`} className="block text-xs font-medium text-[#39484F] mb-1">Descripción</label>
+                      <textarea id={`catalogo-descripcion-${entry.key}`} value={entry.description} onChange={(e) => updateCatalogEntry(entry.key, "description", e.target.value)} rows={3}
                         className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#39484F] mb-1">Beneficios <span className="text-[#4C5760] font-normal">(uno por línea)</span></label>
-                      <textarea value={entry.benefits} onChange={(e) => updateCatalogEntry(entry.key, "benefits", e.target.value)} rows={3}
+                      <label htmlFor={`catalogo-beneficios-${entry.key}`} className="block text-xs font-medium text-[#39484F] mb-1">Beneficios <span className="text-[#4C5760] font-normal">(uno por línea)</span></label>
+                      <textarea id={`catalogo-beneficios-${entry.key}`} value={entry.benefits} onChange={(e) => updateCatalogEntry(entry.key, "benefits", e.target.value)} rows={3}
                         className="w-full px-3 py-2 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A] resize-y" />
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <label className="block text-xs font-medium text-[#39484F]">Precio al cliente</label>
-                    <input type="number" value={entry.price} min={0} onChange={(e) => updateCatalogEntry(entry.key, "price", Number(e.target.value))}
+                    <label htmlFor={`catalogo-precio-${entry.key}`} className="block text-xs font-medium text-[#39484F]">Precio al cliente</label>
+                    <input id={`catalogo-precio-${entry.key}`} type="number" value={entry.price} min={0} onChange={(e) => updateCatalogEntry(entry.key, "price", Number(e.target.value))}
                       className="w-32 h-9 px-3 rounded-lg border border-[#E0DAD3] bg-white text-sm text-[#39484F] focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 focus:border-[#BA4A3A]" />
                     <span className="text-xs text-[#4C5760]">(RD$)</span>
                   </div>

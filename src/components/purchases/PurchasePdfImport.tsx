@@ -257,8 +257,8 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Proveedor</label>
-              <input
+              <label htmlFor="campo-260" className="block text-xs font-medium text-[#4C5760] mb-1">Proveedor</label>
+              <input id="campo-260"
                 type="text"
                 value={preview.parsed.supplier_name}
                 onChange={(e) => setPreview({ ...preview, parsed: { ...preview.parsed, supplier_name: e.target.value } })}
@@ -266,8 +266,8 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Fecha</label>
-              <input
+              <label htmlFor="campo-269" className="block text-xs font-medium text-[#4C5760] mb-1">Fecha</label>
+              <input id="campo-269"
                 type="date"
                 value={preview.parsed.purchase_date}
                 onChange={(e) => setPreview({ ...preview, parsed: { ...preview.parsed, purchase_date: e.target.value } })}
@@ -278,7 +278,7 @@ export default function PurchasePdfImport({ products, onApply, onClose }: Purcha
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-[#39484F]">Productos detectados</label>
+              <span className="text-sm font-medium text-[#39484F]">Productos detectados</span>
               <span className="text-xs text-[#4C5760]">Valida y corrige antes de continuar</span>
             </div>
             <div className="max-h-72 overflow-y-auto space-y-2 pr-1">

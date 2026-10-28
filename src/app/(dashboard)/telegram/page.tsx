@@ -619,8 +619,8 @@ export default function TelegramPage() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E0DAD3]">
             <h3 className="text-sm font-semibold text-[#39484F] mb-4">Enviar Mensaje por Telegram</h3>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Bot de Telegram</label>
-              <select
+              <label htmlFor="campo-622" className="block text-xs font-medium text-[#4C5760] mb-1">Bot de Telegram</label>
+              <select id="campo-622"
                 value={selectedConfig?.id || ""}
                 onChange={(e) => {
                   const config = configs.find((c) => c.id === e.target.value);
@@ -639,8 +639,8 @@ export default function TelegramPage() {
 
             {localTemplates.length > 0 && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla rápida</label>
-                <select
+                <label htmlFor="campo-642" className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla rápida</label>
+                <select id="campo-642"
                   value={selectedTemplate}
                   onChange={(e) => {
                     const tpl = localTemplates.find((t) => t.id === e.target.value);
@@ -664,8 +664,8 @@ export default function TelegramPage() {
             )}
 
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Enviar a</label>
-              <select
+              <label htmlFor="campo-667" className="block text-xs font-medium text-[#4C5760] mb-1">Enviar a</label>
+              <select id="campo-667"
                 value={recipientMode}
                 onChange={(e) => setRecipientMode(e.target.value as "manual" | "client" | "all")}
                 className={inputCls}
@@ -678,8 +678,8 @@ export default function TelegramPage() {
 
             {recipientMode === "manual" && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Chat ID del destinatario</label>
-                <input
+                <label htmlFor="campo-681" className="block text-xs font-medium text-[#4C5760] mb-1">Chat ID del destinatario</label>
+                <input id="campo-681"
                   type="text"
                   value={chatId}
                   onChange={(e) => setChatId(e.target.value)}
@@ -691,8 +691,8 @@ export default function TelegramPage() {
 
             {recipientMode === "client" && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Cliente</label>
-                <select
+                <label htmlFor="campo-694" className="block text-xs font-medium text-[#4C5760] mb-1">Cliente</label>
+                <select id="campo-694"
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   className={inputCls}
@@ -715,8 +715,8 @@ export default function TelegramPage() {
             )}
 
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-              <textarea
+              <label htmlFor="campo-718" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+              <textarea id="campo-718"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Escribe tu mensaje..."
@@ -730,7 +730,7 @@ export default function TelegramPage() {
 
             {/* Adjunto (foto / documento / video / audio) */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Adjuntar (opcional)</label>
+              <span className="block text-xs font-medium text-[#4C5760] mb-1">Adjuntar (opcional)</span>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {(["photo", "document", "video", "audio"] as const).map((t) => (
                   <button
@@ -1177,8 +1177,8 @@ export default function TelegramPage() {
       <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title={editingTemplate ? "Editar Plantilla" : "Nueva Plantilla"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
-            <input
+            <label htmlFor="campo-1180" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
+            <input id="campo-1180"
               type="text"
               value={templateForm.name}
               onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
@@ -1187,8 +1187,8 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Categoría</label>
-            <select
+            <label htmlFor="campo-1190" className="block text-xs font-medium text-[#4C5760] mb-1">Categoría</label>
+            <select id="campo-1190"
               value={templateForm.category}
               onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
               className={inputCls}
@@ -1199,8 +1199,8 @@ export default function TelegramPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-            <textarea
+            <label htmlFor="campo-1202" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+            <textarea id="campo-1202"
               value={templateForm.message}
               onChange={(e) => setTemplateForm({ ...templateForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {nombre}, {monto}, {fecha} para variables."
@@ -1209,8 +1209,8 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Variables (separadas por coma)</label>
-            <input
+            <label htmlFor="campo-1212" className="block text-xs font-medium text-[#4C5760] mb-1">Variables (separadas por coma)</label>
+            <input id="campo-1212"
               type="text"
               value={templateForm.variables}
               onChange={(e) => setTemplateForm({ ...templateForm, variables: e.target.value })}
@@ -1280,8 +1280,8 @@ export default function TelegramPage() {
       <Modal isOpen={showActionModal} onClose={() => setShowActionModal(false)} title={editingAction ? "Editar Acción" : "Nueva Acción Rápida"}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
-            <input
+            <label htmlFor="campo-1283" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre</label>
+            <input id="campo-1283"
               type="text"
               value={actionForm.name}
               onChange={(e) => setActionForm({ ...actionForm, name: e.target.value })}
@@ -1290,8 +1290,8 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Descripción</label>
-            <input
+            <label htmlFor="campo-1293" className="block text-xs font-medium text-[#4C5760] mb-1">Descripción</label>
+            <input id="campo-1293"
               type="text"
               value={actionForm.description}
               onChange={(e) => setActionForm({ ...actionForm, description: e.target.value })}
@@ -1300,7 +1300,7 @@ export default function TelegramPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Icono</label>
+            <span className="block text-xs font-medium text-[#4C5760] mb-1">Icono</span>
             <button
               onClick={() => setShowIconPicker(!showIconPicker)}
               className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm flex items-center gap-3 hover:bg-[#F1E9DF] transition-all"
@@ -1338,8 +1338,8 @@ export default function TelegramPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje predeterminado</label>
-            <textarea
+            <label htmlFor="campo-1341" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje predeterminado</label>
+            <textarea id="campo-1341"
               value={actionForm.message}
               onChange={(e) => setActionForm({ ...actionForm, message: e.target.value })}
               placeholder="Escribe el mensaje. Usa {cliente}, {monto}, {fecha} para variables."
@@ -1362,17 +1362,17 @@ export default function TelegramPage() {
       <Modal isOpen={showAddConfig} onClose={() => setShowAddConfig(false)} title="Agregar Bot de Telegram">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Etiqueta</label>
-            <input type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: Bot de Avisos" className={inputCls} />
+            <label htmlFor="campo-1365" className="block text-xs font-medium text-[#4C5760] mb-1">Etiqueta</label>
+            <input id="campo-1365" type="text" value={configForm.label} onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })} placeholder="Ej: Bot de Avisos" className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Token del Bot</label>
-            <input type="password" value={configForm.bot_token} onChange={(e) => setConfigForm({ ...configForm, bot_token: e.target.value })} placeholder="Token de @BotFather, ej: 123456:ABC-DEF..." className={inputCls} />
+            <label htmlFor="campo-1369" className="block text-xs font-medium text-[#4C5760] mb-1">Token del Bot</label>
+            <input id="campo-1369" type="password" value={configForm.bot_token} onChange={(e) => setConfigForm({ ...configForm, bot_token: e.target.value })} placeholder="Token de @BotFather, ej: 123456:ABC-DEF..." className={inputCls} />
             <p className="text-[10px] text-[#4C5760] mt-1">Ve a @BotFather en Telegram, crea un bot y copia su token. Es gratis.</p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4C5760] mb-1">Chat ID del dueño (opcional)</label>
-            <input type="text" value={configForm.owner_chat_id} onChange={(e) => setConfigForm({ ...configForm, owner_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
+            <label htmlFor="campo-1374" className="block text-xs font-medium text-[#4C5760] mb-1">Chat ID del dueño (opcional)</label>
+            <input id="campo-1374" type="text" value={configForm.owner_chat_id} onChange={(e) => setConfigForm({ ...configForm, owner_chat_id: e.target.value })} placeholder="Ej: 123456789" className={inputCls} />
             <p className="text-[10px] text-[#4C5760] mt-1">Para recibir avisos automáticos (Modelo A). Escríbele /start al bot para obtener tu chat_id.</p>
           </div>
           <div className="flex gap-3 pt-2">

@@ -298,16 +298,16 @@ export default function ComunicacionesPage() {
 
             {detailComm.type === "email" && (
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
-                <input type="text" value={editSubject}
+                <label htmlFor="campo-301" className="block text-xs font-medium text-[#4C5760] mb-1">Asunto</label>
+                <input id="campo-301" type="text" value={editSubject}
                   onChange={e => setEditSubject(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
-              <textarea value={editBody} rows={12}
+              <label htmlFor="campo-309" className="block text-xs font-medium text-[#4C5760] mb-1">Mensaje</label>
+              <textarea id="campo-309" value={editBody} rows={12}
                 onChange={e => setEditBody(e.target.value)}
                 className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30 whitespace-pre-wrap" />
             </div>

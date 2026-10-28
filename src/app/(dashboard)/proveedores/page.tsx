@@ -135,8 +135,9 @@ export default function ProveedoresPage() {
             ["city", "Ciudad", "text"],
           ] as const).map(([key, label, type]) => (
             <div key={key}>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">{label}</label>
+              <label htmlFor={`proveedor-${key}`} className="block text-sm font-medium text-[#39484F] mb-1.5">{label}</label>
               <input
+                id={`proveedor-${key}`}
                 type={type}
                 value={form[key]}
                 onChange={(e) => setForm({ ...form, [key]: e.target.value })}
@@ -145,8 +146,8 @@ export default function ProveedoresPage() {
             </div>
           ))}
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
-            <textarea
+            <label htmlFor="campo-148" className="block text-sm font-medium text-[#39484F] mb-1.5">Notas</label>
+            <textarea id="campo-148"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}

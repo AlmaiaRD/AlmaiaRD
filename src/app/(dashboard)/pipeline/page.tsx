@@ -906,24 +906,24 @@ export default function PipelinePage() {
             ))}
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Etapa inicial</label>
-            <select value={addForm.stage} onChange={e => setAddForm({ ...addForm, stage: e.target.value })}
+            <label htmlFor="campo-909" className="block text-sm font-medium text-[#39484F] mb-1.5">Etapa inicial</label>
+            <select id="campo-909" value={addForm.stage} onChange={e => setAddForm({ ...addForm, stage: e.target.value })}
               className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-white text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
               {getStagesForType(addForm.client_type).map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
-            <input type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+            <label htmlFor="campo-916" className="block text-sm font-medium text-[#39484F] mb-1.5">Nombre *</label>
+            <input id="campo-916" type="text" value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="Nombre y apellidos" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
-              <input type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <label htmlFor="campo-921" className="block text-sm font-medium text-[#39484F] mb-1.5">Teléfono</label>
+              <input id="campo-921" type="text" value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="809-000-0000" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#39484F] mb-1.5">Email</label>
-              <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
+              <label htmlFor="campo-925" className="block text-sm font-medium text-[#39484F] mb-1.5">Email</label>
+              <input id="campo-925" type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="correo@ejemplo.com" className="w-full h-12 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
             </div>
           </div>
           <div className="flex gap-3 pt-2">

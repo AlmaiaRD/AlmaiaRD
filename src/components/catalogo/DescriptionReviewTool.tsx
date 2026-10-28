@@ -297,10 +297,11 @@ export default function DescriptionReviewTool({
                       <div className="p-3 space-y-3">
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-[#39484F]">Descripción</label>
+                            <label htmlFor={`descripcion-${r.id}`} className="text-xs font-medium text-[#39484F]">Descripción</label>
                             <span className="text-[10px] text-[#4C5760]">{r.description.length} car.</span>
                           </div>
                           <textarea
+                            id={`descripcion-${r.id}`}
                             value={r.description}
                             onChange={(e) => updateRow(r.id, { description: e.target.value, approved: "edit" })}
                             rows={4}
@@ -309,10 +310,11 @@ export default function DescriptionReviewTool({
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-[#39484F]">Beneficios <span className="text-[#4C5760] font-normal">(uno por línea)</span></label>
+                            <label htmlFor={`beneficios-${r.id}`} className="text-xs font-medium text-[#39484F]">Beneficios <span className="text-[#4C5760] font-normal">(uno por línea)</span></label>
                             <span className="text-[10px] text-[#4C5760]">{r.benefits.length} car.</span>
                           </div>
                           <textarea
+                            id={`beneficios-${r.id}`}
                             value={r.benefits}
                             onChange={(e) => updateRow(r.id, { benefits: e.target.value, approved: "edit" })}
                             rows={4}

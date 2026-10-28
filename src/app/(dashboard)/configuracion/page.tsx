@@ -506,14 +506,14 @@ Responde en español en máximo 3 oraciones:`,
             <h3 className="text-sm font-semibold text-[#39484F]">Información del Negocio</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre del Negocio</label>
-                <input type="text" value={form.business_name}
+                <label htmlFor="campo-509" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre del Negocio</label>
+                <input id="campo-509" type="text" value={form.business_name}
                   onChange={(e) => setForm({ ...form, business_name: e.target.value })}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Margen Predeterminado</label>
-                <select value={form.default_margin}
+                <label htmlFor="campo-515" className="block text-xs font-medium text-[#4C5760] mb-1">Margen Predeterminado</label>
+                <select id="campo-515" value={form.default_margin}
                   onChange={(e) => setForm({ ...form, default_margin: Number(e.target.value) })}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
                   <option value={30}>30%</option>
@@ -521,8 +521,8 @@ Responde en español en máximo 3 oraciones:`,
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Moneda</label>
-                <select value={form.currency}
+                <label htmlFor="campo-524" className="block text-xs font-medium text-[#4C5760] mb-1">Moneda</label>
+                <select id="campo-524" value={form.currency}
                   onChange={(e) => setForm({ ...form, currency: e.target.value })}
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30">
                   <option value="DOP">DOP (RD$)</option>
@@ -530,28 +530,28 @@ Responde en español en máximo 3 oraciones:`,
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Email de envío</label>
-                <input type="email" value={form.email}
+                <label htmlFor="campo-533" className="block text-xs font-medium text-[#4C5760] mb-1">Email de envío</label>
+                <input id="campo-533" type="email" value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="info@almaia-rd.com"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 1</label>
-                <input type="text" value={form.phone}
+                <label htmlFor="campo-540" className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 1</label>
+                <input id="campo-540" type="text" value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="809-000-0000"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 2</label>
-                <input type="text" value={form.phone_2}
+                <label htmlFor="campo-547" className="block text-xs font-medium text-[#4C5760] mb-1">Teléfono 2</label>
+                <input id="campo-547" type="text" value={form.phone_2}
                   onChange={(e) => setForm({ ...form, phone_2: e.target.value })}
                   placeholder="809-000-0000"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-[#4C5760] mb-2">Teléfono predeterminado (aparece en facturas, recibos, cotizaciones y demás documentos)</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-2">Teléfono predeterminado (aparece en facturas, recibos, cotizaciones y demás documentos)</span>
                 <div className="flex gap-6">
                   <label className="flex items-center gap-2 text-sm text-[#39484F] cursor-pointer">
                     <input type="radio" name="default_phone" value="phone" checked={form.default_phone === "phone"}
@@ -568,8 +568,8 @@ Responde en español en máximo 3 oraciones:`,
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Nombre del remitente</label>
-                <input type="text" value={form.sender_name}
+                <label htmlFor="campo-571" className="block text-xs font-medium text-[#4C5760] mb-1">Nombre del remitente</label>
+                <input id="campo-571" type="text" value={form.sender_name}
                   onChange={(e) => setForm({ ...form, sender_name: e.target.value })}
                   placeholder="Yrahisa Mateo"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -581,15 +581,15 @@ Responde en español en máximo 3 oraciones:`,
               <p className="text-xs text-[#4C5760] mb-4">Usa <code className="text-[#BA4A3A]">{"{{clientName}}"}</code>, <code className="text-[#BA4A3A]">{"{{documentNumber}}"}</code>, <code className="text-[#BA4A3A]">{"{{businessName}}"}</code>, <code className="text-[#BA4A3A]">{"{{senderName}}"}</code>, <code className="text-[#BA4A3A]">{"{{total}}"}</code>, <code className="text-[#BA4A3A]">{"{{label}}"}</code></p>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla Email</label>
-                  <textarea value={form.email_template} rows={8}
+                  <label htmlFor="campo-584" className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla Email</label>
+                  <textarea id="campo-584" value={form.email_template} rows={8}
                     onChange={(e) => setForm({ ...form, email_template: e.target.value })}
                     placeholder="Hola, {{clientName}}..."
                     className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla WhatsApp</label>
-                  <textarea value={form.whatsapp_template} rows={5}
+                  <label htmlFor="campo-591" className="block text-xs font-medium text-[#4C5760] mb-1">Plantilla WhatsApp</label>
+                  <textarea id="campo-591" value={form.whatsapp_template} rows={5}
                     onChange={(e) => setForm({ ...form, whatsapp_template: e.target.value })}
                     placeholder="Hola {{clientName}}..."
                     className="w-full resize-y px-4 py-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -602,29 +602,29 @@ Responde en español en máximo 3 oraciones:`,
               <p className="text-xs text-[#4C5760] mb-4">Configuración para enviar correos realmente. Para Gmail usa <strong>smtp.gmail.com</strong>, puerto <strong>587</strong>, y una <a href="https://support.google.com/accounts/answer/185833" target="_blank" className="text-[#BA4A3A] underline">Contraseña de Aplicación</a> de Google.</p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Servidor SMTP</label>
-                  <input type="text" value={form.smtp_host}
+                  <label htmlFor="campo-605" className="block text-xs font-medium text-[#4C5760] mb-1">Servidor SMTP</label>
+                  <input id="campo-605" type="text" value={form.smtp_host}
                     onChange={(e) => setForm({ ...form, smtp_host: e.target.value })}
                     placeholder="smtp.gmail.com"
                     className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Puerto</label>
-                  <input type="number" value={form.smtp_port}
+                  <label htmlFor="campo-612" className="block text-xs font-medium text-[#4C5760] mb-1">Puerto</label>
+                  <input id="campo-612" type="number" value={form.smtp_port}
                     onChange={(e) => setForm({ ...form, smtp_port: Number(e.target.value) })}
                     placeholder="587"
                     className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Usuario (correo)</label>
-                  <input type="text" value={form.smtp_user}
+                  <label htmlFor="campo-619" className="block text-xs font-medium text-[#4C5760] mb-1">Usuario (correo)</label>
+                  <input id="campo-619" type="text" value={form.smtp_user}
                     onChange={(e) => setForm({ ...form, smtp_user: e.target.value })}
                     placeholder="tucorreo@gmail.com"
                     className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Contraseña / App Password</label>
-                  <input type="password" value={form.smtp_pass}
+                  <label htmlFor="campo-626" className="block text-xs font-medium text-[#4C5760] mb-1">Contraseña / App Password</label>
+                  <input id="campo-626" type="password" value={form.smtp_pass}
                     onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })}
                     placeholder="••••••••"
                     className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
@@ -643,7 +643,7 @@ Responde en español en máximo 3 oraciones:`,
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Logo del Negocio</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Logo del Negocio</span>
                 <div className="flex items-center gap-3">
                   {form.logo_url && (
                     <img src={form.logo_url} alt="Logo" className="w-14 h-14 rounded-xl object-cover border border-[#E0DAD3]" />
@@ -662,7 +662,7 @@ Responde en español en máximo 3 oraciones:`,
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Firma Digital</label>
+                <span className="block text-xs font-medium text-[#4C5760] mb-1">Firma Digital</span>
                 <div className="flex items-center gap-3">
                   {form.signature_url && (
                     <img src={form.signature_url} alt="Firma" className="w-14 h-14 rounded-xl object-cover border border-[#E0DAD3]" />
@@ -694,26 +694,26 @@ Responde en español en máximo 3 oraciones:`,
               <h4 className="text-sm font-semibold text-[#39484F] mb-3">Prefijos de Documentos</h4>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Facturas</label>
-                  <input type="text" value={form.invoice_prefix}
+                  <label htmlFor="campo-697" className="block text-xs font-medium text-[#4C5760] mb-1">Facturas</label>
+                  <input id="campo-697" type="text" value={form.invoice_prefix}
                     onChange={(e) => setForm({ ...form, invoice_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Recibos</label>
-                  <input type="text" value={form.receipt_prefix}
+                  <label htmlFor="campo-703" className="block text-xs font-medium text-[#4C5760] mb-1">Recibos</label>
+                  <input id="campo-703" type="text" value={form.receipt_prefix}
                     onChange={(e) => setForm({ ...form, receipt_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Compras</label>
-                  <input type="text" value={form.purchase_prefix}
+                  <label htmlFor="campo-709" className="block text-xs font-medium text-[#4C5760] mb-1">Compras</label>
+                  <input id="campo-709" type="text" value={form.purchase_prefix}
                     onChange={(e) => setForm({ ...form, purchase_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#4C5760] mb-1">Cotizaciones</label>
-                  <input type="text" value={form.quote_prefix || "COT-"}
+                  <label htmlFor="campo-715" className="block text-xs font-medium text-[#4C5760] mb-1">Cotizaciones</label>
+                  <input id="campo-715" type="text" value={form.quote_prefix || "COT-"}
                     onChange={(e) => setForm({ ...form, quote_prefix: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
                 </div>
@@ -781,7 +781,7 @@ Responde en español en máximo 3 oraciones:`,
             </p>
 
             <div>
-              <label className="block text-xs font-medium text-[#4C5760] mb-2">Prompt para Resumen de Cliente</label>
+              <span className="block text-xs font-medium text-[#4C5760] mb-2">Prompt para Resumen de Cliente</span>
               <p className="text-[10px] text-[#4C5760] mb-2">Se usa al generar resúmenes en Pipeline y reportes.</p>
               <textarea
                 value={form.ai_client_prompt}
@@ -804,7 +804,7 @@ Destaca el valor del cliente, su comportamiento de pago, y sugiere oportunidades
             </div>
 
             <div className="border-t border-[#E0DAD3] pt-6">
-              <label className="block text-xs font-medium text-[#4C5760] mb-2">Prompt para Notas de Aprendizaje</label>
+              <span className="block text-xs font-medium text-[#4C5760] mb-2">Prompt para Notas de Aprendizaje</span>
               <p className="text-[10px] text-[#4C5760] mb-2">Se usa al analizar notas en el módulo de Aprendizaje.</p>
               <textarea
                 value={form.ai_learning_prompt}
@@ -852,43 +852,43 @@ ACCIÓN: ..."
             <h3 className="text-sm font-semibold text-[#39484F] mb-4">{editingBank ? "Editar Cuenta Bancaria" : "Agregar Cuenta Bancaria"}</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Banco</label>
-                <input type="text" value={newBank.bank_name}
+                <label htmlFor="campo-855" className="block text-xs font-medium text-[#4C5760] mb-1">Banco</label>
+                <input id="campo-855" type="text" value={newBank.bank_name}
                   onChange={(e) => setNewBank({ ...newBank, bank_name: e.target.value })}
                   placeholder="Ej: Banco Popular Dominicano"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Tipo de Cuenta</label>
-                <input type="text" value={newBank.account_type}
+                <label htmlFor="campo-862" className="block text-xs font-medium text-[#4C5760] mb-1">Tipo de Cuenta</label>
+                <input id="campo-862" type="text" value={newBank.account_type}
                   onChange={(e) => setNewBank({ ...newBank, account_type: e.target.value })}
                   placeholder="Ej: Cuenta Corriente DOP"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Número de Cuenta</label>
-                <input type="text" value={newBank.account_number}
+                <label htmlFor="campo-869" className="block text-xs font-medium text-[#4C5760] mb-1">Número de Cuenta</label>
+                <input id="campo-869" type="text" value={newBank.account_number}
                   onChange={(e) => setNewBank({ ...newBank, account_number: e.target.value })}
                   placeholder="Ej: 772922126"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Titular</label>
-                <input type="text" value={newBank.holder_name}
+                <label htmlFor="campo-876" className="block text-xs font-medium text-[#4C5760] mb-1">Titular</label>
+                <input id="campo-876" type="text" value={newBank.holder_name}
                   onChange={(e) => setNewBank({ ...newBank, holder_name: e.target.value })}
                   placeholder="Ej: Yrahisa Mateo"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Cédula / RNC</label>
-                <input type="text" value={newBank.id_number}
+                <label htmlFor="campo-883" className="block text-xs font-medium text-[#4C5760] mb-1">Cédula / RNC</label>
+                <input id="campo-883" type="text" value={newBank.id_number}
                   onChange={(e) => setNewBank({ ...newBank, id_number: e.target.value })}
                   placeholder="Ej: 001-1234567-8"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4C5760] mb-1">Correo Electrónico</label>
-                <input type="email" value={newBank.email}
+                <label htmlFor="campo-890" className="block text-xs font-medium text-[#4C5760] mb-1">Correo Electrónico</label>
+                <input id="campo-890" type="email" value={newBank.email}
                   onChange={(e) => setNewBank({ ...newBank, email: e.target.value })}
                   placeholder="Ej: correo@ejemplo.com"
                   className="w-full h-11 px-4 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] text-[#39484F] placeholder-[#4C5760] text-sm focus:outline-none focus:ring-2 focus:ring-[#BA4A3A]/30" />

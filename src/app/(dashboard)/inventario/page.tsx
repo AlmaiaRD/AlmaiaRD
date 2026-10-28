@@ -1314,8 +1314,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-sm text-[#39484F] font-medium">Stock mínimo:</label>
-              <input
+              <label htmlFor="campo-1317" className="text-sm text-[#39484F] font-medium">Stock mínimo:</label>
+              <input id="campo-1317"
                 type="number" value={detailMinStock}
                 onChange={(e) => setDetailMinStock(Math.max(0, Number(e.target.value)))}
                 className="w-20 h-9 px-3 rounded-lg border border-[#E0DAD3] text-sm text-center"
@@ -1543,8 +1543,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
                 <p className="text-xs text-red-500 mt-2">La eliminación normal no está disponible. Usa &quot;Forzar eliminación&quot; para borrar el producto y todos sus registros asociados. Esta acción no se puede deshacer.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
-                <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
+                <label htmlFor="campo-1546" className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
+                <input id="campo-1546" type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
                   placeholder="ELIMINAR"
                   className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
               </div>
@@ -1568,8 +1568,8 @@ function generateHtmlForJpg(purchase: PurchaseWithItems): string {
             <>
               <p className="text-sm text-[#39484F]">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
               <div>
-                <label className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
-                <input type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
+                <label htmlFor="campo-1571" className="block text-sm font-medium text-red-700 mb-1.5">Escribe <strong>ELIMINAR</strong> para confirmar</label>
+                <input id="campo-1571" type="text" value={confirmDeleteText} onChange={(e) => setConfirmDeleteText(e.target.value)}
                   placeholder="ELIMINAR"
                   className="w-full h-12 px-4 rounded-xl border border-red-300 bg-red-50 text-[#39484F] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all text-center font-bold uppercase tracking-widest" />
               </div>

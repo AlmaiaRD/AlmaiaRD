@@ -88,10 +88,11 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Correo Electrónico</label>
+                <label htmlFor="login-email" className="block text-sm font-medium text-[#39484F] mb-1.5">Correo Electrónico</label>
                 <div className="relative">
                   <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -105,10 +106,11 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#39484F] mb-1.5">Contraseña</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-[#39484F] mb-1.5">Contraseña</label>
                 <div className="relative">
                   <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4C5760]" />
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

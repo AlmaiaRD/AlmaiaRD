@@ -200,9 +200,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-[#F5EFE9] border border-dashed border-[#E0DAD3] rounded-xl p-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <label className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Meta</label>
+              <label htmlFor="meta-mensual" className="text-xs font-semibold text-[#4C5760] uppercase tracking-wider">Meta</label>
               <div className="flex items-center gap-2">
                 <input
+                  id="meta-mensual"
                   type="number"
                   value={goalInput}
                   onChange={(e) => setGoalInput(e.target.value)}

@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // La página de bienvenida (/) es PÚBLICA: es la puerta de entrada al
   // sistema (muestra qué es y da acceso al login). No contiene datos
   // privados, así que no requiere sesión. Todo lo demás sí la exige.
@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("[middleware] SUPABASE_URL o SUPABASE_ANON_KEY no definidos — bloqueando acceso");
+    console.error("[proxy] SUPABASE_URL o SUPABASE_ANON_KEY no definidos — bloqueando acceso");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -46,7 +46,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // OJO: los assets estáticos (svg, png, etc.) DEBEN quedar fuera del matcher.
-  // Si el middleware los intercepta, un usuario sin sesión recibe un 307 a
+  // Si el proxy los intercepta, un usuario sin sesión recibe un 307 a
   // /login en lugar de la imagen → el logo no se ve en /login ni en la landing.
   matcher: [
     "/((?!_next/static|_next/image|login|[^/]+\\.(?:svg|png|jpe?g|webp|gif|ico|css|js|woff2?|txt|xml|json)|manifest\\.webmanifest|sw\\.js|icons/.*).*)",
