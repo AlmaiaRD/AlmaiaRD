@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import reactHooks from "eslint-plugin-react-hooks";
 import unusedImports from "eslint-plugin-unused-imports";
 
 const eslintConfig = defineConfig([
@@ -14,6 +15,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "scripts/**",
+    // Helpers locales de depuración (no versionados). Se ejecutan con Node y
+    // usan require(); no forman parte del bundle ni del repositorio.
+    "*.cjs",
     // Base64 del TTF de Inspiration incrustado para jsPDF. Son 2.1K lineas de
     // concatenación de strings generadas por script; el parser se desborda
     // (Maximum call stack size exceeded). El tipo queda cubierto por typecheck.
@@ -21,6 +25,7 @@ const eslintConfig = defineConfig([
   ]),
   {
     plugins: {
+      "react-hooks": reactHooks,
       "unused-imports": unusedImports,
     },
     rules: {

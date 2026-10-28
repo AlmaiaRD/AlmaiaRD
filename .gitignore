@@ -59,3 +59,11 @@ docs/CREDENCIALES.md
 # Supabase CLI local state
 /supabase/.temp/
 
+# Herramientas locales de conciliación/exportación/depuración.
+# No se versionan: dependen de credenciales y de la base de datos de producción.
+/conciliar-inventario.mjs
+/exportar-jpgs.mjs
+/*-offline.cjs
+/dump*.cjs
+/supabase/scripts/
+
