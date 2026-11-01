@@ -1843,6 +1843,18 @@ export default function CatalogoPage() {
             </div>
           </div>
 
+          <label htmlFor="catalogo-incluir-precios" className="flex items-start gap-3 p-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] cursor-pointer">
+            <input id="catalogo-incluir-precios" type="checkbox" checked={catalogPdfShowPrices}
+              onChange={(e) => setCatalogPdfShowPrices(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded text-[#BA4A3A] focus:ring-[#BA4A3A]/30" />
+            <span>
+              <span className="block text-sm font-medium text-[#39484F]">Incluir precios de venta</span>
+              <span className="block text-xs text-[#4C5760] mt-0.5">
+                Si lo desactivas, el PDF muestra fotos, descripciones y beneficios sin el precio al cliente.
+              </span>
+            </span>
+          </label>
+
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-[#39484F]">
               {selectedCatalogIds.size} producto{selectedCatalogIds.size === 1 ? "" : "s"} seleccionado{selectedCatalogIds.size === 1 ? "" : "s"}
@@ -1868,18 +1880,6 @@ export default function CatalogoPage() {
               <div className="px-4 py-8 text-center text-[#4C5760] text-sm">No hay productos que coincidan</div>
             )}
           </div>
-
-          <label htmlFor="catalogo-incluir-precios" className="flex items-start gap-3 p-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] cursor-pointer">
-            <input id="catalogo-incluir-precios" type="checkbox" checked={catalogPdfShowPrices}
-              onChange={(e) => setCatalogPdfShowPrices(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded text-[#BA4A3A] focus:ring-[#BA4A3A]/30" />
-            <span>
-              <span className="block text-sm font-medium text-[#39484F]">Incluir precios de venta</span>
-              <span className="block text-xs text-[#4C5760] mt-0.5">
-                Si lo desactivas, el PDF muestra fotos, descripciones y beneficios sin el precio al cliente.
-              </span>
-            </span>
-          </label>
 
           <div className="bg-[#F1E9DF] rounded-xl p-4 border border-[#E0DAD3]">
             <p className="text-sm text-[#39484F]">
