@@ -112,6 +112,8 @@ export default function CatalogoPage() {
   const [catalogPdfSearch, setCatalogPdfSearch] = useState("");
   const [selectedCatalogIds, setSelectedCatalogIds] = useState<Set<string>>(new Set());
   const [catalogPdfNumber, setCatalogPdfNumber] = useState("001");
+  /** Si el PDF lleva la columna de precio al cliente. */
+  const [catalogPdfShowPrices, setCatalogPdfShowPrices] = useState(true);
   const [generatingCatalog, setGeneratingCatalog] = useState(false);
   const [showCatalogsList, setShowCatalogsList] = useState(false);
   const [catalogQuotes, setCatalogQuotes] = useState<QuoteWithClient[]>([]);
@@ -575,6 +577,8 @@ export default function CatalogoPage() {
       const bizName = settings?.business_name || "Almaia RD";
       const bizPhone = resolveDefaultPhone(settings);
       const bizEmail = settings?.email || "";
+      // El catálogo puede salir con o sin precio al cliente (ver el modal).
+      const withPrices = catalogPdfShowPrices;
 
       const loadImage = async (url: string): Promise<string | null> => {
         try {
@@ -634,16 +638,20 @@ export default function CatalogoPage() {
         let y = startY;
         const priceClient = catalogPdfProductPrice(p);
         sc("#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
-        const nameLines = doc.splitTextToSize(p.name || "Producto", CW * 0.65);
+        // Sin precios el nombre ocupa todo el ancho; con precios deja sitio a
+        // la columna de la derecha.
+        const nameLines = doc.splitTextToSize(p.name || "Producto", withPrices ? CW * 0.65 : CW);
         doc.text(nameLines, M, y + 3, { align: "left" });
         const nameH = nameLines.length * 5.5;
 
-        sc("#4C5760"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
-        sc("#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-        doc.text(formatCurrency(priceClient), PW - M, y + 4, { align: "right" });
-        sc("#4C5760"); doc.setFontSize(5.5);
-        doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
+        if (withPrices) {
+          sc("#4C5760"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          doc.text("PRECIO AL CLIENTE", PW - M, y, { align: "right" });
+          sc("#BA4A3A"); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+          doc.text(formatCurrency(priceClient), PW - M, y + 4, { align: "right" });
+          sc("#4C5760"); doc.setFontSize(5.5);
+          doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
+        }
 
         const sub = p.subbrands?.name;
         const cat = p.categories?.name;
@@ -1860,6 +1868,18 @@ export default function CatalogoPage() {
               <div className="px-4 py-8 text-center text-[#4C5760] text-sm">No hay productos que coincidan</div>
             )}
           </div>
+
+          <label htmlFor="catalogo-incluir-precios" className="flex items-start gap-3 p-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] cursor-pointer">
+            <input id="catalogo-incluir-precios" type="checkbox" checked={catalogPdfShowPrices}
+              onChange={(e) => setCatalogPdfShowPrices(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded text-[#BA4A3A] focus:ring-[#BA4A3A]/30" />
+            <span>
+              <span className="block text-sm font-medium text-[#39484F]">Incluir precios de venta</span>
+              <span className="block text-xs text-[#4C5760] mt-0.5">
+                Si lo desactivas, el PDF muestra fotos, descripciones y beneficios sin el precio al cliente.
+              </span>
+            </span>
+          </label>
 
           <div className="bg-[#F1E9DF] rounded-xl p-4 border border-[#E0DAD3]">
             <p className="text-sm text-[#39484F]">
