@@ -224,29 +224,41 @@ export function drawLightHeader(
 
   // Logo con fondo (monograma Almaia en círculo crema) a la izquierda de la
   // marca. La altura del logo = altura del texto "ALMAIA" (24pt ≈ 8.47 mm).
-  // Gap logo ↔ marca = 2px ≈ 0.7 mm. Gap ALMAIA ↔ tagline = 0.5px ≈ 0.18 mm.
-  let logoW = 16;
-  let logoH = 16;
+  let logoW = 0;
+  let logoH = 0;
   const BRAND_SIZE_PT = 24;
   const BRAND_SIZE_MM = BRAND_SIZE_PT * 25.4 / 72; // ≈ 8.47 mm
-  const LOGO_GAP_MM = 2 * 25.4 / 96; // 2px ≈ 0.53 mm (usamos 0.7 mm redondeado)
-  const TAGLINE_GAP_MM = 0.5 * 25.4 / 96; // 0.5px ≈ 0.13 mm (usamos 0.2 mm)
+  // Alto de mayúsculas real de Italiana (capHeight 700 / unitsPerEm 1000).
+  // La caja visible de "ALMAIA" va de (baseline - cap) a la baseline.
+  const BRAND_CAP_MM = BRAND_SIZE_MM * 0.7; // ≈ 5.93 mm
+  const BRAND_BASELINE = 16;
+  const LOGO_GAP_MM = 2 * 25.4 / 96; // 2px ≈ 0.53 mm
+  // Aire entre ALMAIA y el tagline: 0,25 em, el mismo que usan las previews
+  // HTML de los documentos. Se mide desde la baseline de ALMAIA hasta la
+  // parte superior de las mayúsculas del tagline, así que no se montan.
+  const TAGLINE_GAP_MM = BRAND_SIZE_MM * 0.25; // ≈ 2.12 mm
   if (opts.logoBase64) {
     try {
       const props = doc.getImageProperties(opts.logoBase64);
       const ratio = props.width && props.height ? props.height / props.width : 1;
-      logoW = 16;
-      logoH = BRAND_SIZE_MM; // misma altura que el texto ALMAIA
-      // Centrar logo verticalmente con el texto (baseline en y=16)
-      const logoY = 16 - logoH / 2 + BRAND_SIZE_MM / 2;
+      // Alto = em de la marca; el ancho sale del ratio para NO deformar el
+      // logo (el archivo es cuadrado: 880x880). El tope de ancho evita que un
+      // logo horizontal subido por el negocio empuje la marca fuera del header.
+      logoH = BRAND_SIZE_MM;
+      logoW = logoH / ratio;
+      const LOGO_MAX_W = 22;
+      if (logoW > LOGO_MAX_W) {
+        logoW = LOGO_MAX_W;
+        logoH = logoW * ratio;
+      }
+      // Centrar el logo sobre la caja de mayúsculas de ALMAIA, no bajo la
+      // baseline (antes quedaba colgando debajo del texto).
+      const logoY = BRAND_BASELINE - BRAND_CAP_MM / 2 - logoH / 2;
       doc.addImage(opts.logoBase64, "PNG", M, logoY, logoW, logoH);
     } catch {
       logoW = 0;
       logoH = 0;
     }
-  } else {
-    logoW = 0;
-    logoH = 0;
   }
 
   // Marca Italiana 24pt pizarra con tracking-wide (0.025em)
@@ -256,11 +268,10 @@ export function drawLightHeader(
   doc.setFont("Italiana", "normal");
   const brandW = trackedTextWidth(doc, brandText, brandSize, brandTrack);
   const textX = M + logoW + LOGO_GAP_MM;
-  drawTrackedText(doc, brandText, textX, 16, brandSize, brandTrack, DARK, "Italiana", "normal");
+  drawTrackedText(doc, brandText, textX, BRAND_BASELINE, brandSize, brandTrack, DARK, "Italiana", "normal");
 
   // Tagline terracota en mayúscula con tracking-widest (0.1em), escalada al ancho
   // de la marca para que INICIE y TERMINE junto con el nombre (lockup compacto)
-  // Gap ALMAIA ↔ tagline = 0.5px ≈ 0.18 mm
   const taglineText = "BIENESTAR & SALUD";
   doc.setFont("helvetica", "normal");
   const refSize = 10;
@@ -268,7 +279,11 @@ export function drawLightHeader(
   const taglineW = trackedTextWidth(doc, taglineText, refSize, refTrack);
   const scale = Math.min(1.4, Math.max(0.75, brandW / taglineW));
   const taglineStart = textX + (brandW - taglineW * scale) / 2;
-  const taglineY = 16 + TAGLINE_GAP_MM + BRAND_SIZE_MM * 0.15; // baseline ligeramente abajo
+  // Baseline del tagline: debajo de la baseline de ALMAIA + aire + alto de sus
+  // propias mayúsculas (helvetica ≈ 0.7 em). Antes quedaba a 1,4 mm de la
+  // baseline y las letras se superponían con ALMAIA.
+  const taglineCapMM = refSize * scale * 0.7 * 25.4 / 72;
+  const taglineY = BRAND_BASELINE + TAGLINE_GAP_MM + taglineCapMM;
   drawTrackedText(doc, taglineText, taglineStart, taglineY, refSize * scale, refTrack * scale, PRIMARY, "helvetica", "normal");
 
   // Distribuidor
