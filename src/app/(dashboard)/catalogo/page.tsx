@@ -114,6 +114,8 @@ export default function CatalogoPage() {
   const [catalogPdfNumber, setCatalogPdfNumber] = useState("001");
   /** Si el PDF lleva la columna de precio al cliente. */
   const [catalogPdfShowPrices, setCatalogPdfShowPrices] = useState(true);
+  /** Si el PDF lleva el costo real del producto (uso interno). */
+  const [catalogPdfShowCost, setCatalogPdfShowCost] = useState(false);
   const [generatingCatalog, setGeneratingCatalog] = useState(false);
   const [showCatalogsList, setShowCatalogsList] = useState(false);
   const [catalogQuotes, setCatalogQuotes] = useState<QuoteWithClient[]>([]);
@@ -579,6 +581,8 @@ export default function CatalogoPage() {
       const bizEmail = settings?.email || "";
       // El catálogo puede salir con o sin precio al cliente (ver el modal).
       const withPrices = catalogPdfShowPrices;
+      // El costo real es información interna: opcional y apagado por defecto.
+      const withCost = catalogPdfShowCost;
 
       const loadImage = async (url: string): Promise<string | null> => {
         try {
@@ -637,10 +641,13 @@ export default function CatalogoPage() {
       const drawEntry = async (p: CatalogProduct, startY: number): Promise<number> => {
         let y = startY;
         const priceClient = catalogPdfProductPrice(p);
+        // Costo real con ITBIS, tal como se guarda en el producto.
+        const costReal = Number(p.cost || 0) * ITBIS_MULTIPLIER;
+        const hasRightBlock = withPrices || withCost;
         sc("#39484F"); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
-        // Sin precios el nombre ocupa todo el ancho; con precios deja sitio a
-        // la columna de la derecha.
-        const nameLines = doc.splitTextToSize(p.name || "Producto", withPrices ? CW * 0.65 : CW);
+        // Sin bloque derecho el nombre ocupa todo el ancho; con precio y/o
+        // costo deja sitio a la columna de la derecha.
+        const nameLines = doc.splitTextToSize(p.name || "Producto", hasRightBlock ? CW * 0.65 : CW);
         doc.text(nameLines, M, y + 3, { align: "left" });
         const nameH = nameLines.length * 5.5;
 
@@ -653,6 +660,24 @@ export default function CatalogoPage() {
           doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
         }
 
+        if (withCost) {
+          if (withPrices) {
+            // Debajo del precio, en pequeño: acompaña sin robarle protagonismo.
+            sc("#4C5760"); doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+            doc.text("COSTO REAL c/ITBIS", PW - M, y + 13, { align: "right" });
+            sc("#4C5760"); doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+            doc.text(formatCurrency(costReal), PW - M, y + 16.5, { align: "right" });
+          } else {
+            // Sin precio, el costo ocupa el bloque derecho.
+            sc("#4C5760"); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+            doc.text("COSTO REAL", PW - M, y, { align: "right" });
+            sc("#4C5760"); doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+            doc.text(formatCurrency(costReal), PW - M, y + 4, { align: "right" });
+            sc("#4C5760"); doc.setFontSize(5.5);
+            doc.text("Incluye ITBIS", PW - M, y + 8, { align: "right" });
+          }
+        }
+
         const sub = p.subbrands?.name;
         const cat = p.categories?.name;
         if (sub || cat) {
@@ -660,7 +685,10 @@ export default function CatalogoPage() {
           doc.text([sub, cat].filter(Boolean).join(" · "), M, y + nameH + 2);
         }
 
-        y += Math.max(nameH, 14) + 8;
+        // Con precio y costo juntos el bloque derecho mide ~17 mm; el nombre
+        // y el resto de la ficha deben empezar debajo para no chocar.
+        const rightBlockH = withPrices && withCost ? 17 : hasRightBlock ? 9 : 0;
+        y += Math.max(nameH, rightBlockH, 14) + 8;
 
         const photoBox = 75;
         const photoX = M;
@@ -1851,6 +1879,18 @@ export default function CatalogoPage() {
               <span className="block text-sm font-medium text-[#39484F]">Incluir precios de venta</span>
               <span className="block text-xs text-[#4C5760] mt-0.5">
                 Si lo desactivas, el PDF muestra fotos, descripciones y beneficios sin el precio al cliente.
+              </span>
+            </span>
+          </label>
+
+          <label htmlFor="catalogo-incluir-costo" className="flex items-start gap-3 p-3 rounded-xl border border-[#E0DAD3] bg-[#F5EFE9] cursor-pointer">
+            <input id="catalogo-incluir-costo" type="checkbox" checked={catalogPdfShowCost}
+              onChange={(e) => setCatalogPdfShowCost(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded text-[#BA4A3A] focus:ring-[#BA4A3A]/30" />
+            <span>
+              <span className="block text-sm font-medium text-[#39484F]">Incluir costo real</span>
+              <span className="block text-xs text-[#4C5760] mt-0.5">
+                Muestra el costo del producto con ITBIS debajo del precio. Útil para uso interno: no lo actives si el catálogo es para el cliente.
               </span>
             </span>
           </label>
