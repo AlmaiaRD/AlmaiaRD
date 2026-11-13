@@ -584,20 +584,60 @@ export default function CatalogoPage() {
       // El costo real es información interna: opcional y apagado por defecto.
       const withCost = catalogPdfShowCost;
 
+      // Cuantas imagenes no se pudieron traer: si son varias se avisa al final,
+      // en vez de entregar un PDF con huecos y sin decir nada.
+      let imagesFailed = 0;
+
+      const blobToJpeg = async (blob: Blob): Promise<string | null> => {
+        try {
+          // Se decodifica en memoria: crear una URL `blob:` la bloquearia el CSP
+          // (img-src no la permite) y la foto se perderia sin avisar.
+          const bitmap = await createImageBitmap(blob);
+          // jsPDF guarda los PNG sin comprimir (el PDF se va a decenas de MB) y
+          // no entiende GIF, WebP ni AVIF. El canvas normaliza todos los
+          // formatos a JPEG, que ademas pesa mucho menos.
+          const max = 690;
+          const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+          canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { bitmap.close(); return null; }
+          // Fondo blanco: si el PNG trae transparencia, sin esto sale negro.
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+          bitmap.close();
+          return canvas.toDataURL("image/jpeg", 0.85);
+        } catch {
+          return null;
+        }
+      };
+
       const loadImage = async (url: string): Promise<string | null> => {
         try {
           const proxyUrl = `${window.location.origin}/api/image-proxy?url=${encodeURIComponent(url)}`;
-          const response = await fetch(proxyUrl, { cache: "no-store" });
-          if (!response.ok) return null;
+          // Un catalogo completo pide ~200 imagenes seguidas. Si el proxy
+          // responde 429 (limite por minuto) se espera lo que pida Retry-After
+          // y se reintenta, en vez de dejar esa ficha sin foto.
+          let response: Response | null = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            response = await fetch(proxyUrl);
+            if (response.ok) break;
+            if (response.status !== 429 && response.status !== 503) break;
+            const retryAfter = Number(response.headers.get("retry-after") || 0);
+            const waitMs = retryAfter > 0 ? Math.min(retryAfter * 1000, 5000) : 1500 * (attempt + 1);
+            await new Promise((resolve) => setTimeout(resolve, waitMs));
+          }
+          if (!response?.ok) { imagesFailed++; return null; }
+          const contentType = response.headers.get("content-type") || "";
+          if (!contentType.startsWith("image/")) { imagesFailed++; return null; }
           const blob = await response.blob();
-          if (blob.size === 0) return null;
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch { return null; }
+          if (blob.size === 0) { imagesFailed++; return null; }
+          const jpeg = await blobToJpeg(blob);
+          if (!jpeg) imagesFailed++;
+          return jpeg;
+        } catch { imagesFailed++; return null; }
       };
 
       let almaiaLogoB64: string | null = null;
@@ -710,8 +750,8 @@ export default function CatalogoPage() {
               const w = box - 6;
               const h = w * ratio;
               const offY = (box - h) / 2;
-              doc.addImage(img, "PNG", imgX + 3, imgY + offY, w, h);
-            } catch { /* imagen no válida */ }
+              doc.addImage(img, "JPEG", imgX + 3, imgY + offY, w, h);
+            } catch { imagesFailed++; /* imagen no válida */ }
           }
         }
 
@@ -798,6 +838,9 @@ export default function CatalogoPage() {
 
       setShowCatalogPdfModal(false);
       toast.success("Catálogo PDF generado");
+      if (imagesFailed > 0) {
+        toast.error(`${imagesFailed} imagen(es) no se pudieron cargar en el catálogo.`);
+      }
     } catch (e: unknown) {
       console.error("[catPdf] error:", e);
       toast.error((e as { message?: string }).message || "Error al generar el catálogo");

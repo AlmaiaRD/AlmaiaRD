@@ -30,9 +30,11 @@ async function readBodyWithCap(response: Response): Promise<{ buffer: Buffer; to
 export async function GET(request: NextRequest) {
   // Cada peticion de aqui le baja una imagen de fuera a Vercel. Sin tope, un
   // bucle de recarga en el catalogo se convierte en una factura de ancho de
-  // banda. 60 por minuto es de sobra para navegar con calma.
+  // banda. El tope tiene que dejar pasar un catalogo completo de una sentada:
+  // son ~200 productos y antes, con 60 por minuto, las fichas 62 en adelante
+  // se quedaban sin foto (el PDF salia con huecos y sin avisar).
   const ip = request.headers.get("x-forwarded-for") || "unknown";
-  const limit = await checkRateLimit(`image-proxy:${ip}`, 60, 60_000);
+  const limit = await checkRateLimit(`image-proxy:${ip}`, 600, 60_000);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: `Demasiadas solicitudes. Espera ${limit.retryAfter ?? 60}s.` },
