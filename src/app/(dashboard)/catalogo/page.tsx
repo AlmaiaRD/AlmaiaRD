@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import { supabase } from "@/lib/supabase";
 import { createProduct, updateProduct, productCodeExists, getCategories, getSubbrands, createCategory, createSubbrand, deactivateSubbrand, deactivateCategory, deleteProduct, getBundleItems, createBundle, updateBundle, removeProductImage } from "@/services/products";
 import { useCatalog, catalogKey as catalogQueryKey } from "@/lib/queries/catalogo";
+import { filterBundlePickerProducts } from "@/lib/bundles";
 import type { CatalogProduct, CatalogBundleItem } from "@/types/relations";
 import { getSettings, resolveDefaultPhone } from "@/services/settings";
 import { createQuote, getQuotes } from "@/services/quotes";
@@ -94,6 +95,19 @@ export default function CatalogoPage() {
 
   const products = productsData ?? [];
 
+  // El selector de bundles no puede usar `products`: esa lista está filtrada
+  // por lo que la persona esté viendo en pantalla (búsqueda, marca, categoría,
+  // "solo bundles" u "archivados"). Consulta el catálogo completo aparte.
+  const bundlePickerFilters = useMemo(
+    () => ({ search: "", subbrandId: "", categoryId: "", bundlesOnly: false, includeArchived: false }),
+    []
+  );
+  const {
+    data: bundlePickerData,
+    isLoading: loadingBundlePicker,
+    refetch: refetchBundlePicker,
+  } = useCatalog<CatalogProduct>(bundlePickerFilters);
+
   // Antes la lista vivia en un useState de la pagina y cada edicion la
   // cambiaba a mano. Ahora se escribe en la cache de React Query, con la misma
   // forma (valor, o funcion que recibe la lista anterior), asi que los cambios
@@ -164,7 +178,7 @@ export default function CatalogoPage() {
   }, []);
 
   async function loadProducts() {
-    await refetchProducts();
+    await Promise.all([refetchProducts(), refetchBundlePicker()]);
   }
 
   useEffect(() => {
@@ -475,12 +489,9 @@ export default function CatalogoPage() {
     }
   }
 
-  const bundlePickerResults = products.filter((p) => {
-    if (!p.active || p.is_bundle) return false;
-    if (bundleFilterBrand && p.subbrand_id !== bundleFilterBrand) return false;
-    const q = bundleSearch.trim().toLowerCase();
-    if (q && !((p.name || "").toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q))) return false;
-    return true;
+  const bundlePickerResults = filterBundlePickerProducts(bundlePickerData ?? [], {
+    search: bundleSearch,
+    subbrandId: bundleFilterBrand,
   });
 
   async function handleCreateSubbrand(name: string) {
@@ -1364,7 +1375,7 @@ export default function CatalogoPage() {
           <div className="bg-[#BA4A3A]/10 border border-[#BA4A3A]/30 rounded-xl p-4 flex items-start gap-3">
             <Boxes size={20} className="text-[#BA4A3A] flex-shrink-0 mt-0.5" />
             <p className="text-sm text-[#39484F]">
-              Un bundle es un combo de productos a un precio especial. Busca productos del catálogo, agrégalos y fija el precio del combo.
+              Un bundle es un combo de productos a un precio especial. Busca productos del catálogo, agrega todos los que necesites y fija el precio del combo. No requieren stock.
             </p>
           </div>
 
@@ -1428,7 +1439,10 @@ export default function CatalogoPage() {
           </div>
 
           <div className="border-t border-[#E0DAD3] pt-4">
-            <span className="block text-sm font-medium text-[#39484F] mb-2">1. Buscar productos del catálogo</span>
+            <span className="block text-sm font-medium text-[#39484F] mb-2">
+              1. Buscar productos del catálogo{" "}
+              <span className="font-normal text-[#4C5760]">({bundlePickerResults.length} disponibles)</span>
+            </span>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5760]" />
@@ -1452,12 +1466,14 @@ export default function CatalogoPage() {
               </select>
             </div>
             <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-[#E0DAD3] bg-white divide-y divide-[#E0DAD3]/60">
-              {bundlePickerResults.length === 0 ? (
+              {loadingBundlePicker ? (
+                <p className="text-sm text-[#4C5760] p-4 text-center">Cargando productos...</p>
+              ) : bundlePickerResults.length === 0 ? (
                 <p className="text-sm text-[#4C5760] p-4 text-center">
-                  {bundleSearch.trim() || bundleFilterBrand ? "Sin resultados" : "No hay productos disponibles"}
+                  {bundleSearch.trim() || bundleFilterBrand ? "Sin resultados" : "No hay productos activos en el catálogo"}
                 </p>
               ) : (
-                bundlePickerResults.slice(0, 20).map((p) => (
+                bundlePickerResults.map((p) => (
                   <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#F1E9DF] transition-colors">
                     <div className="w-9 h-9 rounded-lg bg-[#F1E9DF] flex items-center justify-center text-[#4C5760] flex-shrink-0 overflow-hidden">
                       {p.image_url ? (
