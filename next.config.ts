@@ -35,6 +35,11 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Mantiene los avisos de seguridad de Next.js apuntando a este tipo de
+    // upgrade (y no a actualizaciones generales) en futuros despliegues.
+    agentUpgrade: "security",
+  },
   images: {
     // Solo el bucket publico de imagenes de producto.
     //
